@@ -1,0 +1,21 @@
+import React from "react";
+
+interface BadgeProps {
+  text: string;
+  className?: string;
+}
+
+const SolutionBadge: React.FC<BadgeProps> = ({ text, className = "" }) => {
+  return (
+    <div className={`inline-flex items-center gap-3 px-4 py-2 rounded-full border-2 border-brand bg-gradient-to-br from-gradient-from to-gradient-to ${className}`}>
+      <img 
+        src="/assets/badges/solution-badge.svg" 
+        alt="Solution icon" 
+        className="w-8 h-8"
+      />
+      <span className="text-sm font-medium text-section-DEFAULT">{text}</span>
+    </div>
+  );
+};
+
+export default SolutionBadge;

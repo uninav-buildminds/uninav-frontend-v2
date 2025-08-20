@@ -1,0 +1,114 @@
+import React from "react";
+import { FeaturesBadge } from "./badges";
+import { cn } from "@/lib/utils";
+import {
+  Search,
+  MessageCircle,
+  Trophy,
+  Zap,
+  Shield,
+  Users
+} from "lucide-react";
+
+const FeatureSection: React.FC = () => {
+  const features = [
+    {
+      title: "Smart Search",
+      description: "Type anything - 'PHY 205 slides', 'last year's quiz' - we'll find it. Find any material in seconds, not hours of digging through folders",
+      icon: <Search size={24} />
+    },
+    {
+      title: "WhatsApp Bot",
+      description: "Get notes via chat when you're offline. Just message 'Send BIO 103 notes'. Access your study materials anywhere, even without internet",
+      icon: <MessageCircle size={24} />
+    },
+    {
+      title: "Rewards That Matter",
+      description: "10 uploads = Skip the queue for popular materials. 50 = Free printing credit. Turn your knowledge sharing into real campus perks",
+      icon: <Trophy size={24} />
+    },
+    {
+      title: "Instant Verification",
+      description: "All materials are checked by senior students and teaching assistants. Study with confidence knowing content is accurate and up-to-date",
+      icon: <Zap size={24} />
+    },
+    {
+      title: "Honor Code Compliant",
+      description: "Built with academic integrity in mind. Past papers only, no current assignments. Share and access materials without worrying about academic violations",
+      icon: <Shield size={24} />
+    },
+    {
+      title: "Community Driven",
+      description: "Connect with study groups, find study partners, and build your academic network. Build lasting relationships while succeeding academically",
+      icon: <Users size={24} />
+    }
+  ];
+
+  return (
+    <section className="bg-white">
+      <div className="container mx-auto max-w-6xl px-4 md:px-6 text-center py-16 md:py-20">
+        <FeaturesBadge text="Features" className="mb-8" />
+        
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold mb-6 text-foreground">
+          Everything You Need to Study Smarter
+        </h2>
+        
+        <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-16">
+          Powerful features designed by students, for students. Because we know what actually helps.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 relative z-10 py-10 max-w-7xl mx-auto">
+          {features.map((feature, index) => (
+            <Feature key={feature.title} {...feature} index={index} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const Feature = ({
+  title,
+  description,
+  icon,
+  index,
+}: {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  index: number;
+}) => {
+  return (
+    <div
+      className={cn(
+        "flex flex-col lg:border-r py-10 relative group/feature",
+        (index === 0 || index === 3) && "lg:border-l",
+        index < 3 && "lg:border-b"
+      )}
+    >
+      {index < 3 && (
+        <div className="opacity-0 group-hover/feature:opacity-100 transition duration-200 absolute inset-0 h-full w-full bg-gradient-to-t from-brand/5 to-transparent pointer-events-none" />
+      )}
+      {index >= 3 && (
+        <div className="opacity-0 group-hover/feature:opacity-100 transition duration-200 absolute inset-0 h-full w-full bg-gradient-to-b from-brand/5 to-transparent pointer-events-none" />
+      )}
+      
+      <div className="mb-4 relative z-10 px-10 text-foreground flex justify-start">
+        {icon}
+      </div>
+      
+      <div className="text-lg font-semibold mb-3 relative z-10 px-10 flex justify-start">
+        <div className="absolute left-0 inset-y-0 h-6 group-hover/feature:h-8 w-1 rounded-tr-full rounded-br-full bg-brand/30 group-hover/feature:bg-brand transition-all duration-200 origin-center" />
+        <span className="group-hover/feature:translate-x-2 transition duration-200 inline-block text-foreground">
+          {title}
+        </span>
+      </div>
+      
+      <p className="text-sm text-muted-foreground leading-relaxed max-w-xs relative z-10 px-10 text-left">
+        {description}
+      </p>
+    </div>
+  );
+};
+
+export default FeatureSection;

@@ -52,6 +52,19 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				brand: {
+					DEFAULT: '#0410A2',
+					light: '#0410A210',
+					foreground: '#ffffff'
+				},
+				section: {
+					DEFAULT: '#010323',
+					accent: '#4045E1'
+				},
+				gradient: {
+					from: '#DCDFFE',
+					to: '#E6FAEE'
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
