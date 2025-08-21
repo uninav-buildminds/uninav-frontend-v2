@@ -34,41 +34,41 @@ const FAQSection: React.FC = () => {
 
   return (
     <section className="bg-white">
-      <div className="container mx-auto max-w-4xl px-4 md:px-6 text-center py-16 md:py-20">
-        <FAQBadge text="FAQs" className="mb-8" />
+      <div className="container mx-auto max-w-4xl px-4 md:px-6 text-center py-12 sm:py-16 md:py-20">
+        <FAQBadge text="FAQs" className="mb-6 sm:mb-8" />
         
-        <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold mb-6 text-foreground">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold mb-4 sm:mb-6 text-foreground">
           Frequently Asked Questions
         </h2>
         
-        <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-16">
+        <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-12 sm:mb-16 px-2 sm:px-0">
           Quick answers to what you're wondering
         </p>
 
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {faqs.map((faq, index) => (
             <div
               key={index}
               className="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden cursor-pointer hover:bg-gray-100 transition-colors duration-200"
               onClick={() => toggleFAQ(index)}
             >
-              <div className="flex items-center justify-between p-6">
-                <h3 className="text-lg font-medium text-foreground text-left pr-4">
+              <div className="flex items-center justify-between p-4 sm:p-6">
+                <h3 className="text-base sm:text-lg font-medium text-foreground text-left pr-4">
                   {faq.question}
                 </h3>
                 <div className="flex-shrink-0">
                   {openIndex === index ? (
-                    <Minus size={20} className="text-foreground" />
+                    <Minus size={18} className="text-foreground sm:w-5 sm:h-5" />
                   ) : (
-                    <Plus size={20} className="text-foreground" />
+                    <Plus size={18} className="text-foreground sm:w-5 sm:h-5" />
                   )}
                 </div>
               </div>
               
               {openIndex === index && (
-                <div className="px-6 pb-6">
-                  <div className="border-t border-gray-200 pt-4">
-                    <p className="text-muted-foreground text-left leading-relaxed">
+                <div className="px-4 sm:px-6 pb-4 sm:pb-6">
+                  <div className="border-t border-gray-200 pt-3 sm:pt-4">
+                    <p className="text-sm sm:text-base text-muted-foreground text-left leading-relaxed">
                       {faq.answer}
                     </p>
                   </div>

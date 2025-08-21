@@ -24,12 +24,12 @@ const ChallengeSection: React.FC = () => {
 
   return (
     <section className="bg-white">
-      <div className="container mx-auto max-w-6xl px-4 md:px-6 text-center py-12 md:py-16">
-        <ChallengeBadge text="The Challenge" className="mb-6" />
-        <h2 className="text-3xl text-foreground md:text-4xl lg:text-5xl font-semibold mb-6">
+      <div className="container mx-auto max-w-6xl px-4 md:px-6 text-center py-8 sm:py-12 md:py-16">
+        <ChallengeBadge text="The Challenge" className="mb-4 sm:mb-6" />
+        <h2 className="text-2xl sm:text-3xl text-foreground md:text-4xl lg:text-5xl font-semibold mb-4 sm:mb-6">
           Navigating the Academic Maze
         </h2>
-        <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
+        <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto px-2 sm:px-0">
           Students often struggle with fragmented resources, limited collaboration, and time constraints, hindering their academic success.
         </p>
       </div>
