@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Menu, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const ChevronDownIcon = () => (
   <svg
@@ -23,7 +24,12 @@ const Header: React.FC = () => {
 
   return (
     <div className="fixed top-6 inset-x-0 z-[5000] flex justify-center px-4">
-      <div className="w-[min(1100px,100%)] flex items-center justify-between gap-4 rounded-full border bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-sm px-4 md:px-6 py-3">
+      <motion.div
+        className="w-[min(1100px,100%)] flex items-center justify-between gap-4 rounded-full border bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-sm px-4 md:px-6 py-3"
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+      >
         <a href="/" className="inline-flex items-center gap-2">
           <img src="/assets/logo.svg" alt="UniNav logo" className="h-8 w-auto" />
           <span className="text-base font-semibold text-brand">UniNav</span>
@@ -61,6 +67,8 @@ const Header: React.FC = () => {
           onClick={toggleMobileMenu}
           className="md:hidden inline-flex items-center justify-center p-2 rounded-full hover:bg-gray-100 transition-colors"
           aria-label="Toggle mobile menu"
+          aria-expanded={isMobileMenuOpen}
+          aria-controls="mobile-menu"
         >
           {isMobileMenuOpen ? (
             <X className="h-5 w-5 text-gray-600" />
@@ -68,60 +76,69 @@ const Header: React.FC = () => {
             <Menu className="h-5 w-5 text-gray-600" />
           )}
         </button>
-      </div>
+      </motion.div>
 
       {/* Mobile Menu */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden absolute top-full left-4 right-4 mt-2 bg-white rounded-2xl border shadow-lg backdrop-blur supports-[backdrop-filter]:bg-white/95">
-          <nav className="p-4 space-y-3">
-            <a 
-              href="#home" 
-              className="block px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors text-sm font-medium"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Home
-            </a>
-            <a 
-              href="#browse" 
-              className="block px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors text-sm font-medium"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Browse Courses
-            </a>
-            <a 
-              href="#faqs" 
-              className="block px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors text-sm font-medium"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              FAQs
-            </a>
-            <a 
-              href="#contact" 
-              className="block px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors text-sm font-medium"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Contact
-            </a>
-          </nav>
-          
-          <div className="border-t p-4 space-y-3">
-            <a
-              href="#upload"
-              className="block w-full text-center rounded-xl px-4 py-3 text-sm font-medium text-white bg-brand"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Upload
-            </a>
-            <a
-              href="#signin"
-              className="block w-full text-center rounded-xl border border-brand px-4 py-3 text-sm font-medium text-brand"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Sign In
-            </a>
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            id="mobile-menu"
+            className="md:hidden absolute top-full left-4 right-4 mt-2 bg-white rounded-2xl border shadow-lg backdrop-blur supports-[backdrop-filter]:bg-white/95"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <nav className="p-4 space-y-3">
+              <a 
+                href="#home" 
+                className="block px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors text-sm font-medium"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Home
+              </a>
+              <a 
+                href="#browse" 
+                className="block px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors text-sm font-medium"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Browse Courses
+              </a>
+              <a 
+                href="#faqs" 
+                className="block px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors text-sm font-medium"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                FAQs
+              </a>
+              <a 
+                href="#contact" 
+                className="block px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors text-sm font-medium"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Contact
+              </a>
+            </nav>
+            
+            <div className="border-t p-4 space-y-3">
+              <a
+                href="#upload"
+                className="block w-full text-center rounded-xl px-4 py-3 text-sm font-medium text-white bg-brand"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Upload
+              </a>
+              <a
+                href="#signin"
+                className="block w-full text-center rounded-xl border border-brand px-4 py-3 text-sm font-medium text-brand"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Sign In
+              </a>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

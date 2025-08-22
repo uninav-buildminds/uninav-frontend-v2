@@ -9,6 +9,18 @@ import {
   Shield,
   Users
 } from "lucide-react";
+import { motion } from "framer-motion";
+import type { Variants } from "framer-motion";
+
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.12 } },
+};
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] } },
+};
 
 const FeatureSection: React.FC = () => {
   const features = [
@@ -46,23 +58,31 @@ const FeatureSection: React.FC = () => {
 
   return (
     <section className="bg-white">
-      <div className="container mx-auto max-w-6xl px-4 md:px-6 text-center py-12 sm:py-16 md:py-20">
-        <FeaturesBadge text="Features" className="mb-6 sm:mb-8" />
+      <motion.div
+        className="container mx-auto max-w-6xl px-4 md:px-6 text-center py-12 sm:py-16 md:py-20"
+        variants={containerVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "0px 0px -20% 0px" }}
+      >
+        <motion.div variants={itemVariants}>
+          <FeaturesBadge text="Features" className="mb-6 sm:mb-8" />
+        </motion.div>
         
-        <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold mb-4 sm:mb-6 text-foreground">
+        <motion.h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold mb-4 sm:mb-6 text-foreground" variants={itemVariants}>
           Everything You Need to Study Smarter
-        </h2>
+        </motion.h2>
         
-        <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-12 sm:mb-16 px-2 sm:px-0">
+        <motion.p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-12 sm:mb-16 px-2 sm:px-0" variants={itemVariants}>
           Powerful features designed by students, for students. Because we know what actually helps.
-        </p>
+        </motion.p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 relative z-10 py-6 sm:py-8 md:py-10 max-w-7xl mx-auto">
+        <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 relative z-10 py-6 sm:py-8 md:py-10 max-w-7xl mx-auto" variants={containerVariants}>
           {features.map((feature, index) => (
             <Feature key={feature.title} {...feature} index={index} />
           ))}
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </section>
   );
 };
@@ -79,12 +99,13 @@ const Feature = ({
   index: number;
 }) => {
   return (
-    <div
+    <motion.div
       className={cn(
         "flex flex-col lg:border-r py-6 sm:py-8 md:py-10 relative group/feature",
         (index === 0 || index === 3) && "lg:border-l",
         index < 3 && "lg:border-b"
       )}
+      variants={itemVariants}
     >
       {index < 3 && (
         <div className="opacity-0 group-hover/feature:opacity-100 transition duration-200 absolute inset-0 h-full w-full bg-gradient-to-t from-brand/5 to-transparent pointer-events-none" />
@@ -107,7 +128,7 @@ const Feature = ({
       <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-xs relative z-10 px-6 sm:px-8 md:px-10 text-left">
         {description}
       </p>
-    </div>
+    </motion.div>
   );
 };
 

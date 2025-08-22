@@ -1,6 +1,18 @@
 import React, { useState } from "react";
 import { FAQBadge } from "./badges";
 import { Plus, Minus } from "lucide-react";
+import { motion } from "framer-motion";
+import type { Variants } from "framer-motion";
+
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.12 } },
+};
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] } },
+};
 
 const FAQSection: React.FC = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
@@ -34,23 +46,32 @@ const FAQSection: React.FC = () => {
 
   return (
     <section className="bg-white">
-      <div className="container mx-auto max-w-4xl px-4 md:px-6 text-center py-12 sm:py-16 md:py-20">
-        <FAQBadge text="FAQs" className="mb-6 sm:mb-8" />
+      <motion.div
+        className="container mx-auto max-w-4xl px-4 md:px-6 text-center py-12 sm:py-16 md:py-20"
+        variants={containerVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "0px 0px -20% 0px" }}
+      >
+        <motion.div variants={itemVariants}>
+          <FAQBadge text="FAQs" className="mb-6 sm:mb-8" />
+        </motion.div>
         
-        <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold mb-4 sm:mb-6 text-foreground">
+        <motion.h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold mb-4 sm:mb-6 text-foreground" variants={itemVariants}>
           Frequently Asked Questions
-        </h2>
+        </motion.h2>
         
-        <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-12 sm:mb-16 px-2 sm:px-0">
+        <motion.p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-12 sm:mb-16 px-2 sm:px-0" variants={itemVariants}>
           Quick answers to what you're wondering
-        </p>
+        </motion.p>
 
         <div className="space-y-3 sm:space-y-4">
           {faqs.map((faq, index) => (
-            <div
+            <motion.div
               key={index}
               className="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden cursor-pointer hover:bg-gray-100 transition-colors duration-200"
               onClick={() => toggleFAQ(index)}
+              variants={itemVariants}
             >
               <div className="flex items-center justify-between p-4 sm:p-6">
                 <h3 className="text-base sm:text-lg font-medium text-foreground text-left pr-4">
@@ -74,10 +95,10 @@ const FAQSection: React.FC = () => {
                   </div>
                 </div>
               )}
-            </div>
+            </motion.div>
           ))}
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 };
