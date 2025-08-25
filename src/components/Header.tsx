@@ -55,7 +55,7 @@ const Header: React.FC = () => {
             Upload
           </a>
           <a
-            href="#signin"
+            href="/auth/signin"
             className="inline-flex items-center justify-center rounded-full border border-brand px-4 py-2 text-sm font-medium text-brand"
           >
             Sign In
@@ -129,7 +129,7 @@ const Header: React.FC = () => {
                 Upload
               </a>
               <a
-                href="#signin"
+                href="/auth/signin"
                 className="block w-full text-center rounded-xl border border-brand px-4 py-3 text-sm font-medium text-brand"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
