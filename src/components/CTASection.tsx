@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import type { Variants } from "framer-motion";
+import { Link } from "react-router-dom";
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -38,9 +39,14 @@ const CTASection: React.FC = () => {
               Join thousands of students who've discovered the smarter way to study
             </motion.p>
             
-            <motion.button className="inline-flex items-center justify-center rounded-xl px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base font-medium text-white bg-brand hover:bg-brand/90 transition-colors duration-200 shadow-lg hover:shadow-xl" variants={itemVariants}>
-              Get Started for free
-            </motion.button>
+            <motion.div variants={itemVariants}>
+              <Link 
+                to="/auth/signup"
+                className="inline-flex items-center justify-center rounded-xl px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base font-medium text-white bg-brand hover:bg-brand/90 transition-colors duration-200 shadow-lg hover:shadow-xl"
+              >
+                Get Started for free
+              </Link>
+            </motion.div>
           </div>
           
           {/* Right Side - Mobile App Mockups */}
