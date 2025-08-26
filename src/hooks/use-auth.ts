@@ -21,8 +21,19 @@ export default function useAuth() {
 		}
 	}, []);
 
+	const logOut = useCallback(async () => {
+		const response = await fetch(`${API_BASE_URL}/auth/logout`, {
+			method: "POST",
+			credentials: "include",
+		});
+		if (response.ok) {
+			setUser(null);
+		}
+	}, []);
+
 	return {
 		refreshAuthState,
+		logOut,
 		user,
 	};
 }
