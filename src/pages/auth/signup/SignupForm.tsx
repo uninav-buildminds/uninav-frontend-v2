@@ -10,6 +10,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signupSchema, type SignupInput } from "@/lib/validation/auth";
 import { Link, useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "@/lib/utils";
 
 const SignupForm: React.FC = () => {
   const navigate = useNavigate();
@@ -27,6 +28,10 @@ const SignupForm: React.FC = () => {
     navigate("/auth/signup/verify");
   };
 
+  const initiateGoogleAuth = async () => {
+		window.location.href = `${API_BASE_URL}/auth/google`;
+  };
+    
   return (
     <AuthLayout>
       <AuthCard>
@@ -75,7 +80,7 @@ const SignupForm: React.FC = () => {
           </div>
 
           <div>
-            <SocialAuth onGoogle={() => navigate("/auth/signup/verify")} />
+            <SocialAuth onGoogle={initiateGoogleAuth} />
           </div>
 
           <button
