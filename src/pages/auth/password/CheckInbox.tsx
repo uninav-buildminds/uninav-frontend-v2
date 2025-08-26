@@ -1,7 +1,7 @@
 import React from "react";
 import AuthLayout from "@/components/auth/AuthLayout";
 import AuthCard from "@/components/auth/AuthCard";
-import VerifyEmailCard from "@/components/auth/VerifyEmailCard";
+import VerifyEmailCard from "@/components/auth/CheckInboxCard";
 
 const CheckInbox: React.FC = () => {
   return (

@@ -1,21 +1,23 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-interface VerifyEmailCardProps {
+interface CheckInboxCardProps {
   title: string;
   message: string;
   buttonText: string;
   backLink: string;
   backText: string;
+  resendHandler?: () => void;
   isPasswordReset?: boolean;
 }
 
-const VerifyEmailCard: React.FC<VerifyEmailCardProps> = ({
+const CheckInboxCard: React.FC<CheckInboxCardProps> = ({
   title,
   message,
   buttonText,
   backLink,
   backText,
+  resendHandler,
   isPasswordReset = false,
 }) => {
   return (
@@ -35,9 +37,11 @@ const VerifyEmailCard: React.FC<VerifyEmailCardProps> = ({
       >
         {buttonText}
       </a>
-      <p className="mt-4 text-xs text-muted-foreground">
-        Didn't receive the email? <button className="text-brand underline">Resend</button>
-      </p>
+      {resendHandler && (
+        <p className="mt-4 text-xs text-muted-foreground">
+          Didn't receive the email? <button onClick={resendHandler} className="text-brand underline">Resend</button>
+        </p>
+      )}
       <p className="mt-2 text-xs">
         <Link className="text-brand underline" to={backLink}>{backText}</Link>
       </p>
@@ -45,4 +49,4 @@ const VerifyEmailCard: React.FC<VerifyEmailCardProps> = ({
   );
 };
 
-export default VerifyEmailCard;
+export default CheckInboxCard;
