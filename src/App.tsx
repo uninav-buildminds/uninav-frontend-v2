@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import SignupForm from "./pages/auth/signup/SignupForm";
-import RequestEmailVerification from "./pages/auth/signup/RequestEmailVerification";
+import RequestEmailVerification from "./pages/auth/verification/RequestEmailVerification";
 import ProfileSetup from "./pages/auth/signup/ProfileSetup";
 import SignupSuccess from "./pages/auth/signup/SignupSuccess";
 import SigninForm from "./pages/auth/signin/SigninForm";
