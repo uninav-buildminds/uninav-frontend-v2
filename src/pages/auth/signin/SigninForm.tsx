@@ -12,6 +12,10 @@ import { signinSchema, type SigninInput } from "@/lib/validation/auth";
 import { Link, useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "@/lib/utils";
 import Header from "@/components/Header";
+import { preload } from "swr";
+
+// Start prefetching all the faculties and their departments in case the user goes to sign up
+preload(`${API_BASE_URL}/faculty`, (url: string) => fetch(url).then((res) => res.json()));
 
 const SigninForm: React.FC = () => {
   const navigate = useNavigate();

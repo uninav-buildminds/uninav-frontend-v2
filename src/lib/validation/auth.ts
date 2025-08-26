@@ -8,6 +8,10 @@ export const signupSchema = z.object({
     .min(8, "Password must be at least 8 characters")
     .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, "Password must contain uppercase, lowercase and a number"),
   agree: z.literal(true, { errorMap: () => ({ message: "You must agree to continue" }) }),
+  fullName: z.string().min(1, "Full name is required").min(2, "Enter your full name"),
+  department: z.string().optional(),
+  faculty: z.string().optional(),
+  level: z.enum(["100", "200", "300", "400", "500", "600", "700"]).optional(),
 });
 
 export type SignupInput = z.infer<typeof signupSchema>;

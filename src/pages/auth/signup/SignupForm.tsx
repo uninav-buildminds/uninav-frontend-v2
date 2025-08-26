@@ -12,12 +12,22 @@ import { signupSchema, type SignupInput } from "@/lib/validation/auth";
 import { Link, useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "@/lib/utils";
 import Header from "@/components/Header";
+import { CircleUserRound } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import useSWR, { Fetcher } from "swr";
+import { Department, Faculty } from "@/lib/types/user.types";
+import { toast } from "sonner";
+
+const fetcher: Fetcher<{ data: Faculty[] }> = (url: string) => fetch(url).then((res) => res.json());
 
 const SignupForm: React.FC = () => {
+  const { data, error, isLoading } = useSWR(`${API_BASE_URL}/faculty`, fetcher);
+  const [selectedFacultyId, setSelectedFacultyId] = React.useState<string | null>(null);
   const navigate = useNavigate();
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<SignupInput>({ 
     resolver: zodResolver(signupSchema), 
@@ -25,14 +35,59 @@ const SignupForm: React.FC = () => {
   });
 
   const onSubmit = async (data: SignupInput) => {
-    console.log("Form data:", data);
-    navigate("/auth/signup/verify");
+		console.log("Form data:", data);
+		const firstName = data.fullName?.trim().split(" ")[0] || "John";
+		const lastName = data.fullName?.split(" ")[1].trim() || "Doe";
+
+		const response = await fetch(`${API_BASE_URL}/auth/student`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				email: data.email,
+				password: data.password,
+				firstName,
+				lastName,
+				departmentId: data.department,
+				level: data.level ? parseInt(data.level, 10) : 100,
+			}),
+		});
+		if (response.ok) {
+			navigate("/auth/signup/verify");
+    } else {
+      const errorData = await response.json();
+      console.error("Signup failed:", errorData);
+      toast(errorData?.message || "Signup failed. Please try again.");
+    }
   };
 
   const initiateGoogleAuth = async () => {
 		window.location.href = `${API_BASE_URL}/auth/google`;
   };
-    
+
+  const facultyValueChangeHandler = (value: string) => {
+    setSelectedFacultyId(value);
+    setValue("faculty", value);
+  }
+
+  const levelValueChangeHandler = (value: string) => {
+		function isValidLevel(level: string): level is SignupInput["level"] {
+			return ["100", "200", "300", "400", "500", "600", "700"].includes(
+				level
+			);
+		}
+
+		if (isValidLevel(value)) {
+			setValue("level", value);
+		} else {
+			setValue("level", "100");
+		}
+  };
+  
+  // const selectedFaculty = getValues("faculty");
+  const faculties = data?.data || [];
+  const departments: Department[] = faculties.find(faculty => faculty.id === selectedFacultyId)?.departments || [];
   return (
     <AuthLayout>
       <Header />
@@ -43,6 +98,18 @@ const SignupForm: React.FC = () => {
         />
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-5">
+          <FormField label="Full name (First and Last)" htmlFor="fullName" error={errors.fullName?.message}>
+            <div className="relative">
+              <CircleUserRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <input
+                id="fullName"
+                placeholder="Enter your full name"
+                className="w-full rounded-xl border pl-9 pr-3 py-3 text-sm outline-none placeholder:text-muted-foreground/70 focus:ring-2 focus:ring-brand/30"
+                {...register("fullName")}
+              />
+            </div>
+          </FormField>
+
           <FormField label="Email Address" htmlFor="email" error={errors.email?.message}>
             <EmailInput 
               id="email" 
@@ -57,6 +124,54 @@ const SignupForm: React.FC = () => {
               placeholder="Enter your password" 
               {...register("password")} 
             />
+          </FormField>
+
+          <FormField label="Faculty (Optional)" htmlFor="faculty" error={errors.faculty?.message}>
+            <Select onValueChange={facultyValueChangeHandler} disabled={isLoading || error}>
+              <SelectTrigger id="faculty" className="rounded-xl py-3">
+                <SelectValue placeholder="Choose faculty" />
+              </SelectTrigger>
+              <SelectContent>
+                  {faculties.map((faculty) => (
+                    <SelectItem key={faculty.id} value={faculty.id}>
+                      {faculty.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+            </Select>
+          </FormField>
+
+          <FormField label="Department (Optional)" htmlFor="department" error={errors.department?.message}>
+            <Select onValueChange={(v) => setValue("department", v)} disabled={isLoading || error}>
+              <SelectTrigger id="department" className="rounded-xl py-3">
+                <SelectValue placeholder="Choose department" />
+              </SelectTrigger>
+              
+              <SelectContent>
+                {departments.map((department) => (
+                  <SelectItem key={department.id} value={department.id}>
+                    {department.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FormField>
+
+          <FormField label="Level (Optional)" htmlFor="level" error={errors.level?.message}>
+            <Select onValueChange={levelValueChangeHandler}>
+              <SelectTrigger id="level" className="rounded-xl py-3">
+                <SelectValue placeholder="Choose level" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="100">100</SelectItem>
+                <SelectItem value="200">200</SelectItem>
+                <SelectItem value="300">300</SelectItem>
+                <SelectItem value="400">400</SelectItem>
+                <SelectItem value="500">500</SelectItem>
+                <SelectItem value="600">600</SelectItem>
+                <SelectItem value="700">700</SelectItem>
+              </SelectContent>
+            </Select>
           </FormField>
 
           <div className="flex items-start gap-2">
