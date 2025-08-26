@@ -11,6 +11,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { signupSchema, type SignupInput } from "@/lib/validation/auth";
 import { Link, useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "@/lib/utils";
+import Header from "@/components/Header";
 
 const SignupForm: React.FC = () => {
   const navigate = useNavigate();
@@ -34,6 +35,7 @@ const SignupForm: React.FC = () => {
     
   return (
     <AuthLayout>
+      <Header />
       <AuthCard>
         <AuthHeader
           title="Join the Student Revolution"

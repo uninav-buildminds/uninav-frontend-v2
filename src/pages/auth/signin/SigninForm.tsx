@@ -11,6 +11,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { signinSchema, type SigninInput } from "@/lib/validation/auth";
 import { Link, useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "@/lib/utils";
+import Header from "@/components/Header";
 
 const SigninForm: React.FC = () => {
   const navigate = useNavigate();
@@ -26,6 +27,7 @@ const SigninForm: React.FC = () => {
 
   return (
     <AuthLayout>
+      <Header />
       <AuthCard>
         <AuthHeader title="Welcome back!" subtitle="Access your personalized course recommendations and points" />
 
