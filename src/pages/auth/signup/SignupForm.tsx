@@ -54,11 +54,14 @@ const SignupForm: React.FC = () => {
 			}),
 		});
 		if (response.ok) {
-			navigate("/auth/signup/verify");
+			navigate(`/auth/signup/verify?email=${encodeURIComponent(data.email)}`);
     } else {
       const errorData = await response.json();
-      console.error("Signup failed:", errorData);
-      toast(errorData?.message || "Signup failed. Please try again.");
+      toast.error(errorData?.message || "Signup failed. Please try again.");
+      if (response.status === 400) {
+        // A user with the email already exists
+        navigate("/auth/signin");
+      }
     }
   };
 
