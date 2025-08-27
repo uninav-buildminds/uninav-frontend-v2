@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { LayoutDashboard, LogOut, Menu, Upload, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import useAuth from "@/hooks/use-auth";
@@ -19,11 +19,7 @@ const ChevronDownIcon = () => (
 
 const Header: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { user, refreshAuthState, logOut } = useAuth();
-
-  useEffect(() => {
-    refreshAuthState();
-  }, [refreshAuthState]);
+  const { user, logOut } = useAuth();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -76,33 +72,26 @@ const Header: React.FC = () => {
 				<div className="hidden md:flex items-center gap-3">
 					{user && (
 						<>
-							{/* <a
-								href="#upload"
-								className="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-medium text-white bg-brand">
-								Upload
-							</a> */}
 							<Menubar className="bg-transparent border-0">
 								<MenubarMenu>
 									<MenubarTrigger className="data-[state=open]:bg-transparent focus:bg-transparent px-0">
 										<span className="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-medium text-white bg-brand">
 											{user.firstName}
 										</span>
-										{/* <Avatar>
-                      <AvatarImage src={user.auth.userIdImage} />
-                      <AvatarFallback>{user.firstName[0]}</AvatarFallback>
-                    </Avatar> */}
 									</MenubarTrigger>
 									<MenubarContent>
-                    <MenubarItem>
-                      <Upload size={16} />
-                      <span className="ms-2">Upload</span>
-                    </MenubarItem>
-                    <MenubarItem>
-                      <LayoutDashboard size={16} />
-                      <span className="ms-2">Dashboard</span>
-                    </MenubarItem>
-                    <MenubarItem onClick={logOut}>
-                      <LogOut size={16} />
+										<MenubarItem>
+											<Upload size={16} />
+											<span className="ms-2">Upload</span>
+										</MenubarItem>
+										<MenubarItem>
+											<LayoutDashboard size={16} />
+											<span className="ms-2">
+												Dashboard
+											</span>
+										</MenubarItem>
+										<MenubarItem onClick={logOut}>
+											<LogOut size={16} />
 											<span className="ms-2">Logout</span>
 										</MenubarItem>
 									</MenubarContent>
