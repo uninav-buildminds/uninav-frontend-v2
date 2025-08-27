@@ -13,6 +13,7 @@ import RequestReset from "./pages/auth/password/RequestReset";
 import CheckInbox from "./pages/auth/password/CheckInbox";
 import NewPassword from "./pages/auth/password/NewPassword";
 import ResetSuccess from "./pages/auth/password/ResetSuccess";
+import ProcessEmailVerification from "./pages/auth/verification/ProcessEmailVerification";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +35,8 @@ const App = () => (
           {/* Auth - Signin */}
           <Route path="/auth/signin" element={<SigninForm />} />
 
+          <Route path="/auth/verify-email" element={<ProcessEmailVerification />} />
+          
           {/* Auth - Password Reset */}
           <Route path="/auth/password/forgot" element={<RequestReset />} />
           <Route path="/auth/password/check-inbox" element={<CheckInbox />} />
