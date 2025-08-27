@@ -13,6 +13,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "@/lib/utils";
 import Header from "@/components/Header";
 import { preload } from "swr";
+import { toast } from "sonner";
 
 // Start prefetching all the faculties and their departments in case the user goes to sign up
 preload(`${API_BASE_URL}/faculty`, (url: string) => fetch(url).then((res) => res.json()));
@@ -31,6 +32,7 @@ const SigninForm: React.FC = () => {
         emailOrMatricNo: data.email,
         password: data.password,
       }),
+      credentials: "include",
     });
 
     if (response.ok) {
@@ -40,6 +42,9 @@ const SigninForm: React.FC = () => {
     if (response.status === 400) {
       // Email not verified, Backend has sent a verification link, notify the user
       navigate(`/auth/signup/verify?email=${data.email}`);
+    } else {
+      const error = await response.json();
+      toast.error(error?.message || "Login failed. Please try again.");
     }
   };
 
