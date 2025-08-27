@@ -12,25 +12,34 @@ const ProcessEmailVerification: React.FC = () => {
     const token = searchParams.get("token");
 
     useEffect(() => {
-        if (!token) {
-            navigate("/auth/signin");
-        } else {
-            console.log("Token:", token);
-            // Process the email verification token here
-            fetch(`${API_BASE_URL}/auth/verify-email/token?token=${token}`).then(async (res) => {
-                if (res.ok) {
-                    // Email verification successful, should navigate to dashboard when it is implemented
-                    navigate("/");
-                } else {
-                    const error = await res.json();
-                    toast.error(error?.message || "Email verification failed. Please try again.");
-                    setTimeout(() => {
-                        navigate("/auth/signin");
-                    }, 8000);
-                }
-            })
-        }
-    }, [token, navigate]);
+		if (!token) {
+			navigate("/auth/signin");
+		} else {
+			console.log("Token:", token);
+			// Process the email verification token here
+			const encodedToken = encodeURIComponent(token);
+			// The backend expects the token to be URL-encoded
+			fetch(
+				`${API_BASE_URL}/auth/verify-email/token?token=${encodedToken}`,
+				{ credentials: "include" }
+			).then(async (res) => {
+				if (res.ok) {
+					// Email verification successful, should navigate to dashboard when it is implemented
+					toast("Email verification successful!");
+					navigate("/");
+				} else {
+					const error = await res.json();
+					toast.error(
+						error?.message ||
+							"Email verification failed. Please try again."
+					);
+					setTimeout(() => {
+						navigate("/auth/signin");
+					}, 8000);
+				}
+			});
+		}
+	}, [token, navigate]);
     return (
         <AuthLayout>
             <AuthCard>
