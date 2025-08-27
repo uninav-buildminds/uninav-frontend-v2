@@ -14,12 +14,14 @@ import CheckInbox from "./pages/auth/password/CheckInbox";
 import NewPassword from "./pages/auth/password/NewPassword";
 import ResetSuccess from "./pages/auth/password/ResetSuccess";
 import ProcessEmailVerification from "./pages/auth/verification/ProcessEmailVerification";
+import AuthRedirect from "./components/auth/AuthRedirect";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
@@ -27,15 +29,15 @@ const App = () => (
           <Route path="/" element={<Index />} />
 
           {/* Auth - Signup */}
-          <Route path="/auth/signup" element={<SignupForm />} />
-          <Route path="/auth/signup/verify" element={<RequestEmailVerification />} />
-          <Route path="/auth/signup/profile" element={<ProfileSetup />} />
-          <Route path="/auth/signup/success" element={<SignupSuccess />} />
+          <Route path="/auth/signup" element={<AuthRedirect><SignupForm /></AuthRedirect>} />
+          <Route path="/auth/signup/verify" element={<AuthRedirect><RequestEmailVerification /></AuthRedirect>} />
+          <Route path="/auth/signup/profile" element={<AuthRedirect><ProfileSetup /></AuthRedirect>} />
+          <Route path="/auth/signup/success" element={<AuthRedirect><SignupSuccess /></AuthRedirect>} />
 
           {/* Auth - Signin */}
-          <Route path="/auth/signin" element={<SigninForm />} />
+          <Route path="/auth/signin" element={<AuthRedirect><SigninForm /></AuthRedirect>} />
 
-          <Route path="/auth/verify-email" element={<ProcessEmailVerification />} />
+          <Route path="/auth/verify-email" element={<AuthRedirect><ProcessEmailVerification /></AuthRedirect>} />
           
           {/* Auth - Password Reset */}
           <Route path="/auth/password/forgot" element={<RequestReset />} />
@@ -48,6 +50,7 @@ const App = () => (
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
-);
+  );
+}
 
 export default App;
