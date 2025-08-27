@@ -31,6 +31,11 @@ export default function useAuth() {
 		}
 	}, []);
 
+	useEffect(() => {
+		refreshAuthState();
+	}, [refreshAuthState]);
+	
+
 	return {
 		refreshAuthState,
 		logOut,
