@@ -190,6 +190,14 @@ const SignupForm: React.FC = () => {
           </div>
           {errors.agree?.message && <p className="text-xs text-red-600">{errors.agree.message}</p>}
 
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full rounded-xl bg-brand hover:bg-brand/90 text-white py-3 text-sm font-medium transition-colors"
+          >
+            Continue
+          </button>
+
           <div className="relative my-1">
             <div className="absolute inset-0 flex items-center" aria-hidden>
               <div className="w-full border-t" />
@@ -202,15 +210,7 @@ const SignupForm: React.FC = () => {
           <div>
             <SocialAuth onGoogle={initiateGoogleAuth} />
           </div>
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full rounded-xl bg-brand hover:bg-brand/90 text-white py-3 text-sm font-medium transition-colors"
-          >
-            Continue
-          </button>
-
+          
           <p className="text-center text-xs text-muted-foreground">
             Already have an account? <Link to="/auth/signin" className="text-brand font-medium">Log in</Link>
           </p>
