@@ -8,13 +8,37 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { resetRequestSchema, type ResetRequestInput } from "@/lib/validation/auth";
 import { Link, useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "@/lib/utils";
+import { toast } from "sonner";
 
 const RequestReset: React.FC = () => {
   const navigate = useNavigate();
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<ResetRequestInput>({ resolver: zodResolver(resetRequestSchema), mode: "onBlur" });
+  const {
+		register,
+		handleSubmit,
+		formState: { errors, isSubmitting },
+  } = useForm<ResetRequestInput>({
+		resolver: zodResolver(resetRequestSchema),
+		mode: "onBlur",
+  });
 
-  const onSubmit = async (_data: ResetRequestInput) => {
-    navigate("/auth/password/check-inbox");
+  const onSubmit = async (data: ResetRequestInput) => {
+		const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+			method: "POST",
+			body: JSON.stringify({
+				email: data.email,
+			}),
+			credentials: "include",
+		});
+		
+    if (response.ok) {
+			navigate("/auth/password/check-inbox");
+		} else {
+			const error = await response.json();
+			toast.error(
+				error?.message || "Something went wrong. Please try again."
+			);
+		}
   };
 
   return (
