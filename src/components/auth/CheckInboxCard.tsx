@@ -8,7 +8,6 @@ interface CheckInboxCardProps {
   backLink: string;
   backText: string;
   resendHandler?: () => void;
-  isPasswordReset?: boolean;
 }
 
 const CheckInboxCard: React.FC<CheckInboxCardProps> = ({
@@ -18,7 +17,6 @@ const CheckInboxCard: React.FC<CheckInboxCardProps> = ({
   backLink,
   backText,
   resendHandler,
-  isPasswordReset = false,
 }) => {
   return (
     <div className="text-center">
