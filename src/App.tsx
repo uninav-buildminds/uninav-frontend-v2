@@ -40,10 +40,10 @@ const App = () => {
           <Route path="/auth/verify-email" element={<AuthRedirect><ProcessEmailVerification /></AuthRedirect>} />
           
           {/* Auth - Password Reset */}
-          <Route path="/auth/password/forgot" element={<RequestReset />} />
-          <Route path="/auth/password/check-inbox" element={<CheckInbox />} />
-          <Route path="/auth/password/new" element={<NewPassword />} />
-          <Route path="/auth/password/success" element={<ResetSuccess />} />
+          <Route path="/auth/password/forgot" element={<AuthRedirect><RequestReset /></AuthRedirect>} />
+          <Route path="/auth/password/check-inbox" element={<AuthRedirect><CheckInbox /></AuthRedirect>} />
+          <Route path="/auth/reset-password" element={<AuthRedirect><NewPassword /></AuthRedirect>} />
+          <Route path="/auth/password/success" element={<AuthRedirect><ResetSuccess /></AuthRedirect>} />
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         </Routes>
