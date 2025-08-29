@@ -19,7 +19,7 @@ const ProcessEmailVerification: React.FC = () => {
 				.then(() => {
 					// Email verification successful, should navigate to dashboard when it is implemented
 					toast("Email verification successful!");
-					navigate("/");
+					navigate("/auth/signup/success");
 				})
 				.catch((error) => {
 					toast.error(error.message);
