@@ -1,6 +1,8 @@
 import { UserProfile } from "@/lib/types/user.types";
-import { API_BASE_URL } from "@/lib/utils";
 import { useCallback, useEffect, useState } from "react";
+import { logOut as apiLogOut, login as apiLogin } from "@/api/auth.api";
+import { getUserProfile } from "@/api/user.api";
+import { toast } from "sonner";
 
 /**
  * Custom hook to manage user authentication state and actions.
@@ -9,25 +11,33 @@ export default function useAuth() {
 	const [user, setUser] = useState<UserProfile | null>(null);
 
 	const refreshAuthState = useCallback(async () => {
-		const response = await fetch(`${API_BASE_URL}/user/profile`, {
-			credentials: "include",
-		});
-		if (response.ok) {
-			const data = await response.json();
-			console.log(data.data);
-			setUser(data.data);
-		} else {
+		try {
+			const userProfile = await getUserProfile();
+			setUser(userProfile);
+		} catch (error) {
 			setUser(null);
 		}
 	}, []);
 
+	const logIn = useCallback(
+		async (emailOrMatricNo: string, password: string) => {
+			try {
+				const userProfile = await apiLogin(emailOrMatricNo, password);
+				setUser(userProfile);
+			} catch (error) {
+				toast.error(error.message);
+			}
+		},
+		[]
+	);
+
 	const logOut = useCallback(async () => {
-		const response = await fetch(`${API_BASE_URL}/auth/logout`, {
-			method: "POST",
-			credentials: "include",
-		});
-		if (response.ok) {
+		try {
+			await apiLogOut();
 			setUser(null);
+		} catch (error) {
+			toast.error("Logout failed. Please try again.");
+			console.error("Logout failed:", error);
 		}
 	}, []);
 
@@ -38,6 +48,7 @@ export default function useAuth() {
 
 	return {
 		refreshAuthState,
+		logIn,
 		logOut,
 		user,
 	};
