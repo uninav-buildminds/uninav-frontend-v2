@@ -13,6 +13,7 @@ import RequestReset from "./pages/auth/password/RequestReset";
 import CheckInbox from "./pages/auth/password/CheckInbox";
 import NewPassword from "./pages/auth/password/NewPassword";
 import ResetSuccess from "./pages/auth/password/ResetSuccess";
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
@@ -40,7 +41,8 @@ const App = () => (
           <Route path="/auth/password/new" element={<NewPassword />} />
           <Route path="/auth/password/success" element={<ResetSuccess />} />
 
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          {/* 404 - Catch all unmatched routes */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
