@@ -47,7 +47,8 @@ const SignupForm: React.FC = () => {
 				lastName,
 				departmentId: data.department,
 				level: data.level ? parseInt(data.level, 10) : 100,
-			});
+      });
+      navigate(`/auth/signup/verify?email=${encodeURIComponent(data.email)}`);
 		} catch (error) {
 			if (error.statusCode === 400) {
 				toast.error("A user with this email already exists.");
