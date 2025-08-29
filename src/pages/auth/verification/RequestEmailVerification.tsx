@@ -3,8 +3,8 @@ import AuthLayout from "@/components/auth/AuthLayout";
 import AuthCard from "@/components/auth/AuthCard";
 import CheckInboxCard from "@/components/auth/CheckInboxCard";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { API_BASE_URL } from "@/lib/utils";
 import { toast } from "sonner";
+import { requestEmailVerification } from "@/api/auth.api";
 
 const RequestEmailVerification: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -18,17 +18,11 @@ const RequestEmailVerification: React.FC = () => {
   }, [email, navigate]);
 
   async function resendVerificationEmail() {
-    const response = await fetch(`${API_BASE_URL}/auth/resend-verification`, {
-      method: "POST",
-      body: JSON.stringify({ email }),
-    });
-
-    if (response.ok) {
+    try {
+      await requestEmailVerification(email);
       toast("Verification email sent!");
-      return;
-    } else {
-      const error = await response.json();
-      toast.error(error?.message || "Failed to resend verification email. Please try again.");
+    } catch (error) {
+      toast.error(error.message);
     }
   }
 

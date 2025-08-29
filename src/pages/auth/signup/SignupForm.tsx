@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import useSWR, { Fetcher } from "swr";
 import { Department, Faculty } from "@/lib/types/user.types";
 import { toast } from "sonner";
+import { signUp } from "@/api/auth.api";
 
 const fetcher: Fetcher<{ data: Faculty[] }> = (url: string) => fetch(url).then((res) => res.json());
 
@@ -35,34 +36,26 @@ const SignupForm: React.FC = () => {
   });
 
   const onSubmit = async (data: SignupInput) => {
-		console.log("Form data:", data);
 		const firstName = data.fullName?.trim().split(" ")[0] || "John";
 		const lastName = data.fullName?.split(" ")[1].trim() || "Doe";
 
-		const response = await fetch(`${API_BASE_URL}/auth/student`, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({
+		try {
+			await signUp({
 				email: data.email,
 				password: data.password,
 				firstName,
 				lastName,
 				departmentId: data.department,
 				level: data.level ? parseInt(data.level, 10) : 100,
-			}),
-		});
-		if (response.ok) {
-			navigate(`/auth/signup/verify?email=${encodeURIComponent(data.email)}`);
-    } else {
-      const errorData = await response.json();
-      toast.error(errorData?.message || "Signup failed. Please try again.");
-      if (response.status === 400) {
-        // A user with the email already exists
-        navigate("/auth/signin");
-      }
-    }
+			});
+		} catch (error) {
+			if (error.statusCode === 400) {
+				toast.error("A user with this email already exists.");
+				navigate("/auth/signin");
+			} else {
+				toast.error(error.message);
+			}
+		}
   };
 
   const initiateGoogleAuth = async () => {

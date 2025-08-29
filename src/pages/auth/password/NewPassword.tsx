@@ -9,7 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { newPasswordSchema, type NewPasswordInput } from "@/lib/validation/auth";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { API_BASE_URL } from "@/lib/utils";
+import { resetPassword } from "@/api/auth.api";
 
 const NewPassword: React.FC = () => {
   const navigate = useNavigate();
@@ -36,27 +36,12 @@ const NewPassword: React.FC = () => {
 			toast.error("Password cannot be empty.");
 			return;
 		}
-
-		const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-			body: JSON.stringify({
-				token,
-				newPassword: _data.password,
-			}),
-			credentials: "include",
-		});
-
-		if (response.ok) {
+		try {
+			await resetPassword(token, _data.password);
 			toast.success("Password reset successful!");
 			navigate("/auth/password/success");
-		} else {
-			const error = await response.json();
-			toast.error(
-				error?.message || "Something went wrong. Please try again."
-			);
+		} catch (error) {
+			toast.error(error.message);
 		}
   };
 

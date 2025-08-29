@@ -11,8 +11,8 @@ import {
   type ResetRequestInput,
 } from "@/lib/validation/auth";
 import { Link, useNavigate } from "react-router-dom";
-import { API_BASE_URL } from "@/lib/utils";
 import { toast } from "sonner";
+import { requestPasswordReset } from "@/api/auth.api";
 
 const RequestReset: React.FC = () => {
   const navigate = useNavigate();
@@ -26,24 +26,16 @@ const RequestReset: React.FC = () => {
   });
 
   const onSubmit = async (data: ResetRequestInput) => {
-    // Sends password reset request to backend with JSON payload
-    const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: data.email.trim(),
-      }),
-      credentials: "include",
-    });
+		if (!data.email) {
+			return toast.error("Email cannot be empty.");
+		}
 
-    if (response.ok) {
-      navigate("/auth/password/check-inbox");
-    } else {
-      const error = await response.json();
-      toast.error(error?.message || "Something went wrong. Please try again.");
-    }
+		try {
+			await requestPasswordReset(data.email.trim());
+			navigate("/auth/password/check-inbox");
+		} catch (error) {
+			toast.error(error.message);
+		}
   };
 
   return (
