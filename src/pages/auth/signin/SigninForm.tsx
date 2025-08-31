@@ -17,11 +17,20 @@ import { toast } from "sonner";
 import { login } from "@/api/auth.api";
 
 // Start prefetching all the faculties and their departments in case the user goes to sign up
-preload(`${API_BASE_URL}/faculty`, (url: string) => fetch(url).then((res) => res.json()));
+preload(`${API_BASE_URL}/faculty`, (url: string) =>
+  fetch(url).then((res) => res.json())
+);
 
 const SigninForm: React.FC = () => {
   const navigate = useNavigate();
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<SigninInput>({ resolver: zodResolver(signinSchema), mode: "onBlur" });
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<SigninInput>({
+    resolver: zodResolver(signinSchema),
+    mode: "onBlur",
+  });
 
   const onSubmit = async (data: SigninInput) => {
     if (!data.email || !data.password) {
@@ -34,7 +43,9 @@ const SigninForm: React.FC = () => {
     } catch (error) {
       if (error.statusCode === 400) {
         // Email not verified, Backend has sent a verification link, notify the user
-        toast.error("Email not verified. Please check your inbox for the verification link.");
+        toast.error(
+          "Email not verified. Please check your inbox for the verification link."
+        );
         navigate(`/auth/signup/verify?email=${data.email}`);
       } else {
         toast.error(error.message || "Login failed. Please try again.");
@@ -43,29 +54,57 @@ const SigninForm: React.FC = () => {
   };
 
   const initiateGoogleAuth = async () => {
-    window.location.href = `${API_BASE_URL}/auth/google`;
-  }
+    window.location.href = `${API_BASE_URL}/auth/google?state=${window.location.origin}`;
+  };
 
   return (
     <AuthLayout>
       <Header />
       <AuthCard>
-        <AuthHeader title="Welcome back!" subtitle="Access your personalized course recommendations and points" />
+        <AuthHeader
+          title="Welcome back!"
+          subtitle="Access your personalized course recommendations and points"
+        />
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-5">
-          <FormField label="Email Address" htmlFor="email" error={errors.email?.message}>
-            <EmailInput id="email" placeholder="Enter your email address" {...register("email")} />
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-4 sm:space-y-5"
+        >
+          <FormField
+            label="Email Address"
+            htmlFor="email"
+            error={errors.email?.message}
+          >
+            <EmailInput
+              id="email"
+              placeholder="Enter your email address"
+              {...register("email")}
+            />
           </FormField>
 
-          <FormField label="Password" htmlFor="password" error={errors.password?.message}>
-            <PasswordInput id="password" placeholder="Enter your password" {...register("password")} />
+          <FormField
+            label="Password"
+            htmlFor="password"
+            error={errors.password?.message}
+          >
+            <PasswordInput
+              id="password"
+              placeholder="Enter your password"
+              {...register("password")}
+            />
           </FormField>
 
           <div className="flex justify-end -mt-2">
-            <Link to="/auth/password/forgot" className="text-xs text-brand">Forgot password?</Link>
+            <Link to="/auth/password/forgot" className="text-xs text-brand">
+              Forgot password?
+            </Link>
           </div>
 
-          <button type="submit" disabled={isSubmitting} className="w-full rounded-xl bg-brand hover:bg-brand/90 text-white py-3 text-sm font-medium transition-colors">
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full rounded-xl bg-brand hover:bg-brand/90 text-white py-3 text-sm font-medium transition-colors"
+          >
             Sign in
           </button>
 
@@ -74,15 +113,19 @@ const SigninForm: React.FC = () => {
               <div className="w-full border-t" />
             </div>
             <div className="relative flex justify-center">
-              <span className="bg-transparent px-2 text-[11px] sm:text-xs text-muted-foreground">or sign in with</span>
+              <span className="bg-transparent px-2 text-[11px] sm:text-xs text-muted-foreground">
+                or sign in with
+              </span>
             </div>
           </div>
-
 
           <SocialAuth onGoogle={initiateGoogleAuth} />
 
           <p className="text-center text-xs text-muted-foreground">
-            Don't have an account? <Link to="/auth/signup" className="text-brand font-medium">Create one</Link>
+            Don't have an account?{" "}
+            <Link to="/auth/signup" className="text-brand font-medium">
+              Create one
+            </Link>
           </p>
         </form>
       </AuthCard>
