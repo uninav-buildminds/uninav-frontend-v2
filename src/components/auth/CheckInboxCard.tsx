@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import LoadingButton from "./LoadingButton";
 
 interface CheckInboxCardProps {
   title: string;
@@ -7,7 +8,7 @@ interface CheckInboxCardProps {
   buttonText: string;
   backLink: string;
   backText: string;
-  resendHandler?: () => void;
+  resendHandler?: () => Promise<void>;
 }
 
 const CheckInboxCard: React.FC<CheckInboxCardProps> = ({
@@ -18,6 +19,7 @@ const CheckInboxCard: React.FC<CheckInboxCardProps> = ({
   backText,
   resendHandler,
 }) => {
+  const [isResending, setIsResending] = useState(false);
   return (
     <div className="text-center">
       <div className="mb-5 sm:mb-6 flex justify-center">
@@ -37,7 +39,16 @@ const CheckInboxCard: React.FC<CheckInboxCardProps> = ({
       </a>
       {resendHandler && (
         <p className="mt-4 text-xs text-muted-foreground">
-          Didn't receive the email? <button onClick={resendHandler} className="text-brand underline">Resend</button>
+          Didn't receive the email? <button onClick={async () => {
+            setIsResending(true);
+            try {
+              await resendHandler();
+            } finally {
+              setIsResending(false);
+            }
+          }} className="text-brand underline" disabled={isResending}>
+            {isResending ? "Resending link..." : "Resend"}
+          </button>
         </p>
       )}
       <p className="mt-2 text-xs">

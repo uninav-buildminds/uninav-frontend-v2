@@ -6,12 +6,13 @@ import FormField from "@/components/auth/FormField";
 import EmailInput from "@/components/auth/EmailInput";
 import PasswordInput from "@/components/auth/PasswordInput";
 import SocialAuth from "@/components/auth/SocialAuth";
+import LoadingButton from "@/components/auth/LoadingButton";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signupSchema, type SignupInput } from "@/lib/validation/auth";
 import { Link, useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "@/lib/utils";
-import Header from "@/components/Header";
+import { preload } from "swr";
 import { CircleUserRound } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import useSWR, { Fetcher } from "swr";
@@ -37,7 +38,7 @@ const SignupForm: React.FC = () => {
 
   const onSubmit = async (data: SignupInput) => {
 		const firstName = data.fullName?.trim().split(" ")[0] || "John";
-		const lastName = data.fullName?.split(" ")[1].trim() || "Doe";
+		const lastName = data.fullName?.split(" ")[1]?.trim() || "Doe";
 
 		try {
 			await signUp({
@@ -87,7 +88,6 @@ const SignupForm: React.FC = () => {
   const departments: Department[] = faculties.find(faculty => faculty.id === selectedFacultyId)?.departments || [];
   return (
     <AuthLayout>
-      <Header />
       <AuthCard>
         <AuthHeader
           title="Join the Student Revolution"
@@ -184,13 +184,9 @@ const SignupForm: React.FC = () => {
           </div>
           {errors.agree?.message && <p className="text-xs text-red-600">{errors.agree.message}</p>}
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full rounded-xl bg-brand hover:bg-brand/90 text-white py-3 text-sm font-medium transition-colors"
-          >
+          <LoadingButton isLoading={isSubmitting} disabled={isSubmitting} loadingText="Signing up...">
             Continue
-          </button>
+          </LoadingButton>
 
           <div className="relative my-1">
             <div className="absolute inset-0 flex items-center" aria-hidden>

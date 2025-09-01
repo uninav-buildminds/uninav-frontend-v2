@@ -4,6 +4,7 @@ import AuthCard from "@/components/auth/AuthCard";
 import AuthHeader from "@/components/auth/AuthHeader";
 import FormField from "@/components/auth/FormField";
 import EmailInput from "@/components/auth/EmailInput";
+import LoadingButton from "@/components/auth/LoadingButton";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -59,13 +60,9 @@ const RequestReset: React.FC = () => {
             />
           </FormField>
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full rounded-xl bg-brand hover:bg-brand/90 text-white py-3 text-sm font-medium transition-colors"
-          >
+          <LoadingButton isLoading={isSubmitting} disabled={isSubmitting} loadingText="Sending link...">
             Send Link
-          </button>
+          </LoadingButton>
 
           <p className="text-center text-xs">
             <Link to="/auth/signin" className="text-brand">

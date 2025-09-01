@@ -4,6 +4,7 @@ import AuthCard from "@/components/auth/AuthCard";
 import AuthHeader from "@/components/auth/AuthHeader";
 import FormField from "@/components/auth/FormField";
 import PasswordInput from "@/components/auth/PasswordInput";
+import LoadingButton from "@/components/auth/LoadingButton";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { newPasswordSchema, type NewPasswordInput } from "@/lib/validation/auth";
@@ -59,7 +60,7 @@ const NewPassword: React.FC = () => {
             <PasswordInput id="confirmPassword" placeholder="Re-enter new password" {...register("confirmPassword")} />
           </FormField>
 
-          <button type="submit" disabled={isSubmitting} className="w-full rounded-xl bg-brand hover:bg-brand/90 text-white py-3 text-sm font-medium transition-colors">Save Password</button>
+          <LoadingButton isLoading={isSubmitting} disabled={isSubmitting} loadingText="Saving password...">Save Password</LoadingButton>
         </form>
       </AuthCard>
     </AuthLayout>

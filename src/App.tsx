@@ -15,6 +15,7 @@ import NewPassword from "./pages/auth/password/NewPassword";
 import ResetSuccess from "./pages/auth/password/ResetSuccess";
 import ProcessEmailVerification from "./pages/auth/verification/ProcessEmailVerification";
 import AuthRedirect from "./components/auth/AuthRedirect";
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
@@ -36,7 +37,6 @@ const App = () => {
 
           {/* Auth - Signin */}
           <Route path="/auth/signin" element={<AuthRedirect><SigninForm /></AuthRedirect>} />
-
           <Route path="/auth/verify-email" element={<AuthRedirect><ProcessEmailVerification /></AuthRedirect>} />
           
           {/* Auth - Password Reset */}

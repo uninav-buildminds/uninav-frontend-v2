@@ -6,12 +6,12 @@ import FormField from "@/components/auth/FormField";
 import EmailInput from "@/components/auth/EmailInput";
 import PasswordInput from "@/components/auth/PasswordInput";
 import SocialAuth from "@/components/auth/SocialAuth";
+import LoadingButton from "@/components/auth/LoadingButton";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signinSchema, type SigninInput } from "@/lib/validation/auth";
 import { Link, useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "@/lib/utils";
-import Header from "@/components/Header";
 import { preload } from "swr";
 import { toast } from "sonner";
 import { login } from "@/api/auth.api";
@@ -48,7 +48,6 @@ const SigninForm: React.FC = () => {
 
   return (
     <AuthLayout>
-      <Header />
       <AuthCard>
         <AuthHeader title="Welcome back!" subtitle="Access your personalized course recommendations and points" />
 
@@ -65,9 +64,9 @@ const SigninForm: React.FC = () => {
             <Link to="/auth/password/forgot" className="text-xs text-brand">Forgot password?</Link>
           </div>
 
-          <button type="submit" disabled={isSubmitting} className="w-full rounded-xl bg-brand hover:bg-brand/90 text-white py-3 text-sm font-medium transition-colors">
+          <LoadingButton isLoading={isSubmitting} disabled={isSubmitting} loadingText="Signing in...">
             Sign in
-          </button>
+          </LoadingButton>
 
           <div className="relative my-1">
             <div className="absolute inset-0 flex items-center" aria-hidden>

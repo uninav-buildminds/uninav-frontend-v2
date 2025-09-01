@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import AuthLayout from "@/components/auth/AuthLayout";
 import AuthCard from "@/components/auth/AuthCard";
 import CheckInboxCard from "@/components/auth/CheckInboxCard";
+import LoadingButton from "@/components/auth/LoadingButton";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { requestEmailVerification } from "@/api/auth.api";
