@@ -10,17 +10,45 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signinSchema, type SigninInput } from "@/lib/validation/auth";
 import { Link, useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "@/lib/utils";
+import Header from "@/components/Header";
+import { preload } from "swr";
+import { toast } from "sonner";
+import { login } from "@/api/auth.api";
+
+// Start prefetching all the faculties and their departments in case the user goes to sign up
+preload(`${API_BASE_URL}/faculty`, (url: string) => fetch(url).then((res) => res.json()));
 
 const SigninForm: React.FC = () => {
   const navigate = useNavigate();
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<SigninInput>({ resolver: zodResolver(signinSchema), mode: "onBlur" });
 
-  const onSubmit = async (_data: SigninInput) => {
-    navigate("/");
+  const onSubmit = async (data: SigninInput) => {
+    if (!data.email || !data.password) {
+      return toast.error("Email and password are required.");
+    }
+
+    try {
+      await login(data.email, data.password);
+      navigate("/");
+    } catch (error) {
+      if (error.statusCode === 400) {
+        // Email not verified, Backend has sent a verification link, notify the user
+        toast.error("Email not verified. Please check your inbox for the verification link.");
+        navigate(`/auth/signup/verify?email=${data.email}`);
+      } else {
+        toast.error(error.message || "Login failed. Please try again.");
+      }
+    }
   };
+
+  const initiateGoogleAuth = async () => {
+    window.location.href = `${API_BASE_URL}/auth/google`;
+  }
 
   return (
     <AuthLayout>
+      <Header />
       <AuthCard>
         <AuthHeader title="Welcome back!" subtitle="Access your personalized course recommendations and points" />
 
@@ -37,6 +65,10 @@ const SigninForm: React.FC = () => {
             <Link to="/auth/password/forgot" className="text-xs text-brand">Forgot password?</Link>
           </div>
 
+          <button type="submit" disabled={isSubmitting} className="w-full rounded-xl bg-brand hover:bg-brand/90 text-white py-3 text-sm font-medium transition-colors">
+            Sign in
+          </button>
+
           <div className="relative my-1">
             <div className="absolute inset-0 flex items-center" aria-hidden>
               <div className="w-full border-t" />
@@ -46,11 +78,8 @@ const SigninForm: React.FC = () => {
             </div>
           </div>
 
-          <SocialAuth onGoogle={() => navigate("/")} />
 
-          <button type="submit" disabled={isSubmitting} className="w-full rounded-xl bg-brand hover:bg-brand/90 text-white py-3 text-sm font-medium transition-colors">
-            Sign in
-          </button>
+          <SocialAuth onGoogle={initiateGoogleAuth} />
 
           <p className="text-center text-xs text-muted-foreground">
             Don't have an account? <Link to="/auth/signup" className="text-brand font-medium">Create one</Link>

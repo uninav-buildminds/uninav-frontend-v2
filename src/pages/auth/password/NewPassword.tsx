@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import AuthLayout from "@/components/auth/AuthLayout";
 import AuthCard from "@/components/auth/AuthCard";
 import AuthHeader from "@/components/auth/AuthHeader";
@@ -7,14 +7,42 @@ import PasswordInput from "@/components/auth/PasswordInput";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { newPasswordSchema, type NewPasswordInput } from "@/lib/validation/auth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { toast } from "sonner";
+import { resetPassword } from "@/api/auth.api";
 
 const NewPassword: React.FC = () => {
   const navigate = useNavigate();
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<NewPasswordInput>({ resolver: zodResolver(newPasswordSchema), mode: "onBlur" });
+  const {
+		register,
+		handleSubmit,
+		formState: { errors, isSubmitting },
+  } = useForm<NewPasswordInput>({
+		resolver: zodResolver(newPasswordSchema),
+		mode: "onBlur",
+  });
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get("token");
+
+  useEffect(() => {
+    if (!token) {
+      toast.error("Missing token. Please try again.");
+      navigate("/auth/password/forgot");
+    }
+  }, [token, navigate]);
 
   const onSubmit = async (_data: NewPasswordInput) => {
-    navigate("/auth/password/success");
+		if (!_data.password) {
+			toast.error("Password cannot be empty.");
+			return;
+		}
+		try {
+			await resetPassword(token, _data.password);
+			toast.success("Password reset successful!");
+			navigate("/auth/password/success");
+		} catch (error) {
+			toast.error(error.message);
+		}
   };
 
   return (
