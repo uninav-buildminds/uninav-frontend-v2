@@ -16,6 +16,7 @@ import ResetSuccess from "./pages/auth/password/ResetSuccess";
 import ProcessEmailVerification from "./pages/auth/verification/ProcessEmailVerification";
 import AuthRedirect from "./components/auth/AuthRedirect";
 import NotFound from "./pages/NotFound";
+import Overview from "./pages/dashboard/Overview";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,9 @@ const App = () => {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+
+          {/* Dashboard */}
+          <Route path="/dashboard" element={<AuthRedirect><Overview /></AuthRedirect>} />
 
           {/* Auth - Signup */}
           <Route path="/auth/signup" element={<AuthRedirect><SignupForm /></AuthRedirect>} />
