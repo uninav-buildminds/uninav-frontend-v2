@@ -9,9 +9,10 @@ import {
   HelpCircleIcon,
   Add01Icon,
   SidebarLeftIcon,
+  SidebarLeft01Icon,
+  Logout01Icon
 } from "hugeicons-react";
 import UserRail from "./UserRail";
-import { LogOut } from "lucide-react";
 
 const navItems = [
   { to: "/dashboard", label: "Overview", icon: Home01Icon },
@@ -33,15 +34,18 @@ const Sidebar: React.FC = () => {
     console.log("logout");
   };
 
+  const togglePanel = () => {
+    setShowPanel(!showPanel);
+  };
+
   return (
     <aside
       className="h-screen sticky top-0 hidden md:flex flex-col justify-between border-r p-3"
       style={{
         width: showPanel ? railWidth + panelWidth : railWidth,
-        backgroundColor: "#DCDFFE",
+        backgroundColor: "#FFFFFF",
         transition: "width 200ms ease",
       }}
-      onMouseLeave={() => setShowPanel(false)}
     >
       {/* The container flex row holds the rail and the inline panel */}
       <div className="flex-1 flex overflow-hidden">
@@ -49,15 +53,15 @@ const Sidebar: React.FC = () => {
         <div className="w-[60px] flex-shrink-0">
           <div className="h-full flex flex-col justify-between">
             <div>
-              {/* Logo / trigger */}
+              {/* Toggle button */}
               <button
-                onMouseEnter={() => setShowPanel(true)}
+                onClick={togglePanel}
                 className="grid place-items-center h-10 w-10 rounded-full mx-auto transition-transform duration-200 hover:scale-105"
-                aria-label="Open sidebar panel">
+                aria-label="Toggle sidebar panel">
                 {showPanel ? (
-                  <SidebarLeftIcon size={22} className="text-gray-700 transition-opacity duration-200" />
+                  <SidebarLeft01Icon size={22} className="text-gray-700 transition-opacity duration-200" />
                 ) : (
-                  <img src="/assets/logo.svg" alt="UniNav" className="h-8 w-8 transition-opacity duration-200" />
+                  <SidebarLeftIcon size={22} className="text-gray-700 transition-opacity duration-200" />
                 )}
               </button>
 
@@ -100,7 +104,6 @@ const Sidebar: React.FC = () => {
             opacity: showPanel ? 1 : 0,
             transition: "width 200ms ease, opacity 200ms ease",
           }}
-          onMouseEnter={() => setShowPanel(true)}
         >
           {showPanel && (
             <div className="pr-2 flex flex-col h-full">
@@ -136,7 +139,7 @@ const Sidebar: React.FC = () => {
                   <p className="text-xs text-muted-foreground truncate">tee@uninav.edu</p>
                 </div>
                 <button onClick={handleLogout} className="text-xs text-white bg-red-600 hover:bg-red-700 rounded-md px-3 py-1 flex items-center gap-1">
-                  <LogOut size={14} /> Logout
+                  <Logout01Icon size={14} /> Logout
                 </button>
               </div>
             </div>
