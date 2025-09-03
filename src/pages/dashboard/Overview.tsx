@@ -2,9 +2,39 @@ import React from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import MetricCard from "@/components/dashboard/MetricCard";
+import MaterialsSection from "@/components/dashboard/MaterialsSection";
 import { Award01Icon, UploadSquare01Icon, DownloadSquare01Icon, Bookmark01Icon } from "hugeicons-react";
+import { recentMaterials, recommendations } from "@/data/materials";
 
 const Overview: React.FC = () => {
+  const handleViewAll = (section: string) => {
+    console.log(`View all ${section}`);
+  };
+
+  const handleFilter = (section: string) => {
+    console.log(`Filter ${section}`);
+  };
+
+  const handleDownload = (id: string) => {
+    console.log(`Download material ${id}`);
+  };
+
+  const handleSave = (id: string) => {
+    console.log(`Save material ${id}`);
+  };
+
+  const handleShare = (id: string) => {
+    console.log(`Share material ${id}`);
+  };
+
+  const handleEdit = (id: string) => {
+    console.log(`Edit material ${id}`);
+  };
+
+  const handleDelete = (id: string) => {
+    console.log(`Delete material ${id}`);
+  };
+
   return (
     <DashboardLayout>
       <DashboardHeader firstName="Tee" />
@@ -19,30 +49,31 @@ const Overview: React.FC = () => {
 
         {/* Content Sections */}
         <div className="mt-8 space-y-8">
-          <section>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Recent Materials</h3>
-              <button className="text-sm text-brand">View All →</button>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={`recent-${i}`} className="h-40 rounded-xl border bg-white" />
-              ))}
-            </div>
-          </section>
+          {/* Recent Materials */}
+          <MaterialsSection
+            title="Recent Materials"
+            materials={recentMaterials}
+            onViewAll={() => handleViewAll("recent materials")}
+            onFilter={() => handleFilter("recent materials")}
+            onDownload={handleDownload}
+            onSave={handleSave}
+            onShare={handleShare}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
 
-          <section>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Recommendations</h3>
-              <button className="text-sm text-brand">View All →</button>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={`reco-${i}`} className="h-40 rounded-xl border bg-white" />
-              ))}
-            </div>
-          </section>
-
+          {/* Recommendations */}
+          <MaterialsSection
+            title="Recommendations"
+            materials={recommendations}
+            onViewAll={() => handleViewAll("recommendations")}
+            onFilter={() => handleFilter("recommendations")}
+            onDownload={handleDownload}
+            onSave={handleSave}
+            onShare={handleShare}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
         </div>
       </div>
     </DashboardLayout>

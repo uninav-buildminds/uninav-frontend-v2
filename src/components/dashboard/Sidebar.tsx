@@ -78,7 +78,7 @@ const Sidebar: React.FC = () => {
                       <>
                         <div
                           className={`grid place-items-center h-10 w-10 rounded-2xl transition-all duration-200 hover:scale-105 ${
-                            isActive ? "bg-brand text-white" : "text-gray-700 hover:bg-white/70"
+                            isActive ? "bg-brand text-white shadow-md" : "text-gray-700 hover:bg-[#DCDFFE]"
                           }`}
                         >
                           <Icon size={18} />
