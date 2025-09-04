@@ -19,9 +19,7 @@ interface MaterialsSectionProps {
   onDownload?: (id: string) => void;
   onSave?: (id: string) => void;
   onShare?: (id: string) => void;
-  onEdit?: (id: string) => void;
-  onDelete?: (id: string) => void;
-  cardWidth?: { base: number; sm: number; md: number };
+  onRead?: (id: string) => void;
   scrollStep?: number;
 }
 
@@ -33,9 +31,7 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
   onDownload,
   onSave,
   onShare,
-  onEdit,
-  onDelete,
-  cardWidth = { base: 64, sm: 72, md: 80 },
+  onRead,
   scrollStep = 240,
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -128,19 +124,21 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
           className="flex gap-6 overflow-x-auto overflow-y-visible pb-2 scrollbar-hide"
         >
           {materials.map((material) => (
-            <div key={material.id} className={`flex-shrink-0 w-${cardWidth.base} sm:w-${cardWidth.sm} md:w-${cardWidth.md}`}>
+            <div 
+              key={material.id} 
+              className="flex-shrink-0 w-64 sm:w-72 md:w-80 lg:w-72 xl:w-64 2xl:w-72"
+            >
               <MaterialCard
                 {...material}
-                scrollParentRef={scrollContainerRef}
                 onDownload={onDownload}
                 onSave={onSave}
                 onShare={onShare}
-                onRead={() => {}}
-                onEdit={onEdit}
-                onDelete={onDelete}
+                onRead={onRead}
               />
             </div>
           ))}
+          {/* Add padding to the last item to ensure proper spacing */}
+          <div className="flex-shrink-0 w-6" />
         </div>
       </div>
     </section>

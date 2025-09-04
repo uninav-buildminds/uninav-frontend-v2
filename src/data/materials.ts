@@ -5,6 +5,7 @@ export interface Material {
   downloads: number;
   previewImage: string;
   pages?: number;
+  isSaved?: boolean;
 }
 
 export const recentMaterials: Material[] = [
@@ -14,7 +15,8 @@ export const recentMaterials: Material[] = [
     uploadTime: "1 hour ago",
     downloads: 8,
     previewImage: "/placeholder.svg",
-    pages: 12
+    pages: 12,
+    isSaved: true
   },
   {
     id: "2",
@@ -22,7 +24,8 @@ export const recentMaterials: Material[] = [
     uploadTime: "1 day ago",
     downloads: 15,
     previewImage: "/placeholder.svg",
-    pages: 46
+    pages: 46,
+    isSaved: false
   },
   {
     id: "3",
@@ -57,7 +60,8 @@ export const recommendations: Material[] = [
     uploadTime: "2 days ago",
     downloads: 23,
     previewImage: "/placeholder.svg",
-    pages: 18
+    pages: 18,
+    isSaved: true
   },
   {
     id: "7",

@@ -1,6 +1,6 @@
 import React from "react";
-import { Search, ArrowRight } from "lucide-react";
 import Header from "@/components/Header";
+import SearchBar from "@/components/shared/SearchBar";
 import { motion } from "framer-motion";
 import type { Variants } from "framer-motion";
 
@@ -58,20 +58,12 @@ const HeroSection: React.FC = () => {
             </motion.p>
 
             {/* Search bar */}
-            <motion.div className="mt-8 flex items-center justify-center gap-3" variants={itemVariants}>
-              <div className="relative w-full max-w-xl">
-                <input
-                  placeholder="Search courses..."
-                  className="w-full bg-white rounded-full border py-2 pl-4 pr-10 shadow-sm outline-none placeholder:text-muted-foreground/70"
-                />
-                <Search size={18} className="text-muted-foreground absolute right-4 top-1/2 -translate-y-1/2" />
-              </div>
-              <button
-                aria-label="Search"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full text-white shrink-0 bg-brand"
-              >
-                <ArrowRight size={18} />
-              </button>
+            <motion.div className="mt-8 flex justify-center" variants={itemVariants}>
+              <SearchBar 
+                placeholder="Search courses..."
+                className="w-full max-w-xl"
+                onSearch={(query) => console.log('Hero search:', query)}
+              />
             </motion.div>
           </motion.div>
 

@@ -1,6 +1,43 @@
-import React, { useState, useRef, useEffect } from "react";
-import { MoreVerticalIcon, BookOpen01Icon, Download01Icon, Bookmark01Icon, Share01Icon } from "hugeicons-react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState } from "react";
+import { Download01Icon, Share01Icon } from "hugeicons-react";
+import { toast } from "sonner";
+
+// Custom Bookmark Icons
+const BookmarkOutlineIcon = ({ size = 16, className = "" }: { size?: number; className?: string }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    fill="none" 
+    viewBox="0 0 24 24" 
+    strokeWidth="1.5" 
+    stroke="currentColor" 
+    width={size} 
+    height={size}
+    className={className}
+  >
+    <path 
+      strokeLinecap="round" 
+      strokeLinejoin="round" 
+      d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" 
+    />
+  </svg>
+);
+
+const BookmarkFilledIcon = ({ size = 16, className = "" }: { size?: number; className?: string }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    viewBox="0 0 24 24" 
+    fill="currentColor" 
+    width={size} 
+    height={size}
+    className={className}
+  >
+    <path 
+      fillRule="evenodd" 
+      d="M6.32 2.577a49.255 49.255 0 0 1 11.36 0c1.497.174 2.57 1.46 2.57 2.93V21a.75.75 0 0 1-1.085.67L12 18.089l-7.165 3.583A.75.75 0 0 1 3.75 21V5.507c0-1.47 1.073-2.756 2.57-2.93Z" 
+      clipRule="evenodd" 
+    />
+  </svg>
+);
 
 interface MaterialCardProps {
   id: string;
@@ -9,13 +46,11 @@ interface MaterialCardProps {
   downloads: number;
   previewImage: string;
   pages?: number;
+  isSaved?: boolean;
   onDownload?: (id: string) => void;
   onSave?: (id: string) => void;
   onShare?: (id: string) => void;
   onRead?: (id: string) => void;
-  onEdit?: (id: string) => void;
-  onDelete?: (id: string) => void;
-  scrollParentRef?: React.RefObject<HTMLElement>;
 }
 
 const MaterialCard: React.FC<MaterialCardProps> = ({
@@ -25,81 +60,49 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
   downloads,
   previewImage,
   pages,
+  isSaved = false,
   onDownload,
   onSave,
   onShare,
   onRead,
-  onEdit,
-  onDelete,
-  scrollParentRef,
 }) => {
-  const [showActions, setShowActions] = useState(false);
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const [menuPosition, setMenuPosition] = useState<{ x: number; y: number } | null>(null);
-  const [menuPlacementAbove, setMenuPlacementAbove] = useState(false);
-  const rafRef = useRef<number | null>(null);
+  const [saved, setSaved] = useState(isSaved);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (triggerRef.current && !triggerRef.current.contains(event.target as Node)) {
-        setShowActions(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const updatePosition = () => {
-    const rect = triggerRef.current?.getBoundingClientRect();
-    if (!rect || !showActions) return;
-    const viewportHeight = window.innerHeight;
-    const spaceBelow = viewportHeight - rect.bottom;
-    const openAbove = spaceBelow < 200; // flip if not enough space below
-    setMenuPlacementAbove(openAbove);
-    setMenuPosition({ x: rect.right, y: openAbove ? rect.top : rect.bottom });
+  const handleSave = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSaved(!saved);
+    toast.success(saved ? "Removed from saved" : "Added to saved materials");
+    onSave?.(id);
   };
 
-  // RAF loop to keep the menu glued to the trigger while open
-  useEffect(() => {
-    if (!showActions) {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      return;
-    }
-    const loop = () => {
-      updatePosition();
-      rafRef.current = requestAnimationFrame(loop);
-    };
-    rafRef.current = requestAnimationFrame(loop);
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    };
-  }, [showActions]);
+  const handleDownload = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toast.success("Download started!");
+    onDownload?.(id);
+  };
 
-  // Recompute on scroll/resize as well
-  useEffect(() => {
-    if (!showActions) return;
-    const node = scrollParentRef?.current;
-    node?.addEventListener("scroll", updatePosition, { passive: true });
-    window.addEventListener("scroll", updatePosition, { passive: true });
-    window.addEventListener("resize", updatePosition);
-    return () => {
-      node?.removeEventListener("scroll", updatePosition);
-      window.removeEventListener("scroll", updatePosition);
-      window.removeEventListener("resize", updatePosition);
-    };
-  }, [showActions, scrollParentRef]);
-
-  const actionItems = [
-    { label: "Read", icon: BookOpen01Icon, action: () => onRead?.(id) },
-    { label: "Download", icon: Download01Icon, action: () => onDownload?.(id) },
-    { label: "Save", icon: Bookmark01Icon, action: () => onSave?.(id) },
-    { label: "Share", icon: Share01Icon, action: () => onShare?.(id) },
-  ];
+  const handleShare = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const link = `${window.location.origin}/material/${id}`;
+    navigator.clipboard.writeText(link).then(() => {
+      toast.success("Link copied to clipboard!");
+    }).catch(() => {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = link;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      toast.success("Link copied to clipboard!");
+    });
+    onShare?.(id);
+  };
 
   return (
-    <div className="group relative">
+    <div className="group relative cursor-pointer" onClick={() => onRead?.(id)}>
       {/* File Preview */}
-      <div className="aspect-square overflow-hidden rounded-xl mb-3">
+      <div className="aspect-square overflow-hidden rounded-xl mb-3 relative">
         <img
           src={previewImage}
           alt={name}
@@ -109,6 +112,19 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
             target.src = "/placeholder.svg";
           }}
         />
+        
+        {/* Save Button - Top Right */}
+        <button
+          onClick={handleSave}
+          className="absolute top-2 right-2 p-1 text-gray-600 hover:text-brand hover:bg-[#DCDFFE] rounded-md transition-colors duration-200"
+          aria-label={saved ? "Remove from saved" : "Save material"}
+        >
+          {saved ? (
+            <BookmarkFilledIcon size={20} className="text-brand" />
+          ) : (
+            <BookmarkOutlineIcon size={20} />
+          )}
+        </button>
       </div>
 
       {/* Content */}
@@ -118,51 +134,32 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
           {name}
         </h4>
 
-        {/* Metadata */}
+        {/* Metadata and Action Icons */}
         <div className="flex items-center justify-between">
-          <div className="text-xs text-gray-500 truncate">
+          <div className="text-xs text-gray-500 truncate flex-1">
             {uploadTime} • {downloads} downloads{typeof pages === 'number' ? ` • ${pages} pages` : ''}
           </div>
-
-          {/* Action Button */}
-          <button
-            ref={triggerRef}
-            onClick={() => setShowActions((s) => !s)}
-            className="p-1 rounded-lg hover:bg-[#DCDFFE] transition-colors duration-200"
-            aria-label="More actions"
-          >
-            <MoreVerticalIcon size={18} className="text-brand" />
-          </button>
+          
+          {/* Action Icons - Download and Share */}
+          <div className="flex items-center gap-2 ml-2">
+            <button
+              onClick={handleDownload}
+              className="p-1 text-gray-600 hover:text-brand hover:bg-[#DCDFFE] rounded-md transition-colors duration-200"
+              aria-label="Download"
+            >
+              <Download01Icon size={16} />
+            </button>
+            
+            <button
+              onClick={handleShare}
+              className="p-1 text-gray-600 hover:text-brand hover:bg-[#DCDFFE] rounded-md transition-colors duration-200"
+              aria-label="Share"
+            >
+              <Share01Icon size={16} />
+            </button>
+          </div>
         </div>
       </div>
-
-      {/* Action Menu - fixed so it escapes any overflow */}
-      <AnimatePresence>
-        {showActions && menuPosition && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: -6 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -6 }}
-            transition={{ duration: 0.15, ease: "easeOut" }}
-            className="fixed z-[1000] w-44 bg-white rounded-lg border border-gray-200 shadow-lg py-1"
-            style={{ left: menuPosition.x, top: menuPosition.y, transform: menuPlacementAbove ? "translate(-100%, -100%)" : "translate(-100%, 6px)" }}
-          >
-            {actionItems.map((item, index) => (
-              <button
-                key={index}
-                onClick={() => {
-                  item.action();
-                  setShowActions(false);
-                }}
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 transition-colors duration-150"
-              >
-                <item.icon size={16} className="text-gray-700" />
-                <span className="text-gray-700">{item.label}</span>
-              </button>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };
