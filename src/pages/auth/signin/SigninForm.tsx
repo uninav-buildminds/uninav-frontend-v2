@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import AuthLayout from "@/components/auth/AuthLayout";
 import AuthCard from "@/components/auth/AuthCard";
 import AuthHeader from "@/components/auth/AuthHeader";
@@ -14,7 +14,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "@/lib/utils";
 import { preload } from "swr";
 import { toast } from "sonner";
-import { login } from "@/api/auth.api";
+import AuthContext from "@/context/authentication/AuthContext";
 
 // Start prefetching all the faculties and their departments in case the user goes to sign up
 preload(`${API_BASE_URL}/faculty`, (url: string) =>
@@ -31,6 +31,7 @@ const SigninForm: React.FC = () => {
     resolver: zodResolver(signinSchema),
     mode: "onBlur",
   });
+  const { logIn } = useContext(AuthContext);
 
   const onSubmit = async (data: SigninInput) => {
     if (!data.email || !data.password) {
@@ -38,8 +39,8 @@ const SigninForm: React.FC = () => {
     }
 
     try {
-      await login(data.email, data.password);
-      navigate("/");
+      await logIn(data.email, data.password);
+      navigate("/dashboard");
     } catch (error) {
       if (error.statusCode === 400) {
         // Email not verified, Backend has sent a verification link, notify the user

@@ -6,7 +6,7 @@ interface AuthContextType {
     refreshAuthState: () => Promise<void>;
     logIn: (emailOrMatricNo: string, password: string) => Promise<void>;
     logOut: () => Promise<void>;
-    user: UserProfile | null;
+    user?: UserProfile;
     isValidating: boolean;
     isLoading: boolean;
 }

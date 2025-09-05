@@ -1,10 +1,11 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { logOut as apiLogOut, login as apiLogin } from "@/api/auth.api";
 import { toast } from "sonner";
 import { googleLogout } from "@react-oauth/google";
 import AuthContext from "./AuthContext";
 import { httpClient } from "@/api/api";
 import useSWR from "swr";
+import { getCookie } from "typescript-cookie";
 
 /**
  * Fetches the profile of the currently authenticated user
@@ -31,13 +32,20 @@ interface AuthContextProviderProps {
 // isLoading is true when the request is in flight for the first time (user is null)
 // isValidating is true when the request is in flight and during revalidation (user can be non-null)
 export default function AuthContextProvider({ children }: AuthContextProviderProps) {
-    const { mutate, data: user, isValidating, isLoading } = useSWR("/user/profile", fetcher);
+    const [loggedIn, setLoggedIn] = useState(getCookie("logged_in") === "true");
+    const {
+		mutate,
+		data: user,
+		isValidating,
+		isLoading,
+	} = useSWR(loggedIn ? "/user/profile" : null, fetcher);
 
     const logIn = useCallback(
         async (emailOrMatricNo: string, password: string) => {
             try {
                 const userProfile = await apiLogin(emailOrMatricNo, password);
-                mutate(userProfile, { optimisticData: userProfile });
+                mutate(userProfile); // Update the user data without revalidating
+                setLoggedIn(true);
             } catch (error) {
                 toast.error(error.message);
             }
@@ -49,7 +57,8 @@ export default function AuthContextProvider({ children }: AuthContextProviderPro
         try {
             googleLogout();
             await apiLogOut();
-            mutate(null);
+            mutate(undefined); 
+            setLoggedIn(false);
         } catch (error) {
             toast.error("Logout failed. Please try again.");
         }
