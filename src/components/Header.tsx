@@ -23,7 +23,7 @@ const ChevronDownIcon = () => (
 const Header: React.FC = () => {
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 	const { user, isLoading, refreshAuthState, logOut } = useContext(AuthContext);
-
+	
 	useGoogleOneTapLogin({
 		onSuccess: async (credentialResponse) => {
 			const res = await httpClient(
@@ -37,7 +37,7 @@ const Header: React.FC = () => {
 		onError: () => {
 			toast.error("Google One Tap login failed");
 		},
-		disabled: user !== null || isLoading,
+		disabled: user !== undefined || isLoading,
 	});
 
 	const toggleMobileMenu = () => {
@@ -105,7 +105,9 @@ const Header: React.FC = () => {
 										</MenubarItem>
 										<MenubarItem>
 											<LayoutDashboard size={16} />
-											<a className="ms-2" href="/dashboard">
+											<a
+												className="ms-2"
+												href="/dashboard">
 												Dashboard
 											</a>
 										</MenubarItem>
@@ -118,11 +120,17 @@ const Header: React.FC = () => {
 							</Menubar>
 						</>
 					)}
-					{!user && (
+					{!user && isLoading && (
+						<div className="inline-flex items-center justify-center rounded-full border border-brand px-4 py-2 text-sm font-medium text-brand">
+							<span>Validating</span>
+							<div className="ms-2 animate-spin rounded-full h-4 w-4 border-b-2 border-brand"></div>
+						</div>
+					)}
+					{!user && !isLoading && (
 						<a
 							href="/auth/signin"
 							className="inline-flex items-center justify-center rounded-full border border-brand px-4 py-2 text-sm font-medium text-brand">
-							Sign In
+							<span>Sign In</span>
 						</a>
 					)}
 				</div>
@@ -211,8 +219,13 @@ const Header: React.FC = () => {
 									</button>
 								</>
 							)}
-
-							{!user && (
+							{!user && isLoading && (
+								<div className="flex justify-center items-center gap-4 w-full text-center rounded-xl border border-brand px-4 py-3 text-sm font-medium text-brand">
+									<span>Validating</span>
+									<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-brand"></div>
+								</div>
+							)}
+							{!user && !isLoading && (
 								<a
 									href="/auth/signin"
 									className="block w-full text-center rounded-xl border border-brand px-4 py-3 text-sm font-medium text-brand"
