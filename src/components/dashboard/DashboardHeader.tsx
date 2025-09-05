@@ -3,7 +3,7 @@ import SearchBar from "../shared/SearchBar";
 
 const DashboardHeader: React.FC<{ firstName?: string }> = ({ firstName = "Tee" }) => {
   return (
-    <section className="relative overflow-visible z-10">
+    <section className="relative overflow-visible z-sticky">
       {/* Gradient background */}
       <div className="bg-gradient-to-br from-[theme(colors.dashboard.gradientFrom)] to-[theme(colors.dashboard.gradientTo)]">
         <div className="px-2 sm:px-4 pt-10 sm:pt-14 pb-6 sm:pb-8">

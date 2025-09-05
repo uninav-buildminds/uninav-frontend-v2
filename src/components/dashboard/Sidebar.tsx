@@ -13,6 +13,7 @@ import {
   Logout01Icon
 } from "hugeicons-react";
 import UserRail from "./UserRail";
+import { LogoutModal } from "@/components/modals";
 
 const navItems = [
   { to: "/dashboard", label: "Overview", icon: Home01Icon },
@@ -28,10 +29,20 @@ const panelWidth = 260;
 
 const Sidebar: React.FC = () => {
   const [showPanel, setShowPanel] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const handleLogout = () => {
+    setShowLogoutModal(true);
+  };
+
+  const handleConfirmLogout = () => {
+    setShowLogoutModal(false);
     // TODO: hook into auth
-    console.log("logout");
+    console.log("logout confirmed");
+  };
+
+  const handleCancelLogout = () => {
+    setShowLogoutModal(false);
   };
 
   const togglePanel = () => {
@@ -92,7 +103,7 @@ const Sidebar: React.FC = () => {
             </div>
 
             {/* User avatar fixed on rail bottom */}
-            <UserRail onLogout={handleLogout} />
+            <UserRail onLogout={handleLogout} userName="Tee" />
           </div>
         </div>
 
@@ -146,6 +157,14 @@ const Sidebar: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      <LogoutModal
+        isOpen={showLogoutModal}
+        onClose={handleCancelLogout}
+        onConfirm={handleConfirmLogout}
+        userName="Tee"
+      />
     </aside>
   );
 };

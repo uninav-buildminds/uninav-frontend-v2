@@ -24,11 +24,13 @@ const MetricsSection: React.FC<MetricsSectionProps> = ({ metrics }) => {
 
     const interval = setInterval(() => {
       setCurrentIndex((prev) => {
-        const nextIndex = (prev + 1) % metrics.length;
+        const isTablet = window.innerWidth >= 640; // sm breakpoint
+        const maxIndex = isTablet ? Math.ceil(metrics.length / 2) - 1 : metrics.length - 1;
+        const nextIndex = prev >= maxIndex ? 0 : prev + 1;
         scrollToIndex(nextIndex);
         return nextIndex;
       });
-    }, 3000); // Auto-scroll every 3 seconds
+    }, 5000); // Auto-scroll every 5 seconds
 
     return () => clearInterval(interval);
   }, [isAutoScrolling, metrics.length]);
@@ -37,7 +39,9 @@ const MetricsSection: React.FC<MetricsSectionProps> = ({ metrics }) => {
     const container = scrollContainerRef.current;
     if (!container) return;
 
-    const cardWidth = container.clientWidth; // Full width on mobile
+    // Calculate card width based on screen size
+    const isTablet = window.innerWidth >= 640; // sm breakpoint
+    const cardWidth = isTablet ? container.clientWidth / 2 : container.clientWidth;
     const scrollPosition = index * cardWidth;
     
     container.scrollTo({
@@ -51,7 +55,8 @@ const MetricsSection: React.FC<MetricsSectionProps> = ({ metrics }) => {
     if (!container) return;
 
     const scrollLeft = container.scrollLeft;
-    const cardWidth = container.clientWidth;
+    const isTablet = window.innerWidth >= 640; // sm breakpoint
+    const cardWidth = isTablet ? container.clientWidth / 2 : container.clientWidth;
     const newIndex = Math.round(scrollLeft / cardWidth);
     
     if (newIndex !== currentIndex) {
@@ -105,21 +110,26 @@ const MetricsSection: React.FC<MetricsSectionProps> = ({ metrics }) => {
 
         {/* Swiper Indicators */}
         <div className="flex justify-center gap-2 mt-4">
-          {metrics.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => {
-                setCurrentIndex(index);
-                scrollToIndex(index);
-              }}
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                index === currentIndex
-                  ? 'bg-brand w-6'
-                  : 'bg-gray-300 hover:bg-gray-400'
-              }`}
-              aria-label={`Go to metric ${index + 1}`}
-            />
-          ))}
+          {(() => {
+            const isTablet = window.innerWidth >= 640; // sm breakpoint
+            const totalPages = isTablet ? Math.ceil(metrics.length / 2) : metrics.length;
+            
+            return Array.from({ length: totalPages }, (_, index) => (
+              <button
+                key={index}
+                onClick={() => {
+                  setCurrentIndex(index);
+                  scrollToIndex(index);
+                }}
+                className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                  index === currentIndex
+                    ? 'bg-brand w-6'
+                    : 'bg-gray-300 hover:bg-gray-400'
+                }`}
+                aria-label={`Go to page ${index + 1}`}
+              />
+            ));
+          })()}
         </div>
       </div>
     </div>

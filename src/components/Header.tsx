@@ -26,7 +26,7 @@ const Header: React.FC = () => {
   };
 
   return (
-		<div className="fixed top-6 inset-x-0 z-[5000] flex justify-center px-4">
+		<div className="fixed top-6 inset-x-0 z-fixed flex justify-center px-4">
 			<motion.div
 				className="w-[min(1100px,100%)] flex items-center justify-between gap-4 rounded-full border bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-sm px-4 md:px-6 py-3"
 				initial={{ opacity: 0, y: -8 }}

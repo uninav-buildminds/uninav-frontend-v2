@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Download01Icon, Share01Icon } from "hugeicons-react";
+import { Download01Icon, Share08Icon } from "hugeicons-react";
 import { toast } from "sonner";
 
 // Custom Bookmark Icons
@@ -141,7 +141,7 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
           </div>
           
           {/* Action Icons - Download and Share */}
-          <div className="flex items-center gap-2 ml-2">
+          <div className="flex items-center gap-1 ml-2">
             <button
               onClick={handleDownload}
               className="p-1 text-gray-600 hover:text-brand hover:bg-[#DCDFFE] rounded-md transition-colors duration-200"
@@ -155,7 +155,7 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
               className="p-1 text-gray-600 hover:text-brand hover:bg-[#DCDFFE] rounded-md transition-colors duration-200"
               aria-label="Share"
             >
-              <Share01Icon size={16} />
+              <Share08Icon size={16} />
             </button>
           </div>
         </div>

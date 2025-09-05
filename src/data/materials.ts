@@ -15,8 +15,7 @@ export const recentMaterials: Material[] = [
     uploadTime: "1 hour ago",
     downloads: 8,
     previewImage: "/placeholder.svg",
-    pages: 12,
-    isSaved: true
+    pages: 12
   },
   {
     id: "2",
@@ -60,8 +59,7 @@ export const recommendations: Material[] = [
     uploadTime: "2 days ago",
     downloads: 23,
     previewImage: "/placeholder.svg",
-    pages: 18,
-    isSaved: true
+    pages: 18
   },
   {
     id: "7",
