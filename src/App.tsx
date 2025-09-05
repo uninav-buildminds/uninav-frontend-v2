@@ -15,41 +15,114 @@ import NewPassword from "./pages/auth/password/NewPassword";
 import ResetSuccess from "./pages/auth/password/ResetSuccess";
 import ProcessEmailVerification from "./pages/auth/verification/ProcessEmailVerification";
 import AuthRedirect from "./components/auth/AuthRedirect";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const queryClient = new QueryClient();
 
 const App = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
+		<GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+			<QueryClientProvider client={queryClient}>
+				<TooltipProvider>
+					<Toaster />
+					<Sonner />
+					<BrowserRouter>
+						<Routes>
+							<Route path="/" element={<Index />} />
 
-          {/* Auth - Signup */}
-          <Route path="/auth/signup" element={<AuthRedirect><SignupForm /></AuthRedirect>} />
-          <Route path="/auth/signup/verify" element={<AuthRedirect><RequestEmailVerification /></AuthRedirect>} />
-          <Route path="/auth/signup/profile" element={<AuthRedirect><ProfileSetup /></AuthRedirect>} />
-          <Route path="/auth/signup/success" element={<AuthRedirect><SignupSuccess /></AuthRedirect>} />
+							{/* Auth - Signup */}
+							<Route
+								path="/auth/signup"
+								element={
+									<AuthRedirect>
+										<SignupForm />
+									</AuthRedirect>
+								}
+							/>
+							<Route
+								path="/auth/signup/verify"
+								element={
+									<AuthRedirect>
+										<RequestEmailVerification />
+									</AuthRedirect>
+								}
+							/>
+							<Route
+								path="/auth/signup/profile"
+								element={
+									<AuthRedirect>
+										<ProfileSetup />
+									</AuthRedirect>
+								}
+							/>
+							<Route
+								path="/auth/signup/success"
+								element={
+									<AuthRedirect>
+										<SignupSuccess />
+									</AuthRedirect>
+								}
+							/>
 
-          {/* Auth - Signin */}
-          <Route path="/auth/signin" element={<AuthRedirect><SigninForm /></AuthRedirect>} />
+							{/* Auth - Signin */}
+							<Route
+								path="/auth/signin"
+								element={
+									<AuthRedirect>
+										<SigninForm />
+									</AuthRedirect>
+								}
+							/>
 
-          <Route path="/auth/verify-email" element={<AuthRedirect><ProcessEmailVerification /></AuthRedirect>} />
-          
-          {/* Auth - Password Reset */}
-          <Route path="/auth/password/forgot" element={<AuthRedirect><RequestReset /></AuthRedirect>} />
-          <Route path="/auth/password/check-inbox" element={<AuthRedirect><CheckInbox /></AuthRedirect>} />
-          <Route path="/auth/reset-password" element={<AuthRedirect><NewPassword /></AuthRedirect>} />
-          <Route path="/auth/password/success" element={<AuthRedirect><ResetSuccess /></AuthRedirect>} />
+							<Route
+								path="/auth/verify-email"
+								element={
+									<AuthRedirect>
+										<ProcessEmailVerification />
+									</AuthRedirect>
+								}
+							/>
 
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+							{/* Auth - Password Reset */}
+							<Route
+								path="/auth/password/forgot"
+								element={
+									<AuthRedirect>
+										<RequestReset />
+									</AuthRedirect>
+								}
+							/>
+							<Route
+								path="/auth/password/check-inbox"
+								element={
+									<AuthRedirect>
+										<CheckInbox />
+									</AuthRedirect>
+								}
+							/>
+							<Route
+								path="/auth/reset-password"
+								element={
+									<AuthRedirect>
+										<NewPassword />
+									</AuthRedirect>
+								}
+							/>
+							<Route
+								path="/auth/password/success"
+								element={
+									<AuthRedirect>
+										<ResetSuccess />
+									</AuthRedirect>
+								}
+							/>
+
+							{/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+						</Routes>
+					</BrowserRouter>
+				</TooltipProvider>
+			</QueryClientProvider>
+		</GoogleOAuthProvider>
   );
 }
 

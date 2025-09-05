@@ -3,6 +3,10 @@ import { LayoutDashboard, LogOut, Menu, Upload, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import useAuth from "@/hooks/use-auth";
 import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarTrigger } from "./ui/menubar";
+import { useGoogleOneTapLogin } from "@react-oauth/google";
+import { jwtDecode } from "jwt-decode";
+import { toast } from "sonner";
+import { httpClient } from "@/api/api";
 
 const ChevronDownIcon = () => (
   <svg
@@ -18,14 +22,31 @@ const ChevronDownIcon = () => (
 );
 
 const Header: React.FC = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { user, logOut } = useAuth();
+	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+	const { user, logOut } = useAuth();
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
+	useGoogleOneTapLogin({
+		onSuccess: async (credentialResponse) => {
+			console.log(jwtDecode(credentialResponse.credential));
+			const res = await httpClient(
+				`/auth/google/onetap?token=${credentialResponse.credential}`
+			);
+			if (res.ok) {
+				return window.location.reload();
+			}
+			toast.error("Google One Tap login failed");
+		},
+		onError: () => {
+			console.log("Login Failed:");
+		},
+		disabled: user !== null, // Disable if user is already logged in
+	});
 
-  return (
+	const toggleMobileMenu = () => {
+		setIsMobileMenuOpen(!isMobileMenuOpen);
+	};
+
+	return (
 		<div className="fixed top-6 inset-x-0 z-[5000] flex justify-center px-4">
 			<motion.div
 				className="w-[min(1100px,100%)] flex items-center justify-between gap-4 rounded-full border bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-sm px-4 md:px-6 py-3"
@@ -206,7 +227,7 @@ const Header: React.FC = () => {
 				)}
 			</AnimatePresence>
 		</div>
-  );
+	);
 };
 
 export default Header;

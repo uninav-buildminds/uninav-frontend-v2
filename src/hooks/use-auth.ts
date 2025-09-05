@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { logOut as apiLogOut, login as apiLogin } from "@/api/auth.api";
 import { getUserProfile } from "@/api/user.api";
 import { toast } from "sonner";
+import { googleLogout } from "@react-oauth/google";
 
 /**
  * Custom hook to manage user authentication state and actions.
@@ -33,6 +34,7 @@ export default function useAuth() {
 
 	const logOut = useCallback(async () => {
 		try {
+			googleLogout();
 			await apiLogOut();
 			setUser(null);
 		} catch (error) {
