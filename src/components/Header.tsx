@@ -1,8 +1,11 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { LayoutDashboard, LogOut, Menu, Upload, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import useAuth from "@/hooks/use-auth";
 import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarTrigger } from "./ui/menubar";
+import { useGoogleOneTapLogin } from "@react-oauth/google";
+import { toast } from "sonner";
+import { httpClient } from "@/api/api";
+import AuthContext from "@/context/authentication/AuthContext";
 
 const ChevronDownIcon = () => (
   <svg
@@ -18,12 +21,28 @@ const ChevronDownIcon = () => (
 );
 
 const Header: React.FC = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { user, logOut } = useAuth();
+	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+	const { user, isLoading, refreshAuthState, logOut } = useContext(AuthContext);
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
+	useGoogleOneTapLogin({
+		onSuccess: async (credentialResponse) => {
+			const res = await httpClient(
+				`/auth/google/onetap?token=${credentialResponse.credential}`
+			);
+			if (res.ok) {
+				return refreshAuthState();
+			}
+			toast.error("Google One Tap login failed");
+		},
+		onError: () => {
+			toast.error("Google One Tap login failed");
+		},
+		disabled: user !== null || isLoading,
+	});
+
+	const toggleMobileMenu = () => {
+		setIsMobileMenuOpen(!isMobileMenuOpen);
+	};
 
   return (
 		<div className="fixed top-6 inset-x-0 z-fixed flex justify-center px-4">
@@ -86,9 +105,9 @@ const Header: React.FC = () => {
 										</MenubarItem>
 										<MenubarItem>
 											<LayoutDashboard size={16} />
-											<span className="ms-2">
+											<a className="ms-2" href="/dashboard">
 												Dashboard
-											</span>
+											</a>
 										</MenubarItem>
 										<MenubarItem onClick={logOut}>
 											<LogOut size={16} />
@@ -175,7 +194,7 @@ const Header: React.FC = () => {
 										Upload
 									</a>
 									<a
-										href="#dashboard"
+										href="/dashboard"
 										className="block w-full text-center rounded-xl px-4 py-3 text-sm font-medium text-white bg-brand"
 										onClick={() =>
 											setIsMobileMenuOpen(false)
@@ -206,7 +225,7 @@ const Header: React.FC = () => {
 				)}
 			</AnimatePresence>
 		</div>
-  );
+	);
 };
 
 export default Header;
