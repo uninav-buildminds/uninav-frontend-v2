@@ -1,12 +1,11 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { LayoutDashboard, LogOut, Menu, Upload, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import useAuth from "@/hooks/use-auth";
 import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarTrigger } from "./ui/menubar";
 import { useGoogleOneTapLogin } from "@react-oauth/google";
-import { jwtDecode } from "jwt-decode";
 import { toast } from "sonner";
 import { httpClient } from "@/api/api";
+import AuthContext from "@/context/authentication/AuthContext";
 
 const ChevronDownIcon = () => (
   <svg
@@ -23,23 +22,22 @@ const ChevronDownIcon = () => (
 
 const Header: React.FC = () => {
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-	const { user, logOut } = useAuth();
+	const { user, isLoading, refreshAuthState, logOut } = useContext(AuthContext);
 
 	useGoogleOneTapLogin({
 		onSuccess: async (credentialResponse) => {
-			console.log(jwtDecode(credentialResponse.credential));
 			const res = await httpClient(
 				`/auth/google/onetap?token=${credentialResponse.credential}`
 			);
 			if (res.ok) {
-				return window.location.reload();
+				return refreshAuthState();
 			}
 			toast.error("Google One Tap login failed");
 		},
 		onError: () => {
-			console.log("Login Failed:");
+			toast.error("Google One Tap login failed");
 		},
-		disabled: user !== null, // Disable if user is already logged in
+		disabled: user !== null || isLoading,
 	});
 
 	const toggleMobileMenu = () => {
@@ -107,9 +105,9 @@ const Header: React.FC = () => {
 										</MenubarItem>
 										<MenubarItem>
 											<LayoutDashboard size={16} />
-											<span className="ms-2">
+											<a className="ms-2" href="/dashboard">
 												Dashboard
-											</span>
+											</a>
 										</MenubarItem>
 										<MenubarItem onClick={logOut}>
 											<LogOut size={16} />
@@ -196,7 +194,7 @@ const Header: React.FC = () => {
 										Upload
 									</a>
 									<a
-										href="#dashboard"
+										href="/dashboard"
 										className="block w-full text-center rounded-xl px-4 py-3 text-sm font-medium text-white bg-brand"
 										onClick={() =>
 											setIsMobileMenuOpen(false)
