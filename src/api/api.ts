@@ -10,11 +10,11 @@ export function httpClient(
 	relativeUrl: string,
 	config: HttpClientConfig = { method: "GET" }
 ) {
-	console.log("HTTP Request:", `${API_BASE_URL}${relativeUrl}`, config);
+	const defaultHeaders = config.method === "POST" ? { "Content-Type": "application/json" } : {};
 	return fetch(`${API_BASE_URL}${relativeUrl}`, {
 		method: config?.method || "GET",
 		headers: {
-			"Content-Type": "application/json",
+			...defaultHeaders,
 			...config?.headers,
 		},
 		body: config?.body ? JSON.stringify(config.body) : null,
