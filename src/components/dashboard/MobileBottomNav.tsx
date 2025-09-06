@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import {
   Home01Icon,
@@ -7,8 +7,11 @@ import {
   Settings01Icon,
   Add01Icon
 } from "hugeicons-react";
+import { UploadModal } from "@/components/modals";
 
 const MobileBottomNav: React.FC = () => {
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  
   const navItems = [
     { to: "/dashboard", label: "Home", icon: Home01Icon },
     { to: "/dashboard/saved", label: "Saved", icon: Bookmark01Icon },
@@ -54,7 +57,10 @@ const MobileBottomNav: React.FC = () => {
         </NavLink>
 
         {/* Plus Button - Centered and Prominent */}
-        <button className="flex items-center justify-center w-12 h-12 bg-brand text-white rounded-full shadow-lg hover:bg-brand/90 transition-colors">
+        <button 
+          onClick={() => setShowUploadModal(true)}
+          className="flex items-center justify-center w-12 h-12 bg-brand text-white rounded-full shadow-lg hover:bg-brand/90 transition-colors"
+        >
           <Add01Icon size={24} />
         </button>
 
@@ -92,6 +98,12 @@ const MobileBottomNav: React.FC = () => {
           )}
         </NavLink>
       </div>
+
+      {/* Upload Modal */}
+      <UploadModal
+        isOpen={showUploadModal}
+        onClose={() => setShowUploadModal(false)}
+      />
     </nav>
   );
 };

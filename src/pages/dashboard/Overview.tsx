@@ -66,7 +66,7 @@ const Overview: React.FC = () => {
         <MetricsSection metrics={metrics} />
 
         {/* Content Sections */}
-        <div className="mt-8 space-y-8">
+        <div className="mt-8 space-y-8 pb-16 md:pb-0">
           {/* Recent Materials */}
           <MaterialsSection
             title="Recent Materials"

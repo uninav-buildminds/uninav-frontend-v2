@@ -38,11 +38,13 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
           {/* Mobile Menu Button */}
           <MobileMenuButton 
             isOpen={isMobilePanelOpen} 
-            onClick={handleMobilePanelToggle} 
+            onClick={handleMobilePanelToggle}
+            disabled={showLogoutModal}
+            hidden={isMobilePanelOpen}
           />
           
           {/* Tiny fixed outer spacing (persists when scrolling) */}
-          <div className="pt-2 sm:pt-3 px-2 sm:px-3 h-screen pb-20 md:pb-2">
+          <div className="pt-2 sm:pt-3 px-2 sm:px-3 h-screen pb-24 md:pb-2">
             <div className="h-[calc(100vh-0.5rem)] sm:h-[calc(100vh-0.75rem)] md:h-[calc(100vh-0.5rem)] lg:h-[calc(100vh-0.75rem)] rounded-t-3xl safari-rounded-top safari-accelerated bg-white border shadow-sm overflow-y-auto scroll-surface">
               {children}
             </div>

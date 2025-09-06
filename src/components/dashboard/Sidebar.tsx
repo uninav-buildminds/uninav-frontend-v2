@@ -13,7 +13,8 @@ import {
   Logout01Icon
 } from "hugeicons-react";
 import UserRail from "./UserRail";
-import { LogoutModal } from "@/components/modals";
+import { LogoutModal, UploadModal } from "@/components/modals";
+import { panelData } from "@/data/panel";
 
 const navItems = [
   { to: "/dashboard", label: "Overview", icon: Home01Icon },
@@ -30,6 +31,7 @@ const panelWidth = 260;
 const Sidebar: React.FC = () => {
   const [showPanel, setShowPanel] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
 
   const handleLogout = () => {
     setShowLogoutModal(true);
@@ -43,6 +45,10 @@ const Sidebar: React.FC = () => {
 
   const handleCancelLogout = () => {
     setShowLogoutModal(false);
+  };
+
+  const handleUpload = () => {
+    setShowUploadModal(true);
   };
 
   const togglePanel = () => {
@@ -77,7 +83,11 @@ const Sidebar: React.FC = () => {
               </button>
 
               {/* New button */}
-              <button className="mt-4 w-12 h-12 grid place-items-center mx-auto rounded-full bg-brand text-white shadow-sm transition-transform duration-200 hover:scale-105" aria-label="New">
+              <button 
+                onClick={handleUpload}
+                className="mt-4 w-12 h-12 grid place-items-center mx-auto rounded-full bg-brand text-white shadow-sm transition-transform duration-200 hover:scale-105" 
+                aria-label="New"
+              >
                 <Add01Icon size={20} />
               </button>
 
@@ -103,7 +113,7 @@ const Sidebar: React.FC = () => {
             </div>
 
             {/* User avatar fixed on rail bottom */}
-            <UserRail onLogout={handleLogout} userName="Tee" />
+            <UserRail onLogout={handleLogout} userName={panelData.user.name.split(' ')[0]} />
           </div>
         </div>
 
@@ -125,29 +135,29 @@ const Sidebar: React.FC = () => {
               </div>
 
               <div className="mb-6">
-                <h4 className="text-sm font-semibold mb-2">Announcement</h4>
-                <div className="h-24 rounded-xl border bg-white/70" />
+                <h4 className="text-sm font-semibold mb-2">{panelData.announcement.title}</h4>
+                <div className="h-24 rounded-xl border bg-white/70 p-3 flex items-center justify-center">
+                  <p className="text-xs text-gray-600 text-center">{panelData.announcement.content}</p>
+                </div>
               </div>
 
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-sm font-semibold">Recents</h4>
-                  <span className="text-xs text-brand">View All</span>
+                  <h4 className="text-sm font-semibold">{panelData.recents.title}</h4>
+                  <span className="text-xs text-brand">{panelData.recents.viewAllText}</span>
                 </div>
                 <ul className="space-y-1 text-xs text-gray-700">
-                  <li>Upload CSC 201 Note</li>
-                  <li>Download MTH 202</li>
-                  <li>Saved CSC 201 Lecture</li>
-                  <li>Viewed CSC 201 Lecture</li>
-                  <li>Upload CSC 201 Lecture</li>
+                  {panelData.recents.items.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
                 </ul>
               </div>
 
               {/* User summary at bottom (no avatar) */}
               <div className="mt-6 border-t pt-3 flex items-center justify-between">
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold truncate">Tee Daniels</p>
-                  <p className="text-xs text-muted-foreground truncate">tee@uninav.edu</p>
+                  <p className="text-sm font-semibold truncate">{panelData.user.name}</p>
+                  <p className="text-xs text-muted-foreground truncate">{panelData.user.email}</p>
                 </div>
                 <button onClick={handleLogout} className="text-xs text-white bg-red-600 hover:bg-red-700 rounded-md px-3 py-1 flex items-center gap-1">
                   <Logout01Icon size={14} /> Logout
@@ -163,7 +173,13 @@ const Sidebar: React.FC = () => {
         isOpen={showLogoutModal}
         onClose={handleCancelLogout}
         onConfirm={handleConfirmLogout}
-        userName="Tee"
+        userName={panelData.user.name.split(' ')[0]}
+      />
+
+      {/* Upload Modal */}
+      <UploadModal
+        isOpen={showUploadModal}
+        onClose={() => setShowUploadModal(false)}
       />
     </aside>
   );
