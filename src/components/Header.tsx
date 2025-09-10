@@ -22,12 +22,18 @@ const ChevronDownIcon = () => (
 
 const Header: React.FC = () => {
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-	const { user, isLoading, refreshAuthState, logOut } = useContext(AuthContext);
+	const { user, isLoading, logOut } = useContext(AuthContext);
 	
 	useGoogleOneTapLogin({
 		onSuccess: (credentialResponse) =>
-			signInWithOneTap(credentialResponse, refreshAuthState, () =>
-				toast.error("Google One Tap login failed")
+			signInWithOneTap(
+				credentialResponse,
+				() => {
+					window.location.reload();
+				},
+				() => {
+					toast.error("Google One Tap login failed");
+				}
 			),
 		onError: () => {
 			toast.error("Google One Tap login failed");

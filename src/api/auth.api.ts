@@ -35,7 +35,7 @@ export async function signUp(signupData: SignUpData) {
  */
 export async function signInWithOneTap(
 	credentialResponse: CredentialResponse,
-	onSuccess: () => Promise<void> | VoidFunction,
+	onSuccess: () => void,
 	onError: () => void
 ) {
 	const response = await httpClient.get(
