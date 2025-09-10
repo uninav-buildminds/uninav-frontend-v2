@@ -6,14 +6,13 @@ import { httpClient } from "./api";
  * @throws {statusCode, message} if response's status code is not in the 200s
  */
 export async function getUserProfile() {
-    const response = await httpClient("/user/profile");
-    const responseBody = await response.json();
-    if (response.ok) {
-        return responseBody.data;
+    const response = await httpClient.get("/user/profile");
+    if (response.status === 200) {
+        return response.data.data;
     }
     throw {
         statusCode: response.status,
         message:
-            responseBody?.message || "Fetching user profile failed. Please try again.",
+            response.data?.message || "Fetching user profile failed. Please try again.",
     };
 }

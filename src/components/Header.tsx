@@ -4,8 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarTrigger } from "./ui/menubar";
 import { useGoogleOneTapLogin } from "@react-oauth/google";
 import { toast } from "sonner";
-import { httpClient } from "@/api/api";
 import AuthContext from "@/context/authentication/AuthContext";
+import { signInWithOneTap } from "@/api/auth.api";
 
 const ChevronDownIcon = () => (
   <svg
@@ -25,15 +25,10 @@ const Header: React.FC = () => {
 	const { user, isLoading, refreshAuthState, logOut } = useContext(AuthContext);
 	
 	useGoogleOneTapLogin({
-		onSuccess: async (credentialResponse) => {
-			const res = await httpClient(
-				`/auth/google/onetap?token=${credentialResponse.credential}`
-			);
-			if (res.ok) {
-				return refreshAuthState();
-			}
-			toast.error("Google One Tap login failed");
-		},
+		onSuccess: (credentialResponse) =>
+			signInWithOneTap(credentialResponse, refreshAuthState, () =>
+				toast.error("Google One Tap login failed")
+			),
 		onError: () => {
 			toast.error("Google One Tap login failed");
 		},

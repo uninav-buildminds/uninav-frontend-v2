@@ -13,15 +13,14 @@ import { getCookie } from "typescript-cookie";
  * @throws {statusCode, message} if response's status code is not in the 200s
  */
 async function fetcher(url: string) {
-    const response = await httpClient(url);
-    const responseBody = await response.json();
-    if (response.ok) {
-        return responseBody.data;
+    const response = await httpClient.get(url);
+    if (response.status === 200) {
+        return response.data.data;
     }
     throw {
         statusCode: response.status,
         message:
-            responseBody?.message || "Fetching user profile failed. Please try again.",
+            response.data?.message || "Fetching user profile failed. Please try again.",
     };
 }
 
