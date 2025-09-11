@@ -78,7 +78,7 @@ export interface Material {
   name: string;
   uploadTime: string;
   downloads: number;
-  previewImage: string | Pic;
+  previewImage: string;
   pages?: number;
   description?: string;
   type?: string;
