@@ -3,8 +3,17 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import MetricsSection from "@/components/dashboard/MetricsSection";
 import MaterialsSection from "@/components/dashboard/MaterialsSection";
-import { Award01Icon, UploadSquare01Icon, DownloadSquare01Icon, Bookmark01Icon } from "hugeicons-react";
+import {
+  Award01Icon,
+  UploadSquare01Icon,
+  DownloadSquare01Icon,
+  Bookmark01Icon,
+} from "hugeicons-react";
 import { recentMaterials, recommendations } from "@/data/materials";
+import {
+  getMaterialRecommendations,
+  getRecentMaterials,
+} from "@/api/materials.api";
 
 const Overview: React.FC = () => {
   const handleViewAll = (section: string) => {
@@ -31,31 +40,63 @@ const Overview: React.FC = () => {
     console.log(`Read material ${id}`);
   };
 
+  const fetchRecommendations = async () => {
+    try {
+      const data = await getMaterialRecommendations({
+        limit: 10,
+        ignorePreference: true,
+      });
+      console.log("Fetched recommendations:", data);
+      return data;
+    } catch (error) {
+      console.error("Error fetching recommendations:", error);
+    }
+  };
+
+  // Fetch recent materials (mocked sample)
+  // ...existing code...
+
+  const fetchRecentMaterials = async () => {
+    try {
+      const data = await getRecentMaterials();
+      console.log("Fetched recent materials:", data);
+      return data;
+    } catch (error) {
+      console.error("Error fetching recent materials:", error);
+    }
+  };
+
+  fetchRecentMaterials();
+
   const metrics = [
     {
       icon: <Award01Icon size={20} />,
       title: "Your Points",
       value: "85%",
-      description: "You're doing great! Upload 3 more materials to unlock Ad‑Free Week"
+      description:
+        "You're doing great! Upload 3 more materials to unlock Ad‑Free Week",
     },
     {
       icon: <DownloadSquare01Icon size={20} />,
       title: "Total Downloads",
       value: "120",
-      description: "You have downloaded helpful materials. You're on track to complete academic goals"
+      description:
+        "You have downloaded helpful materials. You're on track to complete academic goals",
     },
     {
       icon: <UploadSquare01Icon size={20} />,
       title: "Total Uploads",
       value: "50",
-      description: "You have helped a lot of students. You're making a real difference"
+      description:
+        "You have helped a lot of students. You're making a real difference",
     },
     {
       icon: <Bookmark01Icon size={20} />,
       title: "Saved Materials",
       value: "12",
-      description: "Your materials were downloaded 120 times. You're making a difference!"
-    }
+      description:
+        "Your materials were downloaded 120 times. You're making a difference!",
+    },
   ];
 
   return (
@@ -70,7 +111,7 @@ const Overview: React.FC = () => {
           {/* Recent Materials */}
           <MaterialsSection
             title="Recent Materials"
-            materials={recentMaterials}
+            materials={fetchRecentMaterials}
             onViewAll={() => handleViewAll("recent materials")}
             onFilter={() => handleFilter("recent materials")}
             onDownload={handleDownload}
@@ -83,7 +124,7 @@ const Overview: React.FC = () => {
           {/* Recommendations */}
           <MaterialsSection
             title="Recommendations"
-            materials={recommendations}
+            materials={fetchRecommendations}
             onViewAll={() => handleViewAll("recommendations")}
             onFilter={() => handleFilter("recommendations")}
             onDownload={handleDownload}

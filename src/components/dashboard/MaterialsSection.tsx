@@ -1,20 +1,125 @@
+import Pic from "../../../public/placeholder.svg";
+
+// Helper to format date as 'x days ago', 'x hours ago', etc.
+function formatRelativeTime(dateString: string): string {
+  const now = new Date();
+  const date = new Date(dateString);
+  const diffMs = now.getTime() - date.getTime();
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHour = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHour / 24);
+  if (diffDay > 0) return `${diffDay} day${diffDay > 1 ? "s" : ""} ago`;
+  if (diffHour > 0) return `${diffHour} hour${diffHour > 1 ? "s" : ""} ago`;
+  if (diffMin > 0) return `${diffMin} minute${diffMin > 1 ? "s" : ""} ago`;
+  return "just now";
+}
 import React, { useEffect, useRef, useState } from "react";
-import { ArrowRight01Icon, SortingAZ02Icon, ArrowLeft01Icon } from "hugeicons-react";
+import {
+  ArrowRight01Icon,
+  SortingAZ02Icon,
+  ArrowLeft01Icon,
+} from "hugeicons-react";
 import MaterialCard from "./MaterialCard";
 import { motion, AnimatePresence } from "framer-motion";
 
-interface Material {
+export interface MaterialRecommendation {
+  id: string;
+  type: string;
+  tags: string[] | null;
+  views: number;
+  downloads: number;
+  likes: number;
+  creatorId: string;
+  label: string;
+  description: string;
+  visibility: string;
+  restriction: string;
+  targetCourseId: string;
+  reviewStatus: string;
+  reviewedById: string;
+  previewUrl: string | null;
+  metaData: any;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  creator: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    username: string;
+  };
+  targetCourse: {
+    id: string;
+    courseName: string;
+    courseCode: string;
+  };
+}
+
+export interface MaterialRecommendationsResponse {
+  message: string;
+  status: string;
+  data: {
+    items: MaterialRecommendation[];
+    pagination: {
+      total: number;
+      page: number | null;
+      pageSize: number;
+      totalPages: number;
+      hasMore: boolean;
+      hasPrev: boolean;
+    };
+  };
+}
+
+// Adapter to map API MaterialRecommendation to MaterialCard props
+export interface Material {
   id: string;
   name: string;
   uploadTime: string;
   downloads: number;
-  previewImage: string;
+  previewImage: string | Pic;
   pages?: number;
+  description?: string;
+  type?: string;
+  tags?: string[] | null;
+  views?: number;
+  likes?: number;
+  creator?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    username: string;
+  };
+  targetCourse?: {
+    id: string;
+    courseName: string;
+    courseCode: string;
+  };
 }
 
-interface MaterialsSectionProps {
+export function mapRecommendationToMaterial(
+  rec: MaterialRecommendation
+): Material {
+  return {
+    id: rec.id,
+    name: rec.label,
+    uploadTime: rec.createdAt,
+    downloads: rec.downloads,
+    previewImage: rec.previewUrl,
+    description: rec.description,
+    type: rec.type,
+    tags: rec.tags,
+    views: rec.views,
+    likes: rec.likes,
+    creator: rec.creator,
+    targetCourse: rec.targetCourse,
+  };
+}
+
+type MaterialsSectionProps = {
   title: string;
-  materials: Material[];
+  materials: Material[] | (() => Promise<any>);
   onViewAll?: () => void;
   onFilter?: () => void;
   onDownload?: (id: string) => void;
@@ -22,7 +127,7 @@ interface MaterialsSectionProps {
   onShare?: (id: string) => void;
   onRead?: (id: string) => void;
   scrollStep?: number;
-}
+};
 
 const MaterialsSection: React.FC<MaterialsSectionProps> = ({
   title,
@@ -39,8 +144,60 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
   const [showSortOptions, setShowSortOptions] = useState(false);
-  const [sortBy, setSortBy] = useState<'name' | 'date' | 'downloads'>('date');
-  const [sortedMaterials, setSortedMaterials] = useState(materials);
+  const [sortBy, setSortBy] = useState<"name" | "date" | "downloads">("date");
+  const [fetchedMaterials, setFetchedMaterials] = useState<Material[] | null>(
+    null
+  );
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // If materials is a function (async fetch), call it and set state
+  useEffect(() => {
+    if (typeof materials === "function") {
+      setLoading(true);
+      setError(null);
+      Promise.resolve(materials())
+        .then((result: any) => {
+          // Try to handle both direct array and API response
+          if (Array.isArray(result)) {
+            setFetchedMaterials(result);
+          } else if (result?.data?.items) {
+            // If API response, map to Material[]
+            setFetchedMaterials(
+              result.data.items.map(mapRecommendationToMaterial)
+            );
+          } else {
+            setFetchedMaterials([]);
+          }
+        })
+        .catch((err) => {
+          setError("Failed to fetch materials");
+          setFetchedMaterials([]);
+        })
+        .finally(() => setLoading(false));
+    } else {
+      setFetchedMaterials(null);
+    }
+  }, [materials]);
+
+  // Use fetchedMaterials if present, else use props.materials
+  let displayMaterials: Material[] =
+    fetchedMaterials !== null
+      ? fetchedMaterials
+      : Array.isArray(materials)
+      ? materials
+      : [];
+
+  // Format uploadTime for display
+  displayMaterials = displayMaterials.map((mat) => ({
+    ...mat,
+    uploadTime:
+      mat.uploadTime && mat.uploadTime.includes("ago")
+        ? mat.uploadTime
+        : formatRelativeTime(mat.uploadTime),
+  }));
+  const [sortedMaterials, setSortedMaterials] =
+    useState<Material[]>(displayMaterials);
 
   const updateScrollButtons = () => {
     const el = scrollContainerRef.current;
@@ -52,28 +209,34 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
 
   // Sort materials based on selected criteria
   useEffect(() => {
-    const sorted = [...materials].sort((a, b) => {
+    const sorted = [...displayMaterials].sort((a, b) => {
       switch (sortBy) {
-        case 'name':
+        case "name":
           return a.name.localeCompare(b.name);
-        case 'date': {
+        case "date": {
           // Simple date parsing for demo - in real app, use proper date parsing
           const getTimeValue = (timeStr: string) => {
-            if (timeStr.includes('hour')) return 1;
-            if (timeStr.includes('day')) return 24;
-            if (timeStr.includes('minute')) return 0.1;
+            if (typeof timeStr === "string" && timeStr.includes("T")) {
+              return new Date(timeStr).getTime();
+            }
+            if (typeof timeStr === "string" && timeStr.includes("hour"))
+              return 1;
+            if (typeof timeStr === "string" && timeStr.includes("day"))
+              return 24;
+            if (typeof timeStr === "string" && timeStr.includes("minute"))
+              return 0.1;
             return 0;
           };
-          return getTimeValue(a.uploadTime) - getTimeValue(b.uploadTime);
+          return getTimeValue(b.uploadTime) - getTimeValue(a.uploadTime);
         }
-        case 'downloads':
+        case "downloads":
           return b.downloads - a.downloads;
         default:
           return 0;
       }
     });
     setSortedMaterials(sorted);
-  }, [materials, sortBy]);
+  }, [displayMaterials, sortBy]);
 
   useEffect(() => {
     updateScrollButtons();
@@ -91,15 +254,31 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
   // Close sort dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (showSortOptions && !(event.target as Element).closest('.sort-dropdown')) {
+      if (
+        showSortOptions &&
+        !(event.target as Element).closest(".sort-dropdown")
+      ) {
         setShowSortOptions(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showSortOptions]);
 
+  if (loading) {
+    return (
+      <div className="py-8 text-center text-gray-500">Loading materials...</div>
+    );
+  }
+  if (error) {
+    return <div className="py-8 text-center text-red-500">{error}</div>;
+  }
+  if (!sortedMaterials || sortedMaterials.length === 0) {
+    return (
+      <div className="py-8 text-center text-gray-400">No materials found.</div>
+    );
+  }
   return (
     <section className="space-y-4">
       {/* Header */}
@@ -129,33 +308,39 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
                   <div className="py-2">
                     <button
                       onClick={() => {
-                        setSortBy('name');
+                        setSortBy("name");
                         setShowSortOptions(false);
                       }}
                       className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors ${
-                        sortBy === 'name' ? 'text-brand bg-brand/5' : 'text-gray-700'
+                        sortBy === "name"
+                          ? "text-brand bg-brand/5"
+                          : "text-gray-700"
                       }`}
                     >
                       Sort by Name (A-Z)
                     </button>
                     <button
                       onClick={() => {
-                        setSortBy('date');
+                        setSortBy("date");
                         setShowSortOptions(false);
                       }}
                       className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors ${
-                        sortBy === 'date' ? 'text-brand bg-brand/5' : 'text-gray-700'
+                        sortBy === "date"
+                          ? "text-brand bg-brand/5"
+                          : "text-gray-700"
                       }`}
                     >
                       Sort by Date (Newest)
                     </button>
                     <button
                       onClick={() => {
-                        setSortBy('downloads');
+                        setSortBy("downloads");
                         setShowSortOptions(false);
                       }}
                       className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors ${
-                        sortBy === 'downloads' ? 'text-brand bg-brand/5' : 'text-gray-700'
+                        sortBy === "downloads"
+                          ? "text-brand bg-brand/5"
+                          : "text-gray-700"
                       }`}
                     >
                       Sort by Downloads (Most)
@@ -216,8 +401,8 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
           className="flex gap-6 overflow-x-auto overflow-y-visible pb-2 scrollbar-hide"
         >
           {sortedMaterials.map((material) => (
-            <div 
-              key={material.id} 
+            <div
+              key={material.id}
               className="flex-shrink-0 w-64 sm:w-72 md:w-80 lg:w-72 xl:w-64 2xl:w-72"
             >
               <MaterialCard

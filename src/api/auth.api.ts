@@ -2,12 +2,12 @@ import { CredentialResponse } from "@react-oauth/google";
 import { httpClient } from "./api";
 
 export interface SignUpData {
-    email: string;
-    password: string;
-    firstName: string;
-    lastName: string;
-    departmentId: string;
-    level: number;
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  departmentId: string;
+  level: number;
 }
 /**
  * Sends signup request to backend
@@ -16,15 +16,16 @@ export interface SignUpData {
  * @throws {statusCode, message} if response's status code is not in the 200s
  */
 export async function signUp(signupData: SignUpData) {
-    const response = await httpClient.post("/auth/student", signupData);
-    if (response.status === 200) {
-        return response.data;
-    }
-    throw {
-        statusCode: response.status,
-        message:
-            response.data?.message || "Signup failed. Please try again.",
-    };
+  const response = await httpClient.post("/auth/student", signupData);
+
+  if (response.status === 200) {
+    return response.data;
+  }
+
+  throw {
+    statusCode: response.status,
+    message: response.data?.message || "Signup failed. Please try again.",
+  };
 }
 
 /**
@@ -34,17 +35,17 @@ export async function signUp(signupData: SignUpData) {
  * @param onError Callback function to execute on login failure
  */
 export async function signInWithOneTap(
-	credentialResponse: CredentialResponse,
-	onSuccess: () => void,
-	onError: () => void
+  credentialResponse: CredentialResponse,
+  onSuccess: () => void,
+  onError: () => void
 ) {
-	const response = await httpClient.get(
-		`/auth/google/onetap?token=${credentialResponse.credential}`
-	);
-	if (response.status === 200) {
-		return onSuccess();
-	}
-	return onError();
+  const response = await httpClient.get(
+    `/auth/google/onetap?token=${credentialResponse.credential}`
+  );
+  if (response.status === 200) {
+    return onSuccess();
+  }
+  return onError();
 }
 /**
  * Sends login request to backend
@@ -54,18 +55,17 @@ export async function signInWithOneTap(
  * @throws {statusCode, message} if response's status code is not in the 200s
  */
 export async function login(emailOrMatricNo: string, password: string) {
-    const response = await httpClient.post("/auth/login", {
-        emailOrMatricNo,
-        password,
-    });
-    if (response.status === 200) {
-        return response.data;
-    }
-    throw {
-        statusCode: response.status,
-        message:
-            response.data?.message || "Login failed. Please try again.",
-    };
+  const response = await httpClient.post("/auth/login", {
+    emailOrMatricNo,
+    password,
+  });
+  if (response.status === 200) {
+    return response.data;
+  }
+  throw {
+    statusCode: response.status,
+    message: response.data?.message || "Login failed. Please try again.",
+  };
 }
 
 /**
@@ -74,34 +74,33 @@ export async function login(emailOrMatricNo: string, password: string) {
  * @throws {statusCode, message} if response's status code is not in the 200s
  */
 export async function logOut() {
-    const response = await httpClient.post("/auth/logout");
-    if (response.status === 200) {
-        return response.data;
-    }
-    throw {
-        statusCode: response.status,
-        message:
-            response.data?.message || "Logout failed. Please try again.",
-    };
+  const response = await httpClient.post("/auth/logout");
+  if (response.status === 200) {
+    return response.data;
+  }
+  throw {
+    statusCode: response.status,
+    message: response.data?.message || "Logout failed. Please try again.",
+  };
 }
 
 /**
- * Initiate password reset process  
+ * Initiate password reset process
  * Backend sends an email to the user with password reset instructions
  * @param email
  * @returns response body
  * @throws {statusCode, message} if response's status code is not in the 200s
  */
 export async function requestPasswordReset(email: string) {
-    const response = await httpClient.post("/auth/forgot-password", { email });
-    if (response.status === 200) {
-        return response.data;
-    }
-    throw {
-        statusCode: response.status,
-        message:
-            response.data?.message || "Something went wrong. Please try again.",
-    };
+  const response = await httpClient.post("/auth/forgot-password", { email });
+  if (response.status === 200) {
+    return response.data;
+  }
+  throw {
+    statusCode: response.status,
+    message:
+      response.data?.message || "Something went wrong. Please try again.",
+  };
 }
 
 /**
@@ -112,15 +111,18 @@ export async function requestPasswordReset(email: string) {
  * @throws {statusCode, message} if response's status code is not in the 200s
  */
 export async function resetPassword(token: string, newPassword: string) {
-    const response = await httpClient.post("/auth/reset-password", { token, newPassword });
-    if (response.status === 200) {
-        return response.data;
-    }
-    throw {
-        statusCode: response.status,
-        message:
-            response.data?.message || "Something went wrong. Please try again.",
-    };
+  const response = await httpClient.post("/auth/reset-password", {
+    token,
+    newPassword,
+  });
+  if (response.status === 200) {
+    return response.data;
+  }
+  throw {
+    statusCode: response.status,
+    message:
+      response.data?.message || "Something went wrong. Please try again.",
+  };
 }
 
 /**
@@ -130,15 +132,18 @@ export async function resetPassword(token: string, newPassword: string) {
  * @throws {statusCode, message} if response's status code is not in the 200s
  */
 export async function requestEmailVerification(email: string) {
-    const response = await httpClient.post("/auth/resend-verification", { email });
-    if (response.status === 200) {
-        return response.data;
-    }
-    throw {
-        statusCode: response.status,
-        message:
-            response.data?.message || "Failed to resend verification email. Please try again.",
-    };
+  const response = await httpClient.post("/auth/resend-verification", {
+    email,
+  });
+  if (response.status === 200) {
+    return response.data;
+  }
+  throw {
+    statusCode: response.status,
+    message:
+      response.data?.message ||
+      "Failed to resend verification email. Please try again.",
+  };
 }
 
 /**
@@ -148,14 +153,16 @@ export async function requestEmailVerification(email: string) {
  * @throws {statusCode, message} if response's status code is not in the 200s
  */
 export async function verifyEmail(token: string) {
-    // The backend expects the token to be URL-encoded
-    const response = await httpClient.get(`/auth/verify-email/token?token=${encodeURIComponent(token)}`);
-    if (response.status === 200) {
-        return response.data;
-    }
-    throw {
-        statusCode: response.status,
-        message:
-            response.data?.message || "Email verification failed. Please try again.",
-    };
+  // The backend expects the token to be URL-encoded
+  const response = await httpClient.get(
+    `/auth/verify-email/token?token=${encodeURIComponent(token)}`
+  );
+  if (response.status === 200) {
+    return response.data;
+  }
+  throw {
+    statusCode: response.status,
+    message:
+      response.data?.message || "Email verification failed. Please try again.",
+  };
 }
