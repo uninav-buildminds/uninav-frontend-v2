@@ -1,6 +1,5 @@
 import { useCallback, useState } from "react";
 import { logOut as apiLogOut, login as apiLogin } from "@/api/auth.api";
-import { toast } from "sonner";
 import { googleLogout } from "@react-oauth/google";
 import AuthContext from "./AuthContext";
 import { httpClient } from "@/api/api";
@@ -13,15 +12,14 @@ import { getCookie } from "typescript-cookie";
  * @throws {statusCode, message} if response's status code is not in the 200s
  */
 async function fetcher(url: string) {
-    const response = await httpClient(url);
-    const responseBody = await response.json();
-    if (response.ok) {
-        return responseBody.data;
+    const response = await httpClient.get(url);
+    if (response.status === 200) {
+        return response.data.data;
     }
     throw {
         statusCode: response.status,
         message:
-            responseBody?.message || "Fetching user profile failed. Please try again.",
+            response.data?.message || "Fetching user profile failed. Please try again.",
     };
 }
 
@@ -42,27 +40,19 @@ export default function AuthContextProvider({ children }: AuthContextProviderPro
 
     const logIn = useCallback(
         async (emailOrMatricNo: string, password: string) => {
-            try {
-                const userProfile = await apiLogin(emailOrMatricNo, password);
-                mutate(userProfile); // Update the user data without revalidating
-                setLoggedIn(true);
-            } catch (error) {
-                toast.error(error.message);
-            }
+            const userProfile = await apiLogin(emailOrMatricNo, password);
+			mutate(userProfile); // Update the user data without revalidating
+			setLoggedIn(true);
         },
         [mutate]
     );
 
     const logOut = useCallback(async () => {
-        try {
-            googleLogout();
-            await apiLogOut();
-            mutate(undefined); 
-            setLoggedIn(false);
-        } catch (error) {
-            toast.error("Logout failed. Please try again.");
-        }
-    }, [mutate]);
+		googleLogout();
+		await apiLogOut();
+		mutate(undefined);
+		setLoggedIn(false);
+	}, [mutate]);
 
     return (
         <AuthContext.Provider value={{ refreshAuthState: mutate, logIn, logOut, user, isValidating, isLoading }}>
