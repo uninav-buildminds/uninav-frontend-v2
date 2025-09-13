@@ -74,10 +74,9 @@ export default function AuthContextProvider({ children }: AuthContextProviderPro
 
     const logOut = useCallback(async () => {
 		googleLogout();
-		await apiLogOut();
-		mutate(undefined);
-		setLoggedIn(false);
-	}, [mutate]);
+        await apiLogOut();
+        window.location.reload();
+	}, []);
 
     return (
         <AuthContext.Provider value={{ refreshAuthState: mutate, logIn, logOut, user, isValidating, isLoading }}>
