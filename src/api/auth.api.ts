@@ -172,3 +172,19 @@ export async function verifyEmail(token: string) {
 		};
 	}
 }
+
+/**
+ * @returns true if client is authenticated, false if not authenticated
+ * @throws {statusCode, message} if response's status code is not 200 or 401
+ */
+export async function isClientAuthenticated() {
+	try {
+		const response = await httpClient.get("/auth/check");
+		return response.data.data.loggedIn;
+	} catch (error) {
+		throw {
+			statusCode: error.status,
+			message: error.data?.message || "Auth check failed"
+		}
+	}
+}

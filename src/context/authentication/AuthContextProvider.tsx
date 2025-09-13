@@ -1,10 +1,9 @@
-import { useCallback, useState } from "react";
-import { logOut as apiLogOut, login as apiLogin } from "@/api/auth.api";
+import { useCallback, useEffect, useState } from "react";
+import { logOut as apiLogOut, login as apiLogin, isClientAuthenticated } from "@/api/auth.api";
 import { googleLogout } from "@react-oauth/google";
 import AuthContext from "./AuthContext";
 import { httpClient } from "@/api/api";
 import useSWR from "swr";
-import { getCookie } from "typescript-cookie";
 
 /**
  * Fetches the profile of the currently authenticated user
@@ -30,13 +29,17 @@ interface AuthContextProviderProps {
 // isLoading is true when the request is in flight for the first time (user is null)
 // isValidating is true when the request is in flight and during revalidation (user can be non-null)
 export default function AuthContextProvider({ children }: AuthContextProviderProps) {
-    const [loggedIn, setLoggedIn] = useState(getCookie("logged_in") === "true");
+    const [loggedIn, setLoggedIn] = useState(false);
     const {
 		mutate,
 		data: user,
 		isValidating,
 		isLoading,
 	} = useSWR(loggedIn ? "/user/profile" : null, fetcher);
+
+    useEffect(() => {
+        isClientAuthenticated().then(status => setLoggedIn(status))
+    }, []);
 
     const logIn = useCallback(
         async (emailOrMatricNo: string, password: string) => {
