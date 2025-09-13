@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
-import { logOut as apiLogOut, login as apiLogin, isClientAuthenticated } from "@/api/auth.api";
-import { googleLogout } from "@react-oauth/google";
+import { logOut as apiLogOut, login as apiLogin, isClientAuthenticated, signInWithOneTap } from "@/api/auth.api";
+import { googleLogout, useGoogleOneTapLogin } from "@react-oauth/google";
 import AuthContext from "./AuthContext";
 import { httpClient } from "@/api/api";
 import useSWR from "swr";
+import { toast } from "sonner";
 
 /**
  * Fetches the profile of the currently authenticated user
@@ -30,6 +31,7 @@ interface AuthContextProviderProps {
 // isValidating is true when the request is in flight and during revalidation (user can be non-null)
 export default function AuthContextProvider({ children }: AuthContextProviderProps) {
     const [loggedIn, setLoggedIn] = useState(false);
+    const [showOneTap, setShowOneTap] = useState(false);
     const {
 		mutate,
 		data: user,
@@ -38,8 +40,28 @@ export default function AuthContextProvider({ children }: AuthContextProviderPro
 	} = useSWR(loggedIn ? "/user/profile" : null, fetcher);
 
     useEffect(() => {
-        isClientAuthenticated().then(status => setLoggedIn(status))
+        isClientAuthenticated().then(status => {
+            setLoggedIn(status);
+            setShowOneTap(status === false);
+        })
     }, []);
+
+    useGoogleOneTapLogin({
+		onSuccess: (credentialResponse) =>
+			signInWithOneTap(
+				credentialResponse,
+				() => {
+					window.location.reload();
+				},
+				() => {
+					toast.error("Google One Tap login failed");
+				}
+			),
+		onError: () => {
+			toast.error("Google One Tap login failed");
+		},
+		disabled: user !== undefined || isLoading || !showOneTap,
+	});
 
     const logIn = useCallback(
         async (emailOrMatricNo: string, password: string) => {
