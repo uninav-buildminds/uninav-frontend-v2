@@ -38,7 +38,7 @@ const Sidebar: React.FC = () => {
   const navItems = user && (user.role === "admin" || user.role === "moderator")
     ? [
         ...baseNavItems.slice(0, -2), // All except Settings and Help
-        { to: "/dashboard/management", label: "Management", icon: UserGroupIcon },
+        { to: "/management", label: "Management", icon: UserGroupIcon },
         ...baseNavItems.slice(-2), // Settings and Help
       ]
     : baseNavItems;

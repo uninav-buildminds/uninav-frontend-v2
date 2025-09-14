@@ -17,8 +17,9 @@ import ProcessEmailVerification from "./pages/auth/verification/ProcessEmailVeri
 import { AuthRedirect, ProtectedRoute } from "./components/auth/AuthRedirect";
 import NotFound from "./pages/NotFound";
 import Overview from "./pages/dashboard/Overview";
-import ManagementOverview from "./pages/dashboard/management/ManagementOverview";
-import CourseManagement from "./pages/dashboard/management/CourseManagement";
+import ManagementLayout from "./components/management/ManagementLayout";
+import ManagementDashboard from "./pages/management/ManagementDashboard";
+import CourseManagement from "./pages/management/CourseManagement";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import AuthContextProvider from "./context/authentication/AuthContextProvider";
 
@@ -47,21 +48,23 @@ const App = () => {
 
 								{/* Management Routes */}
 								<Route
-									path="/dashboard/management"
+									path="/management"
 									element={
 										<ProtectedRoute>
-											<ManagementOverview />
+											<ManagementLayout />
 										</ProtectedRoute>
 									}
-								/>
-								<Route
-									path="/dashboard/management/course-management"
-									element={
-										<ProtectedRoute>
-											<CourseManagement />
-										</ProtectedRoute>
-									}
-								/>
+								>
+									{/* Management Dashboard - Default route */}
+									<Route index element={<ManagementDashboard />} />
+									
+									{/* Management Sub-routes */}
+									<Route path="courses" element={<CourseManagement />} />
+									{/* Future routes can be added here */}
+									{/* <Route path="materials" element={<MaterialsManagement />} /> */}
+									{/* <Route path="blogs" element={<BlogsManagement />} /> */}
+									{/* <Route path="users" element={<UsersManagement />} /> */}
+								</Route>
 
 								{/* Auth - Signup */}
 								<Route
