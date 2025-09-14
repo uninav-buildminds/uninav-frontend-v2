@@ -17,6 +17,8 @@ import ProcessEmailVerification from "./pages/auth/verification/ProcessEmailVeri
 import { AuthRedirect, ProtectedRoute } from "./components/auth/AuthRedirect";
 import NotFound from "./pages/NotFound";
 import Overview from "./pages/dashboard/Overview";
+import ManagementOverview from "./pages/dashboard/management/ManagementOverview";
+import CourseManagement from "./pages/dashboard/management/CourseManagement";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import AuthContextProvider from "./context/authentication/AuthContextProvider";
 
@@ -39,6 +41,24 @@ const App = () => {
 									element={
 										<ProtectedRoute>
 											<Overview />
+										</ProtectedRoute>
+									}
+								/>
+
+								{/* Management Routes */}
+								<Route
+									path="/dashboard/management"
+									element={
+										<ProtectedRoute>
+											<ManagementOverview />
+										</ProtectedRoute>
+									}
+								/>
+								<Route
+									path="/dashboard/management/course-management"
+									element={
+										<ProtectedRoute>
+											<CourseManagement />
 										</ProtectedRoute>
 									}
 								/>

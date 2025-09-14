@@ -10,28 +10,38 @@ import {
   Add01Icon,
   SidebarLeftIcon,
   SidebarLeft01Icon,
-  Logout01Icon
+  Logout01Icon,
+  UserGroupIcon
 } from "hugeicons-react";
 import UserRail from "./UserRail";
 import { LogoutModal, UploadModal } from "@/components/modals";
 import { panelData } from "@/data/panel";
-
-const navItems = [
-  { to: "/dashboard", label: "Overview", icon: Home01Icon },
-  { to: "/dashboard/saved", label: "Saved", icon: Bookmark01Icon },
-  { to: "/dashboard/uploads", label: "Uploads", icon: UploadSquare01Icon },
-  { to: "/dashboard/notifications", label: "Notifications", icon: Notification01Icon },
-  { to: "/dashboard/settings", label: "Settings", icon: Settings01Icon },
-  { to: "/dashboard/help", label: "Help", icon: HelpCircleIcon },
-];
-
-const railWidth = 80;
-const panelWidth = 260;
+import { useAuth } from "@/hooks/useAuth";
 
 const Sidebar: React.FC = () => {
   const [showPanel, setShowPanel] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const { user } = useAuth();
+
+  // Base navigation items
+  const baseNavItems = [
+    { to: "/dashboard", label: "Overview", icon: Home01Icon },
+    { to: "/dashboard/saved", label: "Saved", icon: Bookmark01Icon },
+    { to: "/dashboard/uploads", label: "Uploads", icon: UploadSquare01Icon },
+    { to: "/dashboard/notifications", label: "Notifications", icon: Notification01Icon },
+    { to: "/dashboard/settings", label: "Settings", icon: Settings01Icon },
+    { to: "/dashboard/help", label: "Help", icon: HelpCircleIcon },
+  ];
+
+  // Add management item for admin/moderator users
+  const navItems = user && (user.role === "admin" || user.role === "moderator")
+    ? [
+        ...baseNavItems.slice(0, -2), // All except Settings and Help
+        { to: "/dashboard/management", label: "Management", icon: UserGroupIcon },
+        ...baseNavItems.slice(-2), // Settings and Help
+      ]
+    : baseNavItems;
 
   const handleLogout = () => {
     setShowLogoutModal(true);
@@ -54,6 +64,9 @@ const Sidebar: React.FC = () => {
   const togglePanel = () => {
     setShowPanel(!showPanel);
   };
+
+  const railWidth = 80;
+  const panelWidth = 260;
 
   return (
     <aside
