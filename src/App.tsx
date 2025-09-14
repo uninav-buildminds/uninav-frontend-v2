@@ -24,42 +24,119 @@ const queryClient = new QueryClient();
 
 const App = () => {
   return (
-    <AuthContextProvider>
-        <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-          <QueryClientProvider client={queryClient}>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  {/* Dashboard */}
-                  <Route path="/dashboard" element={<ProtectedRoute><Overview /></ProtectedRoute>} />
+		<GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+			<AuthContextProvider>
+				<QueryClientProvider client={queryClient}>
+					<TooltipProvider>
+						<Toaster />
+						<Sonner />
+						<BrowserRouter>
+							<Routes>
+								<Route path="/" element={<Index />} />
+								{/* Dashboard */}
+								<Route
+									path="/dashboard"
+									element={
+										<ProtectedRoute>
+											<Overview />
+										</ProtectedRoute>
+									}
+								/>
 
-                  {/* Auth - Signup */}
-                  <Route path="/auth/signup" element={<AuthRedirect><SignupForm /></AuthRedirect>} />
-                  <Route path="/auth/signup/verify" element={<AuthRedirect><RequestEmailVerification /></AuthRedirect>} />
-                  <Route path="/auth/signup/profile" element={<AuthRedirect><ProfileSetup /></AuthRedirect>} />
-                  <Route path="/auth/signup/success" element={<AuthRedirect><SignupSuccess /></AuthRedirect>} />
+								{/* Auth - Signup */}
+								<Route
+									path="/auth/signup"
+									element={
+										<AuthRedirect>
+											<SignupForm />
+										</AuthRedirect>
+									}
+								/>
+								<Route
+									path="/auth/signup/verify"
+									element={
+										<AuthRedirect>
+											<RequestEmailVerification />
+										</AuthRedirect>
+									}
+								/>
+								<Route
+									path="/auth/signup/profile"
+									element={
+										<AuthRedirect>
+											<ProfileSetup />
+										</AuthRedirect>
+									}
+								/>
+								<Route
+									path="/auth/signup/success"
+									element={
+										<AuthRedirect>
+											<SignupSuccess />
+										</AuthRedirect>
+									}
+								/>
 
-                  {/* Auth - Signin */}
-                  <Route path="/auth/signin" element={<AuthRedirect><SigninForm /></AuthRedirect>} />
-                  <Route path="/auth/verify-email" element={<AuthRedirect><ProcessEmailVerification /></AuthRedirect>} />
-                  
-                  {/* Auth - Password Reset */}
-                  <Route path="/auth/password/forgot" element={<AuthRedirect><RequestReset /></AuthRedirect>} />
-                  <Route path="/auth/password/check-inbox" element={<AuthRedirect><CheckInbox /></AuthRedirect>} />
-                  <Route path="/auth/reset-password" element={<AuthRedirect><NewPassword /></AuthRedirect>} />
-                  <Route path="/auth/password/success" element={<AuthRedirect><ResetSuccess /></AuthRedirect>} />
+								{/* Auth - Signin */}
+								<Route
+									path="/auth/signin"
+									element={
+										<AuthRedirect>
+											<SigninForm />
+										</AuthRedirect>
+									}
+								/>
+								<Route
+									path="/auth/verify-email"
+									element={
+										<AuthRedirect>
+											<ProcessEmailVerification />
+										</AuthRedirect>
+									}
+								/>
 
-                  {/* 404 - Catch all unmatched routes */}
-                  <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-            </TooltipProvider>
-          </QueryClientProvider>
-        </GoogleOAuthProvider>
-      </AuthContextProvider>
+								{/* Auth - Password Reset */}
+								<Route
+									path="/auth/password/forgot"
+									element={
+										<AuthRedirect>
+											<RequestReset />
+										</AuthRedirect>
+									}
+								/>
+								<Route
+									path="/auth/password/check-inbox"
+									element={
+										<AuthRedirect>
+											<CheckInbox />
+										</AuthRedirect>
+									}
+								/>
+								<Route
+									path="/auth/reset-password"
+									element={
+										<AuthRedirect>
+											<NewPassword />
+										</AuthRedirect>
+									}
+								/>
+								<Route
+									path="/auth/password/success"
+									element={
+										<AuthRedirect>
+											<ResetSuccess />
+										</AuthRedirect>
+									}
+								/>
+
+								{/* 404 - Catch all unmatched routes */}
+								<Route path="*" element={<NotFound />} />
+							</Routes>
+						</BrowserRouter>
+					</TooltipProvider>
+				</QueryClientProvider>
+			</AuthContextProvider>
+		</GoogleOAuthProvider>
   );
 }
 
