@@ -1,6 +1,6 @@
 import { Navigate } from "react-router-dom";
-import { ReactNode, useContext } from "react";
-import AuthContext from "@/context/authentication/AuthContext";
+import { ReactNode, useEffect, useState } from "react";
+import { isClientAuthenticated } from "@/api/auth.api";
 
 interface AuthRedirectProps {
   children: ReactNode;
@@ -15,7 +15,15 @@ interface AuthRedirectProps {
  * @returns JSX.Element
  */
 export const AuthRedirect = ({ children, routePath = "/dashboard" }: AuthRedirectProps) => {
-  const { user, isLoading } = useContext(AuthContext);
+  const [isLoading, setIsLoading] = useState(true);
+  const [clientIsAuthenticated, setClientIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    isClientAuthenticated().then(status => {
+      setClientIsAuthenticated(status);
+      setIsLoading(false);
+    })
+  }, []);
 
   // If user is not authenticated and is loading, show loading spinner
   if (isLoading) {
@@ -27,7 +35,7 @@ export const AuthRedirect = ({ children, routePath = "/dashboard" }: AuthRedirec
   }
 
   // If user is authenticated, redirect to dashboard or specified route
-  if (user) {
+  if (clientIsAuthenticated) {
     return <Navigate to={routePath} replace />;
   }
 
@@ -44,7 +52,15 @@ export const AuthRedirect = ({ children, routePath = "/dashboard" }: AuthRedirec
  * @returns JSX.Element
  */
 export const ProtectedRoute = ({ children, routePath = "/auth/signin" }: AuthRedirectProps) => {
-  const { user, isLoading } = useContext(AuthContext);
+  const [isLoading, setIsLoading] = useState(true);
+  const [clientIsAuthenticated, setClientIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    isClientAuthenticated().then(status => {
+      setClientIsAuthenticated(status);
+      setIsLoading(false);
+    })
+  }, []);
 
   if (isLoading) {
     return (
@@ -55,7 +71,7 @@ export const ProtectedRoute = ({ children, routePath = "/auth/signin" }: AuthRed
   }
 
   // If user is not authenticated, redirect to signin page
-  if (!user) {
+  if (!clientIsAuthenticated) {
     return <Navigate to={routePath} replace />;
   }
 
