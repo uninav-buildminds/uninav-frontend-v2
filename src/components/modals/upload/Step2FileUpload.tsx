@@ -1,34 +1,46 @@
-import React, { useState, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { 
-  UploadSquare01Icon, 
-  ArrowLeft01Icon, 
+import React, { useState, useRef } from "react";
+import { motion } from "framer-motion";
+import {
+  UploadSquare01Icon,
+  ArrowLeft01Icon,
   File01Icon,
   Image01Icon,
   Tag01Icon,
   Download01Icon,
-  ArrowDown01Icon
-} from 'hugeicons-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { uploadFileSchema, type UploadFileInput } from '@/lib/validation/upload';
-import { toast } from 'sonner';
-import HeaderStepper from './shared/HeaderStepper';
-import AdvancedOptions from './shared/AdvancedOptions';
+  ArrowDown01Icon,
+} from "hugeicons-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  uploadFileSchema,
+  type UploadFileInput,
+} from "@/lib/validation/upload";
+import { toast } from "sonner";
+import HeaderStepper from "./shared/HeaderStepper";
+import AdvancedOptions from "./shared/AdvancedOptions";
 
 interface Step2FileUploadProps {
   onComplete: (data: Record<string, unknown>) => void;
   onBack: () => void;
 }
 
-const Step2FileUpload: React.FC<Step2FileUploadProps> = ({ onComplete, onBack }) => {
+const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
+  onComplete,
+  onBack,
+}) => {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [tags, setTags] = useState<string[]>([]);
-  const [tagInput, setTagInput] = useState('');
+  const [tagInput, setTagInput] = useState("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
@@ -37,15 +49,15 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({ onComplete, onBack })
     handleSubmit,
     setValue,
     watch,
-    formState: { errors, isSubmitting }
+    formState: { errors, isSubmitting },
   } = useForm<UploadFileInput>({
     resolver: zodResolver(uploadFileSchema),
     mode: "onBlur",
     defaultValues: {
-      visibility: 'Public',
-      accessRestrictions: 'Downloadable',
-      tags: []
-    }
+      visibility: "Public",
+      accessRestrictions: "Downloadable",
+      tags: [],
+    },
   });
 
   const watchedValues = watch();
@@ -53,9 +65,9 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({ onComplete, onBack })
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.type === 'dragenter' || e.type === 'dragover') {
+    if (e.type === "dragenter" || e.type === "dragover") {
       setDragActive(true);
-    } else if (e.type === 'dragleave') {
+    } else if (e.type === "dragleave") {
       setDragActive(false);
     }
   };
@@ -64,15 +76,16 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({ onComplete, onBack })
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
+
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFile(e.dataTransfer.files[0]);
     }
   };
 
   const handleFile = (file: File) => {
-    if (file.size > 20 * 1024 * 1024) { // 20MB limit
-      alert('File size must be less than 20MB');
+    if (file.size > 20 * 1024 * 1024) {
+      // 20MB limit
+      alert("File size must be less than 20MB");
       return;
     }
     setSelectedFile(file);
@@ -91,12 +104,12 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({ onComplete, onBack })
   };
 
   const handleTagAdd = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && tagInput.trim()) {
+    if (e.key === "Enter" && tagInput.trim()) {
       e.preventDefault();
       const newTags = [...tags, tagInput.trim()];
       setTags(newTags);
       setValue("tags", newTags);
-      setTagInput('');
+      setTagInput("");
     }
   };
 
@@ -108,20 +121,20 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({ onComplete, onBack })
 
   const onSubmit = (data: UploadFileInput) => {
     if (!selectedFile) {
-      toast.error('Please select a file to upload');
+      toast.error("Please select a file to upload");
       return;
     }
 
     const formData = {
-      type: 'file',
+      type: "file",
       file: selectedFile,
       materialTitle: data.materialTitle,
       classification: data.classification,
-      description: data.description || '',
+      description: data.description || "",
       visibility: data.visibility,
       accessRestrictions: data.accessRestrictions,
       tags: data.tags || [],
-      image: selectedImage
+      image: selectedImage,
     };
 
     onComplete(formData);
@@ -141,15 +154,17 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({ onComplete, onBack })
         totalSteps={2}
       />
 
-        {/* Upload File Section */}
-        <div className="space-y-3">
-          <h3 className="text-base sm:text-lg font-semibold text-gray-900">Upload File</h3>
-        
+      {/* Upload File Section */}
+      <div className="space-y-3">
+        <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+          Upload File
+        </h3>
+
         <div
           className={`border-2 border-dashed rounded-xl p-4 sm:p-6 text-center transition-colors ${
-            dragActive 
-              ? 'border-brand bg-brand/5' 
-              : 'border-gray-300 hover:border-gray-400'
+            dragActive
+              ? "border-brand bg-brand/5"
+              : "border-gray-300 hover:border-gray-400"
           }`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
@@ -158,9 +173,14 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({ onComplete, onBack })
         >
           {selectedFile ? (
             <div className="space-y-3">
-              <File01Icon size={40} className="text-brand mx-auto sm:w-12 sm:h-12" />
+              <File01Icon
+                size={40}
+                className="text-brand mx-auto sm:w-12 sm:h-12"
+              />
               <div>
-                <p className="text-sm sm:text-base font-medium text-gray-900">{selectedFile.name}</p>
+                <p className="text-sm sm:text-base font-medium text-gray-900">
+                  {selectedFile.name}
+                </p>
                 <p className="text-xs sm:text-sm text-gray-600">
                   {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
                 </p>
@@ -174,14 +194,21 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({ onComplete, onBack })
             </div>
           ) : (
             <div className="space-y-3">
-              <UploadSquare01Icon size={40} className="text-gray-400 mx-auto sm:w-12 sm:h-12" />
+              <UploadSquare01Icon
+                size={40}
+                className="text-gray-400 mx-auto sm:w-12 sm:h-12"
+              />
               <div>
-                <p className="text-sm sm:text-base font-medium text-gray-900">Click to Upload or Drag and Drop</p>
-                <p className="text-xs sm:text-sm text-gray-600">[Max. file size: 20MB]</p>
+                <p className="text-sm sm:text-base font-medium text-gray-900">
+                  Click to Upload or Drag and Drop
+                </p>
+                <p className="text-xs sm:text-sm text-gray-600">
+                  [Max. file size: 20MB]
+                </p>
               </div>
             </div>
           )}
-          
+
           <input
             ref={fileInputRef}
             type="file"
@@ -189,7 +216,7 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({ onComplete, onBack })
             onChange={handleFileInput}
             className="hidden"
           />
-          
+
           <button
             onClick={() => fileInputRef.current?.click()}
             className="mt-4 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors"
@@ -201,8 +228,10 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({ onComplete, onBack })
 
       {/* Tell us about it Section */}
       <div className="space-y-3">
-        <h3 className="text-base sm:text-lg font-semibold text-gray-900">Tell us about it</h3>
-        
+        <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+          Tell us about it
+        </h3>
+
         {/* Material Title */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -215,7 +244,9 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({ onComplete, onBack })
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors outline-none"
           />
           {errors.materialTitle && (
-            <p className="mt-1 text-xs text-red-600">{errors.materialTitle.message}</p>
+            <p className="mt-1 text-xs text-red-600">
+              {errors.materialTitle.message}
+            </p>
           )}
           <p className="text-xs text-gray-600 mt-1">
             Be descriptive so everyone knows what's inside.
@@ -227,12 +258,17 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({ onComplete, onBack })
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Select Upload Classification
           </label>
-          <Select value={watchedValues.classification} onValueChange={(value) => setValue("classification", value)}>
+          <Select
+            value={watchedValues.classification}
+            onValueChange={(value) => setValue("classification", value)}
+          >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="e.g., Exam past question and Answers" />
             </SelectTrigger>
             <SelectContent className="z-[1060]">
-              <SelectItem value="exam-past-questions">Exam Past Questions</SelectItem>
+              <SelectItem value="exam-past-questions">
+                Exam Past Questions
+              </SelectItem>
               <SelectItem value="lecture-notes">Lecture Notes</SelectItem>
               <SelectItem value="assignments">Assignments</SelectItem>
               <SelectItem value="tutorials">Tutorials</SelectItem>
@@ -242,7 +278,9 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({ onComplete, onBack })
             </SelectContent>
           </Select>
           {errors.classification && (
-            <p className="mt-1 text-xs text-red-600">{errors.classification.message}</p>
+            <p className="mt-1 text-xs text-red-600">
+              {errors.classification.message}
+            </p>
           )}
         </div>
 
@@ -270,7 +308,9 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({ onComplete, onBack })
         tagInput={tagInput}
         selectedImage={selectedImage}
         onVisibilityChange={(value) => setValue("visibility", value)}
-        onAccessRestrictionsChange={(value) => setValue("accessRestrictions", value)}
+        onAccessRestrictionsChange={(value) =>
+          setValue("accessRestrictions", value)
+        }
         onTagAdd={handleTagAdd}
         onTagRemove={handleTagRemove}
         onTagInputChange={setTagInput}
