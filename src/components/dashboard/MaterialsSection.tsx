@@ -14,7 +14,7 @@ function formatRelativeTime(dateString: string): string {
   if (diffMin > 0) return `${diffMin} minute${diffMin > 1 ? "s" : ""} ago`;
   return "just now";
 }
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import {
   ArrowRight01Icon,
   SortingAZ02Icon,
@@ -181,23 +181,6 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
   }, [materials]);
 
   // Use fetchedMaterials if present, else use props.materials
-  let displayMaterials: Material[] =
-    fetchedMaterials !== null
-      ? fetchedMaterials
-      : Array.isArray(materials)
-      ? materials
-      : [];
-
-  // Format uploadTime for display
-  displayMaterials = displayMaterials.map((mat) => ({
-    ...mat,
-    uploadTime:
-      mat.uploadTime && mat.uploadTime.includes("ago")
-        ? mat.uploadTime
-        : formatRelativeTime(mat.uploadTime),
-  }));
-  const [sortedMaterials, setSortedMaterials] =
-    useState<Material[]>(displayMaterials);
 
   const updateScrollButtons = () => {
     const el = scrollContainerRef.current;
@@ -207,14 +190,31 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
     setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 1);
   };
 
-  // Sort materials based on selected criteria
-  useEffect(() => {
-    const sorted = [...displayMaterials].sort((a, b) => {
+  // Memoize displayMaterials to avoid recalculating on every render
+  const displayMaterials: Material[] = useMemo(() => {
+    const mats =
+      fetchedMaterials !== null
+        ? fetchedMaterials
+        : Array.isArray(materials)
+        ? materials
+        : [];
+    // Format uploadTime for display
+    return mats.map((mat) => ({
+      ...mat,
+      uploadTime:
+        mat.uploadTime && mat.uploadTime.includes("ago")
+          ? mat.uploadTime
+          : formatRelativeTime(mat.uploadTime),
+    }));
+  }, [fetchedMaterials, materials]);
+
+  // Memoize sortedMaterials based on displayMaterials and sortBy
+  const sortedMaterials = useMemo(() => {
+    return [...displayMaterials].sort((a, b) => {
       switch (sortBy) {
         case "name":
           return a.name.localeCompare(b.name);
         case "date": {
-          // Simple date parsing for demo - in real app, use proper date parsing
           const getTimeValue = (timeStr: string) => {
             if (typeof timeStr === "string" && timeStr.includes("T")) {
               return new Date(timeStr).getTime();
@@ -235,7 +235,6 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
           return 0;
       }
     });
-    setSortedMaterials(sorted);
   }, [displayMaterials, sortBy]);
 
   useEffect(() => {
@@ -275,9 +274,7 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
     return <div className="py-8 text-center text-red-500">{error}</div>;
   }
   if (!sortedMaterials || sortedMaterials.length === 0) {
-    return (
-      <div className="py-8 text-center text-gray-400">No materials found.</div>
-    );
+    return <div>{""}</div>;
   }
   return (
     <section className="space-y-4">
