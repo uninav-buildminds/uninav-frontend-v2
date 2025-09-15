@@ -16,15 +16,15 @@ export interface SignUpData {
  * @throws {statusCode, message} if response's status code is not in the 200s
  */
 export async function signUp(signupData: SignUpData) {
-	try {
-		const response = await httpClient.post("/auth/student", signupData);
-		return response.data;
-	} catch (error) {
-		throw {
-			statusCode: error.status,
-			message: error.data?.message || "Signup failed. Please try again.",
-		};
-	}
+  try {
+    const response = await httpClient.post("/auth/student", signupData);
+    return response.data;
+  } catch (error) {
+    throw {
+      statusCode: error.status,
+      message: error.data?.message || "Signup failed. Please try again.",
+    };
+  }
 }
 
 /**
@@ -54,18 +54,18 @@ export async function signInWithOneTap(
  * @throws {statusCode, message} if response's status code is not in the 200s
  */
 export async function login(emailOrMatricNo: string, password: string) {
-	try {
-		const response = await httpClient.post("/auth/login", {
-			emailOrMatricNo,
-			password,
-		});
-		return response.data;
-	} catch (error) {
-		throw {
-			statusCode: error.status,
-			message: error.data?.message || "Login failed. Please try again.",
-		};
-	}
+  try {
+    const response = await httpClient.post("/auth/login", {
+      emailOrMatricNo,
+      password,
+    });
+    return response.data;
+  } catch (error) {
+    throw {
+      statusCode: error.status,
+      message: error.data?.message || "Login failed. Please try again.",
+    };
+  }
 }
 
 /**
@@ -112,20 +112,18 @@ export async function requestPasswordReset(email: string) {
  * @throws {statusCode, message} if response's status code is not in the 200s
  */
 export async function resetPassword(token: string, newPassword: string) {
-	try {
-		const response = await httpClient.post("/auth/reset-password", {
-			token,
-			newPassword,
-		});
-		return response.data;
-	} catch (error) {
-		throw {
-			statusCode: error.status,
-			message:
-				error.data?.message ||
-				"Something went wrong. Please try again.",
-		};
-	}
+  try {
+    const response = await httpClient.post("/auth/reset-password", {
+      token,
+      newPassword,
+    });
+    return response.data;
+  } catch (error) {
+    throw {
+      statusCode: error.status,
+      message: error.data?.message || "Something went wrong. Please try again.",
+    };
+  }
 }
 
 /**
@@ -135,19 +133,19 @@ export async function resetPassword(token: string, newPassword: string) {
  * @throws {statusCode, message} if response's status code is not in the 200s
  */
 export async function requestEmailVerification(email: string) {
-	try {
-		const response = await httpClient.post("/auth/resend-verification", {
-			email,
-		});
-		return response.data;
-	} catch (error) {
-		throw {
-			statusCode: error.status,
-			message:
-				error.data?.message ||
-				"Failed to resend verification email. Please try again.",
-		};
-	}
+  try {
+    const response = await httpClient.post("/auth/resend-verification", {
+      email,
+    });
+    return response.data;
+  } catch (error) {
+    throw {
+      statusCode: error.status,
+      message:
+        error.data?.message ||
+        "Failed to resend verification email. Please try again.",
+    };
+  }
 }
 
 /**
@@ -157,34 +155,30 @@ export async function requestEmailVerification(email: string) {
  * @throws {statusCode, message} if response's status code is not in the 200s
  */
 export async function verifyEmail(token: string) {
-	try {
-		// The backend expects the token to be URL-encoded
-		const response = await httpClient.get(
-			`/auth/verify-email/token?token=${encodeURIComponent(token)}`
-		);
-		return response.data;
-	} catch (error) {
-		throw {
-			statusCode: error.status,
-			message:
-				error.data?.message ||
-				"Email verification failed. Please try again.",
-		};
-	}
+  try {
+    // The backend expects the token to be URL-encoded
+    const response = await httpClient.get(
+      `/auth/verify-email/token?token=${encodeURIComponent(token)}`
+    );
+    return response.data;
+  } catch (error) {
+    throw {
+      statusCode: error.status,
+      message:
+        error.data?.message || "Email verification failed. Please try again.",
+    };
+  }
 }
 
 /**
  * @returns true if client is authenticated, false if not authenticated
- * @throws {statusCode, message} if response's status code is not 200 or 401
  */
 export async function isClientAuthenticated() {
-	try {
-		const response = await httpClient.get("/auth/check");
-		return response.data.data.loggedIn;
-	} catch (error) {
-		throw {
-			statusCode: error.status,
-			message: error.data?.message || "Auth check failed"
-		}
-	}
+  try {
+    const response = await httpClient.get("/auth/check");
+    return response.data.data.loggedIn;
+  } catch (error) {
+    // Return false for any authentication check failure (401, network issues, etc.)
+    return false;
+  }
 }
