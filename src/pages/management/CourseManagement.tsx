@@ -254,10 +254,9 @@ const CourseManagement: React.FC = () => {
                     </h3>
                     
                     <div className="space-y-2 text-sm text-gray-600">
-                      <p><span className="font-medium">Code:</span> {course.code}</p>
-                      <p><span className="font-medium">Credits:</span> {course.creditUnit}</p>
+                      <p><span className="font-medium">Code:</span> {course.courseCode}</p>
                       {course.departments && (
-                        <p><span className="font-medium">Department:</span> {course.department.name}</p>
+                        <p><span className="font-medium">Department:</span> {course.departments.map(dept => dept.department.name).join(", ")}</p>
                       )}
                     </div>
 

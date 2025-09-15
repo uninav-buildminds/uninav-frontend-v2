@@ -3,23 +3,34 @@ import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { UserRole } from "@/lib/types/response.types";
 import ManagementSidebar from "@/components/management/ManagementSidebar";
+import { Loader2 } from "lucide-react";
 
 const ManagementLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, isLoading, isValidating, authInitializing } = useAuth() as any;
 
-  // Redirect if not admin or moderator
+  // Redirect if authenticated but not authorized
   useEffect(() => {
     if (user && user.role !== UserRole.ADMIN && user.role !== UserRole.MODERATOR) {
-      navigate("/dashboard");
+      navigate("/dashboard", { replace: true });
     }
   }, [user, navigate]);
 
-  // If user not loaded yet or not admin/moderator, show loading or nothing
-  if (!user || (user.role !== UserRole.ADMIN && user.role !== UserRole.MODERATOR)) {
-    return null;
+  // Show loading state while auth/user info is being resolved
+  if (authInitializing || isLoading || isValidating || !user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="flex flex-col items-center gap-3 text-gray-600">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+          <p className="text-sm font-medium">Loading management portal...</p>
+        </div>
+      </div>
+    );
   }
+
+  // Safety check (should have navigated already if unauthorized)
+  if (user.role !== UserRole.ADMIN && user.role !== UserRole.MODERATOR) return null;
 
   return (
     <div className="flex min-h-screen bg-gray-50">

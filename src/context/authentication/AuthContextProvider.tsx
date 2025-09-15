@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { logOut as apiLogOut, login as apiLogin, isClientAuthenticated, signInWithOneTap } from "@/api/auth.api";
 import { googleLogout, useGoogleOneTapLogin } from "@react-oauth/google";
 import AuthContext from "./AuthContext";
@@ -32,6 +32,7 @@ interface AuthContextProviderProps {
 export default function AuthContextProvider({ children }: AuthContextProviderProps) {
     const [loggedIn, setLoggedIn] = useState(false);
     const [showOneTap, setShowOneTap] = useState(false);
+    const initialAuthCheckDoneRef = useRef(false);
     const {
 		mutate,
 		data: user,
@@ -40,10 +41,14 @@ export default function AuthContextProvider({ children }: AuthContextProviderPro
 	} = useSWR(loggedIn ? "/user/profile" : null, fetcher);
 
     useEffect(() => {
+        let active = true;
         isClientAuthenticated().then(status => {
+            if (!active) return;
             setLoggedIn(status);
             setShowOneTap(status === false);
-        })
+            initialAuthCheckDoneRef.current = true;
+        });
+        return () => { active = false; };
     }, []);
 
     useGoogleOneTapLogin({
@@ -78,8 +83,11 @@ export default function AuthContextProvider({ children }: AuthContextProviderPro
         window.location.reload();
 	}, []);
 
+    // authInitializing: before initial cookie/session check completes OR (loggedIn && first user fetch still loading)
+    const authInitializing = !initialAuthCheckDoneRef.current || (loggedIn && (isLoading && !user));
+
     return (
-        <AuthContext.Provider value={{ refreshAuthState: mutate, logIn, logOut, user, isValidating, isLoading }}>
+        <AuthContext.Provider value={{ refreshAuthState: mutate, logIn, logOut, user, isValidating, isLoading, authInitializing }}>
             {children}
         </AuthContext.Provider>
     );
