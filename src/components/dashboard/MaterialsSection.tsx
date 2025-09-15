@@ -275,9 +275,7 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
     return <div className="py-8 text-center text-red-500">{error}</div>;
   }
   if (!sortedMaterials || sortedMaterials.length === 0) {
-    return (
-      <div className="py-8 text-center text-gray-400">No materials found.</div>
-    );
+    return <div>{""}</div>;
   }
   return (
     <section className="space-y-4">
