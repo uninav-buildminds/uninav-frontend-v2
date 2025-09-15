@@ -12,6 +12,23 @@ interface MaterialRecommendation {
   ignorePreference?: boolean;
 }
 
+export async function createMaterials(formData: FormData) {
+  try {
+    const response = await httpClient.post("/materials", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw {
+      statusCode: error.status,
+      message:
+        error.data?.message || "Material upload failed. Please try again.",
+    };
+  }
+}
+
 export async function getMaterialRecommendations(
   params: MaterialRecommendation
 ) {
