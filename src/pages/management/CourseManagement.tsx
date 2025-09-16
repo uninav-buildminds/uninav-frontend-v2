@@ -12,10 +12,8 @@ import {
   GraduationCap,
   Loader2,
 } from "lucide-react";
-import {
-  getCoursesPaginated,
-  GetCoursesParams,
-} from "@/api/course.api";
+import { getCoursesPaginated } from "@/api/course.api";
+import { GetCoursesParams } from "@/lib/types/course.types";
 import { Course } from "@/lib/types/course.types";
 import { ResponseStatus, UserRole } from "@/lib/types/response.types";
 import CourseForm from "@/components/management/CourseForm";
@@ -25,7 +23,7 @@ const CourseManagement: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
-  
+
   const [isLoading, setIsLoading] = useState(true);
   const [courses, setCourses] = useState<Course[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -38,7 +36,11 @@ const CourseManagement: React.FC = () => {
 
   // Redirect if not admin or moderator
   useEffect(() => {
-    if (user && user.role !== UserRole.ADMIN && user.role !== UserRole.MODERATOR) {
+    if (
+      user &&
+      user.role !== UserRole.ADMIN &&
+      user.role !== UserRole.MODERATOR
+    ) {
       navigate("/dashboard");
     }
   }, [user, navigate]);
@@ -48,18 +50,19 @@ const CourseManagement: React.FC = () => {
     try {
       setIsLoading(true);
       setError(null);
-      
-      const params: GetCoursesParams = {
+
+      const params = {
         page,
         limit: 10,
-        ...(search && { search }),
+        ...(search && { query: search }),
+        allowDepartments: true,
       };
 
       const response = await getCoursesPaginated(params);
-      
+
       if (response.status === ResponseStatus.SUCCESS) {
-        setCourses(response.data.courses);
-        setTotalPages(response.data.totalPages);
+        setCourses(response.data.data);
+        setTotalPages(response.data.pagination.totalPages);
         setCurrentPage(page);
       } else {
         setError(response.message || "Failed to fetch courses");
@@ -140,7 +143,10 @@ const CourseManagement: React.FC = () => {
   };
 
   // If user not loaded yet or not admin/moderator, show loading or nothing
-  if (!user || (user.role !== UserRole.ADMIN && user.role !== UserRole.MODERATOR)) {
+  if (
+    !user ||
+    (user.role !== UserRole.ADMIN && user.role !== UserRole.MODERATOR)
+  ) {
     return null;
   }
 
@@ -148,7 +154,9 @@ const CourseManagement: React.FC = () => {
     <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Course Management</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          Course Management
+        </h1>
         <p className="text-gray-600">
           Create, link, and manage courses across departments.
         </p>
@@ -187,7 +195,7 @@ const CourseManagement: React.FC = () => {
             <Search size={16} />
           </Button>
         </div>
-        
+
         {!showForm && (
           <Button onClick={() => setShowForm(true)} className="gap-2">
             <Plus size={16} />
@@ -208,7 +216,10 @@ const CourseManagement: React.FC = () => {
       {error && !isLoading && (
         <div className="text-center py-12">
           <div className="text-red-600 mb-2">⚠️ {error}</div>
-          <Button variant="outline" onClick={() => fetchCourses(currentPage, searchQuery)}>
+          <Button
+            variant="outline"
+            onClick={() => fetchCourses(currentPage, searchQuery)}
+          >
             Try Again
           </Button>
         </div>
@@ -220,7 +231,9 @@ const CourseManagement: React.FC = () => {
           {courses.length === 0 ? (
             <div className="text-center py-12">
               <GraduationCap className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No courses found</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No courses found
+              </h3>
               <p className="text-gray-600 mb-4">
                 {searchQuery
                   ? "No courses match your search criteria."
@@ -248,15 +261,23 @@ const CourseManagement: React.FC = () => {
                         <GraduationCap size={24} />
                       </div>
                     </div>
-                    
+
                     <h3 className="font-semibold text-lg mb-2 group-hover:text-blue-600 transition-colors duration-200">
                       {course.courseName}
                     </h3>
-                    
+
                     <div className="space-y-2 text-sm text-gray-600">
-                      <p><span className="font-medium">Code:</span> {course.courseCode}</p>
+                      <p>
+                        <span className="font-medium">Code:</span>{" "}
+                        {course.courseCode}
+                      </p>
                       {course.departments && (
-                        <p><span className="font-medium">Department:</span> {course.departments.map(dept => dept.department.name).join(", ")}</p>
+                        <p>
+                          <span className="font-medium">Department:</span>{" "}
+                          {course.departments
+                            .map((dept) => dept.department.name)
+                            .join(", ")}
+                        </p>
                       )}
                     </div>
 
@@ -282,21 +303,23 @@ const CourseManagement: React.FC = () => {
                     <ChevronLeft size={16} />
                     Previous
                   </Button>
-                  
+
                   <div className="flex items-center gap-1">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                      <Button
-                        key={page}
-                        variant={currentPage === page ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => handlePageChange(page)}
-                        className="w-8 h-8 p-0"
-                      >
-                        {page}
-                      </Button>
-                    ))}
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                      (page) => (
+                        <Button
+                          key={page}
+                          variant={currentPage === page ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => handlePageChange(page)}
+                          className="w-8 h-8 p-0"
+                        >
+                          {page}
+                        </Button>
+                      )
+                    )}
                   </div>
-                  
+
                   <Button
                     variant="outline"
                     size="sm"

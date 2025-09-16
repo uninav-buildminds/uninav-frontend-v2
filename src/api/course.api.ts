@@ -10,6 +10,7 @@ import { Department } from "@/lib/types/department.types";
 import { Faculty } from "@/lib/types/faculty.types";
 import { DLC } from "@/lib/types/dlc.types";
 import { Response, PaginatedResponse } from "@/lib/types/response.types";
+import { DayClickEventHandler } from "react-day-picker";
 
 interface CreateCourseDto {
   courseName: string;
@@ -68,7 +69,7 @@ export async function getCourses(filters?: {
  */
 export async function getCoursesPaginated(
   filters?: GetCoursesParams & { departmentId?: string; level?: number }
-): Promise<Response<{ data: Course[]; pagination: any }>> {
+): Promise<PaginatedResponse<Course>> {
   try {
     const { departmentId, level, page = 1, limit = 10, query } = filters || {};
     let url = `/courses?page=${page}&limit=${limit}`;
@@ -204,7 +205,7 @@ export async function getDepartmentLevelCourses({
   courseId?: string;
   page?: number;
   limit?: number;
-}): Promise<Response<{ data: DLC[]; pagination: any }> | null> {
+}): Promise<PaginatedResponse<DLC> | null> {
   try {
     let url = `/courses/department-level?page=${page}&limit=${limit}`;
     if (departmentId) url += `&departmentId=${departmentId}`;
