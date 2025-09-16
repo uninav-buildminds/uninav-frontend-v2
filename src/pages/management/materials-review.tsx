@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import ReviewTabs from "@/components/management/ReviewTabs";
 import ReviewActionDialog from "@/components/management/ReviewActionDialog";
 import DeleteConfirmationDialog from "@/components/management/DeleteConfirmationDialog";
+import ManagementLayout from "@/layouts/ManagementLayout";
 import {
   getMaterialReviews,
   reviewMaterial,
@@ -34,7 +35,7 @@ import {
   Eye,
 } from "lucide-react";
 
-const MaterialsReviewPage: React.FC = () => {
+const MaterialsReviewContent: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -399,6 +400,14 @@ const MaterialsReviewPage: React.FC = () => {
         />
       )}
     </div>
+  );
+};
+
+const MaterialsReviewPage: React.FC = () => {
+  return (
+    <ManagementLayout>
+      <MaterialsReviewContent />
+    </ManagementLayout>
   );
 };
 

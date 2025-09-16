@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import ReviewTabs from "@/components/management/ReviewTabs";
 import ReviewActionDialog from "@/components/management/ReviewActionDialog";
 import DeleteConfirmationDialog from "@/components/management/DeleteConfirmationDialog";
+import ManagementLayout from "@/layouts/ManagementLayout";
 import {
   listAdvertReviews,
   reviewAdvert,
@@ -34,7 +35,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 
-const AdvertsReviewPage: React.FC = () => {
+const AdvertsReviewContent: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -422,6 +423,14 @@ const AdvertsReviewPage: React.FC = () => {
         />
       )}
     </div>
+  );
+};
+
+const AdvertsReviewPage: React.FC = () => {
+  return (
+    <ManagementLayout>
+      <AdvertsReviewContent />
+    </ManagementLayout>
   );
 };
 

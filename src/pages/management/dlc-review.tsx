@@ -2,12 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useDepartments } from "@/contexts/DepartmentContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import ReviewTabs from "@/components/management/ReviewTabs";
 import ReviewActionDialog from "@/components/management/ReviewActionDialog";
 import DeleteConfirmationDialog from "@/components/management/DeleteConfirmationDialog";
+import ManagementLayout from "@/layouts/ManagementLayout";
 import {
   listDLCReviews,
   reviewDLC,
@@ -31,10 +33,11 @@ import {
   GraduationCap,
 } from "lucide-react";
 
-const DLCReviewPage: React.FC = () => {
+const DLCReviewContent: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { getDepartmentById } = useDepartments();
   const [activeTab, setActiveTab] = useState<string>(ApprovalStatusEnum.PENDING);
   const [dlcs, setDLCs] = useState<DLC[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -212,8 +215,12 @@ const DLCReviewPage: React.FC = () => {
                     <Badge variant="outline" className="bg-purple-50 text-purple-700">Level {dlc.level}</Badge>
                   </div>
                   <div className="mb-4 pb-4 border-b border-gray-100">
-                    <h3 className="font-semibold text-lg mb-1">{dlc.department.name}</h3>
-                    <p className="text-sm text-gray-600 line-clamp-2">{dlc.department.description || "No description"}</p>
+                    <h3 className="font-semibold text-lg mb-1">
+                      {getDepartmentById(dlc.departmentId)?.name || dlc.departmentId}
+                    </h3>
+                    <p className="text-sm text-gray-600 line-clamp-2">
+                      {getDepartmentById(dlc.departmentId)?.description || "No description"}
+                    </p>
                   </div>
                   <div className="flex items-center gap-2 text-green-700 font-medium mb-2">
                     <GraduationCap size={18} /> Course
@@ -279,10 +286,18 @@ const DLCReviewPage: React.FC = () => {
           onClose={() => setIsDeleteDialogOpen(false)}
           onConfirm={confirmDelete}
           contentType="Department Level Course"
-          itemName={`${selectedDLC.course.courseCode} for ${selectedDLC.department.name} (Level ${selectedDLC.level})`}
+          itemName={`${selectedDLC.course.courseCode} for ${getDepartmentById(selectedDLC.departmentId)?.name || selectedDLC.departmentId} (Level ${selectedDLC.level})`}
         />
       )}
     </div>
+  );
+};
+
+const DLCReviewPage: React.FC = () => {
+  return (
+    <ManagementLayout>
+      <DLCReviewContent />
+    </ManagementLayout>
   );
 };
 

@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import ReviewTabs from "@/components/management/ReviewTabs";
 import ReviewActionDialog from "@/components/management/ReviewActionDialog";
 import DeleteConfirmationDialog from "@/components/management/DeleteConfirmationDialog";
+import ManagementLayout from "@/layouts/ManagementLayout";
 import {
   listBlogReviews,
   reviewBlog,
@@ -29,7 +30,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 
-const BlogsReviewPage: React.FC = () => {
+const BlogsReviewContent: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -341,6 +342,14 @@ const BlogsReviewPage: React.FC = () => {
         />
       )}
     </div>
+  );
+};
+
+const BlogsReviewPage: React.FC = () => {
+  return (
+    <ManagementLayout>
+      <BlogsReviewContent />
+    </ManagementLayout>
   );
 };
 

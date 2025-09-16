@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import ManagementLayout from "@/layouts/ManagementLayout";
 import {
   BookOpen,
   FileText,
@@ -123,7 +124,7 @@ const statusOverview = [
   },
 ];
 
-const ManagementDashboard: React.FC = () => {
+const ManagementDashboardContent: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -318,6 +319,14 @@ const ManagementDashboard: React.FC = () => {
         </div>
       )}
     </div>
+  );
+};
+
+const ManagementDashboard: React.FC = () => {
+  return (
+    <ManagementLayout>
+      <ManagementDashboardContent />
+    </ManagementLayout>
   );
 };
 

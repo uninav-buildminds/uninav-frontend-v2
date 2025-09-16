@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import ReviewTabs from "@/components/management/ReviewTabs";
 import ReviewActionDialog from "@/components/management/ReviewActionDialog";
+import ManagementLayout from "@/layouts/ManagementLayout";
 import {
   listModeratorApplications,
   reviewModeratorApplication,
@@ -32,7 +33,7 @@ import {
   Calendar,
 } from "lucide-react";
 
-const ModeratorsReviewPage: React.FC = () => {
+const ModeratorsReviewContent: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -359,6 +360,14 @@ const ModeratorsReviewPage: React.FC = () => {
         />
       )}
     </div>
+  );
+};
+
+const ModeratorsReviewPage: React.FC = () => {
+  return (
+    <ManagementLayout>
+      <ModeratorsReviewContent />
+    </ManagementLayout>
   );
 };
 

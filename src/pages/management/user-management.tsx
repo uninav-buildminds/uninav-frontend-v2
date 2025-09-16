@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useDepartments } from "@/contexts/DepartmentContext";
 import { fetchAllUsers } from "@/api/user.api";
 import { UserProfile } from "@/lib/types/user.types";
 import { UserRole } from "@/lib/types/response.types";
@@ -8,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import ManagementLayout from "@/layouts/ManagementLayout";
 import {
   Users,
   Verified,
@@ -31,9 +33,10 @@ function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
-const UserManagementPage: React.FC = () => {
+const UserManagementContent: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { getDepartmentById } = useDepartments();
 
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [totalUsers, setTotalUsers] = useState(0);
@@ -220,7 +223,9 @@ const UserManagementPage: React.FC = () => {
                     <TableCell className="text-sm flex items-center gap-2">
                       <Mail size={14} className="text-muted-foreground" /> {u.email}
                     </TableCell>
-                    <TableCell className="hidden lg:table-cell text-sm">{u.department?.name || '—'}</TableCell>
+                    <TableCell className="hidden lg:table-cell text-sm">
+                      {u.departmentId ? getDepartmentById(u.departmentId)?.name || u.departmentId : '—'}
+                    </TableCell>
                     <TableCell className="hidden lg:table-cell">{u.level}</TableCell>
                     <TableCell>
                       <span className={`px-2 py-1 text-xs font-semibold rounded-full capitalize ${
@@ -260,6 +265,14 @@ const UserManagementPage: React.FC = () => {
         </CardContent>
       </Card>
     </div>
+  );
+};
+
+const UserManagementPage: React.FC = () => {
+  return (
+    <ManagementLayout>
+      <UserManagementContent />
+    </ManagementLayout>
   );
 };
 

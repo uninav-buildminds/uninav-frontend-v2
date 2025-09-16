@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useDepartments } from "@/contexts/DepartmentContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,11 +19,13 @@ import { Course } from "@/lib/types/course.types";
 import { ResponseStatus, UserRole } from "@/lib/types/response.types";
 import CourseForm from "@/components/management/CourseForm";
 import CourseModal from "@/components/management/CourseModal";
+import ManagementLayout from "@/layouts/ManagementLayout";
 
-const CourseManagement: React.FC = () => {
+const CourseManagementContent: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { getDepartmentById, isLoading: departmentsLoading } = useDepartments();
 
   const [isLoading, setIsLoading] = useState(true);
   const [courses, setCourses] = useState<Course[]>([]);
@@ -55,7 +58,7 @@ const CourseManagement: React.FC = () => {
         page,
         limit: 10,
         ...(search && { query: search }),
-        allowDepartments: true,
+        allowDepartments: false, // We'll handle departments via context
       };
 
       const response = await getCoursesPaginated(params);
@@ -205,10 +208,12 @@ const CourseManagement: React.FC = () => {
       </div>
 
       {/* Loading State */}
-      {isLoading && (
+      {(isLoading || departmentsLoading) && (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="animate-spin h-8 w-8 text-blue-600" />
-          <span className="ml-2 text-gray-600">Loading courses...</span>
+          <span className="ml-2 text-gray-600">
+            {departmentsLoading ? "Loading departments..." : "Loading courses..."}
+          </span>
         </div>
       )}
 
@@ -226,7 +231,7 @@ const CourseManagement: React.FC = () => {
       )}
 
       {/* Courses Grid */}
-      {!isLoading && !error && (
+      {!isLoading && !departmentsLoading && !error && (
         <>
           {courses.length === 0 ? (
             <div className="text-center py-12">
@@ -271,11 +276,14 @@ const CourseManagement: React.FC = () => {
                         <span className="font-medium">Code:</span>{" "}
                         {course.courseCode}
                       </p>
-                      {course.departments && (
+                      {course.departments && course.departments.length > 0 && (
                         <p>
-                          <span className="font-medium">Department:</span>{" "}
+                          <span className="font-medium">Departments:</span>{" "}
                           {course.departments
-                            .map((dept) => dept.department.name)
+                            .map((dept) => {
+                              const department = getDepartmentById(dept.departmentId);
+                              return department ? department.name : dept.departmentId;
+                            })
                             .join(", ")}
                         </p>
                       )}
@@ -351,6 +359,14 @@ const CourseManagement: React.FC = () => {
         />
       )}
     </div>
+  );
+};
+
+const CourseManagement: React.FC = () => {
+  return (
+    <ManagementLayout>
+      <CourseManagementContent />
+    </ManagementLayout>
   );
 };
 

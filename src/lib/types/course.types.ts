@@ -9,16 +9,11 @@ export interface Course {
   reviewStatus: ApprovalStatusEnum;
   createdAt: string;
   updatedAt: string;
-  departments?: CourseDepartment[];
-}
-
-export interface CourseDepartment {
-  departmentId: string;
-  level: number;
-  courseId: string;
-  reviewStatus: ApprovalStatusEnum;
-  reviewedById: string | null;
-  department: Department;
+  departments?: {
+    departmentId: string;
+    level: number;
+    department: Department;
+  }[];
 }
 
 export interface CreateCourseRequest {
