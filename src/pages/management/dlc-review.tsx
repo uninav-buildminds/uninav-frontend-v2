@@ -18,7 +18,11 @@ import {
   ReviewActionDTO,
 } from "@/api/review.api";
 import { DLC } from "@/lib/types/dlc.types";
-import { ApprovalStatusEnum, ResponseStatus, UserRole } from "@/lib/types/response.types";
+import {
+  ApprovalStatusEnum,
+  ResponseStatus,
+  UserRole,
+} from "@/lib/types/response.types";
 import {
   Award,
   ChevronLeft,
@@ -38,7 +42,9 @@ const DLCReviewContent: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { getDepartmentById } = useDepartments();
-  const [activeTab, setActiveTab] = useState<string>(ApprovalStatusEnum.PENDING);
+  const [activeTab, setActiveTab] = useState<string>(
+    ApprovalStatusEnum.PENDING
+  );
   const [dlcs, setDLCs] = useState<DLC[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,12 +52,22 @@ const DLCReviewContent: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [selectedDLC, setSelectedDLC] = useState<DLC | null>(null);
-  const [reviewAction, setReviewAction] = useState<ApprovalStatusEnum | null>(null);
+  const [reviewAction, setReviewAction] = useState<ApprovalStatusEnum | null>(
+    null
+  );
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [counts, setCounts] = useState({ pending: 0, approved: 0, rejected: 0 });
+  const [counts, setCounts] = useState({
+    pending: 0,
+    approved: 0,
+    rejected: 0,
+  });
 
   useEffect(() => {
-    if (user && user.role !== UserRole.ADMIN && user.role !== UserRole.MODERATOR) {
+    if (
+      user &&
+      user.role !== UserRole.ADMIN &&
+      user.role !== UserRole.MODERATOR
+    ) {
       navigate("/dashboard");
     }
   }, [user, navigate]);
@@ -114,18 +130,35 @@ const DLCReviewContent: React.FC = () => {
     setIsDeleteDialogOpen(true);
   };
 
-  const confirmReviewAction = async (action: ApprovalStatusEnum, comment: string) => {
+  const confirmReviewAction = async (
+    action: ApprovalStatusEnum,
+    comment: string
+  ) => {
     if (!selectedDLC) return;
     try {
-      const payload: ReviewActionDTO = { action, comment: comment.trim() || undefined };
-      const response = await reviewDLC(selectedDLC.departmentId, selectedDLC.courseId, payload);
+      const payload: ReviewActionDTO = {
+        action,
+        comment: comment.trim() || undefined,
+      };
+      const response = await reviewDLC(
+        selectedDLC.departmentId,
+        selectedDLC.courseId,
+        payload
+      );
       if (response.status === ResponseStatus.SUCCESS) {
-        toast({ title: "Success", description: `DLC ${action === ApprovalStatusEnum.APPROVED ? "approved" : "rejected"}` });
+        toast({
+          title: "Success",
+          description: `DLC ${
+            action === ApprovalStatusEnum.APPROVED ? "approved" : "rejected"
+          }`,
+        });
         setCounts((prev) => ({
           ...prev,
           pending: Math.max(0, prev.pending - 1),
           [action === ApprovalStatusEnum.APPROVED ? "approved" : "rejected"]:
-            prev[action === ApprovalStatusEnum.APPROVED ? "approved" : "rejected"] + 1,
+            prev[
+              action === ApprovalStatusEnum.APPROVED ? "approved" : "rejected"
+            ] + 1,
         }));
         fetchDLCs();
       } else {
@@ -139,12 +172,18 @@ const DLCReviewContent: React.FC = () => {
   const confirmDelete = async () => {
     if (!selectedDLC || user?.role !== UserRole.ADMIN) return;
     try {
-      const response = await deleteDLCAsAdmin(selectedDLC.departmentId, selectedDLC.courseId);
+      const response = await deleteDLCAsAdmin(
+        selectedDLC.departmentId,
+        selectedDLC.courseId
+      );
       if (response.status === ResponseStatus.SUCCESS) {
         toast({ title: "Deleted", description: "DLC deleted successfully" });
         setCounts((prev) => ({
           ...prev,
-          [activeTab.toLowerCase()]: Math.max(0, (prev as any)[activeTab.toLowerCase()] - 1),
+          [activeTab.toLowerCase()]: Math.max(
+            0,
+            (prev as any)[activeTab.toLowerCase()] - 1
+          ),
         }));
         fetchDLCs();
       } else {
@@ -155,12 +194,21 @@ const DLCReviewContent: React.FC = () => {
     }
   };
 
-  if (!user || (user.role !== UserRole.ADMIN && user.role !== UserRole.MODERATOR)) return null;
+  if (
+    !user ||
+    (user.role !== UserRole.ADMIN && user.role !== UserRole.MODERATOR)
+  )
+    return null;
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex items-center gap-2 mb-6">
-        <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="gap-1 text-gray-600">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="gap-1 text-gray-600"
+        >
           <ArrowLeft size={16} /> Back
         </Button>
         <h1 className="text-2xl font-bold">DLC Review</h1>
@@ -195,7 +243,9 @@ const DLCReviewContent: React.FC = () => {
           ) : dlcs.length === 0 ? (
             <div className="bg-gray-50 p-8 rounded-lg text-center">
               <Award className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">No department level courses found</h3>
+              <h3 className="text-lg font-medium mb-2">
+                No department level courses found
+              </h3>
               <p className="text-gray-600">
                 {activeTab === ApprovalStatusEnum.PENDING
                   ? "There are no department level courses waiting for review."
@@ -207,19 +257,29 @@ const DLCReviewContent: React.FC = () => {
           ) : (
             <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
               {dlcs.map((dlc) => (
-                <div key={`${dlc.departmentId}-${dlc.courseId}`} className="bg-white border rounded-xl p-6 hover:shadow-lg transition-shadow">
+                <div
+                  key={`${dlc.departmentId}-${dlc.courseId}`}
+                  className="bg-white border rounded-xl p-6 hover:shadow-lg transition-shadow"
+                >
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2 text-blue-700 font-medium">
                       <Building size={18} /> Department
                     </div>
-                    <Badge variant="outline" className="bg-purple-50 text-purple-700">Level {dlc.level}</Badge>
+                    <Badge
+                      variant="outline"
+                      className="bg-purple-50 text-purple-700"
+                    >
+                      Level {dlc.level}
+                    </Badge>
                   </div>
                   <div className="mb-4 pb-4 border-b border-gray-100">
                     <h3 className="font-semibold text-lg mb-1">
-                      {getDepartmentById(dlc.departmentId)?.name || dlc.departmentId}
+                      {getDepartmentById(dlc.departmentId)?.name ||
+                        dlc.departmentId}
                     </h3>
                     <p className="text-sm text-gray-600 line-clamp-2">
-                      {getDepartmentById(dlc.departmentId)?.description || "No description"}
+                      {getDepartmentById(dlc.departmentId)?.description ||
+                        "No description"}
                     </p>
                   </div>
                   <div className="flex items-center gap-2 text-green-700 font-medium mb-2">
@@ -228,23 +288,45 @@ const DLCReviewContent: React.FC = () => {
                   <div className="mb-4">
                     <div className="flex items-center justify-between mb-1">
                       <h4 className="font-semibold">{dlc.course.courseName}</h4>
-                      <Badge className="bg-blue-100 text-blue-700 uppercase">{dlc.course.courseCode}</Badge>
+                      <Badge className="bg-blue-100 text-blue-700 uppercase">
+                        {dlc.course.courseCode}
+                      </Badge>
                     </div>
-                    <p className="text-sm text-gray-600 line-clamp-2">{dlc.course.description || "No description"}</p>
+                    <p className="text-sm text-gray-600 line-clamp-2">
+                      {dlc.course.description || "No description"}
+                    </p>
                   </div>
                   <div className="flex flex-wrap gap-2 justify-end">
                     {activeTab === ApprovalStatusEnum.PENDING && (
                       <>
-                        <Button size="sm" className="bg-green-600 hover:bg-green-700 gap-1" onClick={() => handleReviewAction(dlc, ApprovalStatusEnum.APPROVED)}>
+                        <Button
+                          size="sm"
+                          className="bg-green-600 hover:bg-green-700 gap-1"
+                          onClick={() =>
+                            handleReviewAction(dlc, ApprovalStatusEnum.APPROVED)
+                          }
+                        >
                           <CheckCircle size={14} /> Approve
                         </Button>
-                        <Button size="sm" variant="destructive" className="gap-1" onClick={() => handleReviewAction(dlc, ApprovalStatusEnum.REJECTED)}>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="gap-1"
+                          onClick={() =>
+                            handleReviewAction(dlc, ApprovalStatusEnum.REJECTED)
+                          }
+                        >
                           <XCircle size={14} /> Reject
                         </Button>
                       </>
                     )}
                     {user.role === UserRole.ADMIN && (
-                      <Button size="sm" variant="destructive" className="gap-1" onClick={() => handleDeleteAction(dlc)}>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        className="gap-1"
+                        onClick={() => handleDeleteAction(dlc)}
+                      >
                         <Trash2 size={14} /> Delete
                       </Button>
                     )}
@@ -256,12 +338,28 @@ const DLCReviewContent: React.FC = () => {
 
           {dlcs.length > 0 && (
             <div className="flex items-center justify-between pt-6">
-              <p className="text-sm text-gray-600">Page {currentPage} of {totalPages}</p>
+              <p className="text-sm text-gray-600">
+                Page {currentPage} of {totalPages}
+              </p>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => currentPage > 1 && setCurrentPage(currentPage - 1)} disabled={currentPage <= 1}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    currentPage > 1 && setCurrentPage(currentPage - 1)
+                  }
+                  disabled={currentPage <= 1}
+                >
                   <ChevronLeft size={14} /> Previous
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => currentPage < totalPages && setCurrentPage(currentPage + 1)} disabled={currentPage >= totalPages}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    currentPage < totalPages && setCurrentPage(currentPage + 1)
+                  }
+                  disabled={currentPage >= totalPages}
+                >
                   Next <ChevronRight size={14} />
                 </Button>
               </div>
@@ -286,7 +384,10 @@ const DLCReviewContent: React.FC = () => {
           onClose={() => setIsDeleteDialogOpen(false)}
           onConfirm={confirmDelete}
           contentType="Department Level Course"
-          itemName={`${selectedDLC.course.courseCode} for ${getDepartmentById(selectedDLC.departmentId)?.name || selectedDLC.departmentId} (Level ${selectedDLC.level})`}
+          itemName={`${selectedDLC.course.courseCode} for ${
+            getDepartmentById(selectedDLC.departmentId)?.name ||
+            selectedDLC.departmentId
+          } (Level ${selectedDLC.level})`}
         />
       )}
     </div>

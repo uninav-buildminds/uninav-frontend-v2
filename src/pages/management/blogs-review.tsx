@@ -17,7 +17,11 @@ import {
   ReviewActionDTO,
 } from "@/api/review.api";
 import { Blog } from "@/lib/types/blog.types";
-import { ApprovalStatusEnum, ResponseStatus, UserRole } from "@/lib/types/response.types";
+import {
+  ApprovalStatusEnum,
+  ResponseStatus,
+  UserRole,
+} from "@/lib/types/response.types";
 import {
   FileText,
   ChevronLeft,
@@ -34,7 +38,9 @@ const BlogsReviewContent: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<string>(ApprovalStatusEnum.PENDING);
+  const [activeTab, setActiveTab] = useState<string>(
+    ApprovalStatusEnum.PENDING
+  );
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,13 +48,23 @@ const BlogsReviewContent: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [selectedBlog, setSelectedBlog] = useState<Blog | null>(null);
-  const [reviewAction, setReviewAction] = useState<ApprovalStatusEnum | null>(null);
+  const [reviewAction, setReviewAction] = useState<ApprovalStatusEnum | null>(
+    null
+  );
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [counts, setCounts] = useState({ pending: 0, approved: 0, rejected: 0 });
+  const [counts, setCounts] = useState({
+    pending: 0,
+    approved: 0,
+    rejected: 0,
+  });
 
   // Access Control
   useEffect(() => {
-    if (user && user.role !== UserRole.ADMIN && user.role !== UserRole.MODERATOR) {
+    if (
+      user &&
+      user.role !== UserRole.ADMIN &&
+      user.role !== UserRole.MODERATOR
+    ) {
       navigate("/dashboard");
     }
   }, [user, navigate]);
@@ -111,18 +127,31 @@ const BlogsReviewContent: React.FC = () => {
     setIsDeleteDialogOpen(true);
   };
 
-  const confirmReviewAction = async (action: ApprovalStatusEnum, comment: string) => {
+  const confirmReviewAction = async (
+    action: ApprovalStatusEnum,
+    comment: string
+  ) => {
     if (!selectedBlog) return;
     try {
-      const payload: ReviewActionDTO = { action, comment: comment.trim() || undefined };
+      const payload: ReviewActionDTO = {
+        action,
+        comment: comment.trim() || undefined,
+      };
       const response = await reviewBlog(selectedBlog.id, payload);
       if (response.status === ResponseStatus.SUCCESS) {
-        toast({ title: "Success", description: `Blog ${action === ApprovalStatusEnum.APPROVED ? "approved" : "rejected"}` });
+        toast({
+          title: "Success",
+          description: `Blog ${
+            action === ApprovalStatusEnum.APPROVED ? "approved" : "rejected"
+          }`,
+        });
         setCounts((prev) => ({
           ...prev,
           pending: Math.max(0, prev.pending - 1),
           [action === ApprovalStatusEnum.APPROVED ? "approved" : "rejected"]:
-            prev[action === ApprovalStatusEnum.APPROVED ? "approved" : "rejected"] + 1,
+            prev[
+              action === ApprovalStatusEnum.APPROVED ? "approved" : "rejected"
+            ] + 1,
         }));
         fetchBlogs();
       } else {
@@ -141,7 +170,10 @@ const BlogsReviewContent: React.FC = () => {
         toast({ title: "Deleted", description: "Blog deleted successfully" });
         setCounts((prev) => ({
           ...prev,
-          [activeTab.toLowerCase()]: Math.max(0, (prev as any)[activeTab.toLowerCase()] - 1),
+          [activeTab.toLowerCase()]: Math.max(
+            0,
+            (prev as any)[activeTab.toLowerCase()] - 1
+          ),
         }));
         fetchBlogs();
       } else {
@@ -152,12 +184,21 @@ const BlogsReviewContent: React.FC = () => {
     }
   };
 
-  if (!user || (user.role !== UserRole.ADMIN && user.role !== UserRole.MODERATOR)) return null;
+  if (
+    !user ||
+    (user.role !== UserRole.ADMIN && user.role !== UserRole.MODERATOR)
+  )
+    return null;
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex items-center gap-2 mb-6">
-        <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="gap-1 text-gray-600">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="gap-1 text-gray-600"
+        >
           <ArrowLeft size={16} /> Back
         </Button>
         <h1 className="text-2xl font-bold">Blogs Review</h1>
@@ -242,7 +283,11 @@ const BlogsReviewContent: React.FC = () => {
                     {blog.tags && blog.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1 mb-4">
                         {blog.tags.slice(0, 3).map((tag) => (
-                          <Badge key={tag} variant="outline" className="text-xs">
+                          <Badge
+                            key={tag}
+                            variant="outline"
+                            className="text-xs"
+                          >
                             {tag}
                           </Badge>
                         ))}
@@ -263,7 +308,12 @@ const BlogsReviewContent: React.FC = () => {
                           <Button
                             size="sm"
                             className="bg-green-600 hover:bg-green-700 gap-1"
-                            onClick={() => handleReviewAction(blog, ApprovalStatusEnum.APPROVED)}
+                            onClick={() =>
+                              handleReviewAction(
+                                blog,
+                                ApprovalStatusEnum.APPROVED
+                              )
+                            }
                           >
                             <CheckCircle size={14} /> Approve
                           </Button>
@@ -271,7 +321,12 @@ const BlogsReviewContent: React.FC = () => {
                             size="sm"
                             variant="destructive"
                             className="gap-1"
-                            onClick={() => handleReviewAction(blog, ApprovalStatusEnum.REJECTED)}
+                            onClick={() =>
+                              handleReviewAction(
+                                blog,
+                                ApprovalStatusEnum.REJECTED
+                              )
+                            }
                           >
                             <XCircle size={14} /> Reject
                           </Button>
@@ -303,7 +358,9 @@ const BlogsReviewContent: React.FC = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => currentPage > 1 && setCurrentPage(currentPage - 1)}
+                  onClick={() =>
+                    currentPage > 1 && setCurrentPage(currentPage - 1)
+                  }
                   disabled={currentPage <= 1}
                 >
                   <ChevronLeft size={14} /> Previous
@@ -311,7 +368,9 @@ const BlogsReviewContent: React.FC = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => currentPage < totalPages && setCurrentPage(currentPage + 1)}
+                  onClick={() =>
+                    currentPage < totalPages && setCurrentPage(currentPage + 1)
+                  }
                   disabled={currentPage >= totalPages}
                 >
                   Next <ChevronRight size={14} />

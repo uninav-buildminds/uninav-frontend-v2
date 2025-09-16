@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import ReviewTabs from "@/components/management/ReviewTabs";
 import ReviewActionDialog from "@/components/management/ReviewActionDialog";
 import DeleteConfirmationDialog from "@/components/management/DeleteConfirmationDialog";
+import ManagementLayout from "@/layouts/ManagementLayout";
 import {
   listCourseReviews,
   reviewCourse,
@@ -16,7 +17,11 @@ import {
   ReviewActionDTO,
 } from "@/api/review.api";
 import { Course } from "@/lib/types/course.types";
-import { ApprovalStatusEnum, ResponseStatus, UserRole } from "@/lib/types/response.types";
+import {
+  ApprovalStatusEnum,
+  ResponseStatus,
+  UserRole,
+} from "@/lib/types/response.types";
 import {
   GraduationCap,
   ChevronLeft,
@@ -29,11 +34,13 @@ import {
   ArrowLeft,
 } from "lucide-react";
 
-const CoursesReviewPage: React.FC = () => {
+const CoursesReviewContent: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<string>(ApprovalStatusEnum.PENDING);
+  const [activeTab, setActiveTab] = useState<string>(
+    ApprovalStatusEnum.PENDING
+  );
   const [courses, setCourses] = useState<Course[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -41,12 +48,22 @@ const CoursesReviewPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
-  const [reviewAction, setReviewAction] = useState<ApprovalStatusEnum | null>(null);
+  const [reviewAction, setReviewAction] = useState<ApprovalStatusEnum | null>(
+    null
+  );
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [counts, setCounts] = useState({ pending: 0, approved: 0, rejected: 0 });
+  const [counts, setCounts] = useState({
+    pending: 0,
+    approved: 0,
+    rejected: 0,
+  });
 
   useEffect(() => {
-    if (user && user.role !== UserRole.ADMIN && user.role !== UserRole.MODERATOR) {
+    if (
+      user &&
+      user.role !== UserRole.ADMIN &&
+      user.role !== UserRole.MODERATOR
+    ) {
       navigate("/dashboard");
     }
   }, [user, navigate]);
@@ -109,18 +126,31 @@ const CoursesReviewPage: React.FC = () => {
     setIsDeleteDialogOpen(true);
   };
 
-  const confirmReviewAction = async (action: ApprovalStatusEnum, comment: string) => {
+  const confirmReviewAction = async (
+    action: ApprovalStatusEnum,
+    comment: string
+  ) => {
     if (!selectedCourse) return;
     try {
-      const payload: ReviewActionDTO = { action, comment: comment.trim() || undefined };
+      const payload: ReviewActionDTO = {
+        action,
+        comment: comment.trim() || undefined,
+      };
       const response = await reviewCourse(selectedCourse.id, payload);
       if (response.status === ResponseStatus.SUCCESS) {
-        toast({ title: "Success", description: `Course ${action === ApprovalStatusEnum.APPROVED ? "approved" : "rejected"}` });
+        toast({
+          title: "Success",
+          description: `Course ${
+            action === ApprovalStatusEnum.APPROVED ? "approved" : "rejected"
+          }`,
+        });
         setCounts((prev) => ({
           ...prev,
           pending: Math.max(0, prev.pending - 1),
           [action === ApprovalStatusEnum.APPROVED ? "approved" : "rejected"]:
-            prev[action === ApprovalStatusEnum.APPROVED ? "approved" : "rejected"] + 1,
+            prev[
+              action === ApprovalStatusEnum.APPROVED ? "approved" : "rejected"
+            ] + 1,
         }));
         fetchCourses();
       } else {
@@ -139,7 +169,10 @@ const CoursesReviewPage: React.FC = () => {
         toast({ title: "Deleted", description: "Course deleted successfully" });
         setCounts((prev) => ({
           ...prev,
-          [activeTab.toLowerCase()]: Math.max(0, (prev as any)[activeTab.toLowerCase()] - 1),
+          [activeTab.toLowerCase()]: Math.max(
+            0,
+            (prev as any)[activeTab.toLowerCase()] - 1
+          ),
         }));
         fetchCourses();
       } else {
@@ -150,12 +183,21 @@ const CoursesReviewPage: React.FC = () => {
     }
   };
 
-  if (!user || (user.role !== UserRole.ADMIN && user.role !== UserRole.MODERATOR)) return null;
+  if (
+    !user ||
+    (user.role !== UserRole.ADMIN && user.role !== UserRole.MODERATOR)
+  )
+    return null;
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex items-center gap-2 mb-6">
-        <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="gap-1 text-gray-600">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="gap-1 text-gray-600"
+        >
           <ArrowLeft size={16} /> Back
         </Button>
         <h1 className="text-2xl font-bold">Courses Review</h1>
@@ -202,33 +244,70 @@ const CoursesReviewPage: React.FC = () => {
           ) : (
             <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
               {courses.map((course) => (
-                <div key={course.id} className="bg-white border rounded-xl p-6 hover:shadow-lg transition-shadow">
+                <div
+                  key={course.id}
+                  className="bg-white border rounded-xl p-6 hover:shadow-lg transition-shadow"
+                >
                   <div className="flex items-start justify-between mb-4">
                     <div className="bg-blue-50 text-blue-600 w-12 h-12 rounded-lg flex items-center justify-center border-2 border-blue-100">
                       <GraduationCap size={24} />
                     </div>
                   </div>
-                  <h3 className="font-semibold text-lg mb-2 line-clamp-1">{course.courseName}</h3>
+                  <h3 className="font-semibold text-lg mb-2 line-clamp-1">
+                    {course.courseName}
+                  </h3>
                   <div className="space-y-2 text-sm text-gray-600 mb-3">
-                    <p><span className="font-medium">Code:</span> {course.courseCode}</p>
+                    <p>
+                      <span className="font-medium">Code:</span>{" "}
+                      {course.courseCode}
+                    </p>
                     {course.departments && course.departments.length > 0 && (
-                      <p><span className="font-medium">Departments:</span> {course.departments.length}</p>
+                      <p>
+                        <span className="font-medium">Departments:</span>{" "}
+                        {course.departments.length}
+                      </p>
                     )}
                   </div>
-                  <p className="text-sm text-gray-600 line-clamp-2 mb-4">{course.description || "No description provided."}</p>
+                  <p className="text-sm text-gray-600 line-clamp-2 mb-4">
+                    {course.description || "No description provided."}
+                  </p>
                   <div className="flex flex-wrap gap-2 justify-end">
                     {activeTab === ApprovalStatusEnum.PENDING && (
                       <>
-                        <Button size="sm" className="bg-green-600 hover:bg-green-700 gap-1" onClick={() => handleReviewAction(course, ApprovalStatusEnum.APPROVED)}>
+                        <Button
+                          size="sm"
+                          className="bg-green-600 hover:bg-green-700 gap-1"
+                          onClick={() =>
+                            handleReviewAction(
+                              course,
+                              ApprovalStatusEnum.APPROVED
+                            )
+                          }
+                        >
                           <CheckCircle size={14} /> Approve
                         </Button>
-                        <Button size="sm" variant="destructive" className="gap-1" onClick={() => handleReviewAction(course, ApprovalStatusEnum.REJECTED)}>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="gap-1"
+                          onClick={() =>
+                            handleReviewAction(
+                              course,
+                              ApprovalStatusEnum.REJECTED
+                            )
+                          }
+                        >
                           <XCircle size={14} /> Reject
                         </Button>
                       </>
                     )}
                     {user.role === UserRole.ADMIN && (
-                      <Button size="sm" variant="destructive" className="gap-1" onClick={() => handleDeleteAction(course)}>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        className="gap-1"
+                        onClick={() => handleDeleteAction(course)}
+                      >
                         <Trash2 size={14} /> Delete
                       </Button>
                     )}
@@ -240,12 +319,28 @@ const CoursesReviewPage: React.FC = () => {
 
           {courses.length > 0 && (
             <div className="flex items-center justify-between pt-6">
-              <p className="text-sm text-gray-600">Page {currentPage} of {totalPages}</p>
+              <p className="text-sm text-gray-600">
+                Page {currentPage} of {totalPages}
+              </p>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => currentPage > 1 && setCurrentPage(currentPage - 1)} disabled={currentPage <= 1}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    currentPage > 1 && setCurrentPage(currentPage - 1)
+                  }
+                  disabled={currentPage <= 1}
+                >
                   <ChevronLeft size={14} /> Previous
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => currentPage < totalPages && setCurrentPage(currentPage + 1)} disabled={currentPage >= totalPages}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    currentPage < totalPages && setCurrentPage(currentPage + 1)
+                  }
+                  disabled={currentPage >= totalPages}
+                >
                   Next <ChevronRight size={14} />
                 </Button>
               </div>
@@ -274,6 +369,14 @@ const CoursesReviewPage: React.FC = () => {
         />
       )}
     </div>
+  );
+};
+
+const CoursesReviewPage: React.FC = () => {
+  return (
+    <ManagementLayout>
+      <CoursesReviewContent />
+    </ManagementLayout>
   );
 };
 

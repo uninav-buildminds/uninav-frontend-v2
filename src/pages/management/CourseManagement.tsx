@@ -58,7 +58,7 @@ const CourseManagementContent: React.FC = () => {
         page,
         limit: 10,
         ...(search && { query: search }),
-        allowDepartments: false, // We'll handle departments via context
+        allowDepartments: true, // We'll handle departments via context
       };
 
       const response = await getCoursesPaginated(params);
@@ -125,13 +125,6 @@ const CourseManagementContent: React.FC = () => {
   const handleCourseClick = (courseId: string) => {
     setSelectedCourseId(courseId);
     setIsModalOpen(true);
-  };
-
-  // Handle course updated
-  const handleCourseUpdated = () => {
-    fetchCourses(currentPage, searchQuery);
-    setIsModalOpen(false);
-    setSelectedCourseId(null);
   };
 
   // Handle course deleted
@@ -212,7 +205,9 @@ const CourseManagementContent: React.FC = () => {
         <div className="flex items-center justify-center py-12">
           <Loader2 className="animate-spin h-8 w-8 text-blue-600" />
           <span className="ml-2 text-gray-600">
-            {departmentsLoading ? "Loading departments..." : "Loading courses..."}
+            {departmentsLoading
+              ? "Loading departments..."
+              : "Loading courses..."}
           </span>
         </div>
       )}
@@ -281,8 +276,12 @@ const CourseManagementContent: React.FC = () => {
                           <span className="font-medium">Departments:</span>{" "}
                           {course.departments
                             .map((dept) => {
-                              const department = getDepartmentById(dept.departmentId);
-                              return department ? department.name : dept.departmentId;
+                              const department = getDepartmentById(
+                                dept.departmentId
+                              );
+                              return department
+                                ? department.name
+                                : dept.departmentId;
                             })
                             .join(", ")}
                         </p>
@@ -354,7 +353,6 @@ const CourseManagementContent: React.FC = () => {
             setIsModalOpen(false);
             setSelectedCourseId(null);
           }}
-          onCourseUpdated={handleCourseUpdated}
           onCourseDeleted={handleCourseDeleted}
         />
       )}
