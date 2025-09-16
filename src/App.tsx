@@ -20,6 +20,10 @@ import Overview from "./pages/dashboard/Overview";
 import ManagementLayout from "./components/management/ManagementLayout";
 import ManagementDashboard from "./pages/management/ManagementDashboard";
 import CourseManagement from "./pages/management/CourseManagement";
+import CoursesReviewPage from "./pages/management/courses-review";
+import DLCReviewPage from "./pages/management/dlc-review";
+import BlogsReviewPage from "./pages/management/blogs-review";
+import UserManagementPage from "./pages/management/user-management";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import AuthContextProvider from "./context/authentication/AuthContextProvider";
 
@@ -60,6 +64,10 @@ const App = () => {
 									
 									{/* Management Sub-routes */}
 									<Route path="courses" element={<CourseManagement />} />
+									<Route path="courses-review" element={<CoursesReviewPage />} />
+									<Route path="dlc-review" element={<DLCReviewPage />} />
+									<Route path="blogs-review" element={<BlogsReviewPage />} />
+									<Route path="user-management" element={<UserManagementPage />} />
 									{/* Future routes can be added here */}
 									{/* <Route path="materials" element={<MaterialsManagement />} /> */}
 									{/* <Route path="blogs" element={<BlogsManagement />} /> */}

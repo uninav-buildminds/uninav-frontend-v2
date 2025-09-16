@@ -33,6 +33,18 @@ const navigationItems = [
     description: "Create and link courses to departments",
   },
   {
+    title: "Courses Review",
+    path: "/management/courses-review",
+    icon: GraduationCap,
+    description: "Review course submissions",
+  },
+  {
+    title: "DLC Review",
+    path: "/management/dlc-review",
+    icon: Award,
+    description: "Review department level courses",
+  },
+  {
     title: "Materials Review",
     path: "/management/materials",
     icon: BookOpen,
@@ -40,21 +52,16 @@ const navigationItems = [
   },
   {
     title: "Blogs Review",
-    path: "/management/blogs",
+    path: "/management/blogs-review",
     icon: FileText,
     description: "Review and manage blog submissions",
   },
   {
-    title: "Course Review",
-    path: "/management/course-review",
-    icon: GraduationCap,
-    description: "Review and manage course submissions",
-  },
-  {
-    title: "DLC Review",
-    path: "/management/dlc",
-    icon: Award,
-    description: "Review Department Level Courses",
+    title: "User Management",
+    path: "/management/user-management",
+    icon: Users,
+    description: "Browse and manage users",
+    adminOnly: true,
   },
   {
     title: "Adverts Review",

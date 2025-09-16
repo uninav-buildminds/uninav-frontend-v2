@@ -25,41 +25,45 @@ const ReviewTabs: React.FC<ReviewTabsProps> = ({
       value: ApprovalStatusEnum.PENDING,
       label: "Pending",
       count: pendingCount,
-      className: "data-[state=active]:bg-amber-100 data-[state=active]:text-amber-800",
+      badgeClass: "bg-amber-200 text-amber-900",
+      activeClass: "data-[state=active]:bg-amber-50 data-[state=active]:border-amber-200",
     },
     {
       value: ApprovalStatusEnum.APPROVED,
       label: "Approved",
       count: approvedCount,
-      className: "data-[state=active]:bg-green-100 data-[state=active]:text-green-800",
+      badgeClass: "bg-green-200 text-green-900",
+      activeClass: "data-[state=active]:bg-green-50 data-[state=active]:border-green-200",
     },
     {
       value: ApprovalStatusEnum.REJECTED,
       label: "Rejected",
       count: rejectedCount,
-      className: "data-[state=active]:bg-red-100 data-[state=active]:text-red-800",
+      badgeClass: "bg-red-200 text-red-900",
+      activeClass: "data-[state=active]:bg-red-50 data-[state=active]:border-red-200",
     },
   ];
 
   return (
     <Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
-      <TabsList className="grid grid-cols-3 w-full max-w-lg mb-6 bg-gray-100 p-1 rounded-xl">
+      <TabsList
+        className="grid grid-cols-3 w-full mb-4 rounded-lg bg-muted/40 p-0 border overflow-hidden"
+      >
         {tabItems.map((tab) => (
           <TabsTrigger
             key={tab.value}
             value={tab.value}
             className={cn(
-              "relative flex flex-col items-center gap-1 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium data-[state=active]:shadow",
-              tab.className
+              "flex items-center justify-center gap-2 h-11 sm:h-12 px-2 sm:px-4 text-xs sm:text-sm font-medium rounded-none border-r last:border-r-0 border-transparent data-[state=active]:border data-[state=active]:shadow-none transition-colors",
+              "hover:bg-background/50",
+              tab.activeClass
             )}
           >
             <span>{tab.label}</span>
             <span
               className={cn(
-                "text-[10px] px-1.5 py-0.5 rounded-md font-semibold",
-                tab.value === ApprovalStatusEnum.PENDING && "bg-amber-200 text-amber-900",
-                tab.value === ApprovalStatusEnum.APPROVED && "bg-green-200 text-green-900",
-                tab.value === ApprovalStatusEnum.REJECTED && "bg-red-200 text-red-900"
+                "min-w-[20px] text-[10px] leading-none px-1.5 py-1 rounded-md font-semibold flex items-center justify-center",
+                tab.badgeClass
               )}
             >
               {tab.count}
@@ -67,7 +71,7 @@ const ReviewTabs: React.FC<ReviewTabsProps> = ({
           </TabsTrigger>
         ))}
       </TabsList>
-      <TabsContent value={activeTab}>{children}</TabsContent>
+      <TabsContent value={activeTab} className="m-0">{children}</TabsContent>
     </Tabs>
   );
 };
