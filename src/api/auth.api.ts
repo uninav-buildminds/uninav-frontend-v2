@@ -12,7 +12,7 @@ export interface SignUpData {
 }
 
 export interface LoginData {
-  email: string;
+  emailOrMatricNo: string;
   password: string;
 }
 
@@ -22,7 +22,7 @@ export interface LoginData {
  * @returns response body with token and user data
  * @throws {statusCode, message} if response's status code is not in the 200s
  */
-export async function signup(formData: SignUpData) {
+export async function signUp(formData: SignUpData) {
   try {
     const response = await httpClient.post("/auth/student", {
       firstName: formData.firstName,
@@ -52,16 +52,9 @@ export async function signup(formData: SignUpData) {
  * @returns response body with token and user data
  * @throws {statusCode, message} if response's status code is not in the 200s
  */
-export async function login(
-  data: LoginData | { emailOrMatricNo: string; password: string }
-) {
+export async function login(data: LoginData) {
   try {
-    const requestData =
-      "emailOrMatricNo" in data
-        ? { emailOrMatricNo: data.emailOrMatricNo, password: data.password }
-        : { emailOrMatricNo: data.email, password: data.password };
-
-    const response = await httpClient.post("/auth/login", requestData);
+    const response = await httpClient.post("/auth/login", data);
     const authHeader = response.headers?.["authorization"] || "";
     const token = authHeader.startsWith("Bearer ")
       ? authHeader.slice(7)
@@ -85,7 +78,7 @@ export async function login(
  * @returns response body
  * @throws {statusCode, message} if response's status code is not in the 200s
  */
-export async function logout() {
+export async function logOut() {
   try {
     const response = await httpClient.post("/auth/logout");
     return response.data;
@@ -125,7 +118,7 @@ export async function verifyEmailByCode(email: string, code: string) {
  * @returns Response body from the server
  * @throws {statusCode, message} if response's status code is not in the 200s
  */
-export async function verifyEmailByToken(token: string) {
+export async function verifyEmail(token: string) {
   try {
     const response = await httpClient.get(
       `/auth/verify-email/token?token=${token}`
@@ -145,7 +138,7 @@ export async function verifyEmailByToken(token: string) {
  * @returns Response body from the server
  * @throws {statusCode, message} if response's status code is not in the 200s
  */
-export async function resendEmailVerification(email: string) {
+export async function requestEmailVerification(email: string) {
   try {
     const response = await httpClient.post("/auth/resend-verification", {
       email,
@@ -241,7 +234,3 @@ export async function isClientAuthenticated() {
 }
 
 // Compatibility exports with old function names
-export const signUp = signup;
-export const logOut = logout;
-export const verifyEmail = verifyEmailByToken;
-export const requestEmailVerification = resendEmailVerification;
