@@ -1,6 +1,7 @@
 import { Navigate } from "react-router-dom";
 import { ReactNode, useEffect, useState } from "react";
 import { isClientAuthenticated } from "@/api/auth.api";
+import { useAuth } from "@/hooks/useAuth";
 
 interface AuthRedirectProps {
   children: ReactNode;
@@ -52,29 +53,18 @@ export const AuthRedirect = ({ children, routePath = "/dashboard" }: AuthRedirec
  * @returns JSX.Element
  */
 export const ProtectedRoute = ({ children, routePath = "/auth/signin" }: AuthRedirectProps) => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [clientIsAuthenticated, setClientIsAuthenticated] = useState(false);
+  const { user, authInitializing } = useAuth();
 
-  useEffect(() => {
-    isClientAuthenticated().then(status => {
-      setClientIsAuthenticated(status);
-      setIsLoading(false);
-    })
-  }, []);
-
-  if (isLoading) {
+  if (authInitializing) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-brand"></div>
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-brand" />
       </div>
-    )
+    );
   }
 
-  // If user is not authenticated, redirect to signin page
-  if (!clientIsAuthenticated) {
+  if (!user) {
     return <Navigate to={routePath} replace />;
   }
-
-  // If user is authenticated, render the protected page
   return <>{children}</>;
 };

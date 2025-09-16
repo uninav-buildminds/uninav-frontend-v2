@@ -33,12 +33,16 @@ export default function AuthContextProvider({ children }: AuthContextProviderPro
     const [loggedIn, setLoggedIn] = useState(false);
     const [showOneTap, setShowOneTap] = useState(false);
     const initialAuthCheckDoneRef = useRef(false);
-    const {
-		mutate,
-		data: user,
-		isValidating,
-		isLoading,
-	} = useSWR(loggedIn ? "/user/profile" : null, fetcher);
+    const { mutate, data: user, isValidating, isLoading } = useSWR(
+        loggedIn ? "/user/profile" : null,
+        fetcher,
+        {
+            revalidateOnFocus: false, // avoid refetch on route focus changes
+            dedupingInterval: 120000, // 2 min dedupe window
+            focusThrottleInterval: 60000, // throttle any accidental focus events
+            revalidateOnReconnect: true,
+        }
+    );
 
     useEffect(() => {
         let active = true;

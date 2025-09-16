@@ -32,6 +32,13 @@ const navigationItems = [
     icon: School,
     description: "Create and link courses to departments",
   },
+    {
+    title: "User Management",
+    path: "/management/user-management",
+    icon: UserCheck,
+    description: "View and manage all users",
+    adminOnly: true,
+  },
   {
     title: "Courses Review",
     path: "/management/courses-review",
@@ -55,34 +62,21 @@ const navigationItems = [
     path: "/management/blogs-review",
     icon: FileText,
     description: "Review and manage blog submissions",
-  },
-  {
-    title: "User Management",
-    path: "/management/user-management",
-    icon: Users,
-    description: "Browse and manage users",
-    adminOnly: true,
-  },
-  {
-    title: "Adverts Review",
-    path: "/management/adverts",
-    icon: Megaphone,
-    description: "Review and manage advertisement submissions",
-  },
-  {
-    title: "Moderator Applications",
-    path: "/management/moderators",
-    icon: Users,
-    description: "Review moderator applications",
-    adminOnly: true,
-  },
-  {
-    title: "User Management",
-    path: "/management/users",
-    icon: UserCheck,
-    description: "View and manage all users",
-    adminOnly: true,
-  },
+  }
+  // {
+  //   title: "Adverts Review",
+  //   path: "/management/adverts",
+  //   icon: Megaphone,
+  //   description: "Review and manage advertisement submissions",
+  // },
+  // {
+  //   title: "Moderator Applications",
+  //   path: "/management/moderators",
+  //   icon: Users,
+  //   description: "Review moderator applications",
+  //   adminOnly: true,
+  // },
+
 ];
 
 const ManagementSidebar: React.FC = () => {

@@ -50,7 +50,7 @@ const App = () => {
 									}
 								/>
 
-								{/* Management Routes */}
+								{/* Management Routes */} 
 								<Route
 									path="/management"
 									element={
