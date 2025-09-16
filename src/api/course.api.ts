@@ -1,84 +1,316 @@
 import { httpClient } from "./api";
-import { 
-  Course, 
-  CreateCourseRequest, 
-  LinkCourseRequest, 
-  UpdateCourseRequest, 
-  GetCoursesParams 
+import {
+  Course,
+  CreateCourseRequest,
+  LinkCourseRequest,
+  UpdateCourseRequest,
+  GetCoursesParams,
 } from "@/lib/types/course.types";
 import { Department } from "@/lib/types/department.types";
 import { Faculty } from "@/lib/types/faculty.types";
+import { DLC } from "@/lib/types/dlc.types";
 import { Response, PaginatedResponse } from "@/lib/types/response.types";
 
-// Export the types that are needed elsewhere
-export type { Course, CreateCourseRequest, LinkCourseRequest, UpdateCourseRequest, GetCoursesParams };
+interface CreateCourseDto {
+  courseName: string;
+  courseCode: string;
+  description: string;
+  departmentId: string;
+  level: number;
+}
 
-// Get courses with pagination
-export const getCoursesPaginated = async (params: GetCoursesParams): Promise<PaginatedResponse<Course>> => {
-  const searchParams = new URLSearchParams();
-  
-  if (params.page) searchParams.append("page", params.page.toString());
-  if (params.limit) searchParams.append("limit", params.limit.toString());
-  if (params.query) searchParams.append("query", params.query);
-  if (params.allowDepartments) searchParams.append("allowDepartments", "true");
+interface LinkCourseDto {
+  courseId: string;
+  departmentId: string;
+  level: number;
+}
 
-  const response = await httpClient.get(`/course?${searchParams.toString()}`);
-  return response.data;
-};
+interface UpdateCourseDto {
+  courseName?: string;
+  courseCode?: string;
+  description?: string;
+}
 
-// Get course by ID
-export const getCourseById = async (id: string): Promise<Response<Course>> => {
-  const response = await httpClient.get(`/course/${id}`);
-  return response.data;
-};
+/**
+ * Get courses with optional filters
+ * @param filters - Course filter options
+ * @returns courses response
+ */
+export async function getCourses(filters?: {
+  departmentId?: string;
+  level?: number;
+  limit?: number;
+  query?: string;
+  allowDepartments?: boolean;
+}): Promise<Response<Course[]>> {
+  try {
+    const { departmentId, level, limit = 10, query } = filters || {};
+    let url = `/courses?limit=${limit}`;
+    if (departmentId) url += `&departmentId=${departmentId}`;
+    if (level) url += `&level=${level}`;
+    if (filters?.allowDepartments)
+      url += `&allowDepartments=${filters.allowDepartments}`;
+    if (query) url += `&query=${query}`;
+    const response = await httpClient.get(url);
+    return response.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status || 500,
+      message: error.response?.data?.message || "Failed to fetch courses",
+    };
+  }
+}
 
-// Create new course
-export const createCourse = async (courseData: CreateCourseRequest): Promise<Response<Course>> => {
-  const response = await httpClient.post("/course", courseData);
-  return response.data;
-};
+/**
+ * Get paginated courses
+ * @param filters - Course filter options with pagination
+ * @returns paginated courses response
+ */
+export async function getCoursesPaginated(
+  filters?: GetCoursesParams & { departmentId?: string; level?: number }
+): Promise<Response<{ data: Course[]; pagination: any }>> {
+  try {
+    const { departmentId, level, page = 1, limit = 10, query } = filters || {};
+    let url = `/courses?page=${page}&limit=${limit}`;
+    if (departmentId) url += `&departmentId=${departmentId}`;
+    if (level) url += `&level=${level}`;
+    if (query) url += `&query=${query}`;
+    if (filters?.allowDepartments)
+      url += `&allowDepartments=${filters.allowDepartments}`;
 
-// Update course
-export const updateCourse = async (id: string, courseData: UpdateCourseRequest): Promise<Response<Course>> => {
-  const response = await httpClient.put(`/course/${id}`, courseData);
-  return response.data;
-};
+    const response = await httpClient.get(url);
+    return response.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status || 500,
+      message: error.response?.data?.message || "Failed to fetch courses",
+    };
+  }
+}
 
-// Delete course
-export const deleteCourse = async (id: string): Promise<Response<void>> => {
-  const response = await httpClient.delete(`/course/${id}`);
-  return response.data;
-};
+/**
+ * Get course by ID
+ * @param id - Course ID
+ * @returns course response or null
+ */
+export async function getCourseById(
+  id: string
+): Promise<Response<Course> | null> {
+  try {
+    const response = await httpClient.get(`/courses/${id}`);
+    return response.data;
+  } catch (error: any) {
+    console.error("Error fetching course:", error);
+    return null;
+  }
+}
 
-// Link course to department
-export const linkCourseToDepartment = async (linkData: LinkCourseRequest): Promise<Response<void>> => {
-  const response = await httpClient.post("/course/link", linkData);
-  return response.data;
-};
+/**
+ * Get course by course code
+ * @param courseCode - Course code
+ * @returns course response or null
+ */
+export async function getCourseByCode(
+  courseCode: string
+): Promise<Response<Course> | null> {
+  try {
+    const response = await httpClient.get(`/courses/code/${courseCode}`);
+    return response.data;
+  } catch (error: any) {
+    console.error("Error fetching course by code:", error);
+    return null;
+  }
+}
 
-// Unlink course from department
-export const unlinkCourseToDepartment = async (departmentId: string, courseId: string): Promise<Response<void>> => {
-  const response = await httpClient.delete(`/course/unlink/${departmentId}/${courseId}`);
-  return response.data;
-};
+/**
+ * Create a new course
+ * @param courseData - Course creation data
+ * @returns created course response or null
+ */
+export async function createCourse(
+  courseData: CreateCourseDto
+): Promise<Response<Course> | null> {
+  try {
+    const response = await httpClient.post("/courses", courseData);
+    return response.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status || 500,
+      message: error.response?.data?.message || "Failed to create course",
+    };
+  }
+}
 
-// Get all faculties with departments
-export const getFaculties = async (): Promise<Response<Faculty[]>> => {
-  const response = await httpClient.get("/faculty");
-  return response.data;
-};
+/**
+ * Link course to department and level
+ * @param linkData - Course linking data
+ * @returns DLC response
+ */
+export async function linkCourseToDepartment(
+  linkData: LinkCourseDto
+): Promise<Response<DLC> | null> {
+  try {
+    const response = await httpClient.post(
+      "/courses/department-level",
+      linkData
+    );
+    return response.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status || 500,
+      message:
+        error.response?.data?.message || "Failed to link course to department",
+    };
+  }
+}
 
-// Get departments by faculty
-export const getDepartmentsByFaculty = async (facultyId: string): Promise<Response<Department[]>> => {
-  const response = await httpClient.get(`/department/faculty/${facultyId}`);
-  return response.data;
-};
+/**
+ * Remove link between course and department
+ * @param departmentId - Department ID
+ * @param courseId - Course ID
+ * @returns response
+ */
+export async function unlinkCourseToDepartment(
+  departmentId: string,
+  courseId: string
+): Promise<Response<void> | null> {
+  try {
+    const response = await httpClient.delete(
+      `/courses/department-level/${departmentId}/${courseId}`
+    );
+    return response.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status || 500,
+      message:
+        error.response?.data?.message ||
+        "Failed to unlink course from department",
+    };
+  }
+}
 
-// Get all courses for selection (simplified)
-export const getCoursesForSelection = async (query?: string): Promise<Response<Course[]>> => {
-  const searchParams = new URLSearchParams();
-  if (query) searchParams.append("query", query);
-  
-  const response = await httpClient.get(`/course/selection?${searchParams.toString()}`);
-  return response.data;
-};
+/**
+ * Get department level courses
+ * @param params - Filter parameters
+ * @returns paginated DLC response
+ */
+export async function getDepartmentLevelCourses({
+  departmentId,
+  courseId,
+  page = 1,
+  limit = 10,
+}: {
+  departmentId?: string;
+  courseId?: string;
+  page?: number;
+  limit?: number;
+}): Promise<Response<{ data: DLC[]; pagination: any }> | null> {
+  try {
+    let url = `/courses/department-level?page=${page}&limit=${limit}`;
+    if (departmentId) url += `&departmentId=${departmentId}`;
+    if (courseId) url += `&courseId=${courseId}`;
+
+    const response = await httpClient.get(url);
+    return response.data;
+  } catch (error: any) {
+    console.error("Error fetching department level courses:", error);
+    return null;
+  }
+}
+
+/**
+ * Update a course
+ * @param courseId - Course ID
+ * @param updateData - Course update data
+ * @returns updated course response
+ */
+export async function updateCourse(
+  courseId: string,
+  updateData: UpdateCourseDto
+): Promise<Response<Course>> {
+  try {
+    const response = await httpClient.patch(`/courses/${courseId}`, updateData);
+    return response.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status || 500,
+      message: error.response?.data?.message || "Failed to update course",
+    };
+  }
+}
+
+/**
+ * Delete a course
+ * @param courseId - Course ID
+ * @returns deletion response
+ */
+export async function deleteCourse(courseId: string): Promise<Response<void>> {
+  try {
+    const response = await httpClient.delete(`/courses/${courseId}`);
+    return response.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status || 500,
+      message: error.response?.data?.message || "Failed to delete course",
+    };
+  }
+}
+
+/**
+ * Get all faculties with their departments
+ * @returns faculties response
+ */
+export async function getFaculties(): Promise<Response<Faculty[]>> {
+  try {
+    const response = await httpClient.get("/faculty");
+    return response.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status || 500,
+      message: error.response?.data?.message || "Failed to fetch faculties",
+    };
+  }
+}
+
+/**
+ * Get departments by faculty
+ * @param facultyId - Faculty ID
+ * @returns departments response
+ */
+export async function getDepartmentsByFaculty(
+  facultyId: string
+): Promise<Response<Department[]>> {
+  try {
+    const response = await httpClient.get(`/department/faculty/${facultyId}`);
+    return response.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status || 500,
+      message: error.response?.data?.message || "Failed to fetch departments",
+    };
+  }
+}
+
+/**
+ * Get all courses for selection (simplified)
+ * @param query - Optional search query
+ * @returns courses response
+ */
+export async function getCoursesForSelection(
+  query?: string
+): Promise<Response<Course[]>> {
+  try {
+    const searchParams = new URLSearchParams();
+    if (query) searchParams.append("query", query);
+
+    const response = await httpClient.get(
+      `/courses/selection?${searchParams.toString()}`
+    );
+    return response.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status || 500,
+      message: error.response?.data?.message || "Failed to fetch courses",
+    };
+  }
+}

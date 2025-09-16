@@ -6,64 +6,76 @@ export interface SignUpData {
   password: string;
   firstName: string;
   lastName: string;
+  username: string;
   departmentId: string;
   level: number;
 }
+
+export interface LoginData {
+  email: string;
+  password: string;
+}
+
 /**
  * Sends signup request to backend
- * @param signupData
- * @returns response body
+ * @param formData - Signup form data
+ * @returns response body with token and user data
  * @throws {statusCode, message} if response's status code is not in the 200s
  */
-export async function signUp(signupData: SignUpData) {
+export async function signup(formData: SignUpData) {
   try {
-    const response = await httpClient.post("/auth/student", signupData);
-    return response.data;
-  } catch (error) {
+    const response = await httpClient.post("/auth/student", {
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      username: formData.username,
+      email: formData.email,
+      password: formData.password,
+      departmentId: formData.departmentId,
+      level: formData.level,
+    });
+    return {
+      ...response.data,
+      token: response.headers?.["authorization"]?.replace("Bearer ", "") || "",
+    };
+  } catch (error: any) {
     throw {
-      statusCode: error.status,
-      message: error.data?.message || "Signup failed. Please try again.",
+      statusCode: error.response?.status || 500,
+      message:
+        error.response?.data?.message || "Signup failed. Please try again.",
     };
   }
 }
 
 /**
- * Handles sign-in with Google One Tap
- * @param credentialResponse Response from Google One Tap
- * @param onSuccess Callback function to execute on successful login
- * @param onError Callback function to execute on login failure
- */
-export async function signInWithOneTap(
-  credentialResponse: CredentialResponse,
-  onSuccess: () => void,
-  onError: () => void
-) {
-  const response = await httpClient.get(
-    `/auth/google/onetap?token=${credentialResponse.credential}`
-  );
-  if (response.status === 200) {
-    return onSuccess();
-  }
-  return onError();
-}
-/**
  * Sends login request to backend
- * @param emailOrMatricNo
- * @param password
- * @returns response body
+ * @param data - Login credentials
+ * @returns response body with token and user data
  * @throws {statusCode, message} if response's status code is not in the 200s
  */
-export async function login(emailOrMatricNo: string, password: string) {
+export async function login(
+  data: LoginData | { emailOrMatricNo: string; password: string }
+) {
   try {
-    const response = await httpClient.post("/auth/login", {
-      emailOrMatricNo,
-      password,
-    });
-    return response.data;
-  } catch (error) {
+    const requestData =
+      "emailOrMatricNo" in data
+        ? { emailOrMatricNo: data.emailOrMatricNo, password: data.password }
+        : { emailOrMatricNo: data.email, password: data.password };
+
+    const response = await httpClient.post("/auth/login", requestData);
+    const authHeader = response.headers?.["authorization"] || "";
+    const token = authHeader.startsWith("Bearer ")
+      ? authHeader.slice(7)
+      : authHeader;
+
+    return {
+      token,
+      data: response.data,
+    };
+  } catch (error: any) {
     throw {
-      statusCode: error.status,
-      message: error.data?.message || "Login failed. Please try again.",
+      statusCode: error.response?.status || 500,
+      message:
+        error.response?.data?.message || "Login failed. Please try again.",
     };
   }
 }
@@ -73,14 +85,76 @@ export async function login(emailOrMatricNo: string, password: string) {
  * @returns response body
  * @throws {statusCode, message} if response's status code is not in the 200s
  */
-export async function logOut() {
+export async function logout() {
   try {
     const response = await httpClient.post("/auth/logout");
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     throw {
-      statusCode: error.status,
-      message: error.data?.message || "Logout failed. Please try again.",
+      statusCode: error.response?.status || 500,
+      message:
+        error.response?.data?.message || "Logout failed. Please try again.",
+    };
+  }
+}
+
+/**
+ * Verify email using code
+ * @param email - User's email
+ * @param code - Verification code
+ * @returns Response body from the server
+ */
+export async function verifyEmailByCode(email: string, code: string) {
+  try {
+    const response = await httpClient.post("/auth/verify-email", {
+      email,
+      code,
+    });
+    return response.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status || 500,
+      message: error.response?.data?.message || "Email verification failed",
+    };
+  }
+}
+
+/**
+ * Verify email using the provided token
+ * @param token - Verification token
+ * @returns Response body from the server
+ * @throws {statusCode, message} if response's status code is not in the 200s
+ */
+export async function verifyEmailByToken(token: string) {
+  try {
+    const response = await httpClient.get(
+      `/auth/verify-email/token?token=${token}`
+    );
+    return response.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status || 500,
+      message: error.response?.data?.message || "Email verification failed",
+    };
+  }
+}
+
+/**
+ * Request to send verification email to the user
+ * @param email - User's email address
+ * @returns Response body from the server
+ * @throws {statusCode, message} if response's status code is not in the 200s
+ */
+export async function resendEmailVerification(email: string) {
+  try {
+    const response = await httpClient.post("/auth/resend-verification", {
+      email,
+    });
+    return response.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status || 500,
+      message: error.response?.data?.message || "Something went wrong",
     };
   }
 }
@@ -88,26 +162,26 @@ export async function logOut() {
 /**
  * Initiate password reset process
  * Backend sends an email to the user with password reset instructions
- * @param email
+ * @param email - User's email
  * @returns response body
  * @throws {statusCode, message} if response's status code is not in the 200s
  */
 export async function requestPasswordReset(email: string) {
-  const response = await httpClient.post("/auth/forgot-password", { email });
-  if (response.status === 200) {
+  try {
+    const response = await httpClient.post("/auth/forgot-password", { email });
     return response.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status || 500,
+      message: error.response?.data?.message || "Something went wrong",
+    };
   }
-  throw {
-    statusCode: response.status,
-    message:
-      response.data?.message || "Something went wrong. Please try again.",
-  };
 }
 
 /**
  * Sends password reset request to backend
- * @param token
- * @param newPassword
+ * @param token - Reset token
+ * @param newPassword - New password
  * @returns response body
  * @throws {statusCode, message} if response's status code is not in the 200s
  */
@@ -118,54 +192,37 @@ export async function resetPassword(token: string, newPassword: string) {
       newPassword,
     });
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     throw {
-      statusCode: error.status,
-      message: error.data?.message || "Something went wrong. Please try again.",
+      statusCode: error.response?.status || 500,
+      message: error.response?.data?.message || "Something went wrong",
     };
   }
 }
 
 /**
- * Request to send verification email to the user
- * @param email User's email address
- * @returns Response body from the server
- * @throws {statusCode, message} if response's status code is not in the 200s
+ * Handles sign-in with Google One Tap
+ * @param credentialResponse - Response from Google One Tap
+ * @param onSuccess - Callback function to execute on successful login
+ * @param onError - Callback function to execute on login failure
  */
-export async function requestEmailVerification(email: string) {
+export async function signInWithOneTap(
+  credentialResponse: CredentialResponse,
+  onSuccess: () => void,
+  onError: () => void
+) {
   try {
-    const response = await httpClient.post("/auth/resend-verification", {
-      email,
-    });
-    return response.data;
-  } catch (error) {
-    throw {
-      statusCode: error.status,
-      message:
-        error.data?.message ||
-        "Failed to resend verification email. Please try again.",
-    };
-  }
-}
-
-/**
- * Verify email using the provided token
- * @param token Verification token
- * @returns Response body from the server
- * @throws {statusCode, message} if response's status code is not in the 200s
- */
-export async function verifyEmail(token: string) {
-  try {
-    // The backend expects the token to be URL-encoded
     const response = await httpClient.get(
-      `/auth/verify-email/token?token=${encodeURIComponent(token)}`
+      `/auth/google/onetap?token=${credentialResponse.credential}`
     );
-    return response.data;
-  } catch (error) {
+    if (response.status === 200) {
+      return onSuccess();
+    }
+    return onError();
+  } catch (error: any) {
     throw {
-      statusCode: error.status,
-      message:
-        error.data?.message || "Email verification failed. Please try again.",
+      statusCode: error.response?.status || 500,
+      message: error.response?.data?.message || "Google sign-in failed",
     };
   }
 }
@@ -182,3 +239,9 @@ export async function isClientAuthenticated() {
     return false;
   }
 }
+
+// Compatibility exports with old function names
+export const signUp = signup;
+export const logOut = logout;
+export const verifyEmail = verifyEmailByToken;
+export const requestEmailVerification = resendEmailVerification;

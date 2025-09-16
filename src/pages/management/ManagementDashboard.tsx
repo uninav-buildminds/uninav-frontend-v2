@@ -27,7 +27,7 @@ const quickActions = [
     title: "Course Management",
     description: "Create and link courses to departments",
     icon: School,
-    path: "/management/courses",
+    path: "/management/course-management",
     color: "bg-teal-50 text-teal-600 border-teal-100",
     stats: "Active management",
   },
@@ -35,7 +35,7 @@ const quickActions = [
     title: "Materials Review",
     description: "Review pending material submissions",
     icon: BookOpen,
-    path: "/management/materials",
+    path: "/management/materials-review",
     color: "bg-blue-50 text-blue-600 border-blue-100",
     stats: "12 pending",
   },
@@ -43,15 +43,48 @@ const quickActions = [
     title: "Blogs Review",
     description: "Review pending blog submissions",
     icon: FileText,
-    path: "/management/blogs",
+    path: "/management/blogs-review",
     color: "bg-green-50 text-green-600 border-green-100",
     stats: "5 pending",
+  },
+  {
+    title: "Courses Review",
+    description: "Review pending course submissions",
+    icon: GraduationCap,
+    path: "/management/courses-review",
+    color: "bg-purple-50 text-purple-600 border-purple-100",
+    stats: "3 pending",
+  },
+  {
+    title: "DLC Review",
+    description: "Review department level courses",
+    icon: Award,
+    path: "/management/dlc-review",
+    color: "bg-amber-50 text-amber-600 border-amber-100",
+    stats: "2 pending",
+  },
+  {
+    title: "Adverts Review",
+    description: "Review pending advertisement submissions",
+    icon: Megaphone,
+    path: "/management/adverts-review",
+    color: "bg-rose-50 text-rose-600 border-rose-100",
+    stats: "1 pending",
+  },
+  {
+    title: "Moderator Applications",
+    description: "Review moderator applications",
+    icon: UserCheck,
+    path: "/management/moderators-review",
+    color: "bg-indigo-50 text-indigo-600 border-indigo-100",
+    stats: "2 applications",
+    adminOnly: true,
   },
   {
     title: "User Management",
     description: "View and manage all users",
     icon: UserCheck,
-    path: "/management/users",
+    path: "/management/user-management",
     color: "bg-sky-50 text-sky-600 border-sky-100",
     stats: "1,234 users",
     adminOnly: true,
@@ -139,10 +172,12 @@ const ManagementDashboard: React.FC = () => {
             View Analytics
           </Button>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {quickActions
-            .filter((action) => !action.adminOnly || user?.role === UserRole.ADMIN)
+            .filter(
+              (action) => !action.adminOnly || user?.role === UserRole.ADMIN
+            )
             .map((action) => (
               <div
                 key={action.title}
@@ -155,12 +190,12 @@ const ManagementDashboard: React.FC = () => {
                   >
                     <action.icon size={24} />
                   </div>
-                  <ArrowRight 
-                    size={16} 
-                    className="text-gray-400 group-hover:text-gray-600 group-hover:translate-x-1 transition-all duration-200" 
+                  <ArrowRight
+                    size={16}
+                    className="text-gray-400 group-hover:text-gray-600 group-hover:translate-x-1 transition-all duration-200"
                   />
                 </div>
-                
+
                 <h3 className="font-semibold text-lg mb-2 group-hover:text-blue-600 transition-colors duration-200">
                   {action.title}
                 </h3>
@@ -177,7 +212,9 @@ const ManagementDashboard: React.FC = () => {
 
       {/* Recent Activity */}
       <div className="mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Recent Activity</h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+          Recent Activity
+        </h2>
         <div className="bg-white border rounded-xl p-6">
           <div className="space-y-4">
             {[
@@ -210,22 +247,39 @@ const ManagementDashboard: React.FC = () => {
                 status: "pending",
               },
             ].map((activity, index) => (
-              <div key={index} className="flex items-center justify-between py-3 border-b last:border-b-0">
+              <div
+                key={index}
+                className="flex items-center justify-between py-3 border-b last:border-b-0"
+              >
                 <div className="flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    activity.status === 'approved' ? 'bg-green-100' :
-                    activity.status === 'rejected' ? 'bg-red-100' :
-                    activity.status === 'created' ? 'bg-blue-100' :
-                    'bg-amber-100'
-                  }`}>
-                    {activity.status === 'approved' && <CheckCircle size={14} className="text-green-600" />}
-                    {activity.status === 'rejected' && <XCircle size={14} className="text-red-600" />}
-                    {activity.status === 'created' && <CheckCircle size={14} className="text-blue-600" />}
-                    {activity.status === 'pending' && <AlertTriangle size={14} className="text-amber-600" />}
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                      activity.status === "approved"
+                        ? "bg-green-100"
+                        : activity.status === "rejected"
+                        ? "bg-red-100"
+                        : activity.status === "created"
+                        ? "bg-blue-100"
+                        : "bg-amber-100"
+                    }`}
+                  >
+                    {activity.status === "approved" && (
+                      <CheckCircle size={14} className="text-green-600" />
+                    )}
+                    {activity.status === "rejected" && (
+                      <XCircle size={14} className="text-red-600" />
+                    )}
+                    {activity.status === "created" && (
+                      <CheckCircle size={14} className="text-blue-600" />
+                    )}
+                    {activity.status === "pending" && (
+                      <AlertTriangle size={14} className="text-amber-600" />
+                    )}
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-900">
-                      <span className="capitalize">{activity.action}</span>: {activity.item}
+                      <span className="capitalize">{activity.action}</span>:{" "}
+                      {activity.item}
                     </p>
                     <p className="text-xs text-gray-500">by {activity.user}</p>
                   </div>
@@ -240,20 +294,26 @@ const ManagementDashboard: React.FC = () => {
       {/* Role-based Information */}
       {user?.role === UserRole.ADMIN && (
         <div className="bg-blue-50 p-6 border-2 border-blue-200 rounded-xl">
-          <h4 className="font-medium text-blue-700 mb-2">Administrator Dashboard</h4>
+          <h4 className="font-medium text-blue-700 mb-2">
+            Administrator Dashboard
+          </h4>
           <p className="text-blue-600 text-sm leading-relaxed">
-            You have full administrative access including user management, moderator reviews, 
-            and content deletion permissions. Use the sidebar to navigate to specific management areas.
+            You have full administrative access including user management,
+            moderator reviews, and content deletion permissions. Use the sidebar
+            to navigate to specific management areas.
           </p>
         </div>
       )}
 
       {user?.role === UserRole.MODERATOR && (
         <div className="bg-green-50 p-6 border-2 border-green-200 rounded-xl">
-          <h4 className="font-medium text-green-700 mb-2">Moderator Dashboard</h4>
+          <h4 className="font-medium text-green-700 mb-2">
+            Moderator Dashboard
+          </h4>
           <p className="text-green-600 text-sm leading-relaxed">
-            As a moderator, you can review and approve content submissions. 
-            Contact an administrator if you need additional permissions or have questions.
+            As a moderator, you can review and approve content submissions.
+            Contact an administrator if you need additional permissions or have
+            questions.
           </p>
         </div>
       )}
