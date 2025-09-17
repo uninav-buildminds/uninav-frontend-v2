@@ -29,6 +29,7 @@ const HeroSection: React.FC = () => {
     <>
       <section
         className="relative overflow-hidden"
+        id="home"
         style={{ backgroundImage: "url(/assets/hero-bg.svg)", backgroundSize: "cover", backgroundPosition: "center" }}
       >
         <div className="container mx-auto max-w-7xl px-4 md:px-6">
