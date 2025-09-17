@@ -10,6 +10,7 @@ import AuthContext from "./AuthContext";
 import { httpClient } from "@/api/api";
 import useSWR from "swr";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 /**
  * Fetches the profile of the currently authenticated user
@@ -52,6 +53,7 @@ export default function AuthContextProvider({
     focusThrottleInterval: 60000, // throttle any accidental focus events
     revalidateOnReconnect: true,
   });
+  const navigate = useNavigate()
 
   useEffect(() => {
     let active = true;
@@ -71,6 +73,7 @@ export default function AuthContextProvider({
       signInWithOneTap(
         credentialResponse,
         () => {
+          navigate("/dashboard");
           window.location.reload();
         },
         () => {
