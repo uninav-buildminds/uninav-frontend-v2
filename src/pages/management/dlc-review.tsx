@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { useDepartments } from "@/contexts/DepartmentContext";
+import { useDepartments } from "@/hooks/useDepartments";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -11,11 +11,10 @@ import ReviewActionDialog from "@/components/management/ReviewActionDialog";
 import DeleteConfirmationDialog from "@/components/management/DeleteConfirmationDialog";
 import ManagementLayout from "@/layouts/ManagementLayout";
 import {
-  listDLCReviews,
-  reviewDLC,
-  deleteDLCAsAdmin,
-  getDLCReviewCounts,
-  ReviewActionDTO,
+	listDLCReviews,
+	reviewDLC,
+	deleteDLCAsAdmin,
+	getDLCReviewCounts,
 } from "@/api/review.api";
 import { DLC } from "@/lib/types/dlc.types";
 import {
@@ -36,6 +35,7 @@ import {
   Building,
   GraduationCap,
 } from "lucide-react";
+import { ReviewActionDTO } from "@/lib/types/review.types";
 
 const DLCReviewContent: React.FC = () => {
   const navigate = useNavigate();
@@ -182,7 +182,7 @@ const DLCReviewContent: React.FC = () => {
           ...prev,
           [activeTab.toLowerCase()]: Math.max(
             0,
-            (prev as any)[activeTab.toLowerCase()] - 1
+            (prev)[activeTab.toLowerCase()] - 1
           ),
         }));
         fetchDLCs();

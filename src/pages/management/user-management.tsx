@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { useDepartments } from "@/contexts/DepartmentContext";
+import { useDepartments } from "@/hooks/useDepartments";
 import { fetchAllUsers } from "@/api/user.api";
 import { UserProfile } from "@/lib/types/user.types";
 import { UserRole } from "@/lib/types/response.types";

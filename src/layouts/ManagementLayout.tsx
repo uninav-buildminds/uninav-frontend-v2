@@ -1,5 +1,5 @@
 import React from "react";
-import { DepartmentProvider } from "@/contexts/DepartmentContext";
+import { DepartmentProvider } from "@/context/department/DepartmentContextProvider";
 
 interface ManagementLayoutProps {
   children: React.ReactNode;

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { useDepartments } from "@/contexts/DepartmentContext";
+import { useDepartments } from "@/hooks/useDepartments";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {

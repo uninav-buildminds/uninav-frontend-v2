@@ -1,25 +1,8 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
 import { getDepartments } from "@/api/department.api";
 import { Department } from "@/lib/types/department.types";
 import { ResponseStatus } from "@/lib/types/response.types";
-
-interface DepartmentContextType {
-  departments: Record<string, Department>;
-  isLoading: boolean;
-  error: string | null;
-  getDepartmentById: (id: string) => Department | null;
-  refreshDepartments: () => Promise<void>;
-}
-
-const DepartmentContext = createContext<DepartmentContextType | undefined>(undefined);
-
-export const useDepartments = () => {
-  const context = useContext(DepartmentContext);
-  if (context === undefined) {
-    throw new Error("useDepartments must be used within a DepartmentProvider");
-  }
-  return context;
-};
+import { useState, useEffect } from "react";
+import { DepartmentContext, DepartmentContextType } from "./DepartmentContext";
 
 interface DepartmentProviderProps {
   children: React.ReactNode;
@@ -48,7 +31,7 @@ export const DepartmentProvider: React.FC<DepartmentProviderProps> = ({ children
       } else {
         setError(response.message || "Failed to fetch departments");
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error("Error fetching departments:", err);
       setError(err.message || "An error occurred while fetching departments");
     } finally {

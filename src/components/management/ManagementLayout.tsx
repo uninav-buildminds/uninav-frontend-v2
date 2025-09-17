@@ -8,7 +8,7 @@ import { Loader2 } from "lucide-react";
 const ManagementLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, isLoading, isValidating, authInitializing } = useAuth() as any;
+  const { user, isLoading, isValidating, authInitializing } = useAuth();
 
   // Redirect if authenticated but not authorized
   useEffect(() => {
