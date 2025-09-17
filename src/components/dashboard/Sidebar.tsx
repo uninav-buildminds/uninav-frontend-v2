@@ -22,7 +22,7 @@ const Sidebar: React.FC = () => {
   const [showPanel, setShowPanel] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
-  const { user } = useAuth();
+  const { user, logOut } = useAuth();
 
   // Base navigation items
   const baseNavItems = [
@@ -49,8 +49,7 @@ const Sidebar: React.FC = () => {
 
   const handleConfirmLogout = () => {
     setShowLogoutModal(false);
-    // TODO: hook into auth
-    console.log("logout confirmed");
+    logOut();
   };
 
   const handleCancelLogout = () => {
@@ -126,7 +125,7 @@ const Sidebar: React.FC = () => {
             </div>
 
             {/* User avatar fixed on rail bottom */}
-            <UserRail onLogout={handleLogout} userName={panelData.user.name.split(' ')[0]} />
+            <UserRail onLogout={logOut} userName={panelData.user.name.split(' ')[0]} />
           </div>
         </div>
 
