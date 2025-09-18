@@ -13,9 +13,8 @@ const SignupSuccess: React.FC = () => {
             <img src="/assets/onboarding/success.svg" alt="Success" className="h-28 sm:h-36 w-auto" />
           </div>
           <h1 className="text-xl sm:text-2xl font-semibold text-foreground mb-3">You've successfully created an account on Uninav!</h1>
-          {/* Should route to dashboard when it is implemented */}
           <button 
-            onClick={() => navigate("/")} 
+            onClick={() => navigate("/dashboard")} 
             className="inline-flex w-full justify-center rounded-xl bg-brand hover:bg-brand/90 text-white py-3 text-sm font-medium transition-colors"
           >
             View Dashboard
