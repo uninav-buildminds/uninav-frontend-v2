@@ -112,17 +112,17 @@ const App = () => {
 								<Route
 									path="/auth/signup/profile"
 									element={
-										<AuthRedirect>
+										<ProtectedRoute>
 											<ProfileSetup />
-										</AuthRedirect>
+										</ProtectedRoute>
 									}
 								/>
 								<Route
 									path="/auth/signup/success"
 									element={
-										<AuthRedirect>
+										<ProtectedRoute>
 											<SignupSuccess />
-										</AuthRedirect>
+										</ProtectedRoute>
 									}
 								/>
 

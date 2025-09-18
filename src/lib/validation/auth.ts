@@ -9,11 +9,7 @@ export const signupSchema = z.object({
     .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, "Password must contain uppercase, lowercase and a number"),
   agree: z.literal(true, { errorMap: () => ({ message: "You must agree to continue" }) }),
   fullName: z.string().min(1, "Full name is required").min(2, "Enter your full name"),
-  department: z.string().optional(),
-  faculty: z.string().optional(),
-  level: z.enum(["100", "200", "300", "400", "500", "600", "700"]).optional(),
 });
-
 export type SignupInput = z.infer<typeof signupSchema>;
 
 export const signinSchema = z.object({
@@ -44,12 +40,11 @@ export const newPasswordSchema = z
 
 export type NewPasswordInput = z.infer<typeof newPasswordSchema>;
 
-export const profileSchema = z.object({
-  fullName: z.string().min(1, "Full name is required").min(2, "Enter your full name"),
+export const profileSetupSchema = z.object({
   username: z.string().min(1, "Username is required").min(3, "Username too short").max(24, "Username too long"),
-  university: z.string().optional(),
   faculty: z.string().optional(),
   department: z.string().optional(),
+	level: z.enum(["100", "200", "300", "400", "500", "600", "700"]).optional(),
 });
 
-export type ProfileInput = z.infer<typeof profileSchema>;
+export type ProfileSetupInput = z.infer<typeof profileSetupSchema>;
