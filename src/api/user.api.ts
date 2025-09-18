@@ -1,7 +1,6 @@
 import { httpClient } from "./api";
 import { UserProfile } from "@/lib/types/user.types";
 import { Bookmark } from "@/lib/types/material.types";
-import { Response } from "@/lib/types/response.types";
 
 export interface FetchAllUsersResponse {
   data: UserProfile[];
@@ -19,36 +18,19 @@ export async function getUserProfile() {
   try {
     const response = await httpClient.get("/user/profile");
     return response.data.data;
-  } catch (error: any) {
-    throw {
-      statusCode: error.response?.status || 500,
-      message:
-        error.response?.data?.message ||
-        "Fetching user profile failed. Please try again.",
-    };
-  }
-}
-
-/**
- * Fetches user profile data for current authenticated user
- * @returns user profile data or null
- */
-export async function fetchUserProfile(): Promise<UserProfile | null> {
-  try {
-    const response = await httpClient.get("/user/profile");
-    if (response.data.status === "success") {
-      return response.data.data;
-    }
-    return null;
   } catch (error) {
-    return null;
+    const actualError = error.data.error;
+		throw {
+			statusCode: actualError.statusCode || 500,
+			message: actualError.cause || "Fetching user profile failed. Please try again.",
+		};
   }
 }
 
 /**
  * Updates the user profile
  * @param data - Partial user profile data to update
- * @returns updated user profile data or null
+ * @returns updated user profile data
  */
 export async function updateUserProfile(
   data: Partial<
@@ -57,18 +39,16 @@ export async function updateUserProfile(
       "firstName" | "lastName" | "username" | "level" | "departmentId"
     >
   >
-): Promise<UserProfile | null> {
+): Promise<UserProfile> {
   try {
     const response = await httpClient.patch("/user", data);
-    if (response.data.status === "success") {
-      return response.data.data;
-    }
-    return null;
-  } catch (error: any) {
-    throw {
-      statusCode: error.response?.status || 500,
-      message: error.response?.data?.message || "Failed to update profile",
-    };
+    return response.data.data;
+  } catch (error) {
+    const actualError = error.data.error;
+		throw {
+			statusCode: actualError.statusCode || 500,
+			message: actualError.cause || "Failed to update profile. Please try again.",
+		};
   }
 }
 
