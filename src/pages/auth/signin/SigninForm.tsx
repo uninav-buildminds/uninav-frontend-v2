@@ -12,14 +12,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { signinSchema, type SigninInput } from "@/lib/validation/auth";
 import { Link, useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "@/lib/utils";
-import { preload } from "swr";
 import { toast } from "sonner";
 import AuthContext from "@/context/authentication/AuthContext";
-
-// Start prefetching all the faculties and their departments in case the user goes to sign up
-preload(`${API_BASE_URL}/faculty`, (url: string) =>
-  fetch(url).then((res) => res.json())
-);
 
 const SigninForm: React.FC = () => {
   const navigate = useNavigate();
