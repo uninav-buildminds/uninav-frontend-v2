@@ -12,28 +12,19 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { signupSchema, type SignupInput } from "@/lib/validation/auth";
 import { Link, useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "@/lib/utils";
-import { preload } from "swr";
 import { CircleUserRound } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import useSWR, { Fetcher } from "swr";
-import { Department, Faculty } from "@/lib/types/user.types";
 import { toast } from "sonner";
 import { signUp } from "@/api/auth.api";
 
-const fetcher: Fetcher<{ data: Faculty[] }> = (url: string) => fetch(url).then((res) => res.json());
-
 const SignupForm: React.FC = () => {
-  const { data, error, isLoading } = useSWR(`${API_BASE_URL}/faculty`, fetcher);
-  const [selectedFacultyId, setSelectedFacultyId] = React.useState<string | null>(null);
   const navigate = useNavigate();
   const {
-    register,
-    handleSubmit,
-    setValue,
-    formState: { errors, isSubmitting },
-  } = useForm<SignupInput>({ 
-    resolver: zodResolver(signupSchema), 
-    mode: "onBlur"
+		register,
+		handleSubmit,
+		formState: { errors, isSubmitting },
+  } = useForm<SignupInput>({
+		resolver: zodResolver(signupSchema),
+		mode: "onBlur",
   });
 
   const onSubmit = async (data: SignupInput) => {
@@ -46,17 +37,10 @@ const SignupForm: React.FC = () => {
 				password: data.password,
 				firstName,
 				lastName,
-				departmentId: data.department,
-				level: data.level ? parseInt(data.level, 10) : 100,
       });
       navigate(`/auth/signup/verify?email=${encodeURIComponent(data.email)}`);
-		} catch (error) {
-			if (error.statusCode === 400) {
-				toast.error("A user with this email already exists.");
-				navigate("/auth/signin");
-			} else {
-				toast.error(error.message);
-			}
+    } catch (error) {
+      toast.error(error.message);
 		}
   };
 
@@ -64,28 +48,6 @@ const SignupForm: React.FC = () => {
 		window.location.href = `${API_BASE_URL}/auth/google`;
   };
 
-  const facultyValueChangeHandler = (value: string) => {
-    setSelectedFacultyId(value);
-    setValue("faculty", value);
-  }
-
-  const levelValueChangeHandler = (value: string) => {
-		function isValidLevel(level: string): level is SignupInput["level"] {
-			return ["100", "200", "300", "400", "500", "600", "700"].includes(
-				level
-			);
-		}
-
-		if (isValidLevel(value)) {
-			setValue("level", value);
-		} else {
-			setValue("level", "100");
-		}
-  };
-  
-  // const selectedFaculty = getValues("faculty");
-  const faculties = data?.data || [];
-  const departments: Department[] = faculties.find(faculty => faculty.id === selectedFacultyId)?.departments || [];
   return (
     <AuthLayout>
       <AuthCard>
@@ -121,54 +83,6 @@ const SignupForm: React.FC = () => {
               placeholder="Enter your password" 
               {...register("password")} 
             />
-          </FormField>
-
-          <FormField label="Faculty (Optional)" htmlFor="faculty" error={errors.faculty?.message}>
-            <Select onValueChange={facultyValueChangeHandler} disabled={isLoading || error}>
-              <SelectTrigger id="faculty" className="rounded-xl py-3">
-                <SelectValue placeholder="Choose faculty" />
-              </SelectTrigger>
-              <SelectContent>
-                  {faculties.map((faculty) => (
-                    <SelectItem key={faculty.id} value={faculty.id}>
-                      {faculty.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-            </Select>
-          </FormField>
-
-          <FormField label="Department (Optional)" htmlFor="department" error={errors.department?.message}>
-            <Select onValueChange={(v) => setValue("department", v)} disabled={isLoading || error}>
-              <SelectTrigger id="department" className="rounded-xl py-3">
-                <SelectValue placeholder="Choose department" />
-              </SelectTrigger>
-              
-              <SelectContent>
-                {departments.map((department) => (
-                  <SelectItem key={department.id} value={department.id}>
-                    {department.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </FormField>
-
-          <FormField label="Level (Optional)" htmlFor="level" error={errors.level?.message}>
-            <Select onValueChange={levelValueChangeHandler}>
-              <SelectTrigger id="level" className="rounded-xl py-3">
-                <SelectValue placeholder="Choose level" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="100">100</SelectItem>
-                <SelectItem value="200">200</SelectItem>
-                <SelectItem value="300">300</SelectItem>
-                <SelectItem value="400">400</SelectItem>
-                <SelectItem value="500">500</SelectItem>
-                <SelectItem value="600">600</SelectItem>
-                <SelectItem value="700">700</SelectItem>
-              </SelectContent>
-            </Select>
           </FormField>
 
           <div className="flex items-start gap-2">
