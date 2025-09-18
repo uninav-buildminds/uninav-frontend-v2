@@ -1,10 +1,17 @@
 import { verifyEmail } from "@/api/auth.api";
 import AuthCard from "@/components/auth/AuthCard";
 import AuthLayout from "@/components/auth/AuthLayout";
+import { API_BASE_URL } from "@/lib/utils";
 import { Loader } from "lucide-react";
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
+import { preload } from "swr";
+
+// Start prefetching all the faculties and their departments, they will be used in profile setup
+preload(`${API_BASE_URL}/faculty`, (url: string) =>
+  fetch(url).then((res) => res.json())
+);
 
 const ProcessEmailVerification: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -17,9 +24,8 @@ const ProcessEmailVerification: React.FC = () => {
 		} else {
 			verifyEmail(token)
 				.then(() => {
-					// Email verification successful, should navigate to dashboard when it is implemented
 					toast("Email verification successful!");
-					navigate("/auth/signup/success");
+					navigate("/auth/signup/profile");
 				})
 				.catch((error) => {
 					toast.error(error.message);
