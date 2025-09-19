@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { UploadSquare01Icon, Link01Icon } from 'hugeicons-react';
+import { File02Icon, Link01Icon } from 'hugeicons-react';
 import HeaderStepper from './shared/HeaderStepper';
 import { MaterialType } from '../UploadModal';
 
@@ -25,7 +25,7 @@ const Step1: React.FC<Step1Props> = ({ onSelectType }) => {
 
       {/* Material type selection */}
       <div className="space-y-4">
-        <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+        <h3 className="text-base sm:text-lg font-semibold text-gray-900 text-center">
           What are you sharing?
         </h3>
         
@@ -39,7 +39,7 @@ const Step1: React.FC<Step1Props> = ({ onSelectType }) => {
           >
                     <div className="flex items-center space-x-3 sm:space-x-4">
                       <div className="w-8 h-8 sm:w-10 sm:h-10 bg-brand/20 rounded-lg flex items-center justify-center group-hover:bg-brand/30 transition-colors">
-                        <UploadSquare01Icon size={16} className="sm:w-5 sm:h-5 text-brand" />
+                        <File02Icon size={16} className="sm:w-5 sm:h-5 text-brand" />
                       </div>
                       <div className="text-left">
                         <h4 className="text-sm sm:text-base font-semibold text-gray-900">File Upload</h4>

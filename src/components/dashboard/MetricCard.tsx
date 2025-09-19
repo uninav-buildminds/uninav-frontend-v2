@@ -16,7 +16,7 @@ const MetricCard: React.FC<Props> = ({ icon, title, value, description }) => {
       </div>
       <p className="text-xs text-muted-foreground">{title}</p>
       <p className="text-2xl font-semibold text-brand">{value}</p>
-      <p className="mt-1 text-xs text-muted-foreground max-w-xs pr-12">{description}</p>
+      <p className="mt-1 text-xs text-muted-foreground">{description}</p>
     </div>
   );
 };

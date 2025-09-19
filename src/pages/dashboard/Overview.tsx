@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import MetricsSection from "@/components/dashboard/MetricsSection";
@@ -16,8 +17,14 @@ import {
 } from "@/api/materials.api";
 
 const Overview: React.FC = () => {
+  const navigate = useNavigate();
+
   const handleViewAll = (section: string) => {
-    console.log(`View all ${section}`);
+    if (section === "recent materials") {
+      navigate("/dashboard/recent");
+    } else if (section === "recommendations") {
+      navigate("/dashboard/recommendations");
+    }
   };
 
   const handleFilter = (section: string) => {

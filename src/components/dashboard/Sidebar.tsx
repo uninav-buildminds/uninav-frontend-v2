@@ -2,8 +2,7 @@ import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import {
   Home01Icon,
-  Bookmark01Icon,
-  UploadSquare01Icon,
+  Folder01Icon,
   Notification01Icon,
   Settings01Icon,
   HelpCircleIcon,
@@ -27,8 +26,7 @@ const Sidebar: React.FC = () => {
   // Base navigation items
   const baseNavItems = [
     { to: "/dashboard", label: "Overview", icon: Home01Icon },
-    { to: "/dashboard/saved", label: "Saved", icon: Bookmark01Icon },
-    { to: "/dashboard/uploads", label: "Uploads", icon: UploadSquare01Icon },
+    { to: "/dashboard/libraries", label: "Libraries", icon: Folder01Icon },
     { to: "/dashboard/notifications", label: "Notifications", icon: Notification01Icon },
     { to: "/dashboard/settings", label: "Settings", icon: Settings01Icon },
     { to: "/dashboard/help", label: "Help", icon: HelpCircleIcon },
@@ -106,7 +104,12 @@ const Sidebar: React.FC = () => {
               {/* Nav rail */}
               <nav className="mt-6 flex flex-col items-center gap-6">
                 {navItems.map(({ to, label, icon: Icon }) => (
-                  <NavLink key={to} to={to} className={({ isActive }) => "flex flex-col items-center gap-1"}>
+                  <NavLink 
+                    key={to} 
+                    to={to} 
+                    end={to === "/dashboard"}
+                    className={({ isActive }) => "flex flex-col items-center gap-1"}
+                  >
                     {({ isActive }) => (
                       <>
                         <div

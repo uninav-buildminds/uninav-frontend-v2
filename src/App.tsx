@@ -17,6 +17,9 @@ import ProcessEmailVerification from "./pages/auth/verification/ProcessEmailVeri
 import { AuthRedirect, ProtectedRoute } from "./components/auth/AuthRedirect";
 import NotFound from "./pages/NotFound";
 import Overview from "./pages/dashboard/Overview";
+import Libraries from "./pages/dashboard/Libraries";
+import RecentMaterials from "./pages/dashboard/RecentMaterials";
+import Recommendations from "./pages/dashboard/Recommendations";
 import ManagementLayout from "./components/management/ManagementLayout";
 import ManagementDashboard from "./pages/management/ManagementDashboard";
 import CourseManagement from "./pages/management/CourseManagement";
@@ -47,6 +50,30 @@ const App = () => {
 									element={
 										<ProtectedRoute>
 											<Overview />
+										</ProtectedRoute>
+									}
+								/>
+								<Route
+									path="/dashboard/libraries"
+									element={
+										<ProtectedRoute>
+											<Libraries />
+										</ProtectedRoute>
+									}
+								/>
+								<Route
+									path="/dashboard/recent"
+									element={
+										<ProtectedRoute>
+											<RecentMaterials />
+										</ProtectedRoute>
+									}
+								/>
+								<Route
+									path="/dashboard/recommendations"
+									element={
+										<ProtectedRoute>
+											<Recommendations />
 										</ProtectedRoute>
 									}
 								/>
