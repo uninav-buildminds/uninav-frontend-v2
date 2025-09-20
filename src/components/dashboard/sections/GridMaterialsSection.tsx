@@ -14,11 +14,11 @@ function formatRelativeTime(dateString: string): string {
   if (diffMin > 0) return `${diffMin} minute${diffMin > 1 ? "s" : ""} ago`;
   return "just now";
 }
-import React, { useEffect, useRef, useState, useMemo } from "react";
+
+import React, { useEffect, useState, useMemo } from "react";
 import {
   ArrowRight01Icon,
   SortingAZ02Icon,
-  ArrowLeft01Icon,
 } from "hugeicons-react";
 import MaterialCard from "./MaterialCard";
 import EmptyState from "./EmptyState";
@@ -118,7 +118,7 @@ export function mapRecommendationToMaterial(
   };
 }
 
-type MaterialsSectionProps = {
+type GridMaterialsSectionProps = {
   title: string;
   materials: Material[] | (() => Promise<any>);
   onViewAll?: () => void;
@@ -127,14 +127,12 @@ type MaterialsSectionProps = {
   onSave?: (id: string) => void;
   onShare?: (id: string) => void;
   onRead?: (id: string) => void;
-  scrollStep?: number;
   showViewAll?: boolean;
-  emptyStateType?: 'recent' | 'recommendations' | 'libraries' | 'saved' | 'uploads';
+  emptyStateType?: 'recent' | 'recommendations' | 'libraries';
   onEmptyStateAction?: () => void;
-  isLoading?: boolean;
 };
 
-const MaterialsSection: React.FC<MaterialsSectionProps> = ({
+const GridMaterialsSection: React.FC<GridMaterialsSectionProps> = ({
   title,
   materials,
   onViewAll,
@@ -143,15 +141,10 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
   onSave,
   onShare,
   onRead,
-  scrollStep = 240,
   showViewAll = true,
-  emptyStateType = 'recent',
+  emptyStateType,
   onEmptyStateAction,
-  isLoading = false,
 }) => {
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
   const [showSortOptions, setShowSortOptions] = useState(false);
   const [sortBy, setSortBy] = useState<"name" | "date" | "downloads">("date");
   const [fetchedMaterials, setFetchedMaterials] = useState<Material[] | null>(
@@ -188,16 +181,6 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
       setFetchedMaterials(null);
     }
   }, [materials]);
-
-  // Use fetchedMaterials if present, else use props.materials
-
-  const updateScrollButtons = () => {
-    const el = scrollContainerRef.current;
-    if (!el) return;
-    const { scrollLeft, scrollWidth, clientWidth } = el;
-    setCanScrollLeft(scrollLeft > 0);
-    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 1);
-  };
 
   // Memoize displayMaterials to avoid recalculating on every render
   const displayMaterials: Material[] = useMemo(() => {
@@ -246,19 +229,6 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
     });
   }, [displayMaterials, sortBy]);
 
-  useEffect(() => {
-    updateScrollButtons();
-    const onResize = () => updateScrollButtons();
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
-
-  const scrollByAmount = (amount: number) => {
-    const el = scrollContainerRef.current;
-    if (!el) return;
-    el.scrollBy({ left: amount, behavior: "smooth" });
-  };
-
   // Close sort dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -283,6 +253,11 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
     return <div className="py-8 text-center text-red-500">{error}</div>;
   }
   if (!sortedMaterials || sortedMaterials.length === 0) {
+    // Don't show empty state for recommendations
+    if (!emptyStateType) {
+      return <div>{""}</div>;
+    }
+    
     return (
       <section className="space-y-4">
         {/* Header */}
@@ -372,7 +347,6 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
         <EmptyState 
           type={emptyStateType} 
           onAction={onEmptyStateAction}
-          isLoading={isLoading}
         />
       </section>
     );
@@ -462,64 +436,21 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
         </div>
       </div>
 
-      {/* Materials rail */}
-      <div className="relative">
-        {/* Soft gradient edges (only when scrolling is possible) */}
-        {canScrollLeft && (
-          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-white/95 via-white/70 to-transparent z-sticky" />
-        )}
-        {canScrollRight && (
-          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-white/95 via-white/70 to-transparent z-sticky" />
-        )}
-
-        {/* Left Arrow */}
-        {canScrollLeft && (
-          <button
-            onClick={() => scrollByAmount(-scrollStep)}
-            className="absolute left-2 top-1/2 -translate-y-1/2 z-modal p-2 bg-white/90 backdrop-blur rounded-full shadow-md border border-gray-200 hover:bg-white"
-            aria-label="Scroll left"
-          >
-            <ArrowLeft01Icon size={16} className="text-brand" />
-          </button>
-        )}
-
-        {/* Right Arrow */}
-        {canScrollRight && (
-          <button
-            onClick={() => scrollByAmount(scrollStep)}
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-modal p-2 bg-white/90 backdrop-blur rounded-full shadow-md border border-gray-200 hover:bg-white"
-            aria-label="Scroll right"
-          >
-            <ArrowRight01Icon size={16} className="text-brand" />
-          </button>
-        )}
-
-        {/* Scroll container */}
-        <div
-          ref={scrollContainerRef}
-          onScroll={updateScrollButtons}
-          className="flex gap-6 overflow-x-auto overflow-y-visible pb-2 scrollbar-hide"
-        >
-          {sortedMaterials.map((material) => (
-            <div
-              key={material.id}
-              className="flex-shrink-0 w-64 sm:w-72 md:w-80 lg:w-72 xl:w-64 2xl:w-72"
-            >
-              <MaterialCard
-                {...material}
-                onDownload={onDownload}
-                onSave={onSave}
-                onShare={onShare}
-                onRead={onRead}
-              />
-            </div>
-          ))}
-          {/* Add padding to the last item to ensure proper spacing */}
-          <div className="flex-shrink-0 w-6" />
-        </div>
+      {/* Materials grid - 2 cards on mobile, 6 on desktop */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
+        {sortedMaterials.map((material) => (
+          <MaterialCard
+            key={material.id}
+            {...material}
+            onDownload={onDownload}
+            onSave={onSave}
+            onShare={onShare}
+            onRead={onRead}
+          />
+        ))}
       </div>
     </section>
   );
 };
 
-export default MaterialsSection;
+export default GridMaterialsSection;

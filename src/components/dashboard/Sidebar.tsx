@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import {
   Home01Icon,
-  Folder01Icon,
+  FolderLibraryIcon,
   Notification01Icon,
   Settings01Icon,
   HelpCircleIcon,
@@ -26,7 +26,7 @@ const Sidebar: React.FC = () => {
   // Base navigation items
   const baseNavItems = [
     { to: "/dashboard", label: "Overview", icon: Home01Icon },
-    { to: "/dashboard/libraries", label: "Libraries", icon: Folder01Icon },
+    { to: "/dashboard/libraries", label: "Libraries", icon: FolderLibraryIcon },
     { to: "/dashboard/notifications", label: "Notifications", icon: Notification01Icon },
     { to: "/dashboard/settings", label: "Settings", icon: Settings01Icon },
     { to: "/dashboard/help", label: "Help", icon: HelpCircleIcon },

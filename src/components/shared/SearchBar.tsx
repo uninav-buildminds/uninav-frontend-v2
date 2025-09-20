@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Search01Icon, ArrowRight02Icon, Book01Icon, File01Icon } from "hugeicons-react";
+import { Search01Icon, ArrowRight02Icon, Book01Icon, File01Icon, Cancel01Icon } from "hugeicons-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface SearchSuggestion {
@@ -62,6 +62,11 @@ const SearchBar: React.FC<SearchBarProps> = ({
     setQuery(value);
     setShowSuggestions(value.length > 0);
     setSelectedIndex(-1);
+    
+    // If input is cleared, trigger search with empty query to reset results
+    if (value === '') {
+      onSearch?.('');
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -109,6 +114,13 @@ const SearchBar: React.FC<SearchBarProps> = ({
     onSearch?.(suggestion.title);
   };
 
+  const handleClear = () => {
+    setQuery('');
+    setShowSuggestions(false);
+    setSelectedIndex(-1);
+    onSearch?.('');
+  };
+
   const SkeletonLoader = () => (
     <div className="space-y-3">
       {[...Array(3)].map((_, i) => (
@@ -139,8 +151,17 @@ const SearchBar: React.FC<SearchBarProps> = ({
             onKeyDown={handleKeyDown}
             onFocus={() => setShowSuggestions(query.length > 0)}
             placeholder={placeholder}
-            className="w-full pl-12 pr-4 py-2.5 text-base border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all duration-200"
+            className="w-full pl-12 pr-10 py-2.5 text-base border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all duration-200"
           />
+          {query && (
+            <button
+              onClick={handleClear}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors"
+              aria-label="Clear search"
+            >
+              <Cancel01Icon size={16} className="text-gray-400" />
+            </button>
+          )}
         </div>
         <button
           onClick={handleSearch}
