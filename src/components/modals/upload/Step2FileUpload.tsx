@@ -113,6 +113,16 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
     }
   };
 
+  // Add classification value as tag if not already present
+  const handleClassificationChange = (value: string) => {
+    setValue("classification", value);
+    if (!tags.includes(value)) {
+      const newTags = [...tags, value];
+      setTags(newTags);
+      setValue("tags", newTags);
+    }
+  };
+
   const handleTagRemove = (index: number) => {
     const newTags = tags.filter((_, i) => i !== index);
     setTags(newTags);
@@ -260,7 +270,7 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
           </label>
           <Select
             value={watchedValues.classification}
-            onValueChange={(value) => setValue("classification", value)}
+            onValueChange={handleClassificationChange}
           >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="e.g., Exam past question and Answers" />
@@ -281,6 +291,34 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
             <p className="mt-1 text-xs text-red-600">
               {errors.classification.message}
             </p>
+          )}
+        </div>
+
+        {/* Select file type */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Select File Type
+          </label>
+          <Select
+            value={watchedValues.type}
+            onValueChange={(value) => setValue("type", value)}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="e.g., Exam past question and Answers" />
+            </SelectTrigger>
+            <SelectContent className="z-[1060]">
+              <SelectItem value="docs">docs</SelectItem>
+              <SelectItem value="pdf">PDF</SelectItem>
+              <SelectItem value="gdrive">Gdrive</SelectItem>
+              <SelectItem value="excel">Excel</SelectItem>
+              <SelectItem value="image">Image</SelectItem>
+              <SelectItem value="video">Video</SelectItem>
+              <SelectItem value="article">Article</SelectItem>
+              <SelectItem value="other">Other</SelectItem>
+            </SelectContent>
+          </Select>
+          {errors.type && (
+            <p className="mt-1 text-xs text-red-600">{errors.type.message}</p>
           )}
         </div>
 

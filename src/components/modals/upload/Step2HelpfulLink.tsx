@@ -1,30 +1,42 @@
-import React, { useState, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { 
-  Link01Icon, 
-  ArrowLeft01Icon, 
+import React, { useState, useRef } from "react";
+import { motion } from "framer-motion";
+import {
+  Link01Icon,
+  ArrowLeft01Icon,
   Tag01Icon,
   Download01Icon,
-  ArrowDown01Icon
-} from 'hugeicons-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { uploadLinkSchema, type UploadLinkInput } from '@/lib/validation/upload';
-import { toast } from 'sonner';
-import HeaderStepper from './shared/HeaderStepper';
-import AdvancedOptions from './shared/AdvancedOptions';
+  ArrowDown01Icon,
+} from "hugeicons-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  uploadLinkSchema,
+  type UploadLinkInput,
+} from "@/lib/validation/upload";
+import { toast } from "sonner";
+import HeaderStepper from "./shared/HeaderStepper";
+import AdvancedOptions from "./shared/AdvancedOptions";
 
 interface Step2HelpfulLinkProps {
   onComplete: (data: Record<string, unknown>) => void;
   onBack: () => void;
 }
 
-const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({ onComplete, onBack }) => {
+const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
+  onComplete,
+  onBack,
+}) => {
   const [tags, setTags] = useState<string[]>([]);
-  const [tagInput, setTagInput] = useState('');
+  const [tagInput, setTagInput] = useState("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  
+
   const imageInputRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -32,26 +44,36 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({ onComplete, onBack 
     handleSubmit,
     setValue,
     watch,
-    formState: { errors, isSubmitting }
+    formState: { errors, isSubmitting },
   } = useForm<UploadLinkInput>({
     resolver: zodResolver(uploadLinkSchema),
     mode: "onBlur",
     defaultValues: {
-      visibility: 'Public',
-      accessRestrictions: 'Downloadable',
-      tags: []
-    }
+      visibility: "Public",
+      accessRestrictions: "Downloadable",
+      tags: [],
+    },
   });
 
   const watchedValues = watch();
 
   const handleTagAdd = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && tagInput.trim()) {
+    if (e.key === "Enter" && tagInput.trim()) {
       e.preventDefault();
       const newTags = [...tags, tagInput.trim()];
       setTags(newTags);
       setValue("tags", newTags);
-      setTagInput('');
+      setTagInput("");
+    }
+  };
+
+  // Add classification value as tag if not already present
+  const handleClassificationChange = (value: string) => {
+    setValue("classification", value);
+    if (!tags.includes(value)) {
+      const newTags = [...tags, value];
+      setTags(newTags);
+      setValue("tags", newTags);
     }
   };
 
@@ -63,15 +85,15 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({ onComplete, onBack 
 
   const onSubmit = (data: UploadLinkInput) => {
     const formData = {
-      type: 'link',
+      type: "link",
       url: data.url,
       materialTitle: data.materialTitle,
       classification: data.classification,
-      description: data.description || '',
+      description: data.description || "",
       visibility: data.visibility,
       accessRestrictions: data.accessRestrictions,
       tags: data.tags || [],
-      image: selectedImage
+      image: selectedImage,
     };
 
     onComplete(formData);
@@ -94,7 +116,7 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({ onComplete, onBack 
       {/* Add URL file Section */}
       <div className="space-y-3">
         <h3 className="text-lg font-semibold text-gray-900">Add URL file</h3>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Paste your URL file here
@@ -118,8 +140,10 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({ onComplete, onBack 
 
       {/* Tell us about it Section */}
       <div className="space-y-3">
-        <h3 className="text-lg font-semibold text-gray-900">Tell us about it</h3>
-        
+        <h3 className="text-lg font-semibold text-gray-900">
+          Tell us about it
+        </h3>
+
         {/* Material Title */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -132,7 +156,9 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({ onComplete, onBack 
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors"
           />
           {errors.materialTitle && (
-            <p className="mt-1 text-xs text-red-600">{errors.materialTitle.message}</p>
+            <p className="mt-1 text-xs text-red-600">
+              {errors.materialTitle.message}
+            </p>
           )}
           <p className="text-xs text-gray-600 mt-1">
             Be descriptive so everyone knows what's inside.
@@ -144,12 +170,17 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({ onComplete, onBack 
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Select Upload Classification
           </label>
-          <Select value={watchedValues.classification} onValueChange={(value) => setValue("classification", value)}>
+          <Select
+            value={watchedValues.classification}
+            onValueChange={handleClassificationChange}
+          >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="e.g., Exam past question and Answers" />
             </SelectTrigger>
             <SelectContent className="z-[1060]">
-              <SelectItem value="exam-past-questions">Exam Past Questions</SelectItem>
+              <SelectItem value="exam-past-questions">
+                Exam Past Questions
+              </SelectItem>
               <SelectItem value="lecture-notes">Lecture Notes</SelectItem>
               <SelectItem value="assignments">Assignments</SelectItem>
               <SelectItem value="tutorials">Tutorials</SelectItem>
@@ -159,7 +190,9 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({ onComplete, onBack 
             </SelectContent>
           </Select>
           {errors.classification && (
-            <p className="mt-1 text-xs text-red-600">{errors.classification.message}</p>
+            <p className="mt-1 text-xs text-red-600">
+              {errors.classification.message}
+            </p>
           )}
         </div>
 
@@ -187,7 +220,9 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({ onComplete, onBack 
         tagInput={tagInput}
         selectedImage={selectedImage}
         onVisibilityChange={(value) => setValue("visibility", value)}
-        onAccessRestrictionsChange={(value) => setValue("accessRestrictions", value)}
+        onAccessRestrictionsChange={(value) =>
+          setValue("accessRestrictions", value)
+        }
         onTagAdd={handleTagAdd}
         onTagRemove={handleTagRemove}
         onTagInputChange={setTagInput}
