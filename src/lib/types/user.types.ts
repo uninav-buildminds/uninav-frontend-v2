@@ -1,4 +1,8 @@
 
+import { Course } from "./course.types";
+import { Department } from "./department.types";
+import { UserRole } from "./response.types";
+
 export type UserProfile = {
 	id: string;
 	email: string;
@@ -7,15 +11,10 @@ export type UserProfile = {
 	username: string;
 	departmentId?: string;
 	level: number;
-	role: "student" | "moderator" | "admin";
+	role: UserRole;
 	createdAt: string;
 	updatedAt: string;
-	department?: {
-		id: string;
-		name: string;
-		description: string;
-		facultyId: string;
-	};
+	department?: Department;
 	auth: {
 		userId: string;
 		email: string;
@@ -32,41 +31,3 @@ export type UserProfile = {
 		course: Course;
 	}[];
 };
-
-export interface Course {
-	id: string;
-	courseName: string;
-	courseCode: string;
-	description: string;
-	reviewStatus: ApprovalStatusEnum;
-	createdAt: string;
-	departments?: {
-		departmentId: string;
-		level: number;
-		courseId: string;
-		reviewStatus: ApprovalStatusEnum;
-		reviewedById: string | null;
-		department: Department;
-	}[];
-}
-
-export interface Department {
-	id: string;
-	name: string;
-	description: string;
-	facultyId: string;
-	faculty?: Faculty;
-}
-
-export interface Faculty {
-	id: string;
-	name: string;
-	description: string;
-	departments?: Department[];
-}
-
-enum ApprovalStatusEnum {
-	APPROVED = "approved",
-	PENDING = "pending",
-	REJECTED = "rejected",
-}

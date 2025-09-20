@@ -9,6 +9,7 @@ interface AuthContextType {
     user?: UserProfile;
     isValidating: boolean;
     isLoading: boolean;
+    authInitializing: boolean; // true while initial auth (cookie/session) check + first user fetch (if logged in) are in flight
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);

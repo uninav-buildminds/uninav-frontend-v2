@@ -2,10 +2,7 @@ import React, { useContext, useState } from "react";
 import { LayoutDashboard, LogOut, Menu, Upload, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarTrigger } from "./ui/menubar";
-import { useGoogleOneTapLogin } from "@react-oauth/google";
-import { toast } from "sonner";
 import AuthContext from "@/context/authentication/AuthContext";
-import { signInWithOneTap } from "@/api/auth.api";
 
 const ChevronDownIcon = () => (
   <svg
@@ -24,23 +21,6 @@ const Header: React.FC = () => {
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 	const { user, isLoading, logOut } = useContext(AuthContext);
 	
-	useGoogleOneTapLogin({
-		onSuccess: (credentialResponse) =>
-			signInWithOneTap(
-				credentialResponse,
-				() => {
-					window.location.reload();
-				},
-				() => {
-					toast.error("Google One Tap login failed");
-				}
-			),
-		onError: () => {
-			toast.error("Google One Tap login failed");
-		},
-		disabled: user !== undefined || isLoading,
-	});
-
 	const toggleMobileMenu = () => {
 		setIsMobileMenuOpen(!isMobileMenuOpen);
 	};
