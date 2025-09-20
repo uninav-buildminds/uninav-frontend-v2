@@ -15,26 +15,71 @@ interface MaterialRecommendation {
 export async function createMaterials(rawForm: any) {
   const formData = new FormData();
 
-  formData.append("description", rawForm.description);
-  formData.append("file", rawForm.file); // must be File or Blob
   formData.append("label", rawForm.materialTitle);
-  formData.append("restriction", rawForm.accessRestrictions.toLowerCase());
+  formData.append("description", rawForm.description);
+
+  const type =
+    rawForm.type ||
+    (rawForm.file?.name?.split(".").pop()?.toLowerCase() ?? "other");
+
+  const allowedTypes = [
+    "docs",
+    "pdf",
+    "ppt",
+    "gdrive",
+    "excel",
+    "image",
+    "video",
+    "article",
+    "other",
+  ];
+  formData.append("type", allowedTypes.includes(type) ? type : "other");
+
+  formData.append(
+    "restriction",
+    rawForm.accessRestrictions
+      ? rawForm.accessRestrictions.toLowerCase()
+      : "downloadable"
+  );
+
   formData.append(
     "tags",
-    Array.isArray(rawForm.tags) ? rawForm.tags.join(",") : rawForm.tags
+    Array.isArray(rawForm.tags) ? rawForm.tags.join(",") : rawForm.tags || ""
   );
-  formData.append("type", "pdf"); // or detect from file
-  formData.append("visibility", rawForm.visibility.toLowerCase());
+
+  if (rawForm.file) {
+    formData.append("file", rawForm.file);
+  }
+  if (rawForm.url) {
+    formData.append("resourceAddress", rawForm.url);
+  }
+  if (rawForm.targetCourseId) {
+    formData.append("targetCourseId", rawForm.targetCourseId);
+  }
+  if (rawForm.metaData) {
+    rawForm.metaData.forEach((meta: string) =>
+      formData.append("metaData", meta)
+    );
+  }
+
+  formData.append(
+    "visibility",
+    rawForm.visibility ? rawForm.visibility.toLowerCase() : "public"
+  );
+
+  // 🔍 Debug
+  for (const [key, value] of formData.entries()) {
+    console.log(key, value);
+  }
 
   try {
     const response = await httpClient.post("/materials", formData);
     return response.data;
   } catch (error: any) {
     throw {
-      statusCode: error.response?.status,
+      statusCode: error.status,
       message:
-        error.response?.data?.message ||
-        "Material upload failed. Please try again.",
+        error.data?.message || "Material upload failed. Please try again.",
     };
   }
 }

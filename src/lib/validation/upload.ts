@@ -3,6 +3,7 @@ import { z } from "zod";
 export const uploadFileSchema = z.object({
   materialTitle: z.string().min(1, "Material title is required"),
   classification: z.string().min(1, "Please select a classification"),
+  type: z.string().min(1, "Please select a file type"),
   description: z.string().optional(),
   visibility: z.string().min(1, "Please select visibility"),
   accessRestrictions: z.string().min(1, "Please select access restrictions"),
