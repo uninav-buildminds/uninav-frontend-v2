@@ -97,10 +97,7 @@ const MaterialsReviewContent: React.FC = () => {
         query: searchQuery || undefined,
       });
       if (response && response.status === ResponseStatus.SUCCESS) {
-        const rows = Array.isArray(response.data?.data)
-          ? (response.data.data as Material[])
-          : [];
-        setMaterials(rows);
+        setMaterials(response.data.items);
         const total = response.data?.pagination?.totalPages;
         setTotalPages(typeof total === "number" && total > 0 ? total : 1);
       } else {

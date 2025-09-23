@@ -55,7 +55,18 @@ export async function getMaterialReviews(
     if (params.type) url += `&type=${params.type}`;
     if (params.query) url += `&query=${encodeURIComponent(params.query)}`;
 
-    const response = await httpClient.get(url);
+    const response = await httpClient.get<
+      Response<{
+        items: Material[];
+        pagination: {
+          total: number;
+          page: number;
+          pageSize: number;
+          totalPages: number;
+        };
+      }>
+    >(url);
+    console.log("materials for review", response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching material reviews:", error);
