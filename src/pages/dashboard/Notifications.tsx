@@ -9,13 +9,14 @@ import {
   FilterHorizontalIcon,
   Award02Icon, 
   ArrowRight02Icon,
+  Search01Icon,
   CheckmarkCircle02Icon,
   CancelCircleIcon,
   Alert02Icon,
   Comment01Icon,
   NewsIcon,
 } from "hugeicons-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 // types moved to components/notifications/types
 
@@ -169,12 +170,13 @@ const Notifications: React.FC = () => {
                 >
                   Mark All as Read
                 </button>
-                <button
-                  className="px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50"
+                <Link
+                  to="/dashboard/settings"
+                  className="px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50 flex items-center justify-center"
                   aria-label="Settings"
                 >
                   <Settings01Icon size={18} />
-                </button>
+                </Link>
               </div>
             </div>
 
@@ -190,6 +192,7 @@ const Notifications: React.FC = () => {
               <div className="mt-4 flex items-center gap-2">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 bg-white rounded-full border border-gray-200 px-3 py-2">
+                    <Search01Icon size={16} className="text-gray-400" />
                     <input
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
@@ -276,5 +279,4 @@ const Notifications: React.FC = () => {
 };
 
 export default Notifications;
-
 
