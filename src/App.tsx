@@ -20,6 +20,7 @@ import Overview from "./pages/dashboard/Overview";
 import Libraries from "./pages/dashboard/Libraries";
 import RecentMaterials from "./pages/dashboard/RecentMaterials";
 import Recommendations from "./pages/dashboard/Recommendations";
+import Notifications from "./pages/dashboard/Notifications";
 import ManagementLayout from "./components/management/ManagementLayout";
 import ManagementDashboard from "./pages/management/ManagementDashboard";
 import CourseManagement from "./pages/management/CourseManagement";
@@ -74,6 +75,14 @@ const App = () => {
 									element={
 										<ProtectedRoute>
 											<Recommendations />
+										</ProtectedRoute>
+									}
+								/>
+								<Route
+									path="/dashboard/notifications"
+									element={
+										<ProtectedRoute>
+											<Notifications />
 										</ProtectedRoute>
 									}
 								/>
