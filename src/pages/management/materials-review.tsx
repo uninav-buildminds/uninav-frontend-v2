@@ -14,7 +14,6 @@ import {
   reviewMaterial,
   deleteMaterialAsAdmin,
   getMaterialReviewCounts,
-  ReviewActionDTO,
   Material,
 } from "@/api/review.api";
 import {
@@ -34,6 +33,7 @@ import {
   ArrowLeft,
   Eye,
 } from "lucide-react";
+import { ReviewActionDTO } from "@/lib/types/review.types";
 
 const MaterialsReviewContent: React.FC = () => {
   const navigate = useNavigate();
@@ -97,8 +97,12 @@ const MaterialsReviewContent: React.FC = () => {
         query: searchQuery || undefined,
       });
       if (response && response.status === ResponseStatus.SUCCESS) {
-        setMaterials(response.data.data as Material[]);
-        setTotalPages(response.data.pagination.totalPages);
+        const rows = Array.isArray(response.data?.data)
+          ? (response.data.data as Material[])
+          : [];
+        setMaterials(rows);
+        const total = response.data?.pagination?.totalPages;
+        setTotalPages(typeof total === "number" && total > 0 ? total : 1);
       } else {
         setError("Failed to load materials");
       }
@@ -128,6 +132,33 @@ const MaterialsReviewContent: React.FC = () => {
     setReviewAction(action);
   };
 
+  // Approve immediately without requiring a comment
+  const approveMaterialNow = async (material: Material) => {
+    try {
+      const payload: ReviewActionDTO = {
+        action: ApprovalStatusEnum.APPROVED,
+        comment: undefined,
+      };
+      const response = await reviewMaterial(material.id, payload);
+      if (response.status === ResponseStatus.SUCCESS) {
+        toast({
+          title: "Success",
+          description: "Material approved",
+        });
+        setCounts((prev) => ({
+          ...prev,
+          pending: Math.max(0, prev.pending - 1),
+          approved: prev.approved + 1,
+        }));
+        fetchMaterials();
+      } else {
+        toast({ title: "Error", description: "Action failed" });
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "An error occurred" });
+    }
+  };
+
   const handleDeleteAction = (material: Material) => {
     setSelectedMaterial(material);
     setIsDeleteDialogOpen(true);
@@ -139,7 +170,7 @@ const MaterialsReviewContent: React.FC = () => {
   ) => {
     if (!selectedMaterial) return;
     try {
-      const payload: ReviewActionDTO = {
+      const payload = {
         action,
         comment: comment.trim() || undefined,
       };
@@ -264,7 +295,7 @@ const MaterialsReviewContent: React.FC = () => {
                     </div>
                     <div className="absolute top-2 right-2">
                       <Badge className="bg-blue-600 text-white capitalize">
-                        {material.type.replace(/_/g, " ")}
+                        {(material.type as any)?.toString().replace(/_/g, " ")}
                       </Badge>
                     </div>
                   </div>
@@ -273,30 +304,31 @@ const MaterialsReviewContent: React.FC = () => {
                       {material.label}
                     </h3>
                     <p className="text-sm text-gray-500 mb-2">
-                      by {material.creator.firstName}{" "}
-                      {material.creator.lastName}
+                      by {material.creator?.firstName}{" "}
+                      {material.creator?.lastName}
                     </p>
                     <p className="text-sm text-gray-600 line-clamp-2 mb-3">
                       {material.description || "No description provided."}
                     </p>
-                    {material.tags && material.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mb-4">
-                        {material.tags.slice(0, 3).map((tag) => (
-                          <Badge
-                            key={tag}
-                            variant="outline"
-                            className="text-xs"
-                          >
-                            {tag}
-                          </Badge>
-                        ))}
-                        {material.tags.length > 3 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{material.tags.length - 3} more
-                          </Badge>
-                        )}
-                      </div>
-                    )}
+                    {Array.isArray(material.tags) &&
+                      material.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mb-4">
+                          {material.tags.slice(0, 3).map((tag) => (
+                            <Badge
+                              key={tag}
+                              variant="outline"
+                              className="text-xs"
+                            >
+                              {tag}
+                            </Badge>
+                          ))}
+                          {material.tags.length > 3 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{material.tags.length - 3} more
+                            </Badge>
+                          )}
+                        </div>
+                      )}
                     <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
                       <span>Downloads: {material.downloads}</span>
                       <span>Likes: {material.likes}</span>
@@ -307,12 +339,7 @@ const MaterialsReviewContent: React.FC = () => {
                           <Button
                             size="sm"
                             className="bg-green-600 hover:bg-green-700 gap-1"
-                            onClick={() =>
-                              handleReviewAction(
-                                material,
-                                ApprovalStatusEnum.APPROVED
-                              )
-                            }
+                            onClick={() => approveMaterialNow(material)}
                           >
                             <CheckCircle size={14} /> Approve
                           </Button>
