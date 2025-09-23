@@ -21,6 +21,7 @@ import {
   SortingAZ02Icon,
 } from "hugeicons-react";
 import MaterialCard from "./MaterialCard";
+import EmptyState from "./EmptyState";
 import { motion, AnimatePresence } from "framer-motion";
 
 export interface MaterialRecommendation {
@@ -127,6 +128,9 @@ type GridMaterialsSectionProps = {
   onShare?: (id: string) => void;
   onRead?: (id: string) => void;
   showViewAll?: boolean;
+  emptyStateType?: 'recent' | 'recommendations' | 'libraries' | 'saved' | 'uploads';
+  onEmptyStateAction?: () => void;
+  isLoading?: boolean;
 };
 
 const GridMaterialsSection: React.FC<GridMaterialsSectionProps> = ({
@@ -139,6 +143,9 @@ const GridMaterialsSection: React.FC<GridMaterialsSectionProps> = ({
   onShare,
   onRead,
   showViewAll = true,
+  emptyStateType,
+  onEmptyStateAction,
+  isLoading = false,
 }) => {
   const [showSortOptions, setShowSortOptions] = useState(false);
   const [sortBy, setSortBy] = useState<"name" | "date" | "downloads">("date");
@@ -248,7 +255,104 @@ const GridMaterialsSection: React.FC<GridMaterialsSectionProps> = ({
     return <div className="py-8 text-center text-red-500">{error}</div>;
   }
   if (!sortedMaterials || sortedMaterials.length === 0) {
-    return <div>{""}</div>;
+    // Don't show empty state for recommendations
+    if (!emptyStateType) {
+      return <div>{""}</div>;
+    }
+    
+    return (
+      <section className="space-y-4">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+          <div className="flex items-center gap-3">
+            {/* Sort Button with Dropdown */}
+            <div className="relative sort-dropdown">
+              <button
+                onClick={() => setShowSortOptions(!showSortOptions)}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                aria-label="Sort materials"
+              >
+                <SortingAZ02Icon size={18} className="text-gray-600" />
+              </button>
+
+              {/* Sort Options Dropdown */}
+              <AnimatePresence>
+                {showSortOptions && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                    className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-dropdown"
+                  >
+                    <div className="py-2">
+                      <button
+                        onClick={() => {
+                          setSortBy("name");
+                          setShowSortOptions(false);
+                        }}
+                        className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors ${
+                          sortBy === "name"
+                            ? "text-brand bg-brand/5"
+                            : "text-gray-700"
+                        }`}
+                      >
+                        Sort by Name (A-Z)
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSortBy("date");
+                          setShowSortOptions(false);
+                        }}
+                        className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors ${
+                          sortBy === "date"
+                            ? "text-brand bg-brand/5"
+                            : "text-gray-700"
+                        }`}
+                      >
+                        Sort by Date (Newest)
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSortBy("downloads");
+                          setShowSortOptions(false);
+                        }}
+                        className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors ${
+                          sortBy === "downloads"
+                            ? "text-brand bg-brand/5"
+                            : "text-gray-700"
+                        }`}
+                      >
+                        Sort by Downloads (Most)
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* View All Button */}
+            {showViewAll && (
+              <button
+                onClick={onViewAll}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+              >
+                View All
+                <ArrowRight01Icon size={16} className="text-gray-500" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Empty State */}
+        <EmptyState 
+          type={emptyStateType} 
+          onAction={onEmptyStateAction}
+          isLoading={isLoading}
+        />
+      </section>
+    );
   }
   return (
     <section className="space-y-4">
@@ -335,8 +439,8 @@ const GridMaterialsSection: React.FC<GridMaterialsSectionProps> = ({
         </div>
       </div>
 
-      {/* Materials grid - 2 cards on mobile, more on larger screens */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
+      {/* Materials grid - 2 cards on mobile, 6 on desktop */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
         {sortedMaterials.map((material) => (
           <MaterialCard
             key={material.id}

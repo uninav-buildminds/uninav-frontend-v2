@@ -129,9 +129,8 @@ type MaterialsSectionProps = {
   onRead?: (id: string) => void;
   scrollStep?: number;
   showViewAll?: boolean;
-  emptyStateType?: 'recent' | 'recommendations' | 'libraries' | 'saved' | 'uploads';
+  emptyStateType?: 'recent' | 'recommendations' | 'libraries';
   onEmptyStateAction?: () => void;
-  isLoading?: boolean;
 };
 
 const MaterialsSection: React.FC<MaterialsSectionProps> = ({
@@ -147,7 +146,6 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
   showViewAll = true,
   emptyStateType = 'recent',
   onEmptyStateAction,
-  isLoading = false,
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -372,7 +370,6 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
         <EmptyState 
           type={emptyStateType} 
           onAction={onEmptyStateAction}
-          isLoading={isLoading}
         />
       </section>
     );

@@ -13,10 +13,15 @@ const Recommendations: React.FC = () => {
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     
-    const filtered = recommendations.filter(material =>
-      material.name.toLowerCase().includes(query.toLowerCase())
-    );
-    setFilteredMaterials(filtered);
+    if (query.trim() === '') {
+      // If search is empty, show all materials
+      setFilteredMaterials(recommendations);
+    } else {
+      const filtered = recommendations.filter(material =>
+        material.name.toLowerCase().includes(query.toLowerCase())
+      );
+      setFilteredMaterials(filtered);
+    }
   };
 
   const handleFilter = () => {
@@ -39,6 +44,7 @@ const Recommendations: React.FC = () => {
     console.log(`Read material ${materialId}`);
   };
 
+
   return (
     <MaterialsLayout
       title="Recommendations"
@@ -56,7 +62,6 @@ const Recommendations: React.FC = () => {
         onSave={handleSave}
         onShare={handleShare}
         onRead={handleRead}
-        scrollStep={280}
         showViewAll={false}
       />
     </MaterialsLayout>

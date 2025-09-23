@@ -20,6 +20,8 @@ import Overview from "./pages/dashboard/Overview";
 import Libraries from "./pages/dashboard/Libraries";
 import RecentMaterials from "./pages/dashboard/RecentMaterials";
 import Recommendations from "./pages/dashboard/Recommendations";
+import Notifications from "./pages/dashboard/Notifications";
+import SettingsPage from "./pages/dashboard/Settings";
 import ManagementLayout from "./components/management/ManagementLayout";
 import ManagementDashboard from "./pages/management/ManagementDashboard";
 import CourseManagement from "./pages/management/CourseManagement";
@@ -35,48 +37,65 @@ const queryClient = new QueryClient();
 
 const App = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-            <AuthContextProvider>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                {/* Dashboard */}
-                <Route
-                  path="/dashboard"
-                  element={
-                    <ProtectedRoute>
-                      <Overview />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/dashboard/libraries"
-                  element={
-                    <ProtectedRoute>
-                      <Libraries />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/dashboard/recent"
-                  element={
-                    <ProtectedRoute>
-                      <RecentMaterials />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/dashboard/recommendations"
-                  element={
-                    <ProtectedRoute>
-                      <Recommendations />
-                    </ProtectedRoute>
-                  }
-                />
+		<QueryClientProvider client={queryClient}>
+			<TooltipProvider>
+				<Toaster />
+				<Sonner />
+				<BrowserRouter>
+					<GoogleOAuthProvider
+						clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+						<AuthContextProvider>
+							<Routes>
+								<Route path="/" element={<Index />} />
+								{/* Dashboard */}
+								<Route
+									path="/dashboard"
+									element={
+										<ProtectedRoute>
+											<Overview />
+										</ProtectedRoute>
+									}
+								/>
+								<Route
+									path="/dashboard/libraries"
+									element={
+										<ProtectedRoute>
+											<Libraries />
+										</ProtectedRoute>
+									}
+								/>
+								<Route
+									path="/dashboard/recent"
+									element={
+										<ProtectedRoute>
+											<RecentMaterials />
+										</ProtectedRoute>
+									}
+								/>
+								<Route
+									path="/dashboard/recommendations"
+									element={
+										<ProtectedRoute>
+											<Recommendations />
+										</ProtectedRoute>
+									}
+								/>
+								<Route
+									path="/dashboard/notifications"
+									element={
+										<ProtectedRoute>
+											<Notifications />
+										</ProtectedRoute>
+									}
+								/>
+								<Route
+									path="/dashboard/settings"
+									element={
+										<ProtectedRoute>
+											<SettingsPage />
+										</ProtectedRoute>
+									}
+								/>
 
                 {/* Management Routes */}
                 <Route
