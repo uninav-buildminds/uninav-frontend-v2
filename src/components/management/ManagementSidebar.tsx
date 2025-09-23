@@ -32,7 +32,7 @@ const navigationItems = [
     icon: School,
     description: "Create and link courses to departments",
   },
-    {
+  {
     title: "User Management",
     path: "/management/user-management",
     icon: UserCheck,
@@ -53,7 +53,7 @@ const navigationItems = [
   },
   {
     title: "Materials Review",
-    path: "/management/materials",
+    path: "/management/materials-review",
     icon: BookOpen,
     description: "Review and manage material submissions",
   },
@@ -62,7 +62,7 @@ const navigationItems = [
     path: "/management/blogs-review",
     icon: FileText,
     description: "Review and manage blog submissions",
-  }
+  },
   // {
   //   title: "Adverts Review",
   //   path: "/management/adverts",
@@ -76,7 +76,6 @@ const navigationItems = [
   //   description: "Review moderator applications",
   //   adminOnly: true,
   // },
-
 ];
 
 const ManagementSidebar: React.FC = () => {
@@ -109,7 +108,7 @@ const ManagementSidebar: React.FC = () => {
             <p className="text-xs text-gray-500">Management Portal</p>
           </div>
         </div>
-        
+
         {/* Navigation buttons */}
         <div className="space-y-2">
           <Button
@@ -138,7 +137,7 @@ const ManagementSidebar: React.FC = () => {
             Management
           </h3>
         </div>
-        
+
         {filteredNavigationItems.map((item) => (
           <NavLink
             key={item.path}
@@ -159,7 +158,9 @@ const ManagementSidebar: React.FC = () => {
                   size={16}
                   className={cn(
                     "transition-colors",
-                    isActive ? "text-blue-700" : "text-gray-500 group-hover:text-gray-700"
+                    isActive
+                      ? "text-blue-700"
+                      : "text-gray-500 group-hover:text-gray-700"
                   )}
                 />
                 <span className="truncate">{item.title}</span>
@@ -172,7 +173,9 @@ const ManagementSidebar: React.FC = () => {
       {/* Footer */}
       <div className="p-4 border-t border-gray-200">
         <div className="text-xs text-gray-500">
-          <p className="font-medium">{user?.firstName} {user?.lastName}</p>
+          <p className="font-medium">
+            {user?.firstName} {user?.lastName}
+          </p>
           <p className="capitalize">{user?.role.toLowerCase()} Access</p>
         </div>
       </div>

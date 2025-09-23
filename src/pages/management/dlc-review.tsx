@@ -11,10 +11,10 @@ import ReviewActionDialog from "@/components/management/ReviewActionDialog";
 import DeleteConfirmationDialog from "@/components/management/DeleteConfirmationDialog";
 import ManagementLayout from "@/layouts/ManagementLayout";
 import {
-	listDLCReviews,
-	reviewDLC,
-	deleteDLCAsAdmin,
-	getDLCReviewCounts,
+  listDLCReviews,
+  reviewDLC,
+  deleteDLCAsAdmin,
+  getDLCReviewCounts,
 } from "@/api/review.api";
 import { DLC } from "@/lib/types/dlc.types";
 import {
@@ -125,6 +125,30 @@ const DLCReviewContent: React.FC = () => {
     setReviewAction(action);
   };
 
+  // Approve DLC immediately without requiring a comment
+  const approveDLCNow = async (dlc: DLC) => {
+    try {
+      const payload: ReviewActionDTO = {
+        action: ApprovalStatusEnum.APPROVED,
+        comment: undefined,
+      };
+      const response = await reviewDLC(dlc.departmentId, dlc.courseId, payload);
+      if (response.status === ResponseStatus.SUCCESS) {
+        toast({ title: "Success", description: "DLC approved" });
+        setCounts((prev) => ({
+          ...prev,
+          pending: Math.max(0, prev.pending - 1),
+          approved: prev.approved + 1,
+        }));
+        fetchDLCs();
+      } else {
+        toast({ title: "Error", description: "Action failed" });
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "An error occurred" });
+    }
+  };
+
   const handleDeleteAction = (dlc: DLC) => {
     setSelectedDLC(dlc);
     setIsDeleteDialogOpen(true);
@@ -182,7 +206,7 @@ const DLCReviewContent: React.FC = () => {
           ...prev,
           [activeTab.toLowerCase()]: Math.max(
             0,
-            (prev)[activeTab.toLowerCase()] - 1
+            prev[activeTab.toLowerCase()] - 1
           ),
         }));
         fetchDLCs();
@@ -302,9 +326,7 @@ const DLCReviewContent: React.FC = () => {
                         <Button
                           size="sm"
                           className="bg-green-600 hover:bg-green-700 gap-1"
-                          onClick={() =>
-                            handleReviewAction(dlc, ApprovalStatusEnum.APPROVED)
-                          }
+                          onClick={() => approveDLCNow(dlc)}
                         >
                           <CheckCircle size={14} /> Approve
                         </Button>
