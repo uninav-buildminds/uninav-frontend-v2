@@ -1,4 +1,4 @@
-import { PaginatedResponse } from "@/lib/types/response.types";
+import { PaginatedResponse, Response } from "@/lib/types/response.types";
 import { httpClient } from "./api";
 import { Material } from "@/api/review.api";
 
@@ -134,9 +134,19 @@ export async function getRecentMaterials() {
 }
 
 // Search materials with pagination and filtering
-export async function searchMaterials(
-  params: MaterialSearchParams
-): Promise<PaginatedResponse<Material>> {
+export async function searchMaterials(params: MaterialSearchParams): Promise<
+  Response<{
+    items: Material[];
+    pagination: {
+      total: number;
+      page: number;
+      pageSize: number;
+      totalPages: number;
+      hasMore: boolean;
+      hasPrev: boolean;
+    };
+  }>
+> {
   try {
     const response = await httpClient.get("/materials", {
       params,
@@ -149,6 +159,21 @@ export async function searchMaterials(
       message:
         error.response?.data?.message ||
         "Searching materials failed. Please try again.",
+    };
+  }
+}
+
+export async function getMaterialById(id: string): Promise<Material> {
+  try {
+    const response = await httpClient.get(`/materials/${id}`);
+    return response.data;
+  } catch (error: any) {
+    console.error("Error getting material by id:", error);
+    throw {
+      statusCode: error.response?.status,
+      message:
+        error.response?.data?.message ||
+        "Getting material by id failed. Please try again.",
     };
   }
 }
