@@ -1,19 +1,5 @@
 import Pic from "../../../public/placeholder.svg";
-
-// Helper to format date as 'x days ago', 'x hours ago', etc.
-function formatRelativeTime(dateString: string): string {
-  const now = new Date();
-  const date = new Date(dateString);
-  const diffMs = now.getTime() - date.getTime();
-  const diffSec = Math.floor(diffMs / 1000);
-  const diffMin = Math.floor(diffSec / 60);
-  const diffHour = Math.floor(diffMin / 60);
-  const diffDay = Math.floor(diffHour / 24);
-  if (diffDay > 0) return `${diffDay} day${diffDay > 1 ? "s" : ""} ago`;
-  if (diffHour > 0) return `${diffHour} hour${diffHour > 1 ? "s" : ""} ago`;
-  if (diffMin > 0) return `${diffMin} minute${diffMin > 1 ? "s" : ""} ago`;
-  return "just now";
-}
+import { Material } from "../../../lib/types/material.types";
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import {
   ArrowRight01Icon,
@@ -73,48 +59,29 @@ export interface MaterialRecommendationsResponse {
   };
 }
 
-// Adapter to map API MaterialRecommendation to MaterialCard props
-export interface Material {
-  id: string;
-  name: string;
-  uploadTime: string;
-  downloads: number;
-  previewImage: string;
-  pages?: number;
-  description?: string;
-  type?: string;
-  tags?: string[] | null;
-  views?: number;
-  likes?: number;
-  creator?: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    username: string;
-  };
-  targetCourse?: {
-    id: string;
-    courseName: string;
-    courseCode: string;
-  };
-}
-
+// Adapter to map API MaterialRecommendation to Material type
 export function mapRecommendationToMaterial(
   rec: MaterialRecommendation
 ): Material {
   return {
     id: rec.id,
-    name: rec.label,
-    uploadTime: rec.createdAt,
-    downloads: rec.downloads,
-    previewImage: rec.previewUrl,
+    label: rec.label,
     description: rec.description,
-    type: rec.type,
-    tags: rec.tags,
-    views: rec.views,
+    type: rec.type as any, // MaterialTypeEnum
+    tags: rec.tags || [],
+    visibility: rec.visibility as any, // VisibilityEnum
+    restriction: rec.restriction as any, // RestrictionEnum
+    targetCourseId: rec.targetCourseId,
+    resourceAddress: rec.previewUrl || undefined,
+    metaData: rec.metaData,
     likes: rec.likes,
+    downloads: rec.downloads,
+    views: rec.views,
+    reviewStatus: rec.reviewStatus as any, // ApprovalStatusEnum
     creator: rec.creator,
     targetCourse: rec.targetCourse,
+    createdAt: rec.createdAt,
+    updatedAt: rec.updatedAt,
   };
 }
 
@@ -124,12 +91,11 @@ type MaterialsSectionProps = {
   onViewAll?: () => void;
   onFilter?: () => void;
   onDownload?: (id: string) => void;
-  onSave?: (id: string) => void;
   onShare?: (id: string) => void;
   onRead?: (id: string) => void;
   scrollStep?: number;
   showViewAll?: boolean;
-  emptyStateType?: 'recent' | 'recommendations' | 'libraries';
+  emptyStateType?: "recent" | "recommendations" | "libraries";
   onEmptyStateAction?: () => void;
 };
 
@@ -139,12 +105,11 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
   onViewAll,
   onFilter,
   onDownload,
-  onSave,
   onShare,
   onRead,
   scrollStep = 240,
   showViewAll = true,
-  emptyStateType = 'recent',
+  emptyStateType = "recent",
   onEmptyStateAction,
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -205,14 +170,7 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
         : Array.isArray(materials)
         ? materials
         : [];
-    // Format uploadTime for display
-    return mats.map((mat) => ({
-      ...mat,
-      uploadTime:
-        mat.uploadTime && mat.uploadTime.includes("ago")
-          ? mat.uploadTime
-          : formatRelativeTime(mat.uploadTime),
-    }));
+    return mats;
   }, [fetchedMaterials, materials]);
 
   // Memoize sortedMaterials based on displayMaterials and sortBy
@@ -220,21 +178,11 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
     return [...displayMaterials].sort((a, b) => {
       switch (sortBy) {
         case "name":
-          return a.name.localeCompare(b.name);
+          return a.label.localeCompare(b.label);
         case "date": {
-          const getTimeValue = (timeStr: string) => {
-            if (typeof timeStr === "string" && timeStr.includes("T")) {
-              return new Date(timeStr).getTime();
-            }
-            if (typeof timeStr === "string" && timeStr.includes("hour"))
-              return 1;
-            if (typeof timeStr === "string" && timeStr.includes("day"))
-              return 24;
-            if (typeof timeStr === "string" && timeStr.includes("minute"))
-              return 0.1;
-            return 0;
-          };
-          return getTimeValue(b.uploadTime) - getTimeValue(a.uploadTime);
+          return (
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
         }
         case "downloads":
           return b.downloads - a.downloads;
@@ -367,10 +315,7 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
         </div>
 
         {/* Empty State */}
-        <EmptyState 
-          type={emptyStateType} 
-          onAction={onEmptyStateAction}
-        />
+        <EmptyState type={emptyStateType} onAction={onEmptyStateAction} />
       </section>
     );
   }
@@ -503,9 +448,8 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
               className="flex-shrink-0 w-64 sm:w-72 md:w-80 lg:w-72 xl:w-64 2xl:w-72"
             >
               <MaterialCard
-                {...material}
+                material={material}
                 onDownload={onDownload}
-                onSave={onSave}
                 onShare={onShare}
                 onRead={onRead}
               />

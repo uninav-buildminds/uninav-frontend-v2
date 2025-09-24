@@ -64,12 +64,3 @@ export interface CreateMaterialDto {
   metaData?: string[];
   file?: File;
 }
-
-export interface Bookmark {
-  id: string;
-  materialId?: string;
-  collectionId?: string;
-  userId: string;
-  createdAt: string;
-  updatedAt: string;
-}

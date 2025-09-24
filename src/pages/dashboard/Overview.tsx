@@ -10,7 +10,6 @@ import {
   DownloadSquare01Icon,
   Bookmark01Icon,
 } from "hugeicons-react";
-import { recentMaterials, recommendations } from "@/data/materials";
 import {
   getMaterialRecommendations,
   getRecentMaterials,
@@ -35,10 +34,6 @@ const Overview: React.FC = () => {
     console.log(`Download material ${id}`);
   };
 
-  const handleSave = (id: string) => {
-    console.log(`Save material ${id}`);
-  };
-
   const handleShare = (id: string) => {
     console.log(`Share material ${id}`);
   };
@@ -59,9 +54,6 @@ const Overview: React.FC = () => {
       console.error("Error fetching recommendations:", error);
     }
   };
-
-  // Fetch recent materials (mocked sample)
-  // ...existing code...
 
   const fetchRecentMaterials = async () => {
     try {
@@ -122,7 +114,6 @@ const Overview: React.FC = () => {
             onViewAll={() => handleViewAll("recent materials")}
             onFilter={() => handleFilter("recent materials")}
             onDownload={handleDownload}
-            onSave={handleSave}
             onShare={handleShare}
             onRead={handleRead}
             scrollStep={280}
@@ -135,7 +126,6 @@ const Overview: React.FC = () => {
             onViewAll={() => handleViewAll("recommendations")}
             onFilter={() => handleFilter("recommendations")}
             onDownload={handleDownload}
-            onSave={handleSave}
             onShare={handleShare}
             onRead={handleRead}
             scrollStep={280}

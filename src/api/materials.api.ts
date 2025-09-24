@@ -1,4 +1,6 @@
+import { PaginatedResponse } from "@/lib/types/response.types";
 import { httpClient } from "./api";
+import { Material } from "@/api/review.api";
 
 interface MaterialRecommendation {
   page?: number;
@@ -10,6 +12,19 @@ interface MaterialRecommendation {
   reviewStatus?: string;
   advancedSearch?: boolean;
   ignorePreference?: boolean;
+}
+
+interface MaterialSearchParams {
+  page?: number;
+  limit?: number;
+  query?: string;
+  creatorId?: string;
+  courseId?: string;
+  type?: string;
+  tag?: string;
+  reviewStatus?: string;
+  advancedSearch?: boolean; // if to use a more though searching algorithm (should be used if previous didn't find any results)
+  ignorePreference?: boolean; // if to ignore the user's preference (should be used if the user is not logged in or admin is searching on management page)
 }
 
 export async function createMaterials(rawForm: any) {
@@ -77,9 +92,10 @@ export async function createMaterials(rawForm: any) {
     return response.data;
   } catch (error: any) {
     throw {
-      statusCode: error.status,
+      statusCode: error.response?.status,
       message:
-        error.data?.message || "Material upload failed. Please try again.",
+        error.response?.data?.message ||
+        "Material upload failed. Please try again.",
     };
   }
 }
@@ -87,33 +103,52 @@ export async function createMaterials(rawForm: any) {
 export async function getMaterialRecommendations(
   params: MaterialRecommendation
 ) {
-  const response = await httpClient.get("/materials/recommendations", {
-    params,
-  });
-
-  if (response.status === 200) {
+  try {
+    const response = await httpClient.get("/materials/recommendations", {
+      params,
+    });
     return response.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status,
+      message:
+        error.response?.data?.message ||
+        "Fetching material recommendations failed. Please try again.",
+    };
   }
-
-  throw {
-    statusCode: response.status,
-    message:
-      response.data?.message ||
-      "Fetching material recommendations failed. Please try again.",
-  };
 }
 
 export async function getRecentMaterials() {
-  const response = await httpClient.get("/materials/recent");
-
-  if (response.status === 200) {
+  try {
+    const response = await httpClient.get("/materials/recent");
     return response.data;
+  } catch (error: any) {
+    console.error("Error fetching recent materials:", error);
+    throw {
+      statusCode: error.response?.status,
+      message:
+        error.response?.data?.message ||
+        "Fetching recent materials failed. Please try again.",
+    };
   }
+}
 
-  throw {
-    statusCode: response.status,
-    message:
-      response.data?.message ||
-      "Fetching recent materials failed. Please try again.",
-  };
+// Search materials with pagination and filtering
+export async function searchMaterials(
+  params: MaterialSearchParams
+): Promise<PaginatedResponse<Material>> {
+  try {
+    const response = await httpClient.get("/materials", {
+      params,
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error("Error searching materials:", error);
+    throw {
+      statusCode: error.response?.status,
+      message:
+        error.response?.data?.message ||
+        "Searching materials failed. Please try again.",
+    };
+  }
 }

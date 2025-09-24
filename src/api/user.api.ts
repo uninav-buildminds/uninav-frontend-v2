@@ -1,6 +1,6 @@
 import { httpClient } from "./api";
 import { UserProfile } from "@/lib/types/user.types";
-import { Bookmark } from "@/lib/types/material.types";
+import { Bookmark } from "@/lib/types/bookmark.types";
 
 export interface FetchAllUsersResponse {
   data: UserProfile[];
@@ -20,10 +20,11 @@ export async function getUserProfile() {
     return response.data.data;
   } catch (error) {
     const actualError = error.data.error;
-		throw {
-			statusCode: actualError.statusCode || 500,
-			message: actualError.cause || "Fetching user profile failed. Please try again.",
-		};
+    throw {
+      statusCode: actualError.statusCode || 500,
+      message:
+        actualError.cause || "Fetching user profile failed. Please try again.",
+    };
   }
 }
 
@@ -45,10 +46,11 @@ export async function updateUserProfile(
     return response.data.data;
   } catch (error) {
     const actualError = error.data.error;
-		throw {
-			statusCode: actualError.statusCode || 500,
-			message: actualError.cause || "Failed to update profile. Please try again.",
-		};
+    throw {
+      statusCode: actualError.statusCode || 500,
+      message:
+        actualError.cause || "Failed to update profile. Please try again.",
+    };
   }
 }
 
@@ -119,10 +121,7 @@ export async function createBookmark(
 ): Promise<Bookmark | null> {
   try {
     const response = await httpClient.post("/user/bookmarks", data);
-    if (response.data.status === "success") {
-      return response.data.data;
-    }
-    return null;
+    return response.data.data;
   } catch (error: any) {
     throw {
       statusCode: error.response?.status || 500,
@@ -138,10 +137,7 @@ export async function createBookmark(
 export async function getAllBookmarks(): Promise<Bookmark[] | null> {
   try {
     const response = await httpClient.get("/user/bookmarks");
-    if (response.data.status === "success") {
-      return response.data.data;
-    }
-    return null;
+    return response.data.data;
   } catch (error: any) {
     throw {
       statusCode: error.response?.status || 500,
@@ -160,10 +156,7 @@ export async function getBookmark(
 ): Promise<Bookmark | null> {
   try {
     const response = await httpClient.get(`/user/bookmarks/${bookmarkId}`);
-    if (response.data.status === "success") {
-      return response.data.data;
-    }
-    return null;
+    return response.data.data;
   } catch (error: any) {
     throw {
       statusCode: error.response?.status || 500,

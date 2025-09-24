@@ -1,44 +1,56 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import DashboardLayout from '@/components/dashboard/DashboardLayout';
-import PageHeader from '@/components/dashboard/PageHeader';
-import MaterialsSection from '@/components/dashboard/MaterialsSection';
-import { UploadModal } from '@/components/modals';
-import { recentMaterials, recommendations } from '@/data/materials';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import PageHeader from "@/components/dashboard/PageHeader";
+import MaterialsSection from "@/components/dashboard/MaterialsSection";
+import { UploadModal } from "@/components/modals";
+import {
+  recentMaterials,
+  recommendations,
+  mockToMaterial,
+} from "@/data/materials";
 
 const Libraries: React.FC = () => {
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filteredSavedMaterials, setFilteredSavedMaterials] = useState(recentMaterials);
-  const [filteredUploads, setFilteredUploads] = useState(recommendations);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredSavedMaterials, setFilteredSavedMaterials] = useState(
+    recentMaterials.map(mockToMaterial)
+  );
+  const [filteredUploads, setFilteredUploads] = useState(
+    recommendations.map(mockToMaterial)
+  );
   const [showEmptyState, setShowEmptyState] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
 
   // Search suggestions based on material names
   const searchSuggestions = [
-    ...recentMaterials.map(material => material.name),
-    ...recommendations.map(material => material.name)
+    ...recentMaterials.map((material) => material.name),
+    ...recommendations.map((material) => material.name),
   ].filter(Boolean); // Remove any undefined/null values
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    
-    if (query.trim() === '') {
+
+    if (query.trim() === "") {
       // If search is empty, show all materials
-      setFilteredSavedMaterials(recentMaterials);
-      setFilteredUploads(recommendations);
+      setFilteredSavedMaterials(recentMaterials.map(mockToMaterial));
+      setFilteredUploads(recommendations.map(mockToMaterial));
     } else {
       // Filter saved materials
-      const filteredSaved = recentMaterials.filter(material =>
-        material.name.toLowerCase().includes(query.toLowerCase())
-      );
+      const filteredSaved = recentMaterials
+        .filter((material) =>
+          material.name.toLowerCase().includes(query.toLowerCase())
+        )
+        .map(mockToMaterial);
       setFilteredSavedMaterials(filteredSaved);
 
       // Filter uploads
-      const filteredUpload = recommendations.filter(material =>
-        material.name.toLowerCase().includes(query.toLowerCase())
-      );
+      const filteredUpload = recommendations
+        .filter((material) =>
+          material.name.toLowerCase().includes(query.toLowerCase())
+        )
+        .map(mockToMaterial);
       setFilteredUploads(filteredUpload);
     }
   };
@@ -51,10 +63,6 @@ const Libraries: React.FC = () => {
     console.log(`Download material ${materialId}`);
   };
 
-  const handleSave = (materialId: string) => {
-    console.log(`Save material ${materialId}`);
-  };
-
   const handleShare = (materialId: string) => {
     console.log(`Share material ${materialId}`);
   };
@@ -64,22 +72,22 @@ const Libraries: React.FC = () => {
   };
 
   const handleSavedEmptyStateAction = () => {
-    console.log('Browse materials clicked - navigating to dashboard');
+    console.log("Browse materials clicked - navigating to dashboard");
     setIsNavigating(true);
     // Simulate a brief loading state for better UX
     setTimeout(() => {
-      navigate('/dashboard');
+      navigate("/dashboard");
     }, 300);
   };
 
   const handleUploadsEmptyStateAction = () => {
-    console.log('Upload material clicked - opening upload modal');
+    console.log("Upload material clicked - opening upload modal");
     setShowUploadModal(true);
   };
 
   return (
     <DashboardLayout>
-      <PageHeader 
+      <PageHeader
         title="My Libraries"
         subtitle="Manage your saved materials and uploads in one place"
         searchPlaceholder="Search your libraries..."
@@ -93,7 +101,7 @@ const Libraries: React.FC = () => {
             onClick={() => setShowEmptyState(!showEmptyState)}
             className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
           >
-            {showEmptyState ? 'Show Materials' : 'Show Empty State'}
+            {showEmptyState ? "Show Materials" : "Show Empty State"}
           </button>
         </div>
 
@@ -106,7 +114,6 @@ const Libraries: React.FC = () => {
             onViewAll={() => {}} // No view all on this page
             onFilter={() => handleFilter("saved materials")}
             onDownload={handleDownload}
-            onSave={handleSave}
             onShare={handleShare}
             onRead={handleRead}
             scrollStep={280}
@@ -123,7 +130,6 @@ const Libraries: React.FC = () => {
             onViewAll={() => {}} // No view all on this page
             onFilter={() => handleFilter("my uploads")}
             onDownload={handleDownload}
-            onSave={handleSave}
             onShare={handleShare}
             onRead={handleRead}
             scrollStep={280}

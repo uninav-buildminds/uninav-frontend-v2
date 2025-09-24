@@ -135,6 +135,7 @@ export async function createCourse(
     const response = await httpClient.post("/courses", courseData);
     return response.data;
   } catch (error: any) {
+    console.error("Error linking course to department:", error);
     throw {
       statusCode: error.response?.status || 500,
       message: error.response?.data?.message || "Failed to create course",
@@ -181,6 +182,7 @@ export async function unlinkCourseToDepartment(
     );
     return response.data;
   } catch (error: any) {
+    console.error("Error unlinking course from department:", error);
     throw {
       statusCode: error.response?.status || 500,
       message:

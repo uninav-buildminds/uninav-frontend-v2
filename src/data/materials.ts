@@ -1,4 +1,13 @@
-export interface Material {
+import {
+  Material as MaterialType,
+  MaterialTypeEnum,
+  VisibilityEnum,
+  RestrictionEnum,
+} from "../lib/types/material.types";
+import { ApprovalStatusEnum } from "../lib/types/response.types";
+
+// Mock data interface for simplified material display
+export interface MockMaterial {
   id: string;
   name: string;
   uploadTime: string;
@@ -8,14 +17,42 @@ export interface Material {
   isSaved?: boolean;
 }
 
-export const recentMaterials: Material[] = [
+// Convert mock material to full Material type
+export function mockToMaterial(mock: MockMaterial): MaterialType {
+  return {
+    id: mock.id,
+    label: mock.name,
+    description: "",
+    type: MaterialTypeEnum.PDF,
+    tags: [],
+    visibility: VisibilityEnum.PUBLIC,
+    restriction: RestrictionEnum.NONE,
+    resourceAddress: mock.previewImage,
+    likes: 0,
+    downloads: mock.downloads,
+    views: 0,
+    reviewStatus: ApprovalStatusEnum.APPROVED,
+    creator: {
+      id: "mock-user",
+      firstName: "Mock",
+      lastName: "User",
+      username: "mockuser",
+    },
+    createdAt: new Date(
+      Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000
+    ).toISOString(), // Random date within last week
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+export const recentMaterials: MockMaterial[] = [
   {
     id: "1",
     name: "MTH 202 Quiz Solutions",
     uploadTime: "1 hour ago",
     downloads: 8,
     previewImage: "/placeholder.svg",
-    pages: 12
+    pages: 12,
   },
   {
     id: "2",
@@ -24,7 +61,7 @@ export const recentMaterials: Material[] = [
     downloads: 15,
     previewImage: "/placeholder.svg",
     pages: 46,
-    isSaved: false
+    isSaved: false,
   },
   {
     id: "3",
@@ -32,7 +69,7 @@ export const recentMaterials: Material[] = [
     uploadTime: "3 hours ago",
     downloads: 10,
     previewImage: "/placeholder.svg",
-    pages: 27
+    pages: 27,
   },
   {
     id: "4",
@@ -40,7 +77,7 @@ export const recentMaterials: Material[] = [
     uploadTime: "30 minutes ago",
     downloads: 5,
     previewImage: "/placeholder.svg",
-    pages: 9
+    pages: 9,
   },
   {
     id: "5",
@@ -48,18 +85,18 @@ export const recentMaterials: Material[] = [
     uploadTime: "2 hours ago",
     downloads: 12,
     previewImage: "/placeholder.svg",
-    pages: 32
-  }
+    pages: 32,
+  },
 ];
 
-export const recommendations: Material[] = [
+export const recommendations: MockMaterial[] = [
   {
     id: "6",
     name: "ENG 101 Essay Writing Guide",
     uploadTime: "2 days ago",
     downloads: 23,
     previewImage: "/placeholder.svg",
-    pages: 18
+    pages: 18,
   },
   {
     id: "7",
@@ -67,7 +104,7 @@ export const recommendations: Material[] = [
     uploadTime: "4 hours ago",
     downloads: 18,
     previewImage: "/placeholder.svg",
-    pages: 24
+    pages: 24,
   },
   {
     id: "8",
@@ -75,7 +112,7 @@ export const recommendations: Material[] = [
     uploadTime: "1 day ago",
     downloads: 31,
     previewImage: "/placeholder.svg",
-    pages: 40
+    pages: 40,
   },
   {
     id: "9",
@@ -83,7 +120,7 @@ export const recommendations: Material[] = [
     uploadTime: "6 hours ago",
     downloads: 27,
     previewImage: "/placeholder.svg",
-    pages: 6
+    pages: 6,
   },
   {
     id: "10",
@@ -91,6 +128,6 @@ export const recommendations: Material[] = [
     uploadTime: "3 days ago",
     downloads: 19,
     previewImage: "/placeholder.svg",
-    pages: 22
-  }
+    pages: 22,
+  },
 ];

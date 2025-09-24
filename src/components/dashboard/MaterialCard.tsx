@@ -1,6 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
 import { Download01Icon, Share08Icon } from "hugeicons-react";
 import { toast } from "sonner";
+import { Material } from "../../lib/types/material.types";
+import { formatRelativeTime } from "../../lib/utils";
+import { useBookmarks } from "../../context/bookmark/BookmarkContextProvider";
 
 // Custom Bookmark Icons
 const BookmarkOutlineIcon = ({
@@ -52,39 +55,26 @@ const BookmarkFilledIcon = ({
 );
 
 interface MaterialCardProps {
-  id: string;
-  name: string;
-  uploadTime: string;
-  downloads: number;
-  previewImage: string;
-  pages?: number;
-  isSaved?: boolean;
+  material: Material;
   onDownload?: (id: string) => void;
-  onSave?: (id: string) => void;
   onShare?: (id: string) => void;
   onRead?: (id: string) => void;
 }
 
 const MaterialCard: React.FC<MaterialCardProps> = ({
-  id,
-  name,
-  uploadTime,
-  downloads,
-  previewImage,
-  pages,
-  isSaved = false,
+  material,
   onDownload,
-  onSave,
   onShare,
   onRead,
 }) => {
-  const [saved, setSaved] = useState(isSaved);
+  const { id, label, createdAt, downloads, tags, views, likes } = material;
+  const previewImage = material.resourceAddress || "/placeholder.svg";
+  const { isBookmarked, toggleBookmark } = useBookmarks();
+  const saved = isBookmarked(id);
 
   const handleSave = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setSaved(!saved);
-    toast.success(saved ? "Removed from saved" : "Added to saved materials");
-    onSave?.(id);
+    toggleBookmark(id);
   };
 
   const handleDownload = (e: React.MouseEvent) => {
@@ -119,8 +109,8 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
       {/* File Preview */}
       <div className="aspect-square overflow-hidden rounded-xl mb-3 relative">
         <img
-          src={previewImage ? previewImage : "/placeholder.svg"}
-          alt={name}
+          src={previewImage}
+          alt={label}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
           onError={(e) => {
             const target = e.target as HTMLImageElement;
@@ -153,14 +143,33 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
             WebkitBoxOrient: "vertical",
           }}
         >
-          {name}
+          {label}
         </h4>
+
+        {/* Tags */}
+        {tags && tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-1">
+            {tags.slice(0, 3).map((tag, index) => (
+              <span
+                key={index}
+                className="inline-block px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded-md"
+              >
+                {tag}
+              </span>
+            ))}
+            {tags.length > 3 && (
+              <span className="inline-block px-2 py-0.5 text-xs bg-gray-100 text-gray-500 rounded-md">
+                +{tags.length - 3}
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Metadata and Action Icons */}
         <div className="flex items-center justify-between">
           <div className="text-xs text-gray-500 truncate flex-1">
-            {uploadTime} • {downloads} downloads
-            {typeof pages === "number" ? ` • ${pages} pages` : ""}
+            {formatRelativeTime(createdAt)} • {downloads} downloads • {views}{" "}
+            views • {likes} likes
           </div>
 
           {/* Action Icons - Download and Share */}
