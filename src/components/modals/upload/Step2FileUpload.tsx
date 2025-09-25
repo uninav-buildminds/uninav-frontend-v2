@@ -304,10 +304,10 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
             onValueChange={(value) => setValue("type", value)}
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="e.g., Exam past question and Answers" />
+              <SelectValue placeholder="e.g., Docs" />
             </SelectTrigger>
             <SelectContent className="z-[1060]">
-              <SelectItem value="docs">docs</SelectItem>
+              <SelectItem value="docs">Docs</SelectItem>
               <SelectItem value="pdf">PDF</SelectItem>
               <SelectItem value="gdrive">Gdrive</SelectItem>
               <SelectItem value="excel">Excel</SelectItem>

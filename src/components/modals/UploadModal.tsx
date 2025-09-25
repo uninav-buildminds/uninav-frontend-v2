@@ -7,6 +7,7 @@ import Step2FileUpload from "./upload/Step2FileUpload";
 import Step2HelpfulLink from "./upload/Step2HelpfulLink";
 import UploadSuccess from "./upload/UploadSuccess";
 import { createMaterials } from "@/api/materials.api";
+import { generatePreviewAndUpload } from "../Preview/PdfPreviewer.ts";
 
 export type MaterialType = "file" | "link";
 export type UploadStep = "type-selection" | "upload-details" | "success";
@@ -36,7 +37,12 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose }) => {
     setSubmitting(true); // Start loader
     try {
       const result = await createMaterials(data);
-      console.log("Upload result:", result);
+      if (data.file && data.file.type === "application/pdf") {
+        const pre = await generatePreviewAndUpload(data.file, result.data.id);
+        console.log("Preview generation result:", pre.data);
+      } else {
+        console.log("Successfully uploaded material without preview");
+      }
       setCurrentStep("success");
     } catch (error) {
       console.error("Upload failed:", error);

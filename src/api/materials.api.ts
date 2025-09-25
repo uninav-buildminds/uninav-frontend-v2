@@ -11,6 +11,26 @@ interface MaterialRecommendation {
   advancedSearch?: boolean;
   ignorePreference?: boolean;
 }
+export async function materialPreview(
+  materialId: string,
+  previewFile: File | Blob
+) {
+  const formData = new FormData();
+  formData.append("preview", previewFile, "preview.png"); // give it a name
+
+  try {
+    const response = await httpClient.post(
+      `/materials/preview/upload/${materialId}`,
+      formData
+    );
+    return response;
+  } catch (error: any) {
+    throw {
+      statusCode: error?.status,
+      message: error || "Material preview failed. Please try again.",
+    };
+  }
+}
 
 export async function createMaterials(rawForm: any) {
   const formData = new FormData();
