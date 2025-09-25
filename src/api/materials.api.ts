@@ -87,11 +87,6 @@ export async function createMaterials(rawForm: any) {
     rawForm.visibility ? rawForm.visibility.toLowerCase() : "public"
   );
 
-  // 🔍 Debug
-  for (const [key, value] of formData.entries()) {
-    console.log(key, value);
-  }
-
   try {
     const response = await httpClient.post("/materials", formData);
     return response.data;

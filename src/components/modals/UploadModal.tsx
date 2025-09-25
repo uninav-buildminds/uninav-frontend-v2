@@ -39,7 +39,6 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose }) => {
       const result = await createMaterials(data);
       if (data.file && data.file.type === "application/pdf") {
         const pre = await generatePreviewAndUpload(data.file, result.data.id);
-        console.log("Preview generation result:", pre.data);
       } else {
         console.log("Successfully uploaded material without preview");
       }
