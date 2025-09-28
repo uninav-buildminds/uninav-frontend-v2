@@ -31,3 +31,21 @@ export type UserProfile = {
     course: Course;
   }[];
 };
+
+export interface UpdateUserDto {
+  firstName?: string;
+  lastName?: string;
+  username?: string;
+  level?: number;
+  departmentId?: string;
+  role?: UserRole;
+}
+
+export interface AddCourseDto {
+  courseIds: string[];
+}
+
+export interface AddBookmarkDto {
+  materialId?: string;
+  collectionId?: string;
+}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
@@ -14,9 +14,12 @@ import {
   getMaterialRecommendations,
   getRecentMaterials,
 } from "@/api/materials.api";
+import { Material } from "@/lib/types/material.types";
 
 const Overview: React.FC = () => {
   const navigate = useNavigate();
+  const [recentMaterials, setRecentMaterials] = useState<Material[]>([]);
+  const [isLoadingRecent, setIsLoadingRecent] = useState(true);
 
   const handleViewAll = (section: string) => {
     if (section === "recent materials") {
@@ -55,17 +58,32 @@ const Overview: React.FC = () => {
     }
   };
 
-  const fetchRecentMaterials = async () => {
-    try {
-      const data = await getRecentMaterials();
-      console.log("Fetched recent materials:", data);
-      return data;
-    } catch (error) {
-      console.error("Error fetching recent materials:", error);
-    }
-  };
+  // Load recent materials on component mount
+  useEffect(() => {
+    const loadRecentMaterials = async () => {
+      try {
+        setIsLoadingRecent(true);
+        const data = await getRecentMaterials();
+        console.log("Fetched recent materials:", data);
 
-  fetchRecentMaterials();
+        // Handle both direct array and API response formats
+        if (Array.isArray(data)) {
+          setRecentMaterials(data);
+        } else if (data?.data?.items) {
+          setRecentMaterials(data.data.items);
+        } else {
+          setRecentMaterials([]);
+        }
+      } catch (error) {
+        console.error("Error fetching recent materials:", error);
+        setRecentMaterials([]);
+      } finally {
+        setIsLoadingRecent(false);
+      }
+    };
+
+    loadRecentMaterials();
+  }, []);
 
   const metrics = [
     {
@@ -107,17 +125,19 @@ const Overview: React.FC = () => {
 
         {/* Content Sections */}
         <div className="mt-8 space-y-8 pb-16 md:pb-0">
-          {/* Recent Materials */}
-          <MaterialsSection
-            title="Recent Materials"
-            materials={fetchRecentMaterials}
-            onViewAll={() => handleViewAll("recent materials")}
-            onFilter={() => handleFilter("recent materials")}
-            onDownload={handleDownload}
-            onShare={handleShare}
-            onRead={handleRead}
-            scrollStep={280}
-          />
+          {/* Recent Materials - Only show if there are materials */}
+          {!isLoadingRecent && recentMaterials.length > 0 && (
+            <MaterialsSection
+              title="Recent Materials"
+              materials={recentMaterials}
+              onViewAll={() => handleViewAll("recent materials")}
+              onFilter={() => handleFilter("recent materials")}
+              onDownload={handleDownload}
+              onShare={handleShare}
+              onRead={handleRead}
+              scrollStep={280}
+            />
+          )}
 
           {/* Recommendations */}
           <MaterialsSection

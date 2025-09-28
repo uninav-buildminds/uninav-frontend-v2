@@ -15,8 +15,6 @@ const NotificationsSection: React.FC = () => {
       <hr className="my-4 border-gray-200" />
       <div className="divide-y divide-gray-200">
         <ToggleRow label="Email me when my uploads are approved or rejected" />
-        <ToggleRow label="Email me about new followers" />
-        <ToggleRow label="Email me about points and rewards" />
         <ToggleRow label="Send me weekly recommendations for my courses" />
       </div>
     </div>
@@ -24,5 +22,3 @@ const NotificationsSection: React.FC = () => {
 };
 
 export default NotificationsSection;
-
-

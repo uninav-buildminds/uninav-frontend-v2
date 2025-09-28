@@ -10,7 +10,7 @@ import {
   SidebarLeftIcon,
   SidebarLeft01Icon,
   Logout01Icon,
-  UserGroupIcon
+  UserGroupIcon,
 } from "hugeicons-react";
 import UserRail from "./UserRail";
 import { LogoutModal, UploadModal } from "@/components/modals";
@@ -27,19 +27,24 @@ const Sidebar: React.FC = () => {
   const baseNavItems = [
     { to: "/dashboard", label: "Overview", icon: Home01Icon },
     { to: "/dashboard/libraries", label: "Libraries", icon: FolderLibraryIcon },
-    { to: "/dashboard/notifications", label: "Notifications", icon: Notification01Icon },
+    {
+      to: "/dashboard/notifications",
+      label: "Notifications",
+      icon: Notification01Icon,
+    },
     { to: "/dashboard/settings", label: "Settings", icon: Settings01Icon },
     { to: "/dashboard/help", label: "Help", icon: HelpCircleIcon },
   ];
 
   // Add management item for admin/moderator users
-  const navItems = user && (user.role === "admin" || user.role === "moderator")
-    ? [
-        ...baseNavItems.slice(0, -2), // All except Settings and Help
-        { to: "/management", label: "Management", icon: UserGroupIcon },
-        ...baseNavItems.slice(-2), // Settings and Help
-      ]
-    : baseNavItems;
+  const navItems =
+    user && (user.role === "admin" || user.role === "moderator")
+      ? [
+          ...baseNavItems.slice(0, -2), // All except Settings and Help
+          { to: "/management", label: "Management", icon: UserGroupIcon },
+          ...baseNavItems.slice(-2), // Settings and Help
+        ]
+      : baseNavItems;
 
   const handleLogout = () => {
     setShowLogoutModal(true);
@@ -84,18 +89,25 @@ const Sidebar: React.FC = () => {
               <button
                 onClick={togglePanel}
                 className="grid place-items-center h-10 w-10 rounded-full mx-auto transition-transform duration-200 hover:scale-105"
-                aria-label="Toggle sidebar panel">
+                aria-label="Toggle sidebar panel"
+              >
                 {showPanel ? (
-                  <SidebarLeft01Icon size={22} className="text-gray-700 transition-opacity duration-200" />
+                  <SidebarLeft01Icon
+                    size={22}
+                    className="text-gray-700 transition-opacity duration-200"
+                  />
                 ) : (
-                  <SidebarLeftIcon size={22} className="text-gray-700 transition-opacity duration-200" />
+                  <SidebarLeftIcon
+                    size={22}
+                    className="text-gray-700 transition-opacity duration-200"
+                  />
                 )}
               </button>
 
               {/* New button */}
-              <button 
+              <button
                 onClick={handleUpload}
-                className="mt-4 w-12 h-12 grid place-items-center mx-auto rounded-full bg-brand text-white shadow-sm transition-transform duration-200 hover:scale-105" 
+                className="mt-4 w-12 h-12 grid place-items-center mx-auto rounded-full bg-brand text-white shadow-sm transition-transform duration-200 hover:scale-105"
                 aria-label="New"
               >
                 <Add01Icon size={20} />
@@ -104,22 +116,34 @@ const Sidebar: React.FC = () => {
               {/* Nav rail */}
               <nav className="mt-6 flex flex-col items-center gap-6">
                 {navItems.map(({ to, label, icon: Icon }) => (
-                  <NavLink 
-                    key={to} 
-                    to={to} 
+                  <NavLink
+                    key={to}
+                    to={to}
                     end={to === "/dashboard"}
-                    className={({ isActive }) => "flex flex-col items-center gap-1"}
+                    className={({ isActive }) =>
+                      "flex flex-col items-center gap-1"
+                    }
                   >
                     {({ isActive }) => (
                       <>
                         <div
                           className={`grid place-items-center h-10 w-10 rounded-2xl transition-all duration-200 hover:scale-105 ${
-                            isActive ? "bg-brand text-white shadow-md" : "text-gray-700 hover:bg-[#DCDFFE]"
+                            isActive
+                              ? "bg-brand text-white shadow-md"
+                              : "text-gray-700 hover:bg-[#DCDFFE]"
                           }`}
                         >
                           <Icon size={18} />
                         </div>
-                        <span className={`text-[11px] transition-colors ${isActive ? "text-brand font-medium" : "text-gray-700"}`}>{label}</span>
+                        <span
+                          className={`text-[11px] transition-colors ${
+                            isActive
+                              ? "text-brand font-medium"
+                              : "text-gray-700"
+                          }`}
+                        >
+                          {label}
+                        </span>
                       </>
                     )}
                   </NavLink>
@@ -128,7 +152,7 @@ const Sidebar: React.FC = () => {
             </div>
 
             {/* User avatar fixed on rail bottom */}
-            <UserRail onLogout={logOut} userName={panelData.user.name.split(' ')[0]} />
+            <UserRail userName={panelData.user.name.split(" ")[0]} />
           </div>
         </div>
 
@@ -150,16 +174,24 @@ const Sidebar: React.FC = () => {
               </div>
 
               <div className="mb-6">
-                <h4 className="text-sm font-semibold mb-2">{panelData.announcement.title}</h4>
+                <h4 className="text-sm font-semibold mb-2">
+                  {panelData.announcement.title}
+                </h4>
                 <div className="h-24 rounded-xl border bg-white/70 p-3 flex items-center justify-center">
-                  <p className="text-xs text-gray-600 text-center">{panelData.announcement.content}</p>
+                  <p className="text-xs text-gray-600 text-center">
+                    {panelData.announcement.content}
+                  </p>
                 </div>
               </div>
 
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-sm font-semibold">{panelData.recents.title}</h4>
-                  <span className="text-xs text-brand">{panelData.recents.viewAllText}</span>
+                  <h4 className="text-sm font-semibold">
+                    {panelData.recents.title}
+                  </h4>
+                  <span className="text-xs text-brand">
+                    {panelData.recents.viewAllText}
+                  </span>
                 </div>
                 <ul className="space-y-1 text-xs text-gray-700">
                   {panelData.recents.items.map((item, index) => (
@@ -171,10 +203,17 @@ const Sidebar: React.FC = () => {
               {/* User summary at bottom (no avatar) */}
               <div className="mt-6 border-t pt-3 flex items-center justify-between">
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold truncate">{panelData.user.name}</p>
-                  <p className="text-xs text-muted-foreground truncate">{panelData.user.email}</p>
+                  <p className="text-sm font-semibold truncate">
+                    {panelData.user.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {panelData.user.email}
+                  </p>
                 </div>
-                <button onClick={handleLogout} className="text-xs text-white bg-red-600 hover:bg-red-700 rounded-md px-3 py-1 flex items-center gap-1">
+                <button
+                  onClick={handleLogout}
+                  className="text-xs text-white bg-red-600 hover:bg-red-700 rounded-md px-3 py-1 flex items-center gap-1"
+                >
                   <Logout01Icon size={14} /> Logout
                 </button>
               </div>
@@ -188,7 +227,7 @@ const Sidebar: React.FC = () => {
         isOpen={showLogoutModal}
         onClose={handleCancelLogout}
         onConfirm={handleConfirmLogout}
-        userName={panelData.user.name.split(' ')[0]}
+        userName={panelData.user.name.split(" ")[0]}
       />
 
       {/* Upload Modal */}

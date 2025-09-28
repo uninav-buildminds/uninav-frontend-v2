@@ -1,5 +1,10 @@
 import { httpClient } from "./api";
-import { UserProfile } from "@/lib/types/user.types";
+import {
+  UserProfile,
+  UpdateUserDto,
+  AddCourseDto,
+  AddBookmarkDto,
+} from "@/lib/types/user.types";
 import { Bookmark } from "@/lib/types/bookmark.types";
 
 export interface FetchAllUsersResponse {
@@ -30,26 +35,21 @@ export async function getUserProfile() {
 
 /**
  * Updates the user profile
- * @param data - Partial user profile data to update
+ * @param data - User profile data to update
  * @returns updated user profile data
  */
 export async function updateUserProfile(
-  data: Partial<
-    Pick<
-      UserProfile,
-      "firstName" | "lastName" | "username" | "level" | "departmentId"
-    >
-  >
+  data: UpdateUserDto
 ): Promise<UserProfile> {
   try {
     const response = await httpClient.patch("/user", data);
     return response.data.data;
-  } catch (error) {
-    const actualError = error.data.error;
+  } catch (error: any) {
     throw {
-      statusCode: actualError.statusCode || 500,
+      statusCode: error.response?.status || 500,
       message:
-        actualError.cause || "Failed to update profile. Please try again.",
+        error.response?.data?.message ||
+        "Failed to update profile. Please try again.",
     };
   }
 }
@@ -106,10 +106,6 @@ export async function getUserProfileByUsername(username: string) {
 }
 
 // Bookmark management functions
-type CreateBookmarkData = {
-  materialId?: string;
-  collectionId?: string;
-};
 
 /**
  * Create a new bookmark
@@ -117,7 +113,7 @@ type CreateBookmarkData = {
  * @returns created bookmark or null
  */
 export async function createBookmark(
-  data: CreateBookmarkData
+  data: AddBookmarkDto
 ): Promise<Bookmark | null> {
   try {
     const response = await httpClient.post("/user/bookmarks", data);
@@ -202,12 +198,12 @@ export async function getUserCourses() {
 
 /**
  * Add courses to user's enrollment
- * @param courseIds - Array of course IDs to add
+ * @param data - Course data with course IDs
  * @returns response data
  */
-export async function addUserCourses(courseIds: string[]) {
+export async function addUserCourses(data: AddCourseDto) {
   try {
-    const response = await httpClient.post("/user/courses", { courseIds });
+    const response = await httpClient.post("/user/courses", data);
     return response.data;
   } catch (error: any) {
     throw {
@@ -219,14 +215,12 @@ export async function addUserCourses(courseIds: string[]) {
 
 /**
  * Remove courses from user's enrollment
- * @param courseIds - Array of course IDs to remove
+ * @param data - Course data with course IDs
  * @returns response data
  */
-export async function removeUserCourses(courseIds: string[]) {
+export async function removeUserCourses(data: AddCourseDto) {
   try {
-    const response = await httpClient.delete("/user/courses", {
-      data: { courseIds },
-    });
+    const response = await httpClient.delete("/user/courses", { data });
     return response.data;
   } catch (error: any) {
     throw {
@@ -249,6 +243,48 @@ export async function getUserBlogs(creatorId: string | undefined) {
     throw {
       statusCode: error.response?.status || 500,
       message: error.response?.data?.message || "Failed to fetch user blogs",
+    };
+  }
+}
+
+/**
+ * Get user by ID
+ * @param id - User ID
+ * @returns user profile data
+ */
+export async function getUserById(id: string): Promise<UserProfile> {
+  try {
+    const response = await httpClient.get(`/user/${id}`);
+    return response.data.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status || 500,
+      message: error.response?.data?.message || "Failed to fetch user",
+    };
+  }
+}
+
+/**
+ * Update user profile picture
+ * @param file - Profile picture file
+ * @returns updated user profile data
+ */
+export async function updateProfilePicture(file: File): Promise<UserProfile> {
+  try {
+    const formData = new FormData();
+    formData.append("profilePicture", file);
+
+    const response = await httpClient.post("/user/profile-picture", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status || 500,
+      message:
+        error.response?.data?.message || "Failed to update profile picture",
     };
   }
 }
