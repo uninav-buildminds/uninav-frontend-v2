@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
   PencilEdit01Icon,
   ImageUpload01Icon,
@@ -7,22 +7,88 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/hooks/useAuth";
 import { LogoutModal } from "@/components/modals";
+import { updateUserProfile, updateProfilePicture } from "@/api/user.api";
+import { useToast } from "@/hooks/use-toast";
 
 const AccountSection: React.FC = () => {
-  const { logOut, user } = useAuth();
+  const { logOut, user, setUser } = useAuth();
+  const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
-  const [fullName, setFullName] = useState("Tee Daniels");
-  const [username, setUsername] = useState("@tee_daniels");
-  const [avatar, setAvatar] = useState("https://i.pravatar.cc/80?img=12");
+
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [username, setUsername] = useState("");
+  const [avatar, setAvatar] = useState("");
+  const [profilePictureFile, setProfilePictureFile] = useState<File | null>(
+    null
+  );
+
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    if (user) {
+      setFirstName(user.firstName || "");
+      setLastName(user.lastName || "");
+      setUsername(user.username || "");
+      setAvatar(user.profilePicture || `https://i.pravatar.cc/80?u=${user.id}`);
+    }
+  }, [user]);
+
   const onPickAvatar = () => fileRef.current?.click();
+
   const onAvatarChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const url = URL.createObjectURL(file);
     setAvatar(url);
+    setProfilePictureFile(file);
+  };
+
+  const handleProfilePictureUpdate = async () => {
+    if (!profilePictureFile) return;
+    try {
+      const updatedUser = await updateProfilePicture(profilePictureFile);
+      setUser(updatedUser);
+      setProfilePictureFile(null);
+      toast({
+        title: "Success",
+        description: "Profile picture updated successfully!",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update profile picture.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleProfileInfoUpdate = async () => {
+    const profileData = {
+      firstName,
+      lastName,
+      username,
+    };
+    try {
+      const updatedUser = await updateUserProfile(profileData);
+      setUser(updatedUser);
+      toast({ title: "Success", description: "Profile updated successfully!" });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update profile.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSaveChanges = async () => {
+    if (profilePictureFile) {
+      await handleProfilePictureUpdate();
+    }
+    await handleProfileInfoUpdate();
+    setIsEditing(false);
   };
 
   const handleLogoutClick = () => {
@@ -62,7 +128,7 @@ const AccountSection: React.FC = () => {
               Cancel
             </button>
             <button
-              onClick={() => setIsEditing(false)}
+              onClick={handleSaveChanges}
               className="px-3 py-2 bg-brand text-white rounded-lg text-sm hover:bg-brand/90"
             >
               Save Changes
@@ -99,21 +165,29 @@ const AccountSection: React.FC = () => {
             {!isEditing ? (
               <>
                 <div className="text-sm font-medium text-gray-900">
-                  {fullName}
+                  {user?.firstName} {user?.lastName}
                 </div>
-                <div className="text-xs text-gray-500">{username}</div>
+                <div className="text-xs text-gray-500">@{user?.username}</div>
               </>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs text-gray-600">Full Name</label>
+                  <label className="text-xs text-gray-600">First Name</label>
                   <input
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
                     className="mt-1 w-full rounded-lg border border-gray-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand/30"
                   />
                 </div>
                 <div>
+                  <label className="text-xs text-gray-600">Last Name</label>
+                  <input
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    className="mt-1 w-full rounded-lg border border-gray-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand/30"
+                  />
+                </div>
+                <div className="col-span-2">
                   <label className="text-xs text-gray-600">Username</label>
                   <input
                     value={username}
@@ -128,7 +202,7 @@ const AccountSection: React.FC = () => {
         <div>
           <label className="text-sm font-medium text-gray-700">Bio</label>
           <textarea
-            disabled={!isEditing}
+            disabled
             className="mt-2 w-full rounded-lg border border-gray-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 disabled:opacity-60"
             rows={4}
             placeholder="Tell others about your academic interests..."
@@ -143,7 +217,11 @@ const AccountSection: React.FC = () => {
               If off, your profile and uploads are only visible to you.
             </div>
           </div>
-          <Switch defaultChecked className="data-[state=checked]:bg-brand" />
+          <Switch
+            disabled
+            defaultChecked
+            className="data-[state=checked]:bg-brand"
+          />
         </div>
 
         {/* Logout Section */}

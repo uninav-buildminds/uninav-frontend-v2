@@ -187,35 +187,19 @@ const App = () => {
                   {/* Auth - Password Reset */}
                   <Route
                     path="/auth/password/forgot"
-                    element={
-                      <AuthRedirect>
-                        <RequestReset />
-                      </AuthRedirect>
-                    }
+                    element={<RequestReset />}
                   />
                   <Route
                     path="/auth/password/check-inbox"
-                    element={
-                      <AuthRedirect>
-                        <CheckInbox />
-                      </AuthRedirect>
-                    }
+                    element={<CheckInbox />}
                   />
                   <Route
                     path="/auth/reset-password"
-                    element={
-                      <AuthRedirect>
-                        <NewPassword />
-                      </AuthRedirect>
-                    }
+                    element={<NewPassword />}
                   />
                   <Route
                     path="/auth/password/success"
-                    element={
-                      <AuthRedirect>
-                        <ResetSuccess />
-                      </AuthRedirect>
-                    }
+                    element={<ResetSuccess />}
                   />
 
                   {/* 404 - Catch all unmatched routes */}

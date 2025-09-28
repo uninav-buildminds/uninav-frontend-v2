@@ -11,6 +11,7 @@ import { httpClient } from "@/api/api";
 import useSWR from "swr";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { UserProfile } from "@/lib/types/user.types";
 
 /**
  * Fetches the profile of the currently authenticated user
@@ -53,7 +54,7 @@ export default function AuthContextProvider({
     focusThrottleInterval: 60000, // throttle any accidental focus events
     revalidateOnReconnect: true,
   });
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   useEffect(() => {
     let active = true;
@@ -101,6 +102,13 @@ export default function AuthContextProvider({
     window.location.reload();
   }, []);
 
+  const setUser = useCallback(
+    (newUser: UserProfile) => {
+      mutate(newUser, false); // Update the cache, don't revalidate
+    },
+    [mutate]
+  );
+
   // authInitializing: before initial cookie/session check completes OR (loggedIn && first user fetch still loading)
   const authInitializing =
     !initialAuthCheckDoneRef.current || (loggedIn && isLoading && !user);
@@ -112,6 +120,7 @@ export default function AuthContextProvider({
         logIn,
         logOut,
         user,
+        setUser,
         isValidating,
         isLoading,
         authInitializing,

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Select,
   SelectContent,
@@ -6,24 +6,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useAuth } from "@/hooks/useAuth";
+import { updateUserProfile } from "@/api/user.api";
+import { useToast } from "@/hooks/use-toast";
+import { DepartmentSelect } from "../DepartmentSelect";
 
 const Field: React.FC<{
   label: string;
   value: string;
   onChange: (v: string) => void;
-  options: string[];
-}> = ({ label, value, onChange, options }) => (
+  options: { value: string; label: string }[];
+  placeholder?: string;
+  disabled?: boolean;
+}> = ({ label, value, onChange, options, placeholder, disabled }) => (
   <div>
     <label className="text-sm font-medium text-gray-700">{label}</label>
     <div className="mt-2">
-      <Select value={value} onValueChange={onChange}>
+      <Select value={value} onValueChange={onChange} disabled={disabled}>
         <SelectTrigger className="h-10">
-          <SelectValue placeholder={`Choose ${label.toLowerCase()}`} />
+          <SelectValue
+            placeholder={placeholder || `Choose ${label.toLowerCase()}`}
+          />
         </SelectTrigger>
         <SelectContent>
           {options.map((opt) => (
-            <SelectItem key={opt} value={opt}>
-              {opt}
+            <SelectItem key={opt.value} value={opt.value}>
+              {opt.label}
             </SelectItem>
           ))}
         </SelectContent>
@@ -33,10 +41,41 @@ const Field: React.FC<{
 );
 
 const AcademicSection: React.FC = () => {
-  const [uni, setUni] = React.useState("University of Ibadan");
-  const [faculty, setFaculty] = React.useState("Science");
-  const [dept, setDept] = React.useState("Computer Science");
-  const [level, setLevel] = React.useState("200");
+  const { user, setUser } = useAuth();
+  const { toast } = useToast();
+
+  const [selectedDepartmentId, setSelectedDepartmentId] = useState<string>("");
+  const [level, setLevel] = useState<string>("");
+
+  useEffect(() => {
+    if (user) {
+      if (user.departmentId) {
+        setSelectedDepartmentId(user.departmentId);
+      }
+      setLevel(String(user.level || ""));
+    }
+  }, [user]);
+
+  const handleSaveChanges = async () => {
+    if (!user) return;
+    try {
+      const updatedUser = await updateUserProfile({
+        departmentId: selectedDepartmentId,
+        level: parseInt(level, 10),
+      });
+      setUser(updatedUser);
+      toast({
+        title: "Success",
+        description: "Academic details updated successfully!",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update academic details.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="rounded-xl bg-white p-4 sm:p-6 shadow-sm">
@@ -48,35 +87,37 @@ const AcademicSection: React.FC = () => {
       <div className="grid grid-cols-1 gap-4">
         <Field
           label="University"
-          value={uni}
-          onChange={setUni}
+          value="Obafemi Awolowo University"
+          onChange={() => {}}
           options={[
-            "University of Ibadan",
-            "University of Lagos",
-            "Obafemi Awolowo University",
+            {
+              value: "Obafemi Awolowo University",
+              label: "Obafemi Awolowo University",
+            },
           ]}
+          disabled
         />
-        <Field
-          label="Faculty"
-          value={faculty}
-          onChange={setFaculty}
-          options={["Science", "Engineering", "Arts"]}
-        />
-        <Field
-          label="Department"
-          value={dept}
-          onChange={setDept}
-          options={["Computer Science", "Mathematics", "Physics"]}
+        <DepartmentSelect
+          value={selectedDepartmentId}
+          onChange={setSelectedDepartmentId}
         />
         <Field
           label="Level"
           value={level}
           onChange={setLevel}
-          options={["100", "200", "300", "400", "500"]}
+          options={["100", "200", "300", "400", "500"].map((l) => ({
+            value: l,
+            label: l,
+          }))}
+          placeholder="Select your level"
         />
       </div>
       <div className="mt-6 flex justify-end">
-        <button className="px-4 py-2 bg-brand text-white rounded-lg text-sm hover:bg-brand/90">
+        <button
+          onClick={handleSaveChanges}
+          className="px-4 py-2 bg-brand text-white rounded-lg text-sm hover:bg-brand/90"
+          disabled={!selectedDepartmentId || !level}
+        >
           Save Changes
         </button>
       </div>
