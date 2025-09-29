@@ -147,6 +147,7 @@ export async function searchMaterials(params: MaterialSearchParams): Promise<
     };
   }>
 > {
+  delete params.advancedSearch;
   try {
     const response = await httpClient.get("/materials", {
       params,

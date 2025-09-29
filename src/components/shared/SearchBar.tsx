@@ -1,11 +1,17 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Search01Icon, ArrowRight02Icon, Book01Icon, File01Icon, Cancel01Icon } from "hugeicons-react";
+import {
+  Search01Icon,
+  ArrowRight02Icon,
+  Book01Icon,
+  File01Icon,
+  Cancel01Icon,
+} from "hugeicons-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface SearchSuggestion {
   id: string;
   title: string;
-  type: 'course' | 'material';
+  type: "course" | "material";
   subtitle?: string;
   icon?: React.ReactNode;
 }
@@ -13,40 +19,79 @@ interface SearchSuggestion {
 interface SearchBarProps {
   placeholder?: string;
   onSearch?: (query: string) => void;
+  onInputChange?: (query: string) => void;
   suggestions?: SearchSuggestion[];
   isLoading?: boolean;
   className?: string;
+  value?: string;
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
   placeholder = "Enter a course code or course title",
   onSearch,
+  onInputChange,
   suggestions = [],
   isLoading = false,
-  className = ""
+  className = "",
+  value: controlledValue,
 }) => {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(controlledValue || "");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
+  // Update internal state when controlled value changes
+  useEffect(() => {
+    if (controlledValue !== undefined) {
+      setQuery(controlledValue);
+    }
+  }, [controlledValue]);
+
   // Mock suggestions for demo
   const mockSuggestions: SearchSuggestion[] = [
-    { id: "1", title: "MTH 202 - Calculus II", type: 'course', subtitle: "Mathematics Department" },
-    { id: "2", title: "CSC 204 - Data Structures", type: 'course', subtitle: "Computer Science" },
-    { id: "3", title: "ENG 101 - Essay Writing Guide", type: 'material', subtitle: "Uploaded 2 days ago" },
-    { id: "4", title: "PHY 101 - Physics Lab Manual", type: 'material', subtitle: "Uploaded 1 week ago" },
-    { id: "5", title: "CHEM 201 - Organic Chemistry Notes", type: 'material', subtitle: "Uploaded 3 days ago" },
+    {
+      id: "1",
+      title: "MTH 202 - Calculus II",
+      type: "course",
+      subtitle: "Mathematics Department",
+    },
+    {
+      id: "2",
+      title: "CSC 204 - Data Structures",
+      type: "course",
+      subtitle: "Computer Science",
+    },
+    {
+      id: "3",
+      title: "ENG 101 - Essay Writing Guide",
+      type: "material",
+      subtitle: "Uploaded 2 days ago",
+    },
+    {
+      id: "4",
+      title: "PHY 101 - Physics Lab Manual",
+      type: "material",
+      subtitle: "Uploaded 1 week ago",
+    },
+    {
+      id: "5",
+      title: "CHEM 201 - Organic Chemistry Notes",
+      type: "material",
+      subtitle: "Uploaded 3 days ago",
+    },
   ];
 
-  const displaySuggestions = suggestions.length > 0 ? suggestions : mockSuggestions;
+  const displaySuggestions =
+    suggestions.length > 0 ? suggestions : mockSuggestions;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        inputRef.current && !inputRef.current.contains(event.target as Node) &&
-        suggestionsRef.current && !suggestionsRef.current.contains(event.target as Node)
+        inputRef.current &&
+        !inputRef.current.contains(event.target as Node) &&
+        suggestionsRef.current &&
+        !suggestionsRef.current.contains(event.target as Node)
       ) {
         setShowSuggestions(false);
         setSelectedIndex(-1);
@@ -62,10 +107,13 @@ const SearchBar: React.FC<SearchBarProps> = ({
     setQuery(value);
     setShowSuggestions(value.length > 0);
     setSelectedIndex(-1);
-    
+
+    // Call onInputChange for autocomplete/suggestions
+    onInputChange?.(value);
+
     // If input is cleared, trigger search with empty query to reset results
-    if (value === '') {
-      onSearch?.('');
+    if (value === "") {
+      onSearch?.("");
     }
   };
 
@@ -75,13 +123,13 @@ const SearchBar: React.FC<SearchBarProps> = ({
     switch (e.key) {
       case "ArrowDown":
         e.preventDefault();
-        setSelectedIndex(prev => 
+        setSelectedIndex((prev) =>
           prev < displaySuggestions.length - 1 ? prev + 1 : 0
         );
         break;
       case "ArrowUp":
         e.preventDefault();
-        setSelectedIndex(prev => 
+        setSelectedIndex((prev) =>
           prev > 0 ? prev - 1 : displaySuggestions.length - 1
         );
         break;
@@ -115,10 +163,11 @@ const SearchBar: React.FC<SearchBarProps> = ({
   };
 
   const handleClear = () => {
-    setQuery('');
+    setQuery("");
     setShowSuggestions(false);
     setSelectedIndex(-1);
-    onSearch?.('');
+    onInputChange?.("");
+    onSearch?.("");
   };
 
   const SkeletonLoader = () => (
@@ -195,15 +244,17 @@ const SearchBar: React.FC<SearchBarProps> = ({
                       key={suggestion.id}
                       onClick={() => handleSuggestionClick(suggestion)}
                       className={`w-full flex items-center gap-3 p-3 text-left hover:bg-gray-50 transition-colors duration-150 ${
-                        index === selectedIndex ? 'bg-gray-50' : ''
+                        index === selectedIndex ? "bg-gray-50" : ""
                       }`}
                     >
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                        suggestion.type === 'course' 
-                          ? 'bg-blue-100 text-blue-600' 
-                          : 'bg-green-100 text-green-600'
-                      }`}>
-                        {suggestion.type === 'course' ? (
+                      <div
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                          suggestion.type === "course"
+                            ? "bg-blue-100 text-blue-600"
+                            : "bg-green-100 text-green-600"
+                        }`}
+                      >
+                        {suggestion.type === "course" ? (
                           <Book01Icon size={16} />
                         ) : (
                           <File01Icon size={16} />
