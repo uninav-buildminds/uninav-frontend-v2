@@ -87,12 +87,12 @@ const AcademicSection: React.FC = () => {
       <div className="grid grid-cols-1 gap-4">
         <Field
           label="University"
-          value="Obafemi Awolowo University"
+          value="University of Ibadan "
           onChange={() => {}}
           options={[
             {
-              value: "Obafemi Awolowo University",
-              label: "Obafemi Awolowo University",
+              value: "University of Ibadan",
+              label: "University of Ibadan",
             },
           ]}
           disabled

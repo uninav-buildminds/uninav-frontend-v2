@@ -274,11 +274,8 @@ export async function updateProfilePicture(file: File): Promise<UserProfile> {
     const formData = new FormData();
     formData.append("profilePicture", file);
 
-    const response = await httpClient.post("/user/profile-picture", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    // Don't set Content-Type header manually - let browser set it with boundary
+    const response = await httpClient.post("/user/profile-picture", formData);
     return response.data.data;
   } catch (error: any) {
     throw {

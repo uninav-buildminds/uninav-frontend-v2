@@ -46,21 +46,19 @@ const AccountSection: React.FC = () => {
   };
 
   const handleProfilePictureUpdate = async () => {
-    if (!profilePictureFile) return;
+    if (!profilePictureFile) return { success: false, user: null };
     try {
       const updatedUser = await updateProfilePicture(profilePictureFile);
       setUser(updatedUser);
       setProfilePictureFile(null);
-      toast({
-        title: "Success",
-        description: "Profile picture updated successfully!",
-      });
+      return { success: true, user: updatedUser };
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message || "Failed to update profile picture.",
         variant: "destructive",
       });
+      return { success: false, user: null };
     }
   };
 
@@ -73,22 +71,46 @@ const AccountSection: React.FC = () => {
     try {
       const updatedUser = await updateUserProfile(profileData);
       setUser(updatedUser);
-      toast({ title: "Success", description: "Profile updated successfully!" });
+      return { success: true, user: updatedUser };
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message || "Failed to update profile.",
         variant: "destructive",
       });
+      return { success: false, user: null };
     }
   };
 
   const handleSaveChanges = async () => {
+    let pictureUpdateSuccess = false;
+    let profileUpdateSuccess = false;
+    const updates: string[] = [];
+
+    // Handle profile picture update if a new file is selected
     if (profilePictureFile) {
-      await handleProfilePictureUpdate();
+      const pictureResult = await handleProfilePictureUpdate();
+      pictureUpdateSuccess = pictureResult.success;
+      if (pictureUpdateSuccess) {
+        updates.push("profile picture");
+      }
     }
-    await handleProfileInfoUpdate();
-    setIsEditing(false);
+
+    // Handle profile info update
+    const profileResult = await handleProfileInfoUpdate();
+    profileUpdateSuccess = profileResult.success;
+    if (profileUpdateSuccess) {
+      updates.push("profile information");
+    }
+
+    // Show success message only if at least one update was successful
+    if (updates.length > 0) {
+      toast({
+        title: "Success",
+        description: `Updated ${updates.join(" and ")} successfully!`,
+      });
+      setIsEditing(false);
+    }
   };
 
   const handleLogoutClick = () => {
