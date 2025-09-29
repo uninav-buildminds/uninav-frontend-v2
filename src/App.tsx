@@ -22,6 +22,7 @@ import RecentMaterials from "./pages/dashboard/RecentMaterials";
 import Recommendations from "./pages/dashboard/Recommendations";
 import Notifications from "./pages/dashboard/Notifications";
 import SettingsPage from "./pages/dashboard/Settings";
+import MaterialView from "./pages/dashboard/MaterialView";
 import ManagementLayout from "./components/management/ManagementLayout";
 import ManagementDashboard from "./pages/management/ManagementDashboard";
 import CourseManagement from "./pages/management/CourseManagement";
@@ -94,6 +95,14 @@ const App = () => {
                     element={
                       <ProtectedRoute>
                         <SettingsPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/material/:id"
+                    element={
+                      <ProtectedRoute>
+                        <MaterialView />
                       </ProtectedRoute>
                     }
                   />

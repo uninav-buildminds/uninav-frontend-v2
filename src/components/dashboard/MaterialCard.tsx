@@ -130,6 +130,25 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
             <BookmarkOutlineIcon size={20} />
           )}
         </button>
+
+        {/* Tags - Bottom Left */}
+        {tags && tags.length > 0 && (
+          <div className="absolute bottom-2 left-2 flex flex-wrap gap-1">
+            {tags.slice(0, 2).map((tag, index) => (
+              <span
+                key={index}
+                className="inline-block px-2 py-0.5 text-xs bg-[#DCDFFE] text-brand rounded-md"
+              >
+                {tag}
+              </span>
+            ))}
+            {tags.length > 2 && (
+              <span className="inline-block px-2 py-0.5 text-xs bg-[#DCDFFE] text-brand rounded-md">
+                +{tags.length - 2}
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Content */}
@@ -146,30 +165,10 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
           {label}
         </h4>
 
-        {/* Tags */}
-        {tags && tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-1">
-            {tags.slice(0, 3).map((tag, index) => (
-              <span
-                key={index}
-                className="inline-block px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded-md"
-              >
-                {tag}
-              </span>
-            ))}
-            {tags.length > 3 && (
-              <span className="inline-block px-2 py-0.5 text-xs bg-gray-100 text-gray-500 rounded-md">
-                +{tags.length - 3}
-              </span>
-            )}
-          </div>
-        )}
-
         {/* Metadata and Action Icons */}
         <div className="flex items-center justify-between">
           <div className="text-xs text-gray-500 truncate flex-1">
-            {formatRelativeTime(createdAt)} • {downloads} downloads • {views}{" "}
-            views • {likes} likes
+            {formatRelativeTime(createdAt)} • {views} views • {likes} likes
           </div>
 
           {/* Action Icons - Download and Share */}
