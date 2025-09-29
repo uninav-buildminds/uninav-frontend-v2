@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   Search01Icon,
   ArrowRight02Icon,
@@ -40,6 +40,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Update internal state when controlled value changes
   useEffect(() => {
@@ -48,42 +49,41 @@ const SearchBar: React.FC<SearchBarProps> = ({
     }
   }, [controlledValue]);
 
-  // Mock suggestions for demo
-  const mockSuggestions: SearchSuggestion[] = [
-    {
-      id: "1",
-      title: "MTH 202 - Calculus II",
-      type: "course",
-      subtitle: "Mathematics Department",
-    },
-    {
-      id: "2",
-      title: "CSC 204 - Data Structures",
-      type: "course",
-      subtitle: "Computer Science",
-    },
-    {
-      id: "3",
-      title: "ENG 101 - Essay Writing Guide",
-      type: "material",
-      subtitle: "Uploaded 2 days ago",
-    },
-    {
-      id: "4",
-      title: "PHY 101 - Physics Lab Manual",
-      type: "material",
-      subtitle: "Uploaded 1 week ago",
-    },
-    {
-      id: "5",
-      title: "CHEM 201 - Organic Chemistry Notes",
-      type: "material",
-      subtitle: "Uploaded 3 days ago",
-    },
-  ];
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
 
-  const displaySuggestions =
-    suggestions.length > 0 ? suggestions : mockSuggestions;
+  // Debounced input change handler
+  const debouncedOnInputChange = useCallback(
+    (value: string) => {
+      // Clear previous debounce timer
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+
+      // If input is empty, call immediately
+      if (!value.trim()) {
+        onInputChange?.(value);
+        return;
+      }
+
+      // Debounce API calls for non-empty input (300ms)
+      debounceTimerRef.current = setTimeout(() => {
+        onInputChange?.(value);
+      }, 300);
+    },
+    [onInputChange]
+  );
+
+  // Only show suggestions if we have a query and either loading or actual results
+  const shouldShowSuggestions =
+    query.length > 0 && (isLoading || suggestions.length > 0);
+  const displaySuggestions = suggestions;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -108,17 +108,17 @@ const SearchBar: React.FC<SearchBarProps> = ({
     setShowSuggestions(value.length > 0);
     setSelectedIndex(-1);
 
-    // Call onInputChange for autocomplete/suggestions
-    onInputChange?.(value);
+    // Use debounced input change for API calls
+    debouncedOnInputChange(value);
 
-    // If input is cleared, trigger search with empty query to reset results
+    // If input is cleared, trigger search with empty query to reset results immediately
     if (value === "") {
       onSearch?.("");
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!showSuggestions) return;
+    if (!showSuggestions || !shouldShowSuggestions) return;
 
     switch (e.key) {
       case "ArrowDown":
@@ -135,7 +135,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
         break;
       case "Enter":
         e.preventDefault();
-        if (selectedIndex >= 0) {
+        if (selectedIndex >= 0 && displaySuggestions[selectedIndex]) {
           handleSuggestionClick(displaySuggestions[selectedIndex]);
         } else {
           handleSearch();
@@ -166,6 +166,13 @@ const SearchBar: React.FC<SearchBarProps> = ({
     setQuery("");
     setShowSuggestions(false);
     setSelectedIndex(-1);
+
+    // Clear any pending debounce
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // Call handlers immediately for clear action
     onInputChange?.("");
     onSearch?.("");
   };
@@ -198,7 +205,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
             value={query}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            onFocus={() => setShowSuggestions(query.length > 0)}
+            onFocus={() => setShowSuggestions(shouldShowSuggestions)}
             placeholder={placeholder}
             className="w-full pl-12 pr-10 py-2.5 text-base border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all duration-200"
           />
@@ -223,7 +230,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
       {/* Suggestions Panel */}
       <AnimatePresence>
-        {showSuggestions && (
+        {showSuggestions && shouldShowSuggestions && (
           <motion.div
             ref={suggestionsRef}
             initial={{ opacity: 0, y: -10, scale: 0.95 }}
@@ -273,8 +280,13 @@ const SearchBar: React.FC<SearchBarProps> = ({
                     </button>
                   ))
                 ) : (
-                  <div className="p-4 text-center text-gray-500">
-                    No suggestions found
+                  <div className="p-4 text-center">
+                    <div className="text-gray-500 text-sm">
+                      No suggestions found
+                    </div>
+                    <div className="text-gray-400 text-xs mt-1">
+                      Press Enter to search for "{query}"
+                    </div>
                   </div>
                 )}
               </div>
