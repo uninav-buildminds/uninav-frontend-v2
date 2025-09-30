@@ -9,13 +9,6 @@ import {
   Download01Icon,
   ArrowDown01Icon,
 } from "hugeicons-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -25,9 +18,14 @@ import {
 import { toast } from "sonner";
 import HeaderStepper from "./shared/HeaderStepper";
 import AdvancedOptions from "./shared/AdvancedOptions";
+import {
+  inferMaterialType,
+  generateDefaultTitle,
+} from "@/lib/utils/inferMaterialType";
+import { CreateMaterialFileForm } from "@/api/materials.api";
 
 interface Step2FileUploadProps {
-  onComplete: (data: Record<string, unknown>) => void;
+  onComplete: (data: CreateMaterialFileForm) => void;
   onBack: () => void;
 }
 
@@ -40,6 +38,8 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [classification, setClassification] = useState<string>("");
+  const [targetCourseId, setTargetCourseId] = useState<string>("");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -89,6 +89,12 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
       return;
     }
     setSelectedFile(file);
+
+    // Auto-populate title if current title is empty
+    if (!watchedValues.materialTitle) {
+      const defaultTitle = generateDefaultTitle(file);
+      setValue("materialTitle", defaultTitle);
+    }
   };
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -115,12 +121,16 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
 
   // Add classification value as tag if not already present
   const handleClassificationChange = (value: string) => {
-    setValue("classification", value);
-    if (!tags.includes(value)) {
+    setClassification(value);
+    if (value && !tags.includes(value)) {
       const newTags = [...tags, value];
       setTags(newTags);
       setValue("tags", newTags);
     }
+  };
+
+  const handleTargetCourseIdChange = (value: string) => {
+    setTargetCourseId(value);
   };
 
   const handleTagRemove = (index: number) => {
@@ -135,15 +145,19 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
       return;
     }
 
-    const formData = {
-      type: "file",
-      file: selectedFile,
+    // Infer material type from file
+    const inferredType = inferMaterialType(selectedFile);
+
+    const formData: CreateMaterialFileForm = {
       materialTitle: data.materialTitle,
-      classification: data.classification,
       description: data.description || "",
+      type: inferredType,
+      classification: classification || "",
       visibility: data.visibility,
       accessRestrictions: data.accessRestrictions,
       tags: data.tags || [],
+      targetCourseId: targetCourseId || undefined,
+      file: selectedFile,
       image: selectedImage,
     };
 
@@ -262,81 +276,6 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
             Be descriptive so everyone knows what's inside.
           </p>
         </div>
-
-        {/* Select Upload Classification */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Select Upload Classification
-          </label>
-          <Select
-            value={watchedValues.classification}
-            onValueChange={handleClassificationChange}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="e.g., Exam past question and Answers" />
-            </SelectTrigger>
-            <SelectContent className="z-[1060]">
-              <SelectItem value="exam-past-questions">
-                Exam Past Questions
-              </SelectItem>
-              <SelectItem value="lecture-notes">Lecture Notes</SelectItem>
-              <SelectItem value="assignments">Assignments</SelectItem>
-              <SelectItem value="tutorials">Tutorials</SelectItem>
-              <SelectItem value="lab-reports">Lab Reports</SelectItem>
-              <SelectItem value="study-guides">Study Guides</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
-            </SelectContent>
-          </Select>
-          {errors.classification && (
-            <p className="mt-1 text-xs text-red-600">
-              {errors.classification.message}
-            </p>
-          )}
-        </div>
-
-        {/* Select file type */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Select File Type
-          </label>
-          <Select
-            value={watchedValues.type}
-            onValueChange={(value) => setValue("type", value)}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="e.g., Exam past question and Answers" />
-            </SelectTrigger>
-            <SelectContent className="z-[1060]">
-              <SelectItem value="docs">docs</SelectItem>
-              <SelectItem value="pdf">PDF</SelectItem>
-              <SelectItem value="gdrive">Gdrive</SelectItem>
-              <SelectItem value="excel">Excel</SelectItem>
-              <SelectItem value="image">Image</SelectItem>
-              <SelectItem value="video">Video</SelectItem>
-              <SelectItem value="article">Article</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
-            </SelectContent>
-          </Select>
-          {errors.type && (
-            <p className="mt-1 text-xs text-red-600">{errors.type.message}</p>
-          )}
-        </div>
-
-        {/* Description */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Description (Optional)
-          </label>
-          <textarea
-            {...register("description")}
-            placeholder="e.g., Covers key formulas from lectures 4 & 5"
-            rows={2}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors resize-none outline-none text-sm sm:text-base"
-          />
-          <p className="text-xs text-gray-600 mt-1">
-            What's good about this? What does it cover?
-          </p>
-        </div>
       </div>
 
       <AdvancedOptions
@@ -345,6 +284,9 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
         tags={tags}
         tagInput={tagInput}
         selectedImage={selectedImage}
+        description={watchedValues.description || ""}
+        classification={classification}
+        targetCourseId={targetCourseId}
         onVisibilityChange={(value) => setValue("visibility", value)}
         onAccessRestrictionsChange={(value) =>
           setValue("accessRestrictions", value)
@@ -353,6 +295,9 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
         onTagRemove={handleTagRemove}
         onTagInputChange={setTagInput}
         onImageChange={setSelectedImage}
+        onDescriptionChange={(value) => setValue("description", value)}
+        onClassificationChange={handleClassificationChange}
+        onTargetCourseIdChange={handleTargetCourseIdChange}
         imageInputRef={imageInputRef}
       />
 

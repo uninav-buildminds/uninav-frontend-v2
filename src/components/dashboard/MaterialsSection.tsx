@@ -72,8 +72,7 @@ export function mapRecommendationToMaterial(
     visibility: rec.visibility as any, // VisibilityEnum
     restriction: rec.restriction as any, // RestrictionEnum
     targetCourseId: rec.targetCourseId,
-    resourceAddress: rec.previewUrl || undefined,
-    metaData: rec.metaData,
+    previewUrl: rec.previewUrl || undefined,
     likes: rec.likes,
     downloads: rec.downloads,
     views: rec.views,

@@ -32,11 +32,6 @@ interface UpdateCourseDto {
   description?: string;
 }
 
-/**
- * Get courses with optional filters
- * @param filters - Course filter options
- * @returns courses response
- */
 export async function getCourses(filters?: {
   departmentId?: string;
   level?: number;

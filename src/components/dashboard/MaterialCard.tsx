@@ -68,7 +68,7 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
   onRead,
 }) => {
   const { id, label, createdAt, downloads, tags, views, likes } = material;
-  const previewImage = material.resourceAddress || "/placeholder.svg";
+  const previewImage = material.previewUrl || "/placeholder.svg";
   const { isBookmarked, toggleBookmark } = useBookmarks();
   const saved = isBookmarked(id);
 

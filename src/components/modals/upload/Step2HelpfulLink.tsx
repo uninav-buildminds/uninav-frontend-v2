@@ -7,13 +7,6 @@ import {
   Download01Icon,
   ArrowDown01Icon,
 } from "hugeicons-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -23,9 +16,14 @@ import {
 import { toast } from "sonner";
 import HeaderStepper from "./shared/HeaderStepper";
 import AdvancedOptions from "./shared/AdvancedOptions";
+import {
+  inferMaterialType,
+  generateDefaultTitle,
+} from "@/lib/utils/inferMaterialType";
+import { CreateMaterialLinkForm } from "@/api/materials.api";
 
 interface Step2HelpfulLinkProps {
-  onComplete: (data: Record<string, unknown>) => void;
+  onComplete: (data: CreateMaterialLinkForm) => void;
   onBack: () => void;
 }
 
@@ -36,6 +34,8 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [classification, setClassification] = useState<string>("");
+  const [targetCourseId, setTargetCourseId] = useState<string>("");
 
   const imageInputRef = useRef<HTMLInputElement>(null);
 
@@ -57,6 +57,22 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
 
   const watchedValues = watch();
 
+  // Handle URL input change to auto-populate title
+  const handleUrlChange = (url: string) => {
+    setValue("url", url);
+
+    // Auto-populate title if current title is empty and URL is valid
+    if (!watchedValues.materialTitle && url.trim()) {
+      try {
+        new URL(url); // Validate URL
+        const defaultTitle = generateDefaultTitle(url);
+        setValue("materialTitle", defaultTitle);
+      } catch {
+        // Invalid URL, don't auto-populate
+      }
+    }
+  };
+
   const handleTagAdd = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && tagInput.trim()) {
       e.preventDefault();
@@ -69,12 +85,16 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
 
   // Add classification value as tag if not already present
   const handleClassificationChange = (value: string) => {
-    setValue("classification", value);
-    if (!tags.includes(value)) {
+    setClassification(value);
+    if (value && !tags.includes(value)) {
       const newTags = [...tags, value];
       setTags(newTags);
       setValue("tags", newTags);
     }
+  };
+
+  const handleTargetCourseIdChange = (value: string) => {
+    setTargetCourseId(value);
   };
 
   const handleTagRemove = (index: number) => {
@@ -84,15 +104,19 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
   };
 
   const onSubmit = (data: UploadLinkInput) => {
-    const formData = {
-      type: "link",
-      url: data.url,
+    // Infer material type from URL
+    const inferredType = inferMaterialType(data.url);
+
+    const formData: CreateMaterialLinkForm = {
       materialTitle: data.materialTitle,
-      classification: data.classification,
       description: data.description || "",
+      type: inferredType,
+      classification: classification || "",
       visibility: data.visibility,
       accessRestrictions: data.accessRestrictions,
       tags: data.tags || [],
+      targetCourseId: targetCourseId || undefined,
+      url: data.url,
       image: selectedImage,
     };
 
@@ -124,7 +148,8 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
           <div className="relative">
             <input
               type="url"
-              {...register("url")}
+              value={watchedValues.url || ""}
+              onChange={(e) => handleUrlChange(e.target.value)}
               placeholder="https://example.com/document.pdf"
               className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors"
             />
@@ -164,53 +189,6 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
             Be descriptive so everyone knows what's inside.
           </p>
         </div>
-
-        {/* Select Upload Classification */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Select Upload Classification
-          </label>
-          <Select
-            value={watchedValues.classification}
-            onValueChange={handleClassificationChange}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="e.g., Exam past question and Answers" />
-            </SelectTrigger>
-            <SelectContent className="z-[1060]">
-              <SelectItem value="exam-past-questions">
-                Exam Past Questions
-              </SelectItem>
-              <SelectItem value="lecture-notes">Lecture Notes</SelectItem>
-              <SelectItem value="assignments">Assignments</SelectItem>
-              <SelectItem value="tutorials">Tutorials</SelectItem>
-              <SelectItem value="lab-reports">Lab Reports</SelectItem>
-              <SelectItem value="study-guides">Study Guides</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
-            </SelectContent>
-          </Select>
-          {errors.classification && (
-            <p className="mt-1 text-xs text-red-600">
-              {errors.classification.message}
-            </p>
-          )}
-        </div>
-
-        {/* Description */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Description (Optional)
-          </label>
-          <textarea
-            {...register("description")}
-            placeholder="e.g., Covers key formulas from lectures 4 & 5"
-            rows={2}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors resize-none text-sm sm:text-base"
-          />
-          <p className="text-xs text-gray-600 mt-1">
-            What's good about this? What does it cover?
-          </p>
-        </div>
       </div>
 
       <AdvancedOptions
@@ -219,6 +197,9 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
         tags={tags}
         tagInput={tagInput}
         selectedImage={selectedImage}
+        description={watchedValues.description || ""}
+        classification={classification}
+        targetCourseId={targetCourseId}
         onVisibilityChange={(value) => setValue("visibility", value)}
         onAccessRestrictionsChange={(value) =>
           setValue("accessRestrictions", value)
@@ -227,6 +208,9 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
         onTagRemove={handleTagRemove}
         onTagInputChange={setTagInput}
         onImageChange={setSelectedImage}
+        onDescriptionChange={(value) => setValue("description", value)}
+        onClassificationChange={handleClassificationChange}
+        onTargetCourseIdChange={handleTargetCourseIdChange}
         imageInputRef={imageInputRef}
       />
 

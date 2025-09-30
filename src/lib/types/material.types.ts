@@ -2,34 +2,43 @@ import { ApprovalStatusEnum } from "./response.types";
 import { UserProfile } from "./user.types";
 import { Course } from "./course.types";
 
-export enum MaterialTypeEnum {
-  PDF = "pdf",
-  VIDEO = "video",
-  IMAGE = "image",
-  AUDIO = "audio",
-  DOCUMENT = "document",
-  SPREADSHEET = "spreadsheet",
-  PRESENTATION = "presentation",
-  TEXT = "text",
-  ARCHIVE = "archive",
-  BOOK = "book",
-  LINK = "link",
-  OTHER = "other",
+export enum ResourceTypeEnum {
+  URL = "url",
+  UPLOAD = "upload",
 }
 
+// Updated to match backend enum values exactly
+export enum MaterialTypeEnum {
+  DOCS = "docs", // doc, docx, etc.
+  PDF = "pdf", // pdf files
+  PPT = "ppt", // ppt, pptx
+  GDRIVE = "gdrive", // Google Drive links
+  EXCEL = "excel", // excel, xls, xlsx
+  IMAGE = "image", // image files
+  VIDEO = "video", // video files/links
+  ARTICLE = "article", // articles
+  OTHER = "other", // other types
+}
+
+// Updated to match backend enum values exactly
 export enum VisibilityEnum {
   PUBLIC = "public",
   PRIVATE = "private",
-  DEPARTMENT = "department",
 }
 
+// Updated to match backend enum values exactly
 export enum RestrictionEnum {
-  NONE = "none",
-  LEVEL = "level",
-  COURSE = "course",
-  DEPARTMENT = "department",
+  READONLY = "readonly",
+  DOWNLOADABLE = "downloadable",
 }
 
+export interface Resource {
+  id: string;
+  resourceAddress: string;
+  resourceType: ResourceTypeEnum;
+  metaData?: string[];
+  fileKey?: string;
+}
 export interface Material {
   id: string;
   label: string;
@@ -39,9 +48,8 @@ export interface Material {
   visibility: VisibilityEnum;
   restriction: RestrictionEnum;
   targetCourseId?: string;
-  resourceAddress?: string;
-  metaData?: string[];
-  fileKey?: string;
+  resource?: Resource;
+  previewUrl?: string;
   likes: number;
   downloads: number;
   views: number;
@@ -55,10 +63,10 @@ export interface Material {
 export interface CreateMaterialDto {
   label: string;
   description?: string;
-  type: string; // MaterialTypeEnum
+  type: MaterialTypeEnum;
   tags?: string[];
-  visibility?: string; // VisibilityEnum
-  restriction?: string; // RestrictionEnum
+  visibility?: VisibilityEnum;
+  restriction?: RestrictionEnum;
   targetCourseId?: string;
   resourceAddress?: string;
   metaData?: string[];

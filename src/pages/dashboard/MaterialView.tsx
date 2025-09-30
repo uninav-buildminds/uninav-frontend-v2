@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
-import { 
-  Download01Icon, 
-  Share08Icon, 
-  Bookmark01Icon, 
-  Maximize01Icon, 
+import {
+  Download01Icon,
+  Share08Icon,
+  Bookmark01Icon,
+  Maximize01Icon,
   Minimize01Icon,
-  Search01Icon
+  Search01Icon,
 } from "hugeicons-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,13 +17,15 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useBookmarks } from "@/context/bookmark/BookmarkContextProvider";
 import { toast } from "sonner";
 import { formatRelativeTime } from "@/lib/utils";
-import { Material } from "@/lib/types/material.types";
+import { Material, MaterialTypeEnum } from "@/lib/types/material.types";
+import { getMaterialById } from "@/api/materials.api";
+import { ResponseStatus } from "@/lib/types/response.types";
 
 const MaterialView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { isBookmarked, toggleBookmark } = useBookmarks();
-  
+
   // Mock data - replace with actual API call
   const [material, setMaterial] = useState<Material | null>(null);
   const [loading, setLoading] = useState(true);
@@ -32,73 +34,32 @@ const MaterialView: React.FC = () => {
   const [zoom, setZoom] = useState(100);
   const [relatedMaterials, setRelatedMaterials] = useState<Material[]>([]);
 
-  // Mock material data - replace with actual API call
+  // Fetch material data from API
   useEffect(() => {
     const fetchMaterial = async () => {
       setLoading(true);
       try {
-        // Mock data - replace with actual API call
-        const mockMaterial: Material = {
-          id: id || "1",
-          label: "LECTURE 3: MATRIX MULTIPLICATION",
-          description: "Comprehensive lecture notes on matrix multiplication with examples and practice problems.",
-          resourceAddress: "https://example.com/lecture3.pdf", // This would be the actual file URL
-          type: "pdf",
-          tags: ["MTH", "MTH202", "Mathematics", "Linear Algebra"],
-          views: 245,
-          downloads: 89,
-          likes: 12,
-          createdAt: "2024-01-15T10:30:00Z",
-          updatedAt: "2024-01-15T10:30:00Z",
-          creator: {
-            id: "1",
-            firstName: "Tee",
-            lastName: "Daniels",
-            email: "tee.daniels@university.edu"
-          },
-          course: {
-            id: "1",
-            code: "MTH 202",
-            name: "Linear Algebra",
-            department: {
-              id: "1",
-              name: "Mathematics",
-              faculty: {
-                id: "1",
-                name: "Computing"
-              }
-            }
-          }
-        };
-        
-        setMaterial(mockMaterial);
-        setTotalPages(8); // This would come from the API
-        
-        // Mock related materials
-        setRelatedMaterials([
-          {
-            id: "2",
-            label: "CSC 204 Reading Materials",
-            description: "This is the official final exam from 2023. Professor Adebayo released the solutions herself. Covers everything from Big O notation to graph traversal algorithms.",
-            resourceAddress: "https://example.com/csc204.pdf",
-            type: "pdf",
-            tags: ["CSC", "CSC204"],
-            views: 156,
-            downloads: 67,
-            likes: 8,
-            createdAt: "2024-01-10T14:20:00Z",
-            updatedAt: "2024-01-10T14:20:00Z",
-            creator: {
-              id: "2",
-              firstName: "Sarah",
-              lastName: "Johnson",
-              email: "sarah.johnson@university.edu"
-            }
-          }
-        ]);
-      } catch (error) {
+        if (!id) {
+          toast.error("Invalid material ID");
+          return;
+        }
+
+        const response = await getMaterialById(id);
+
+        if (response.status === ResponseStatus.SUCCESS) {
+          setMaterial(response.data);
+          setTotalPages(8); // TODO: Extract from PDF metadata if available
+
+          // TODO: Fetch related materials based on tags or course
+          setRelatedMaterials([]);
+        } else {
+          toast.error("Failed to load material");
+          navigate(-1);
+        }
+      } catch (error: any) {
         console.error("Error fetching material:", error);
-        toast.error("Failed to load material");
+        toast.error(error.message || "Failed to load material");
+        navigate(-1);
       } finally {
         setLoading(false);
       }
@@ -107,22 +68,24 @@ const MaterialView: React.FC = () => {
     if (id) {
       fetchMaterial();
     }
-  }, [id]);
+  }, [id, navigate]);
 
   const handleBack = () => {
     navigate(-1);
   };
 
   const handleDownload = () => {
-    if (material?.resourceAddress) {
+    if (material?.resource?.resourceAddress) {
       // Create a temporary link to download the file
-      const link = document.createElement('a');
-      link.href = material.resourceAddress;
+      const link = document.createElement("a");
+      link.href = material.resource.resourceAddress;
       link.download = material.label;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       toast.success("Download started!");
+    } else {
+      toast.error("Download not available for this material");
     }
   };
 
@@ -141,24 +104,26 @@ const MaterialView: React.FC = () => {
   const handleBookmark = () => {
     if (material) {
       toggleBookmark(material.id);
-      toast.success(isBookmarked(material.id) ? "Removed from saved" : "Added to saved");
+      toast.success(
+        isBookmarked(material.id) ? "Removed from saved" : "Added to saved"
+      );
     }
   };
 
   const handleZoomIn = () => {
-    setZoom(prev => Math.min(prev + 25, 200));
+    setZoom((prev) => Math.min(prev + 25, 200));
   };
 
   const handleZoomOut = () => {
-    setZoom(prev => Math.max(prev - 25, 50));
+    setZoom((prev) => Math.max(prev - 25, 50));
   };
 
   const handlePreviousPage = () => {
-    setCurrentPage(prev => Math.max(prev - 1, 1));
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
   };
 
   const handleNextPage = () => {
-    setCurrentPage(prev => Math.min(prev + 1, totalPages));
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
   };
 
   if (loading) {
@@ -173,8 +138,12 @@ const MaterialView: React.FC = () => {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-2">Material not found</h2>
-          <p className="text-gray-600 mb-4">The material you're looking for doesn't exist or has been removed.</p>
+          <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+            Material not found
+          </h2>
+          <p className="text-gray-600 mb-4">
+            The material you're looking for doesn't exist or has been removed.
+          </p>
           <Button onClick={handleBack}>Go Back</Button>
         </div>
       </div>
@@ -237,7 +206,7 @@ const MaterialView: React.FC = () => {
                 onClick={handleZoomOut}
                 className="bg-white/80 hover:bg-white"
               >
-                < Minimize01Icon size={16} />
+                <Minimize01Icon size={16} />
               </Button>
               <span className="text-sm text-gray-700 font-medium min-w-[3rem] text-center">
                 {zoom}%
@@ -264,9 +233,14 @@ const MaterialView: React.FC = () => {
                 variant="outline"
                 size="sm"
                 onClick={handleBookmark}
-                className={`bg-white/80 hover:bg-white ${isBookmarkedMaterial ? "text-brand" : ""}`}
+                className={`bg-white/80 hover:bg-white ${
+                  isBookmarkedMaterial ? "text-brand" : ""
+                }`}
               >
-                <Bookmark01Icon size={16} className={isBookmarkedMaterial ? "fill-current" : ""} />
+                <Bookmark01Icon
+                  size={16}
+                  className={isBookmarkedMaterial ? "fill-current" : ""}
+                />
               </Button>
               <Button
                 variant="outline"
@@ -295,11 +269,14 @@ const MaterialView: React.FC = () => {
             {/* Document Viewer */}
             <div className="flex-1 bg-gray-100 rounded-t-3xl p-4">
               <div className="h-full bg-white rounded-lg shadow-sm overflow-hidden">
-                {material.resourceAddress ? (
+                {material.resource?.resourceAddress ? (
                   <iframe
-                    src={material.resourceAddress}
+                    src={material.resource.resourceAddress}
                     className="w-full h-full border-0"
-                    style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top left' }}
+                    style={{
+                      transform: `scale(${zoom / 100})`,
+                      transformOrigin: "top left",
+                    }}
                     title={material.label}
                   />
                 ) : (
@@ -307,7 +284,11 @@ const MaterialView: React.FC = () => {
                     <div className="text-center">
                       <div className="text-4xl mb-4">📄</div>
                       <p>Document preview not available</p>
-                      <Button onClick={handleDownload} className="mt-4">
+                      <Button
+                        onClick={handleDownload}
+                        className="mt-4"
+                        disabled={!material.resource?.resourceAddress}
+                      >
                         Download to view
                       </Button>
                     </div>
@@ -337,13 +318,12 @@ const MaterialView: React.FC = () => {
                     onClick={handleBookmark}
                     className={isBookmarkedMaterial ? "text-brand" : ""}
                   >
-                    <Bookmark01Icon size={16} className={isBookmarkedMaterial ? "fill-current" : ""} />
+                    <Bookmark01Icon
+                      size={16}
+                      className={isBookmarkedMaterial ? "fill-current" : ""}
+                    />
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleShare}
-                  >
+                  <Button variant="outline" size="sm" onClick={handleShare}>
                     <Share08Icon size={16} />
                   </Button>
                   <Button
@@ -369,14 +349,42 @@ const MaterialView: React.FC = () => {
 
               {/* Material Metadata */}
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Department:</span>
-                  <span className="font-medium">{material.course?.department?.name || "N/A"}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Faculty:</span>
-                  <span className="font-medium">{material.course?.department?.faculty?.name || "N/A"}</span>
-                </div>
+                {material.targetCourse && (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Course:</span>
+                      <span className="font-medium">
+                        {material.targetCourse.courseCode}
+                      </span>
+                    </div>
+                    {material.targetCourse.departments &&
+                      material.targetCourse.departments.length > 0 && (
+                        <>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Department:</span>
+                            <span className="font-medium">
+                              {
+                                material.targetCourse.departments[0].department
+                                  .name
+                              }
+                            </span>
+                          </div>
+                          {material.targetCourse.departments[0].department
+                            .faculty && (
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Faculty:</span>
+                              <span className="font-medium">
+                                {
+                                  material.targetCourse.departments[0]
+                                    .department.faculty.name
+                                }
+                              </span>
+                            </div>
+                          )}
+                        </>
+                      )}
+                  </>
+                )}
                 <div className="flex justify-between">
                   <span className="text-gray-600">Uploaded by:</span>
                   <span className="font-medium">
@@ -385,25 +393,36 @@ const MaterialView: React.FC = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Date:</span>
-                  <span className="font-medium">{formatRelativeTime(material.createdAt)}</span>
+                  <span className="font-medium">
+                    {formatRelativeTime(material.createdAt)}
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Size:</span>
-                  <span className="font-medium">2.5MB</span>
+                  <span className="text-gray-600">Type:</span>
+                  <span className="font-medium uppercase">{material.type}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Pages:</span>
-                  <span className="font-medium">{totalPages} pages</span>
+                  <span className="text-gray-600">Views:</span>
+                  <span className="font-medium">{material.views}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Downloads:</span>
+                  <span className="font-medium">{material.downloads}</span>
                 </div>
               </div>
             </div>
 
             {/* Related Materials */}
             <div className="flex-1 p-6">
-              <h3 className="text-sm font-semibold text-gray-900 mb-4">Related Materials</h3>
+              <h3 className="text-sm font-semibold text-gray-900 mb-4">
+                Related Materials
+              </h3>
               <div className="space-y-4">
                 {relatedMaterials.map((relatedMaterial) => (
-                  <Card key={relatedMaterial.id} className="cursor-pointer hover:shadow-md transition-shadow">
+                  <Card
+                    key={relatedMaterial.id}
+                    className="cursor-pointer hover:shadow-md transition-shadow"
+                  >
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm font-medium text-gray-900">
                         {relatedMaterial.label}
@@ -421,12 +440,21 @@ const MaterialView: React.FC = () => {
                             onClick={() => toggleBookmark(relatedMaterial.id)}
                             className="p-1"
                           >
-                            <Bookmark01Icon size={14} className={isBookmarked(relatedMaterial.id) ? "fill-current" : ""} />
+                            <Bookmark01Icon
+                              size={14}
+                              className={
+                                isBookmarked(relatedMaterial.id)
+                                  ? "fill-current"
+                                  : ""
+                              }
+                            />
                           </Button>
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => navigate(`/material/${relatedMaterial.id}`)}
+                            onClick={() =>
+                              navigate(`/material/${relatedMaterial.id}`)
+                            }
                             className="p-1"
                           >
                             <Share08Icon size={14} />

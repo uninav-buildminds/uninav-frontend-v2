@@ -6,7 +6,7 @@ import Step1 from "./upload/Step1";
 import Step2FileUpload from "./upload/Step2FileUpload";
 import Step2HelpfulLink from "./upload/Step2HelpfulLink";
 import UploadSuccess from "./upload/UploadSuccess";
-import { createMaterials } from "@/api/materials.api";
+import { createMaterials, CreateMaterialForm } from "@/api/materials.api";
 
 export type MaterialType = "file" | "link";
 export type UploadStep = "type-selection" | "upload-details" | "success";
@@ -19,7 +19,7 @@ interface UploadModalProps {
 const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose }) => {
   const [currentStep, setCurrentStep] = useState<UploadStep>("type-selection");
   const [materialType, setMaterialType] = useState<MaterialType | null>(null);
-  const [uploadData, setUploadData] = useState<any>({});
+  const [uploadData, setUploadData] = useState<CreateMaterialForm | null>(null);
   const [submitting, setSubmitting] = useState(false); // Loader state
 
   // useEffect(() => {
@@ -31,7 +31,7 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose }) => {
     setCurrentStep("upload-details");
   };
 
-  const handleUploadComplete = async (data: any) => {
+  const handleUploadComplete = async (data: CreateMaterialForm) => {
     setUploadData(data);
     setSubmitting(true); // Start loader
     try {
@@ -55,7 +55,7 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose }) => {
   const handleClose = () => {
     setCurrentStep("type-selection");
     setMaterialType(null);
-    setUploadData({});
+    setUploadData(null);
     onClose();
   };
 
