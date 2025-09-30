@@ -152,8 +152,10 @@ const Sidebar: React.FC = () => {
             </div>
 
             {/* User avatar fixed on rail bottom */}
-            <UserRail 
-              userName={user ? user.firstName : panelData.user.name.split(" ")[0]}
+            <UserRail
+              userName={
+                user ? user.firstName : panelData.user.name.split(" ")[0]
+              }
               avatarUrl={user?.profilePicture}
             />
           </div>
@@ -207,10 +209,12 @@ const Sidebar: React.FC = () => {
               <div className="mt-6 border-t pt-3 flex items-center justify-between">
                 <div className="min-w-0">
                   <p className="text-sm font-semibold truncate">
-                    {panelData.user.name}
+                    {user
+                      ? `${user.firstName} ${user.lastName}`
+                      : panelData.user.name}
                   </p>
                   <p className="text-xs text-muted-foreground truncate">
-                    {panelData.user.email}
+                    {user?.email || panelData.user.email}
                   </p>
                 </div>
                 <button
@@ -230,7 +234,7 @@ const Sidebar: React.FC = () => {
         isOpen={showLogoutModal}
         onClose={handleCancelLogout}
         onConfirm={handleConfirmLogout}
-        userName={panelData.user.name.split(" ")[0]}
+        userName={user?.firstName || panelData.user.name.split(" ")[0]}
       />
 
       {/* Upload Modal */}

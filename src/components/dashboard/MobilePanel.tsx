@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Logout01Icon, Cancel01Icon } from "hugeicons-react";
 import { LogoutModal } from "@/components/modals";
 import { panelData } from "@/data/panel";
+import { useAuth } from "@/hooks/useAuth";
 
 interface MobilePanelProps {
   isOpen: boolean;
@@ -19,8 +20,10 @@ const MobilePanel: React.FC<MobilePanelProps> = ({
   onLogout,
   showLogoutModal,
   onConfirmLogout,
-  onCancelLogout
+  onCancelLogout,
 }) => {
+  const { user } = useAuth();
+
   // Close panel when logout modal opens
   useEffect(() => {
     if (showLogoutModal && isOpen) {
@@ -72,17 +75,25 @@ const MobilePanel: React.FC<MobilePanelProps> = ({
               <div className="flex-1 overflow-y-auto p-6">
                 {/* Announcement */}
                 <div className="mb-6">
-                  <h4 className="text-sm font-semibold mb-2">{panelData.announcement.title}</h4>
+                  <h4 className="text-sm font-semibold mb-2">
+                    {panelData.announcement.title}
+                  </h4>
                   <div className="h-24 rounded-xl border bg-white/70 p-3 flex items-center justify-center">
-                    <p className="text-xs text-gray-600 text-center">{panelData.announcement.content}</p>
+                    <p className="text-xs text-gray-600 text-center">
+                      {panelData.announcement.content}
+                    </p>
                   </div>
                 </div>
 
                 {/* Recents */}
                 <div className="mb-6">
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-sm font-semibold">{panelData.recents.title}</h4>
-                    <span className="text-xs text-brand">{panelData.recents.viewAllText}</span>
+                    <h4 className="text-sm font-semibold">
+                      {panelData.recents.title}
+                    </h4>
+                    <span className="text-xs text-brand">
+                      {panelData.recents.viewAllText}
+                    </span>
                   </div>
                   <ul className="space-y-1 text-xs text-gray-700">
                     {panelData.recents.items.map((item, index) => (
@@ -95,18 +106,24 @@ const MobilePanel: React.FC<MobilePanelProps> = ({
               {/* User Info - Fixed at Bottom */}
               <div className="border-t pt-4 px-6 pb-6">
                 <div className="flex items-center gap-3 mb-4">
-                  <img 
-                    src={panelData.user.avatar} 
-                    className="w-10 h-10 rounded-full" 
-                    alt="User" 
+                  <img
+                    src={user?.profilePicture || panelData.user.avatar}
+                    className="w-10 h-10 rounded-full object-cover"
+                    alt="User"
                   />
                   <div>
-                    <p className="text-sm font-semibold">{panelData.user.name}</p>
-                    <p className="text-xs text-muted-foreground">{panelData.user.email}</p>
+                    <p className="text-sm font-semibold">
+                      {user
+                        ? `${user.firstName} ${user.lastName}`
+                        : panelData.user.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {user?.email || panelData.user.email}
+                    </p>
                   </div>
                 </div>
-                
-                <button 
+
+                <button
                   onClick={onLogout}
                   className="w-full text-sm text-white bg-red-600 hover:bg-red-700 rounded-lg px-4 py-2 flex items-center justify-center gap-2 transition-colors"
                 >
@@ -124,7 +141,7 @@ const MobilePanel: React.FC<MobilePanelProps> = ({
         isOpen={showLogoutModal}
         onClose={onCancelLogout}
         onConfirm={onConfirmLogout}
-        userName={panelData.user.name.split(' ')[0]}
+        userName={user?.firstName || panelData.user.name.split(" ")[0]}
       />
     </>
   );
