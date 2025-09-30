@@ -152,7 +152,10 @@ const Sidebar: React.FC = () => {
             </div>
 
             {/* User avatar fixed on rail bottom */}
-            <UserRail userName={panelData.user.name.split(" ")[0]} />
+            <UserRail 
+              userName={user ? user.firstName : panelData.user.name.split(" ")[0]}
+              avatarUrl={user?.profilePicture}
+            />
           </div>
         </div>
 

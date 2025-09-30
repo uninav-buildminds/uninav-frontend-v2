@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { SelectModal, SelectOption } from "@/components/dashboard/SelectModal";
+import {
+  CustomSelect,
+  CustomSelectOption,
+} from "@/components/dashboard/CustomSelect";
 import {
   Tag01Icon,
   Image01Icon,
@@ -48,19 +51,19 @@ const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   // Define options for dropdowns
-  const visibilityOptions: SelectOption[] = [
+  const visibilityOptions: CustomSelectOption[] = [
     { value: "Public", label: "Public" },
     { value: "Private", label: "Private" },
     { value: "Unlisted", label: "Unlisted" },
   ];
 
-  const accessRestrictionsOptions: SelectOption[] = [
+  const accessRestrictionsOptions: CustomSelectOption[] = [
     { value: "Downloadable", label: "Downloadable" },
     { value: "View Only", label: "View Only" },
     { value: "Restricted", label: "Restricted" },
   ];
 
-  const classificationOptions: SelectOption[] = [
+  const classificationOptions: CustomSelectOption[] = [
     { value: "exam-past-questions", label: "Exam Past Questions" },
     { value: "lecture-notes", label: "Lecture Notes" },
     { value: "assignments", label: "Assignments" },
@@ -110,7 +113,7 @@ const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
 
           {/* Classification */}
           <div>
-            <SelectModal
+            <CustomSelect
               label="Select Upload Classification (Optional)"
               value={classification}
               onChange={onClassificationChange}
@@ -122,7 +125,7 @@ const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
           {/* Visibility and Access Restrictions - Same Line */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <SelectModal
+              <CustomSelect
                 label="Visibility"
                 value={visibility}
                 onChange={onVisibilityChange}
@@ -131,7 +134,7 @@ const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
             </div>
 
             <div>
-              <SelectModal
+              <CustomSelect
                 label="Access Restrictions"
                 value={accessRestrictions}
                 onChange={onAccessRestrictionsChange}
