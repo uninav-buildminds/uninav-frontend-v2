@@ -7,7 +7,6 @@ import {
   Download01Icon,
   ArrowDown01Icon,
 } from "hugeicons-react";
-import { SelectCourse } from "./SelectCourse";
 
 interface AdvancedOptionsProps {
   visibility: string;
@@ -17,7 +16,6 @@ interface AdvancedOptionsProps {
   selectedImage: File | null;
   description: string;
   classification: string;
-  targetCourseId: string;
   onVisibilityChange: (value: string) => void;
   onAccessRestrictionsChange: (value: string) => void;
   onTagAdd: (e: React.KeyboardEvent) => void;
@@ -26,7 +24,6 @@ interface AdvancedOptionsProps {
   onImageChange: (file: File | null) => void;
   onDescriptionChange: (value: string) => void;
   onClassificationChange: (value: string) => void;
-  onTargetCourseIdChange: (value: string) => void;
   imageInputRef: React.RefObject<HTMLInputElement>;
 }
 
@@ -38,7 +35,6 @@ const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
   selectedImage,
   description,
   classification,
-  targetCourseId,
   onVisibilityChange,
   onAccessRestrictionsChange,
   onTagAdd,
@@ -47,7 +43,6 @@ const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
   onImageChange,
   onDescriptionChange,
   onClassificationChange,
-  onTargetCourseIdChange,
   imageInputRef,
 }) => {
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -121,16 +116,6 @@ const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
               onChange={onClassificationChange}
               options={classificationOptions}
               placeholder="e.g., Exam past question and Answers"
-              searchable={true}
-            />
-          </div>
-
-          {/* Course Selection */}
-          <div>
-            <SelectCourse
-              label="Target Course (Optional)"
-              currentValue={targetCourseId}
-              onChange={onTargetCourseIdChange}
             />
           </div>
 

@@ -23,7 +23,6 @@ interface SelectModalProps {
   placeholder?: string;
   disabled?: boolean;
   className?: string;
-  searchable?: boolean;
   displayValue?: (value: string) => string;
   loading?: boolean;
   emptyMessage?: string;
@@ -38,25 +37,13 @@ export const SelectModal: React.FC<SelectModalProps> = ({
   placeholder = "Select an option...",
   disabled = false,
   className = "",
-  searchable = false,
   displayValue,
   loading = false,
   emptyMessage = "No options found.",
   label,
   error,
 }) => {
-  const [query, setQuery] = React.useState("");
-
   const selectedOption = options.find((option) => option.value === value);
-
-  const filteredOptions = React.useMemo(() => {
-    if (!searchable || query === "") {
-      return options;
-    }
-    return options.filter((option) =>
-      option.label.toLowerCase().includes(query.toLowerCase())
-    );
-  }, [options, query, searchable]);
 
   const getDisplayValue = () => {
     if (loading) return "Loading...";
@@ -79,7 +66,7 @@ export const SelectModal: React.FC<SelectModalProps> = ({
           const selectedValue = newValue || "";
           onChange(selectedValue);
         }}
-        onClose={() => setQuery("")}
+        onClose={() => {}}
         disabled={disabled}
       >
         {({ open }) => (
@@ -98,14 +85,9 @@ export const SelectModal: React.FC<SelectModalProps> = ({
                   "placeholder:text-muted-foreground"
                 )}
                 displayValue={getDisplayValue}
-                onChange={
-                  searchable
-                    ? (event) => setQuery(event.target.value)
-                    : undefined
-                }
                 placeholder={placeholder}
                 disabled={disabled || loading}
-                readOnly={!searchable}
+                readOnly={true}
               />
               <ComboboxButton className="absolute inset-y-0 right-0 flex items-center pr-2">
                 <ChevronsUpDown
@@ -133,12 +115,12 @@ export const SelectModal: React.FC<SelectModalProps> = ({
                       <span>Loading...</span>
                     </div>
                   </div>
-                ) : filteredOptions.length === 0 ? (
+                ) : options.length === 0 ? (
                   <div className="relative cursor-default select-none py-2 px-4 text-gray-700">
                     {emptyMessage}
                   </div>
                 ) : (
-                  filteredOptions.map((option) => (
+                  options.map((option) => (
                     <ComboboxOption
                       key={option.value}
                       value={option.value}

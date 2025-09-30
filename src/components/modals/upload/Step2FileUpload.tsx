@@ -23,6 +23,8 @@ import {
   generateDefaultTitle,
 } from "@/lib/utils/inferMaterialType";
 import { CreateMaterialFileForm } from "@/api/materials.api";
+import { VisibilityEnum, RestrictionEnum } from "@/lib/types/material.types";
+import { SelectCourse } from "./shared/SelectCourse";
 
 interface Step2FileUploadProps {
   onComplete: (data: CreateMaterialFileForm) => void;
@@ -54,8 +56,8 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
     resolver: zodResolver(uploadFileSchema),
     mode: "onBlur",
     defaultValues: {
-      visibility: "Public",
-      accessRestrictions: "Downloadable",
+      visibility: VisibilityEnum.PUBLIC,
+      accessRestrictions: RestrictionEnum.DOWNLOADABLE,
       tags: [],
     },
   });
@@ -278,6 +280,15 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
         </div>
       </div>
 
+      {/* Target Course Selection */}
+      <div className="space-y-3">
+        <SelectCourse
+          label="Target Course (Optional)"
+          currentValue={targetCourseId}
+          onChange={handleTargetCourseIdChange}
+        />
+      </div>
+
       <AdvancedOptions
         visibility={watchedValues.visibility}
         accessRestrictions={watchedValues.accessRestrictions}
@@ -286,10 +297,11 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
         selectedImage={selectedImage}
         description={watchedValues.description || ""}
         classification={classification}
-        targetCourseId={targetCourseId}
-        onVisibilityChange={(value) => setValue("visibility", value)}
+        onVisibilityChange={(value) =>
+          setValue("visibility", value as VisibilityEnum)
+        }
         onAccessRestrictionsChange={(value) =>
-          setValue("accessRestrictions", value)
+          setValue("accessRestrictions", value as RestrictionEnum)
         }
         onTagAdd={handleTagAdd}
         onTagRemove={handleTagRemove}
@@ -297,7 +309,6 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
         onImageChange={setSelectedImage}
         onDescriptionChange={(value) => setValue("description", value)}
         onClassificationChange={handleClassificationChange}
-        onTargetCourseIdChange={handleTargetCourseIdChange}
         imageInputRef={imageInputRef}
       />
 
