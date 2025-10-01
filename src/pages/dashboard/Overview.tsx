@@ -344,7 +344,7 @@ const Overview: React.FC = () => {
                 />
               )}
 
-              {/* Recommendations */}
+              {/* Recommendations - Grid layout with 2 rows */}
               <MaterialsSection
                 title="Recommendations"
                 materials={fetchRecommendations}
@@ -354,6 +354,7 @@ const Overview: React.FC = () => {
                 onShare={handleShare}
                 onRead={handleRead}
                 scrollStep={280}
+                layout="grid"
               />
             </div>
           </>

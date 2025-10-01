@@ -124,7 +124,7 @@ const Libraries: React.FC = () => {
   };
 
   const handleRead = (materialId: string) => {
-    console.log(`Read material ${materialId}`);
+    navigate(`/material/${materialId}`);
   };
 
   const handleSavedEmptyStateAction = () => {

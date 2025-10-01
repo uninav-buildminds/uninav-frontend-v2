@@ -69,14 +69,20 @@ export function mapRecommendationToMaterial(
     visibility: rec.visibility as any, // VisibilityEnum
     restriction: rec.restriction as any, // RestrictionEnum
     targetCourseId: rec.targetCourseId,
-    resourceAddress: rec.previewUrl || undefined,
-    metaData: rec.metaData,
+    previewUrl: rec.previewUrl || undefined,
     likes: rec.likes,
     downloads: rec.downloads,
     views: rec.views,
     reviewStatus: rec.reviewStatus as any, // ApprovalStatusEnum
     creator: rec.creator,
-    targetCourse: rec.targetCourse,
+    targetCourse: rec.targetCourse
+      ? {
+          ...rec.targetCourse,
+          reviewStatus: "approved" as any, // Default to approved for displayed materials
+          createdAt: rec.createdAt,
+          updatedAt: rec.updatedAt,
+        }
+      : undefined,
     createdAt: rec.createdAt,
     updatedAt: rec.updatedAt,
   };

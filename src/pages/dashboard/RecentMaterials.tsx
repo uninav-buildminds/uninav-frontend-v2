@@ -1,21 +1,52 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import MaterialsLayout from "@/components/dashboard/MaterialsLayout";
 import GridMaterialsSection from "@/components/dashboard/GridMaterialsSection";
-import { recentMaterials, mockToMaterial } from "@/data/materials";
+import { getRecentMaterials } from "@/api/materials.api";
+import { Material } from "@/lib/types/material.types";
+import { toast } from "sonner";
 
 const RecentMaterials: React.FC = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredMaterials, setFilteredMaterials] = useState(
-    recentMaterials.map(mockToMaterial)
-  );
-  const [showEmptyState, setShowEmptyState] = useState(false);
+  const [allMaterials, setAllMaterials] = useState<Material[]>([]);
+  const [filteredMaterials, setFilteredMaterials] = useState<Material[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isNavigating, setIsNavigating] = useState(false);
 
+  // Fetch recent materials on component mount
+  useEffect(() => {
+    const loadRecentMaterials = async () => {
+      try {
+        setIsLoading(true);
+        const data = await getRecentMaterials();
+
+        // Handle both direct array and API response formats
+        let materials: Material[] = [];
+        if (Array.isArray(data)) {
+          materials = data;
+        } else if (data?.data?.items) {
+          materials = data.data.items;
+        }
+
+        setAllMaterials(materials);
+        setFilteredMaterials(materials);
+      } catch (error: any) {
+        console.error("Error fetching recent materials:", error);
+        toast.error(error.message || "Failed to load recent materials");
+        setAllMaterials([]);
+        setFilteredMaterials([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadRecentMaterials();
+  }, []);
+
   // Search suggestions based on material names
-  const searchSuggestions = recentMaterials
-    .map((material) => material.name)
+  const searchSuggestions = allMaterials
+    .map((material) => material.label)
     .filter(Boolean);
 
   const handleSearch = (query: string) => {
@@ -23,13 +54,11 @@ const RecentMaterials: React.FC = () => {
 
     if (query.trim() === "") {
       // If search is empty, show all materials
-      setFilteredMaterials(recentMaterials.map(mockToMaterial));
+      setFilteredMaterials(allMaterials);
     } else {
-      const filtered = recentMaterials
-        .filter((material) =>
-          material.name.toLowerCase().includes(query.toLowerCase())
-        )
-        .map(mockToMaterial);
+      const filtered = allMaterials.filter((material) =>
+        material.label.toLowerCase().includes(query.toLowerCase())
+      );
       setFilteredMaterials(filtered);
     }
   };
@@ -67,19 +96,9 @@ const RecentMaterials: React.FC = () => {
       searchPlaceholder="Search recent materials..."
       searchSuggestions={searchSuggestions}
     >
-      {/* Toggle Button for Testing */}
-      <div className="mb-4 flex justify-end">
-        <button
-          onClick={() => setShowEmptyState(!showEmptyState)}
-          className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
-        >
-          {showEmptyState ? "Show Materials" : "Show Empty State"}
-        </button>
-      </div>
-
       <GridMaterialsSection
         title=""
-        materials={showEmptyState ? [] : filteredMaterials}
+        materials={filteredMaterials}
         onViewAll={() => {}}
         onFilter={handleFilter}
         onDownload={handleDownload}
@@ -88,7 +107,7 @@ const RecentMaterials: React.FC = () => {
         showViewAll={false}
         emptyStateType="recent"
         onEmptyStateAction={handleEmptyStateAction}
-        isLoading={isNavigating}
+        isLoading={isLoading || isNavigating}
       />
     </MaterialsLayout>
   );

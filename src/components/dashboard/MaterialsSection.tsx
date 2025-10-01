@@ -78,7 +78,14 @@ export function mapRecommendationToMaterial(
     views: rec.views,
     reviewStatus: rec.reviewStatus as any, // ApprovalStatusEnum
     creator: rec.creator,
-    targetCourse: rec.targetCourse,
+    targetCourse: rec.targetCourse
+      ? {
+          ...rec.targetCourse,
+          reviewStatus: "approved" as any, // Default to approved for displayed materials
+          createdAt: rec.createdAt,
+          updatedAt: rec.updatedAt,
+        }
+      : undefined,
     createdAt: rec.createdAt,
     updatedAt: rec.updatedAt,
   };
@@ -102,6 +109,7 @@ type MaterialsSectionProps = {
     | "uploads";
   onEmptyStateAction?: () => void;
   isLoading?: boolean;
+  layout?: "rail" | "grid"; // rail = horizontal scroll, grid = 2-row grid
 };
 
 const MaterialsSection: React.FC<MaterialsSectionProps> = ({
@@ -117,6 +125,7 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
   emptyStateType = "recent",
   onEmptyStateAction,
   isLoading = false,
+  layout = "rail",
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -414,61 +423,77 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
         </div>
       </div>
 
-      {/* Materials rail */}
-      <div className="relative">
-        {/* Soft gradient edges (only when scrolling is possible) */}
-        {canScrollLeft && (
-          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-white/95 via-white/70 to-transparent z-sticky" />
-        )}
-        {canScrollRight && (
-          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-white/95 via-white/70 to-transparent z-sticky" />
-        )}
-
-        {/* Left Arrow */}
-        {canScrollLeft && (
-          <button
-            onClick={() => scrollByAmount(-scrollStep)}
-            className="absolute left-2 top-1/2 -translate-y-1/2 z-modal p-2 bg-white/90 backdrop-blur rounded-full shadow-md border border-gray-200 hover:bg-white"
-            aria-label="Scroll left"
-          >
-            <ArrowLeft01Icon size={16} className="text-brand" />
-          </button>
-        )}
-
-        {/* Right Arrow */}
-        {canScrollRight && (
-          <button
-            onClick={() => scrollByAmount(scrollStep)}
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-modal p-2 bg-white/90 backdrop-blur rounded-full shadow-md border border-gray-200 hover:bg-white"
-            aria-label="Scroll right"
-          >
-            <ArrowRight01Icon size={16} className="text-brand" />
-          </button>
-        )}
-
-        {/* Scroll container */}
-        <div
-          ref={scrollContainerRef}
-          onScroll={updateScrollButtons}
-          className="flex gap-6 overflow-x-auto overflow-y-visible pb-2 scrollbar-hide"
-        >
-          {sortedMaterials.map((material) => (
-            <div
+      {/* Materials display - either rail (horizontal scroll) or grid (2 rows) */}
+      {layout === "grid" ? (
+        // Grid layout - 2 rows with responsive columns
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 grid-rows-2">
+          {sortedMaterials.slice(0, 12).map((material) => (
+            <MaterialCard
               key={material.id}
-              className="flex-shrink-0 w-64 sm:w-72 md:w-80 lg:w-72 xl:w-64 2xl:w-72"
-            >
-              <MaterialCard
-                material={material}
-                onDownload={onDownload}
-                onShare={onShare}
-                onRead={onRead}
-              />
-            </div>
+              material={material}
+              onDownload={onDownload}
+              onShare={onShare}
+              onRead={onRead}
+            />
           ))}
-          {/* Add padding to the last item to ensure proper spacing */}
-          <div className="flex-shrink-0 w-6" />
         </div>
-      </div>
+      ) : (
+        // Rail layout - horizontal scroll
+        <div className="relative">
+          {/* Soft gradient edges (only when scrolling is possible) */}
+          {canScrollLeft && (
+            <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-white/95 via-white/70 to-transparent z-sticky" />
+          )}
+          {canScrollRight && (
+            <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-white/95 via-white/70 to-transparent z-sticky" />
+          )}
+
+          {/* Left Arrow */}
+          {canScrollLeft && (
+            <button
+              onClick={() => scrollByAmount(-scrollStep)}
+              className="absolute left-2 top-1/2 -translate-y-1/2 z-modal p-2 bg-white/90 backdrop-blur rounded-full shadow-md border border-gray-200 hover:bg-white"
+              aria-label="Scroll left"
+            >
+              <ArrowLeft01Icon size={16} className="text-brand" />
+            </button>
+          )}
+
+          {/* Right Arrow */}
+          {canScrollRight && (
+            <button
+              onClick={() => scrollByAmount(scrollStep)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 z-modal p-2 bg-white/90 backdrop-blur rounded-full shadow-md border border-gray-200 hover:bg-white"
+              aria-label="Scroll right"
+            >
+              <ArrowRight01Icon size={16} className="text-brand" />
+            </button>
+          )}
+
+          {/* Scroll container */}
+          <div
+            ref={scrollContainerRef}
+            onScroll={updateScrollButtons}
+            className="flex gap-6 overflow-x-auto overflow-y-visible pb-2 scrollbar-hide"
+          >
+            {sortedMaterials.map((material) => (
+              <div
+                key={material.id}
+                className="flex-shrink-0 w-64 sm:w-72 md:w-80 lg:w-72 xl:w-64 2xl:w-72"
+              >
+                <MaterialCard
+                  material={material}
+                  onDownload={onDownload}
+                  onShare={onShare}
+                  onRead={onRead}
+                />
+              </div>
+            ))}
+            {/* Add padding to the last item to ensure proper spacing */}
+            <div className="flex-shrink-0 w-6" />
+          </div>
+        </div>
+      )}
     </section>
   );
 };
