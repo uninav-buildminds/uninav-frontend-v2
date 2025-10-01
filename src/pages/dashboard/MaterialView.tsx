@@ -399,11 +399,11 @@ const MaterialView: React.FC = () => {
       </div>
 
       <div className="p-4 sm:p-6">
-        <div className="flex gap-6 h-[calc(100vh-200px)]">
+        <div className="flex gap-6 h-[calc(100vh-180px)]">
           {/* Main Content Area - Document Viewer */}
           <div className="flex-1 flex flex-col">
             {/* Document Viewer */}
-            <div className="flex-1 bg-gray-100 rounded-t-3xl p-4">
+            <div className="flex-1 bg-gray-100 rounded-3xl overflow-hidden">
               {renderViewer()}
             </div>
           </div>
