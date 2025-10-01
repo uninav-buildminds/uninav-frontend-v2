@@ -4,7 +4,8 @@
  */
 
 import React, { useState, useEffect } from "react";
-import { ChevronRight, Download, Eye, Loader2 } from "lucide-react";
+import { ChevronRight, Loader2 } from "lucide-react";
+import { Download01Icon } from "hugeicons-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { listFolderFiles, getFileMetadata, GDriveFile } from "@/api/gdrive.api";
@@ -218,29 +219,15 @@ const GDriveFolderBrowser: React.FC<GDriveFolderBrowserProps> = ({
 
                   {/* Actions */}
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    {!isFolder && canView && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleFileClick(file);
-                        }}
-                        className="gap-1"
-                      >
-                        <Eye size={14} />
-                        View
-                      </Button>
-                    )}
                     {!isFolder && (
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={(e) => handleDownload(file, e)}
-                        className="gap-1"
+                        className="h-8 w-8 p-0"
+                        title="Download"
                       >
-                        <Download size={14} />
-                        Download
+                        <Download01Icon size={16} />
                       </Button>
                     )}
                     {isFolder && (

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   Home01Icon,
   FolderLibraryIcon,
@@ -16,8 +16,10 @@ import UserRail from "./UserRail";
 import { LogoutModal, UploadModal } from "@/components/modals";
 import { panelData } from "@/data/panel";
 import { useAuth } from "@/hooks/useAuth";
+import RecentsList from "./RecentsList";
 
 const Sidebar: React.FC = () => {
+  const navigate = useNavigate();
   const [showPanel, setShowPanel] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -191,18 +193,15 @@ const Sidebar: React.FC = () => {
 
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-sm font-semibold">
-                    {panelData.recents.title}
-                  </h4>
-                  <span className="text-xs text-brand">
-                    {panelData.recents.viewAllText}
-                  </span>
+                  <h4 className="text-sm font-semibold">Recents</h4>
+                  <button
+                    onClick={() => navigate("/dashboard/recent")}
+                    className="text-xs text-brand hover:underline"
+                  >
+                    View All
+                  </button>
                 </div>
-                <ul className="space-y-1 text-xs text-gray-700">
-                  {panelData.recents.items.map((item, index) => (
-                    <li key={index}>{item}</li>
-                  ))}
-                </ul>
+                <RecentsList limit={5} />
               </div>
 
               {/* User summary at bottom (no avatar) */}

@@ -1,9 +1,11 @@
 import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Logout01Icon, Cancel01Icon } from "hugeicons-react";
 import { LogoutModal } from "@/components/modals";
 import { panelData } from "@/data/panel";
 import { useAuth } from "@/hooks/useAuth";
+import RecentsList from "./RecentsList";
 
 interface MobilePanelProps {
   isOpen: boolean;
@@ -23,6 +25,7 @@ const MobilePanel: React.FC<MobilePanelProps> = ({
   onCancelLogout,
 }) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   // Close panel when logout modal opens
   useEffect(() => {
@@ -88,18 +91,18 @@ const MobilePanel: React.FC<MobilePanelProps> = ({
                 {/* Recents */}
                 <div className="mb-6">
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-sm font-semibold">
-                      {panelData.recents.title}
-                    </h4>
-                    <span className="text-xs text-brand">
-                      {panelData.recents.viewAllText}
-                    </span>
+                    <h4 className="text-sm font-semibold">Recents</h4>
+                    <button
+                      onClick={() => {
+                        navigate("/dashboard/recent");
+                        onClose();
+                      }}
+                      className="text-xs text-brand hover:underline"
+                    >
+                      View All
+                    </button>
                   </div>
-                  <ul className="space-y-1 text-xs text-gray-700">
-                    {panelData.recents.items.map((item, index) => (
-                      <li key={index}>{item}</li>
-                    ))}
-                  </ul>
+                  <RecentsList limit={5} />
                 </div>
               </div>
 

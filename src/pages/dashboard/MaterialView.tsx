@@ -323,7 +323,7 @@ const MaterialView: React.FC = () => {
       <div className="bg-gradient-to-br from-[theme(colors.dashboard.gradientFrom)] to-[theme(colors.dashboard.gradientTo)]">
         <div className="px-4 py-3">
           <div className="flex items-center justify-between">
-            {/* Breadcrumb and Page Controls */}
+            {/* Breadcrumb */}
             <div className="flex items-center gap-4">
               <button
                 onClick={handleBack}
@@ -332,35 +332,6 @@ const MaterialView: React.FC = () => {
                 <ArrowLeft size={16} />
                 <span>Overview</span>
               </button>
-
-              {showPDFControls && (
-                <>
-                  <span className="text-gray-400">•</span>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handlePreviousPage}
-                      disabled={currentPage === 1}
-                      className="bg-white/80 hover:bg-white h-7 w-7 p-0"
-                    >
-                      <ChevronLeft size={14} />
-                    </Button>
-                    <span className="text-sm text-gray-700 font-medium">
-                      {currentPage} / {totalPages}
-                    </span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleNextPage}
-                      disabled={currentPage === totalPages}
-                      className="bg-white/80 hover:bg-white h-7 w-7 p-0"
-                    >
-                      <ChevronRight size={14} />
-                    </Button>
-                  </div>
-                </>
-              )}
             </div>
 
             {/* Action Buttons */}
