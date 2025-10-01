@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import MetricsSection from "@/components/dashboard/MetricsSection";
-import MaterialsSection from "@/components/dashboard/MaterialsSection";
+import MaterialsSection, {
+  MaterialWithLastViewed,
+} from "@/components/dashboard/MaterialsSection";
 import SearchResults from "@/components/dashboard/SearchResults";
 import {
   Award01Icon,
@@ -23,7 +25,9 @@ import { useAuth } from "@/hooks/useAuth";
 const Overview: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [recentMaterials, setRecentMaterials] = useState<Material[]>([]);
+  const [recentMaterials, setRecentMaterials] = useState<
+    MaterialWithLastViewed[]
+  >([]);
   const [isLoadingRecent, setIsLoadingRecent] = useState(true);
 
   // Search state
@@ -240,14 +244,13 @@ const Overview: React.FC = () => {
     const loadRecentMaterials = async () => {
       try {
         setIsLoadingRecent(true);
-        const data = await getRecentMaterials();
-        console.log("Fetched recent materials:", data);
+        const response = await getRecentMaterials();
+        console.log("Fetched recent materials:", response);
 
-        // Handle both direct array and API response formats
-        if (Array.isArray(data)) {
-          setRecentMaterials(data);
-        } else if (data?.data?.items) {
-          setRecentMaterials(data.data.items);
+        // getRecentMaterials returns a paginated response with items already including lastViewedAt
+        if (response.status === "success" && response.data?.items) {
+          // Materials already have lastViewedAt included from backend
+          setRecentMaterials(response.data.items);
         } else {
           setRecentMaterials([]);
         }

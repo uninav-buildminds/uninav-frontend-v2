@@ -10,6 +10,11 @@ import MaterialCard from "./MaterialCard";
 import EmptyState from "./EmptyState";
 import { motion, AnimatePresence } from "framer-motion";
 
+// Extended Material type for recent materials that includes lastViewedAt
+export interface MaterialWithLastViewed extends Material {
+  lastViewedAt?: string;
+}
+
 export interface MaterialRecommendation {
   id: string;
   type: string;
@@ -93,7 +98,7 @@ export function mapRecommendationToMaterial(
 
 type MaterialsSectionProps = {
   title: string;
-  materials: Material[] | (() => Promise<any>);
+  materials: Material[] | MaterialWithLastViewed[] | (() => Promise<any>);
   onViewAll?: () => void;
   onFilter?: () => void;
   onDownload?: (id: string) => void;
@@ -178,7 +183,7 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
   };
 
   // Memoize displayMaterials to avoid recalculating on every render
-  const displayMaterials: Material[] = useMemo(() => {
+  const displayMaterials: MaterialWithLastViewed[] = useMemo(() => {
     const mats =
       fetchedMaterials !== null
         ? fetchedMaterials
@@ -434,6 +439,7 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
               onDownload={onDownload}
               onShare={onShare}
               onRead={onRead}
+              lastViewedAt={material.lastViewedAt}
             />
           ))}
         </div>
@@ -486,6 +492,7 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
                   onDownload={onDownload}
                   onShare={onShare}
                   onRead={onRead}
+                  lastViewedAt={material.lastViewedAt}
                 />
               </div>
             ))}

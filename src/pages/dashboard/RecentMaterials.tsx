@@ -4,13 +4,18 @@ import MaterialsLayout from "@/components/dashboard/MaterialsLayout";
 import GridMaterialsSection from "@/components/dashboard/GridMaterialsSection";
 import { getRecentMaterials } from "@/api/materials.api";
 import { Material } from "@/lib/types/material.types";
+import { MaterialWithLastViewed } from "@/components/dashboard/MaterialsSection";
 import { toast } from "sonner";
 
 const RecentMaterials: React.FC = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
-  const [allMaterials, setAllMaterials] = useState<Material[]>([]);
-  const [filteredMaterials, setFilteredMaterials] = useState<Material[]>([]);
+  const [allMaterials, setAllMaterials] = useState<MaterialWithLastViewed[]>(
+    []
+  );
+  const [filteredMaterials, setFilteredMaterials] = useState<
+    MaterialWithLastViewed[]
+  >([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isNavigating, setIsNavigating] = useState(false);
 
@@ -19,14 +24,13 @@ const RecentMaterials: React.FC = () => {
     const loadRecentMaterials = async () => {
       try {
         setIsLoading(true);
-        const data = await getRecentMaterials();
+        const response = await getRecentMaterials();
 
-        // Handle both direct array and API response formats
-        let materials: Material[] = [];
-        if (Array.isArray(data)) {
-          materials = data;
-        } else if (data?.data?.items) {
-          materials = data.data.items;
+        // getRecentMaterials returns a paginated response with items already including lastViewedAt
+        let materials: MaterialWithLastViewed[] = [];
+        if (response.status === "success" && response.data?.items) {
+          // Materials already have lastViewedAt included from backend
+          materials = response.data.items;
         }
 
         setAllMaterials(materials);
@@ -76,7 +80,7 @@ const RecentMaterials: React.FC = () => {
   };
 
   const handleRead = (materialId: string) => {
-    console.log(`Read material ${materialId}`);
+    navigate(`/material/${materialId}`);
   };
 
   const handleEmptyStateAction = () => {

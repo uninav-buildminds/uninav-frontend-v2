@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsRight,
+} from "lucide-react";
 import {
   Download01Icon,
   Share08Icon,
@@ -20,6 +25,10 @@ import { formatRelativeTime } from "@/lib/utils";
 import { Material, MaterialTypeEnum } from "@/lib/types/material.types";
 import { getMaterialById } from "@/api/materials.api";
 import { ResponseStatus } from "@/lib/types/response.types";
+import PDFViewer from "@/components/dashboard/viewers/PDFViewer";
+import GDriveFolderBrowser from "@/components/dashboard/viewers/GDriveFolderBrowser";
+import GDriveFileViewer from "@/components/dashboard/viewers/GDriveFileViewer";
+import { extractGDriveId, isGDriveFolder } from "@/lib/utils/gdriveUtils";
 
 const MaterialView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -33,6 +42,11 @@ const MaterialView: React.FC = () => {
   const [totalPages, setTotalPages] = useState(8);
   const [zoom, setZoom] = useState(100);
   const [relatedMaterials, setRelatedMaterials] = useState<Material[]>([]);
+  const [viewingGDriveFile, setViewingGDriveFile] = useState<{
+    fileId: string;
+    mimeType: string;
+  } | null>(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Fetch material data from API
   useEffect(() => {
@@ -126,6 +140,14 @@ const MaterialView: React.FC = () => {
     setCurrentPage((prev) => Math.min(prev + 1, totalPages));
   };
 
+  const handleViewGDriveFile = (fileId: string, mimeType: string) => {
+    setViewingGDriveFile({ fileId, mimeType });
+  };
+
+  const handleBackToFolder = () => {
+    setViewingGDriveFile(null);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -152,93 +174,207 @@ const MaterialView: React.FC = () => {
 
   const isBookmarkedMaterial = isBookmarked(material.id);
 
-  return (
-    <DashboardLayout>
-      {/* Header with Breadcrumb */}
-      <div className="bg-gradient-to-br from-[theme(colors.dashboard.gradientFrom)] to-[theme(colors.dashboard.gradientTo)]">
-        <div className="px-4 py-6">
-          <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
-            <button
-              onClick={handleBack}
-              className="flex items-center gap-1 hover:text-brand transition-colors"
+  // Determine which viewer to render
+  const renderViewer = () => {
+    // If viewing a specific file from GDrive folder
+    if (viewingGDriveFile) {
+      return (
+        <div className="h-full flex flex-col">
+          <div className="p-3 bg-white border-b border-gray-200 rounded-t-lg">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleBackToFolder}
+              className="gap-2"
             >
               <ArrowLeft size={16} />
-              <span>Overview</span>
-            </button>
-            <span>•</span>
-            <span>Recent Materials</span>
-            <span>•</span>
-            <span className="text-gray-900 font-medium">{material.label}</span>
+              Back to Folder
+            </Button>
           </div>
+          <div className="flex-1">
+            <GDriveFileViewer
+              fileId={viewingGDriveFile.fileId}
+              mimeType={viewingGDriveFile.mimeType}
+              zoom={zoom}
+              onZoomIn={handleZoomIn}
+              onZoomOut={handleZoomOut}
+            />
+          </div>
+        </div>
+      );
+    }
 
-          {/* Document Controls */}
+    // Handle Google Drive materials
+    if (
+      material.type === MaterialTypeEnum.GDRIVE &&
+      material.resource?.resourceAddress
+    ) {
+      const gdriveId = extractGDriveId(material.resource.resourceAddress);
+
+      if (!gdriveId) {
+        return (
+          <div className="h-full flex items-center justify-center text-gray-500">
+            <div className="text-center">
+              <div className="text-4xl mb-4">⚠️</div>
+              <p>Invalid Google Drive link</p>
+              <p className="text-sm text-gray-600 mt-2">
+                The provided link could not be processed.
+              </p>
+            </div>
+          </div>
+        );
+      }
+
+      // Check if it's a folder
+      if (gdriveId.type === "folder") {
+        return (
+          <GDriveFolderBrowser
+            folderId={gdriveId.id}
+            folderName={material.label}
+            onViewFile={handleViewGDriveFile}
+          />
+        );
+      }
+
+      // Single file from GDrive
+      return (
+        <GDriveFileViewer
+          fileId={gdriveId.id}
+          mimeType={
+            gdriveId.type === "doc"
+              ? "application/vnd.google-apps.document"
+              : gdriveId.type === "sheet"
+              ? "application/vnd.google-apps.spreadsheet"
+              : gdriveId.type === "presentation"
+              ? "application/vnd.google-apps.presentation"
+              : undefined
+          }
+          zoom={zoom}
+          onZoomIn={handleZoomIn}
+          onZoomOut={handleZoomOut}
+        />
+      );
+    }
+
+    // Handle regular PDF files
+    if (
+      material.type === MaterialTypeEnum.PDF &&
+      material.resource?.resourceAddress
+    ) {
+      return (
+        <PDFViewer
+          url={material.resource.resourceAddress}
+          title={material.label}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          zoom={zoom}
+          onPreviousPage={handlePreviousPage}
+          onNextPage={handleNextPage}
+          onZoomIn={handleZoomIn}
+          onZoomOut={handleZoomOut}
+          showControls={true}
+        />
+      );
+    }
+
+    // Handle other file types (images, videos, etc.)
+    if (material.resource?.resourceAddress) {
+      return (
+        <div className="h-full bg-white rounded-lg shadow-sm overflow-hidden">
+          <iframe
+            src={material.resource.resourceAddress}
+            className="w-full h-full border-0"
+            style={{
+              transform: `scale(${zoom / 100})`,
+              transformOrigin: "top left",
+            }}
+            title={material.label}
+          />
+        </div>
+      );
+    }
+
+    // Fallback when no resource address
+    return (
+      <div className="h-full flex items-center justify-center text-gray-500 bg-white rounded-lg">
+        <div className="text-center">
+          <div className="text-4xl mb-4">📄</div>
+          <p>Document preview not available</p>
+          <Button
+            onClick={handleDownload}
+            className="mt-4"
+            disabled={!material.resource?.resourceAddress}
+          >
+            Download to view
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
+  // Show controls only for non-GDrive PDFs (GDrive has its own built-in controls)
+  const showPDFControls =
+    material.type === MaterialTypeEnum.PDF && !viewingGDriveFile;
+  const showZoomControls = material.type === MaterialTypeEnum.PDF;
+
+  return (
+    <DashboardLayout>
+      {/* Header with Breadcrumb - Compact */}
+      <div className="bg-gradient-to-br from-[theme(colors.dashboard.gradientFrom)] to-[theme(colors.dashboard.gradientTo)]">
+        <div className="px-4 py-3">
           <div className="flex items-center justify-between">
+            {/* Breadcrumb and Page Controls */}
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handlePreviousPage}
-                  disabled={currentPage === 1}
-                  className="bg-white/80 hover:bg-white"
-                >
-                  <ChevronLeft size={16} />
-                </Button>
-                <span className="text-sm text-gray-700 font-medium">
-                  {currentPage} out of {totalPages}
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleNextPage}
-                  disabled={currentPage === totalPages}
-                  className="bg-white/80 hover:bg-white"
-                >
-                  <ChevronRight size={16} />
-                </Button>
-              </div>
+              <button
+                onClick={handleBack}
+                className="flex items-center gap-1 text-sm text-gray-600 hover:text-brand transition-colors"
+              >
+                <ArrowLeft size={16} />
+                <span>Overview</span>
+              </button>
+
+              {showPDFControls && (
+                <>
+                  <span className="text-gray-400">•</span>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handlePreviousPage}
+                      disabled={currentPage === 1}
+                      className="bg-white/80 hover:bg-white h-7 w-7 p-0"
+                    >
+                      <ChevronLeft size={14} />
+                    </Button>
+                    <span className="text-sm text-gray-700 font-medium">
+                      {currentPage} / {totalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleNextPage}
+                      disabled={currentPage === totalPages}
+                      className="bg-white/80 hover:bg-white h-7 w-7 p-0"
+                    >
+                      <ChevronRight size={14} />
+                    </Button>
+                  </div>
+                </>
+              )}
             </div>
 
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleZoomOut}
-                className="bg-white/80 hover:bg-white"
-              >
-                <Minimize01Icon size={16} />
-              </Button>
-              <span className="text-sm text-gray-700 font-medium min-w-[3rem] text-center">
-                {zoom}%
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleZoomIn}
-                className="bg-white/80 hover:bg-white"
-              >
-                <Maximize01Icon size={16} />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-white/80 hover:bg-white"
-              >
-                <Search01Icon size={16} />
-              </Button>
-            </div>
-
+            {/* Action Buttons */}
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleBookmark}
-                className={`bg-white/80 hover:bg-white ${
+                className={`bg-white/80 hover:bg-white h-7 w-7 p-0 ${
                   isBookmarkedMaterial ? "text-brand" : ""
                 }`}
               >
                 <Bookmark01Icon
-                  size={16}
+                  size={14}
                   className={isBookmarkedMaterial ? "fill-current" : ""}
                 />
               </Button>
@@ -246,16 +382,16 @@ const MaterialView: React.FC = () => {
                 variant="outline"
                 size="sm"
                 onClick={handleShare}
-                className="bg-white/80 hover:bg-white"
+                className="bg-white/80 hover:bg-white h-7 w-7 p-0"
               >
-                <Share08Icon size={16} />
+                <Share08Icon size={14} />
               </Button>
               <Button
                 onClick={handleDownload}
                 size="sm"
-                className="bg-brand text-white hover:bg-brand/90"
+                className="bg-brand text-white hover:bg-brand/90 h-7 px-3"
               >
-                <Download01Icon size={16} />
+                <Download01Icon size={14} />
               </Button>
             </div>
           </div>
@@ -268,79 +404,54 @@ const MaterialView: React.FC = () => {
           <div className="flex-1 flex flex-col">
             {/* Document Viewer */}
             <div className="flex-1 bg-gray-100 rounded-t-3xl p-4">
-              <div className="h-full bg-white rounded-lg shadow-sm overflow-hidden">
-                {material.resource?.resourceAddress ? (
-                  <iframe
-                    src={material.resource.resourceAddress}
-                    className="w-full h-full border-0"
-                    style={{
-                      transform: `scale(${zoom / 100})`,
-                      transformOrigin: "top left",
-                    }}
-                    title={material.label}
-                  />
-                ) : (
-                  <div className="h-full flex items-center justify-center text-gray-500">
-                    <div className="text-center">
-                      <div className="text-4xl mb-4">📄</div>
-                      <p>Document preview not available</p>
-                      <Button
-                        onClick={handleDownload}
-                        className="mt-4"
-                        disabled={!material.resource?.resourceAddress}
-                      >
-                        Download to view
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
+              {renderViewer()}
             </div>
           </div>
 
           {/* Right Sidebar - Material Info & Related Materials */}
-          <div className="w-80 bg-white rounded-t-3xl border border-gray-200 flex flex-col">
+          <div
+            className={`relative bg-white rounded-t-3xl border border-gray-200 flex flex-col transition-all duration-300 ${
+              sidebarCollapsed ? "w-0 border-0 overflow-hidden" : "w-72"
+            }`}
+          >
+            {/* Collapse Toggle Button - At Junction */}
+            <button
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className={`absolute ${
+                sidebarCollapsed ? "-left-8" : "-left-8"
+              } top-1/2 -translate-y-1/2 z-20 p-2 bg-brand/90 hover:bg-brand border-2 border-white rounded-full shadow-lg transition-all duration-300`}
+              aria-label={
+                sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
+              }
+            >
+              <ChevronsRight
+                size={18}
+                className={`text-white transition-transform duration-300 ${
+                  sidebarCollapsed ? "" : "rotate-180"
+                }`}
+              />
+            </button>
+
             {/* Material Information */}
-            <div className="p-6 border-b border-gray-200">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <h1 className="text-lg font-semibold text-gray-900 mb-2">
-                    {material.label}
-                  </h1>
-                  <p className="text-sm text-gray-600 mb-4">
-                    {material.description}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 ml-4">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleBookmark}
-                    className={isBookmarkedMaterial ? "text-brand" : ""}
-                  >
-                    <Bookmark01Icon
-                      size={16}
-                      className={isBookmarkedMaterial ? "fill-current" : ""}
-                    />
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={handleShare}>
-                    <Share08Icon size={16} />
-                  </Button>
-                  <Button
-                    onClick={handleDownload}
-                    size="sm"
-                    className="bg-brand text-white hover:bg-brand/90"
-                  >
-                    <Download01Icon size={16} />
-                  </Button>
-                </div>
-              </div>
+            <div className="p-4 border-b border-gray-200">
+              <h1 className="text-base font-semibold text-gray-900 mb-1.5">
+                {material.label}
+              </h1>
+              {material.description && (
+                <p className="text-xs text-gray-600 mb-3">
+                  {material.description}
+                </p>
+              )}
 
               {/* Tags */}
               {material.tags && material.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-4">
+                <div className="flex flex-wrap gap-1.5 mb-3">
                   {material.tags.map((tag, index) => (
-                    <Badge key={index} variant="secondary" className="text-xs">
+                    <Badge
+                      key={index}
+                      variant="secondary"
+                      className="text-xs py-0 px-2"
+                    >
                       {tag}
                     </Badge>
                   ))}
@@ -348,7 +459,7 @@ const MaterialView: React.FC = () => {
               )}
 
               {/* Material Metadata */}
-              <div className="space-y-2 text-sm">
+              <div className="space-y-1.5 text-xs">
                 {material.targetCourse && (
                   <>
                     <div className="flex justify-between">
@@ -413,64 +524,38 @@ const MaterialView: React.FC = () => {
             </div>
 
             {/* Related Materials */}
-            <div className="flex-1 p-6">
-              <h3 className="text-sm font-semibold text-gray-900 mb-4">
+            <div className="flex-1 p-4 overflow-y-auto">
+              <h3 className="text-sm font-semibold text-gray-900 mb-3">
                 Related Materials
               </h3>
-              <div className="space-y-4">
-                {relatedMaterials.map((relatedMaterial) => (
-                  <Card
-                    key={relatedMaterial.id}
-                    className="cursor-pointer hover:shadow-md transition-shadow"
-                  >
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium text-gray-900">
-                        {relatedMaterial.label}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                      <p className="text-xs text-gray-600 mb-3">
-                        {relatedMaterial.description}
-                      </p>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => toggleBookmark(relatedMaterial.id)}
-                            className="p-1"
-                          >
-                            <Bookmark01Icon
-                              size={14}
-                              className={
-                                isBookmarked(relatedMaterial.id)
-                                  ? "fill-current"
-                                  : ""
-                              }
-                            />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              navigate(`/material/${relatedMaterial.id}`)
-                            }
-                            className="p-1"
-                          >
-                            <Share08Icon size={14} />
-                          </Button>
-                        </div>
-                        <Button
-                          size="sm"
-                          className="bg-brand text-white hover:bg-brand/90"
-                        >
-                          <Download01Icon size={14} />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+              {relatedMaterials.length === 0 ? (
+                <p className="text-xs text-gray-500 text-center py-8">
+                  No related materials found
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {relatedMaterials.map((relatedMaterial) => (
+                    <Card
+                      key={relatedMaterial.id}
+                      className="cursor-pointer hover:shadow-md transition-shadow"
+                      onClick={() =>
+                        navigate(`/material/${relatedMaterial.id}`)
+                      }
+                    >
+                      <CardHeader className="pb-2 px-3 pt-3">
+                        <CardTitle className="text-xs font-medium text-gray-900">
+                          {relatedMaterial.label}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-0 px-3 pb-3">
+                        <p className="text-xs text-gray-600 line-clamp-2">
+                          {relatedMaterial.description}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>

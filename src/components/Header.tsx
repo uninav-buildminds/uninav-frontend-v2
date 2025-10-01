@@ -76,41 +76,32 @@ const Header: React.FC = () => {
         <div className="hidden md:flex items-center gap-3">
           {user && (
             <>
-              <Menubar className="bg-transparent border-0">
-                <MenubarMenu>
-                  <MenubarTrigger className="data-[state=open]:bg-transparent focus:bg-transparent px-0">
-                    <div className="h-9 w-9 rounded-full overflow-hidden ring-2 ring-brand/20 hover:ring-brand/50 transition-all cursor-pointer">
-                      {user.profilePicture ? (
-                        <img
-                          src={user.profilePicture}
-                          alt={`${user.firstName} ${user.lastName}`}
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <div className="h-full w-full bg-brand text-white flex items-center justify-center text-sm font-semibold">
-                          {getInitials(user.firstName, user.lastName)}
-                        </div>
-                      )}
+              <a
+                href="/dashboard"
+                className="flex items-center gap-2.5 px-3 py-2 rounded-full border border-gray-200 hover:border-brand/50 hover:bg-brand/5 transition-all cursor-pointer group"
+              >
+                <div className="h-9 w-9 rounded-full overflow-hidden ring-2 ring-brand/20 group-hover:ring-brand/50 transition-all">
+                  {user.profilePicture ? (
+                    <img
+                      src={user.profilePicture}
+                      alt={`${user.firstName} ${user.lastName}`}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="h-full w-full bg-brand text-white flex items-center justify-center text-xs font-semibold">
+                      {getInitials(user.firstName, user.lastName)}
                     </div>
-                  </MenubarTrigger>
-                  <MenubarContent>
-                    <MenubarItem>
-                      <Upload size={16} />
-                      <span className="ms-2">Upload</span>
-                    </MenubarItem>
-                    <MenubarItem>
-                      <LayoutDashboard size={16} />
-                      <a className="ms-2" href="/dashboard">
-                        Dashboard
-                      </a>
-                    </MenubarItem>
-                    <MenubarItem onClick={logOut}>
-                      <LogOut size={16} />
-                      <span className="ms-2">Logout</span>
-                    </MenubarItem>
-                  </MenubarContent>
-                </MenubarMenu>
-              </Menubar>
+                  )}
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-gray-700 group-hover:text-brand transition-colors leading-tight">
+                    {user.username}
+                  </span>
+                  <span className="text-[10px] text-gray-400 group-hover:text-gray-500 transition-colors leading-tight">
+                    Dashboard &gt;
+                  </span>
+                </div>
+              </a>
             </>
           )}
           {!user && isLoading && (

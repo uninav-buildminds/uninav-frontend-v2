@@ -154,7 +154,22 @@ export async function getMaterialRecommendations(
   }
 }
 
-export async function getRecentMaterials() {
+// Recent materials are returned with lastViewedAt included in each material object
+export interface RecentMaterial extends Material {
+  lastViewedAt: string;
+}
+
+export async function getRecentMaterials(): Promise<
+  Response<{
+    items: RecentMaterial[];
+    pagination: {
+      total: number;
+      page: number;
+      pageSize: number;
+      totalPages: number;
+    };
+  }>
+> {
   try {
     const response = await httpClient.get("/materials/recent");
     return response.data;

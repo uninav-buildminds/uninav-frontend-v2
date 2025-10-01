@@ -59,6 +59,7 @@ interface MaterialCardProps {
   onDownload?: (id: string) => void;
   onShare?: (id: string) => void;
   onRead?: (id: string) => void;
+  lastViewedAt?: string; // For recent materials - shows when the user last viewed this material
 }
 
 const MaterialCard: React.FC<MaterialCardProps> = ({
@@ -66,6 +67,7 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
   onDownload,
   onShare,
   onRead,
+  lastViewedAt,
 }) => {
   const { id, label, createdAt, downloads, tags, views, likes } = material;
   const previewImage = material.previewUrl || "/placeholder.svg";
@@ -168,7 +170,11 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
         {/* Metadata and Action Icons */}
         <div className="flex items-center justify-between">
           <div className="text-xs text-gray-500 truncate flex-1">
-            {formatRelativeTime(createdAt)} • {views} views • {likes} likes
+            {lastViewedAt
+              ? `Viewed ${formatRelativeTime(lastViewedAt)}`
+              : `${formatRelativeTime(
+                  createdAt
+                )} • ${views} views • ${likes} likes`}
           </div>
 
           {/* Action Icons - Download and Share */}

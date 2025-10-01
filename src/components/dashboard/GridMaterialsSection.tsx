@@ -1,5 +1,6 @@
 import Pic from "../../../public/placeholder.svg";
 import { Material } from "../../lib/types/material.types";
+import { MaterialWithLastViewed } from "./MaterialsSection";
 
 import React, { useEffect, useState, useMemo } from "react";
 import { ArrowRight01Icon, SortingAZ02Icon } from "hugeicons-react";
@@ -90,7 +91,7 @@ export function mapRecommendationToMaterial(
 
 type GridMaterialsSectionProps = {
   title: string;
-  materials: Material[] | (() => Promise<any>);
+  materials: Material[] | MaterialWithLastViewed[] | (() => Promise<any>);
   onViewAll?: () => void;
   onFilter?: () => void;
   onDownload?: (id: string) => void;
@@ -158,7 +159,7 @@ const GridMaterialsSection: React.FC<GridMaterialsSectionProps> = ({
   }, [materials]);
 
   // Memoize displayMaterials to avoid recalculating on every render
-  const displayMaterials: Material[] = useMemo(() => {
+  const displayMaterials: MaterialWithLastViewed[] = useMemo(() => {
     const mats =
       fetchedMaterials !== null
         ? fetchedMaterials
@@ -404,6 +405,7 @@ const GridMaterialsSection: React.FC<GridMaterialsSectionProps> = ({
             onDownload={onDownload}
             onShare={onShare}
             onRead={onRead}
+            lastViewedAt={material.lastViewedAt}
           />
         ))}
       </div>
