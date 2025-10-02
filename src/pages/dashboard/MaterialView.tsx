@@ -255,7 +255,7 @@ const MaterialView: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="h-full bg-slate-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-4 border-brand border-t-transparent"></div>
       </div>
     );
@@ -263,7 +263,7 @@ const MaterialView: React.FC = () => {
 
   if (!material) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="h-full bg-slate-50 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-semibold text-gray-900 mb-2">
             Material not found
@@ -426,7 +426,7 @@ const MaterialView: React.FC = () => {
   return (
     <>
       {/* Main Content - Full Height with Floating Controls */}
-      <div className="flex gap-2 sm:gap-3 h-[calc(100vh-72px)] px-2 sm:px-3 py-2 relative">
+      <div className="flex gap-2 sm:gap-3 h-full px-2 sm:px-3 py-2 relative">
         {/* Floating Back Button - Top Left */}
         <button
           onClick={handleBack}

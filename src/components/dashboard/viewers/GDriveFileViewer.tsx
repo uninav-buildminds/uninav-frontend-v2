@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
+import { Download, ZoomIn, ZoomOut, RotateCw } from "lucide-react";
 import { toast } from "sonner";
 import { getFileMetadata, GDriveFile } from "@/api/gdrive.api";
 import {
@@ -33,6 +33,8 @@ const GDriveFileViewer: React.FC<GDriveFileViewerProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [fileMetadata, setFileMetadata] = useState<GDriveFile | null>(null);
+  const [imageZoom, setImageZoom] = useState(100);
+  const [rotation, setRotation] = useState(0);
 
   useEffect(() => {
     loadFileMetadata();
@@ -150,17 +152,31 @@ const GDriveFileViewer: React.FC<GDriveFileViewerProps> = ({
     // Use direct Google Drive image URL for better compatibility
     const imageUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
 
+    const handleImageZoomIn = () => {
+      setImageZoom((prev) => Math.min(prev + 25, 200));
+    };
+
+    const handleImageZoomOut = () => {
+      setImageZoom((prev) => Math.max(prev - 25, 50));
+    };
+
+    const handleRotate = () => {
+      setRotation((prev) => (prev + 90) % 360);
+    };
+
     return (
-      <div className="h-full flex flex-col bg-white rounded-lg overflow-hidden">
-        <div className="flex-1 bg-gray-900 overflow-auto p-4">
-          <div className="min-h-full flex items-center justify-center">
+      <div className="h-full flex flex-col bg-gray-900 rounded-lg overflow-hidden relative">
+        {/* Image Display Area */}
+        <div className="flex-1 overflow-auto">
+          <div className="min-h-full flex items-center justify-center p-4">
             <img
               src={imageUrl}
               alt={fileMetadata.name}
-              className="max-w-full h-auto"
+              className="max-w-full h-auto shadow-2xl"
               style={{
-                transform: `scale(${zoom / 100})`,
+                transform: `scale(${imageZoom / 100}) rotate(${rotation}deg)`,
                 transformOrigin: "center center",
+                transition: "transform 0.2s ease-out",
               }}
               onError={(e) => {
                 // Fallback to thumbnail if direct link fails
@@ -178,11 +194,48 @@ const GDriveFileViewer: React.FC<GDriveFileViewerProps> = ({
             />
           </div>
         </div>
-        <div className="p-2 border-t border-gray-200 flex justify-center bg-gray-50">
-          <Button onClick={handleDownload} size="sm">
-            <Download size={16} className="mr-2" />
-            Download
-          </Button>
+
+        {/* Zoom Controls - Bottom Center */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-gray-800/90 backdrop-blur-sm rounded-full px-2 py-1.5 border border-gray-700 shadow-lg">
+          <button
+            onClick={handleImageZoomOut}
+            disabled={imageZoom <= 50}
+            className="p-2 hover:bg-gray-700 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="Zoom out"
+          >
+            <ZoomOut size={18} className="text-white" />
+          </button>
+
+          <div className="h-6 w-px bg-gray-600 mx-1"></div>
+
+          <button
+            onClick={handleImageZoomIn}
+            disabled={imageZoom >= 200}
+            className="p-2 hover:bg-gray-700 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="Zoom in"
+          >
+            <ZoomIn size={18} className="text-white" />
+          </button>
+
+          <div className="h-6 w-px bg-gray-600 mx-1"></div>
+
+          <button
+            onClick={handleRotate}
+            className="p-2 hover:bg-gray-700 rounded-full transition-colors"
+            aria-label="Rotate"
+          >
+            <RotateCw size={18} className="text-white" />
+          </button>
+
+          <div className="h-6 w-px bg-gray-600 mx-1"></div>
+
+          <button
+            onClick={handleDownload}
+            className="p-2 hover:bg-gray-700 rounded-full transition-colors"
+            aria-label="Download"
+          >
+            <Download size={18} className="text-white" />
+          </button>
         </div>
       </div>
     );

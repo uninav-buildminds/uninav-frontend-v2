@@ -13,6 +13,7 @@ export enum MaterialTypeEnum {
   PDF = "pdf", // pdf files
   PPT = "ppt", // ppt, pptx
   GDRIVE = "gdrive", // Google Drive links
+  YOUTUBE = "youtube", // YouTube links
   EXCEL = "excel", // excel, xls, xlsx
   IMAGE = "image", // image files
   VIDEO = "video", // video files/links
