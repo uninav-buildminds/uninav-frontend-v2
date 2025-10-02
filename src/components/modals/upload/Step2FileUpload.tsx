@@ -17,6 +17,7 @@ import {
 } from "@/lib/validation/upload";
 import { toast } from "sonner";
 import HeaderStepper from "./shared/HeaderStepper";
+import { Previewer } from "@/components/Preview/doc_viewer";
 import AdvancedOptions from "./shared/AdvancedOptions";
 import {
   inferMaterialType,
@@ -50,6 +51,8 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [classification, setClassification] = useState<string>("");
   const [targetCourseId, setTargetCourseId] = useState<string>("");
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [filePreview, setFilePreview] = useState<File | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -180,6 +183,13 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
       ? inferMaterialType(selectedFile)
       : editingMaterial?.type || "other";
 
+    console.log("Step2FileUpload - Before form submission:", {
+      filePreview: filePreview,
+      filePreviewType: typeof filePreview,
+      filePreviewConstructor: filePreview?.constructor?.name,
+      filePreviewInstanceofFile: filePreview instanceof File,
+    });
+
     const formData: CreateMaterialFileForm = {
       materialTitle: data.materialTitle,
       description: data.description || "",
@@ -191,7 +201,14 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
       targetCourseId: targetCourseId || undefined,
       ...(selectedFile && { file: selectedFile }),
       ...(selectedImage && { image: selectedImage }),
+      ...(filePreview && { filePreview: filePreview }), // Include file preview
     } as CreateMaterialFileForm;
+
+    console.log("Step2FileUpload - Form data created:", {
+      hasFilePreview: !!formData.filePreview,
+      filePreviewInFormData: formData.filePreview,
+      filePreviewType: typeof formData.filePreview,
+    });
 
     onComplete(formData);
   };
@@ -242,10 +259,31 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
         >
           {selectedFile ? (
             <div className="space-y-3">
-              <File01Icon
-                size={40}
-                className="text-brand mx-auto sm:w-12 sm:h-12"
-              />
+              {/* Check if file is PDF or DOCX */}
+              {selectedFile.type === "application/pdf" ||
+              selectedFile.type ===
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ? (
+                <Previewer
+                  file={selectedFile}
+                  onPreviewReady={(file: File) => {
+                    setFilePreview(file); // Handle the preview file as needed
+                  }}
+                />
+              ) : filePreview ? (
+                // Render image preview if available
+                <img
+                  src={URL.createObjectURL(filePreview)}
+                  alt={selectedFile.name}
+                  className="mx-auto sm:w-24 sm:h-24 object-contain rounded"
+                />
+              ) : (
+                // Fallback icon if no preview is available
+                <File01Icon
+                  size={40}
+                  className="text-brand mx-auto sm:w-12 sm:h-12"
+                />
+              )}
+
               <div>
                 <p className="text-sm sm:text-base font-medium text-gray-900">
                   {selectedFile.name}
@@ -254,8 +292,12 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
                   {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
                 </p>
               </div>
+
               <button
-                onClick={() => setSelectedFile(null)}
+                onClick={() => {
+                  setSelectedFile(null);
+                  setFilePreview(null); // Clear both selected file and preview
+                }}
                 className="text-xs sm:text-sm text-red-600 hover:text-red-700"
               >
                 Remove file

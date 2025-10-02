@@ -10,8 +10,10 @@ import {
   createMaterials,
   updateMaterial,
   CreateMaterialForm,
+  uploadMaterialPreview,
 } from "@/api/materials.api";
 import { Material, ResourceTypeEnum } from "@/lib/types/material.types";
+import { dataURLtoFile } from "../Preview/urlToFile";
 
 export type MaterialType = "file" | "link";
 export type UploadStep = "type-selection" | "upload-details" | "success";
@@ -77,7 +79,55 @@ const UploadModal: React.FC<UploadModalProps> = ({
       } else {
         // Create new material
         const result = await createMaterials(data);
-        console.log("Upload result:", result);
+
+        // ✅ Check if file has preview before uploading
+        console.log("Checking preview upload conditions:", {
+          materialId: result.data?.id,
+          hasFilePreview: data.filePreview instanceof File,
+          fileType: "file" in data ? data.file?.type : "N/A",
+          filePreview: data.filePreview,
+          filePreviewType: typeof data.filePreview,
+          filePreviewConstructor: data.filePreview?.constructor?.name,
+        });
+
+        if (
+          result.data?.id &&
+          data.filePreview instanceof File && // 👈 now it's guaranteed to be a File
+          "file" in data &&
+          (data.file?.type === "application/pdf" ||
+            data.file?.type ===
+              "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+        ) {
+          console.log("Uploading preview file...");
+          // Upload preview file directly
+          const uploadResponse = await uploadMaterialPreview(
+            result.data.id,
+            data.filePreview
+          );
+
+          // 👇 store preview URL in result so frontend can render without refetch
+          result.data.previewUrl = uploadResponse.data?.previewUrl;
+          console.log(
+            "Final preview URL stored in material:",
+            result.data.previewUrl
+          );
+
+          console.log("Preview upload result:", uploadResponse);
+          console.log(
+            "Preview URL extracted:",
+            uploadResponse.data?.previewUrl
+          );
+          console.log("Upload response structure:", {
+            hasData: !!uploadResponse.data,
+            dataKeys: uploadResponse.data
+              ? Object.keys(uploadResponse.data)
+              : [],
+            fullResponse: JSON.stringify(uploadResponse, null, 2),
+          });
+        } else {
+          console.log("Preview upload skipped - conditions not met");
+        }
+
         setCurrentStep("success");
       }
     } catch (error) {
