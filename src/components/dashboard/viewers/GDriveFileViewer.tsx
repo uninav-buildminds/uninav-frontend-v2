@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Download, ExternalLink } from "lucide-react";
+import { Download } from "lucide-react";
 import { toast } from "sonner";
 import { getFileMetadata, GDriveFile } from "@/api/gdrive.api";
 import {
@@ -61,17 +61,7 @@ const GDriveFileViewer: React.FC<GDriveFileViewerProps> = ({
       window.open(fileMetadata.webContentLink, "_blank");
       toast.success("Download started!");
     } else {
-      const urls = getGDriveUrls(fileId);
-      window.open(urls.view, "_blank");
-      toast.info("Opening in Google Drive...");
-    }
-  };
-
-  const handleOpenInDrive = () => {
-    if (fileMetadata?.webViewLink) {
-      window.open(fileMetadata.webViewLink, "_blank");
-    } else {
-      window.open(getGDriveUrls(fileId).view, "_blank");
+      toast.info("Download link not available for this file.");
     }
   };
 
@@ -92,13 +82,10 @@ const GDriveFileViewer: React.FC<GDriveFileViewerProps> = ({
         <div className="text-center max-w-md">
           <div className="text-4xl mb-4">🔒</div>
           <p className="text-lg font-medium mb-2">Cannot Access File</p>
-          <p className="text-sm text-gray-600 mb-4">
-            {error || "This file may not be publicly accessible."}
+          <p className="text-sm text-gray-600">
+            {error ||
+              "This file may not be publicly accessible. Please contact the material uploader."}
           </p>
-          <Button onClick={handleOpenInDrive} variant="outline">
-            <ExternalLink size={16} className="mr-2" />
-            Try Opening in Google Drive
-          </Button>
         </div>
       </div>
     );
@@ -138,16 +125,10 @@ const GDriveFileViewer: React.FC<GDriveFileViewerProps> = ({
             <p className="text-sm text-gray-600 mb-4">
               This file type cannot be previewed inline.
             </p>
-            <div className="flex gap-2 justify-center">
-              <Button onClick={handleOpenInDrive}>
-                <ExternalLink size={16} className="mr-2" />
-                Open in Google Drive
-              </Button>
-              <Button onClick={handleDownload} variant="outline">
-                <Download size={16} className="mr-2" />
-                Download
-              </Button>
-            </div>
+            <Button onClick={handleDownload}>
+              <Download size={16} className="mr-2" />
+              Download File
+            </Button>
           </div>
         </div>
       );
@@ -192,14 +173,10 @@ const GDriveFileViewer: React.FC<GDriveFileViewerProps> = ({
             }}
           />
         </div>
-        <div className="p-3 border-t border-gray-200 flex justify-center gap-2">
+        <div className="p-3 border-t border-gray-200 flex justify-center">
           <Button onClick={handleDownload} size="sm">
             <Download size={16} className="mr-2" />
             Download
-          </Button>
-          <Button onClick={handleOpenInDrive} size="sm" variant="outline">
-            <ExternalLink size={16} className="mr-2" />
-            Open in Drive
           </Button>
         </div>
       </div>
@@ -218,14 +195,10 @@ const GDriveFileViewer: React.FC<GDriveFileViewerProps> = ({
             allow="autoplay"
           />
         </div>
-        <div className="p-3 border-t border-gray-200 flex justify-center gap-2">
+        <div className="p-3 border-t border-gray-200 flex justify-center">
           <Button onClick={handleDownload} size="sm">
             <Download size={16} className="mr-2" />
             Download
-          </Button>
-          <Button onClick={handleOpenInDrive} size="sm" variant="outline">
-            <ExternalLink size={16} className="mr-2" />
-            Open in Drive
           </Button>
         </div>
       </div>
@@ -251,14 +224,10 @@ const GDriveFileViewer: React.FC<GDriveFileViewerProps> = ({
           title={fileMetadata.name}
           allow="autoplay"
         />
-        <div className="p-2 border-t border-gray-200 flex justify-center gap-2 bg-gray-50">
+        <div className="p-2 border-t border-gray-200 flex justify-center bg-gray-50">
           <Button onClick={handleDownload} size="sm">
             <Download size={16} className="mr-2" />
             Download
-          </Button>
-          <Button onClick={handleOpenInDrive} size="sm" variant="outline">
-            <ExternalLink size={16} className="mr-2" />
-            Open in Drive
           </Button>
         </div>
       </div>
@@ -274,16 +243,10 @@ const GDriveFileViewer: React.FC<GDriveFileViewerProps> = ({
         <p className="text-sm text-gray-600 mb-4">
           This file type cannot be previewed inline.
         </p>
-        <div className="flex gap-2 justify-center">
-          <Button onClick={handleDownload}>
-            <Download size={16} className="mr-2" />
-            Download File
-          </Button>
-          <Button onClick={handleOpenInDrive} variant="outline">
-            <ExternalLink size={16} className="mr-2" />
-            Open in Google Drive
-          </Button>
-        </div>
+        <Button onClick={handleDownload}>
+          <Download size={16} className="mr-2" />
+          Download File
+        </Button>
       </div>
     </div>
   );

@@ -251,16 +251,17 @@ const MaterialView: React.FC = () => {
     if (viewingGDriveFile) {
       return (
         <div className="h-full flex flex-col">
-          <div className="pl-14 sm:pl-16 pr-3 py-3 bg-white border-b border-gray-200 rounded-t-lg">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleBackToFolder}
-              className="gap-2"
-            >
-              <ArrowLeft size={16} />
-              Back to Folder
-            </Button>
+          <div className="pl-14 sm:pl-16 pr-3 py-2 bg-gray-50 border-b border-gray-200">
+            <div className="flex items-center gap-1.5 text-xs text-gray-600">
+              <button
+                onClick={handleBackToFolder}
+                className="hover:text-brand transition-colors font-medium"
+              >
+                Root
+              </button>
+              <ChevronRight size={12} className="text-gray-400" />
+              <span className="text-gray-900 font-medium">File Preview</span>
+            </div>
           </div>
           <div className="flex-1">
             <GDriveFileViewer
