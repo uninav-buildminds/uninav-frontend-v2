@@ -251,7 +251,7 @@ const MaterialView: React.FC = () => {
     if (viewingGDriveFile) {
       return (
         <div className="h-full flex flex-col">
-          <div className="p-3 bg-white border-b border-gray-200 rounded-t-lg">
+          <div className="pl-14 sm:pl-16 pr-3 py-3 bg-white border-b border-gray-200 rounded-t-lg">
             <Button
               variant="outline"
               size="sm"
@@ -390,62 +390,63 @@ const MaterialView: React.FC = () => {
 
   return (
     <>
-      {/* Header with Breadcrumb - Ultra Compact */}
-      <div className="bg-gradient-to-br from-[theme(colors.dashboard.gradientFrom)] to-[theme(colors.dashboard.gradientTo)]">
-        <div className="px-3 sm:px-4 py-2">
-          <div className="flex items-center justify-between">
-            {/* Breadcrumb */}
-            <button
-              onClick={handleBack}
-              className="flex items-center gap-1 text-sm text-gray-600 hover:text-brand transition-colors"
-            >
-              <ArrowLeft size={16} />
-              <span className="hidden sm:inline">Overview</span>
-            </button>
+      {/* Main Content - Full Height with Floating Controls */}
+      <div className="flex gap-2 sm:gap-3 h-[calc(100vh-72px)] px-2 sm:px-3 py-2 relative">
+        {/* Floating Back Button - Top Left */}
+        <button
+          onClick={handleBack}
+          className="fixed left-3 sm:left-4 top-3 sm:top-4 z-30 p-2 sm:p-2.5 bg-white/90 backdrop-blur hover:bg-white border border-gray-200 rounded-full shadow-lg transition-all duration-200 hover:scale-105 active:scale-95"
+          aria-label="Go back"
+        >
+          <ArrowLeft size={18} className="text-gray-700" />
+        </button>
 
-            {/* Action Buttons */}
-            <div className="flex items-center gap-1.5 sm:gap-2">
+        {/* Floating Action Buttons - Top Right */}
+        <div
+          className={`fixed top-3 sm:top-4 z-30 flex items-center gap-1.5 sm:gap-2 transition-all duration-300 ${
+            sidebarCollapsed
+              ? "right-3 sm:right-4"
+              : "right-[calc(264px+0.5rem)] sm:right-[calc(288px+0.5rem)]"
+          }`}
+        >
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleBookmark}
+            className={`bg-white/90 backdrop-blur hover:bg-white border border-gray-200 h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-full shadow-lg ${
+              isBookmarkedMaterial ? "text-brand" : ""
+            }`}
+          >
+            <Bookmark01Icon
+              size={15}
+              className={`sm:w-4 sm:h-4 ${
+                isBookmarkedMaterial ? "fill-current" : ""
+              }`}
+            />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleShare}
+            className="bg-white/90 backdrop-blur hover:bg-white border border-gray-200 h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-full shadow-lg"
+          >
+            <Share08Icon size={15} className="sm:w-4 sm:h-4" />
+          </Button>
+          {/* Show download button only if not read-only and is either an uploaded file or GDrive material */}
+          {material &&
+            material.restriction !== RestrictionEnum.READONLY &&
+            (material.resource?.resourceType === ResourceTypeEnum.UPLOAD ||
+              material.type === MaterialTypeEnum.GDRIVE) && (
               <Button
-                variant="outline"
+                onClick={handleDownload}
                 size="sm"
-                onClick={handleBookmark}
-                className={`bg-white/80 hover:bg-white h-7 w-7 p-0 ${
-                  isBookmarkedMaterial ? "text-brand" : ""
-                }`}
+                className="bg-brand/90 backdrop-blur text-white hover:bg-brand border-2 border-white h-8 sm:h-9 px-3 sm:px-4 rounded-full shadow-lg"
               >
-                <Bookmark01Icon
-                  size={14}
-                  className={isBookmarkedMaterial ? "fill-current" : ""}
-                />
+                <Download01Icon size={15} className="sm:w-4 sm:h-4" />
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleShare}
-                className="bg-white/80 hover:bg-white h-7 w-7 p-0"
-              >
-                <Share08Icon size={14} />
-              </Button>
-              {/* Show download button only if not read-only and is either an uploaded file or GDrive material */}
-              {material &&
-                material.restriction !== RestrictionEnum.READONLY &&
-                (material.resource?.resourceType === ResourceTypeEnum.UPLOAD ||
-                  material.type === MaterialTypeEnum.GDRIVE) && (
-                  <Button
-                    onClick={handleDownload}
-                    size="sm"
-                    className="bg-brand text-white hover:bg-brand/90 h-7 px-2 sm:px-3"
-                  >
-                    <Download01Icon size={14} />
-                  </Button>
-                )}
-            </div>
-          </div>
+            )}
         </div>
-      </div>
 
-      {/* Main Content - Full Height */}
-      <div className="flex gap-2 sm:gap-3 h-[calc(100vh-120px)] px-2 sm:px-3 py-2">
         {/* Document Viewer - Full Width/Height */}
         <div className="flex-1 flex flex-col min-w-0">
           <div className="flex-1 bg-gray-50 rounded-lg sm:rounded-xl overflow-hidden shadow-sm">
@@ -458,14 +459,14 @@ const MaterialView: React.FC = () => {
           onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
           className={`fixed ${
             sidebarCollapsed
-              ? "right-2 sm:right-2"
-              : "right-[calc(256px+0.5rem)] sm:right-[calc(288px+0.5rem)]"
-          } top-1/2 -translate-y-1/2 z-20 p-1.5 sm:p-2 bg-brand/90 hover:bg-brand border-2 border-white rounded-full shadow-lg transition-all duration-300`}
+              ? "right-4"
+              : "right-[calc(256px+0.75rem)] sm:right-[calc(288px+0.75rem)]"
+          } top-1/2 -translate-y-1/2 z-20 p-2 bg-brand/90 backdrop-blur hover:bg-brand border-2 border-white rounded-full shadow-lg transition-all duration-300`}
           aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           <ChevronsRight
-            size={16}
-            className={`sm:w-[18px] sm:h-[18px] text-white transition-transform duration-300 ${
+            size={18}
+            className={`text-white transition-transform duration-300 ${
               sidebarCollapsed ? "" : "rotate-180"
             }`}
           />
