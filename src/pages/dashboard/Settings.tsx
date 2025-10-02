@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from "react";
-import DashboardShell from "@/components/dashboard/DashboardShell";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft01Icon,
@@ -42,7 +41,7 @@ const SettingsPage: React.FC = () => {
   );
 
   return (
-    <DashboardShell>
+    <>
       <div className="relative z-sticky">
         <div className="bg-gradient-to-br from-[theme(colors.dashboard.gradientFrom)] to-[theme(colors.dashboard.gradientTo)]">
           <div className="px-2 sm:px-4 pt-8 sm:pt-12 pb-4 sm:pb-6">
@@ -119,7 +118,7 @@ const SettingsPage: React.FC = () => {
           </div>
         </div>
       </div>
-    </DashboardShell>
+    </>
   );
 };
 

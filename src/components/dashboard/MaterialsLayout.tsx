@@ -1,5 +1,4 @@
 import React from "react";
-import DashboardShell from "./DashboardShell";
 import PageHeader from "./PageHeader";
 
 interface MaterialsLayoutProps {
@@ -20,7 +19,7 @@ const MaterialsLayout: React.FC<MaterialsLayoutProps> = ({
   searchSuggestions = [],
 }) => {
   return (
-    <DashboardShell>
+    <>
       <PageHeader
         title={title}
         subtitle="Browse and manage your materials"
@@ -32,7 +31,7 @@ const MaterialsLayout: React.FC<MaterialsLayoutProps> = ({
         {/* Content */}
         <div className="space-y-6 pb-16 md:pb-0">{children}</div>
       </div>
-    </DashboardShell>
+    </>
   );
 };
 

@@ -1,8 +1,8 @@
 import React from "react";
-import { Outlet } from "react-router-dom";
+import DashboardShell from "@/components/dashboard/DashboardShell";
 
 const DashboardLayout: React.FC = () => {
-  return <Outlet />;
+  return <DashboardShell />;
 };
 
 export default DashboardLayout;

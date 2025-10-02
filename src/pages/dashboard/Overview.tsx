@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import DashboardShell from "@/components/dashboard/DashboardShell";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import MetricsSection from "@/components/dashboard/MetricsSection";
 import MaterialsSection, {
@@ -297,7 +296,7 @@ const Overview: React.FC = () => {
   ];
 
   return (
-    <DashboardShell>
+    <>
       <DashboardHeader
         firstName={user?.firstName || "User"}
         showSearch={true}
@@ -363,7 +362,7 @@ const Overview: React.FC = () => {
           </>
         )}
       </div>
-    </DashboardShell>
+    </>
   );
 };
 

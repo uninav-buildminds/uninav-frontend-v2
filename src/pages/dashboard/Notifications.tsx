@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from "react";
-import DashboardShell from "@/components/dashboard/DashboardShell";
 import Row from "@/components/notifications/Row";
 import FiltersDropdown from "@/components/notifications/FiltersDropdown";
 import type {
@@ -162,7 +161,7 @@ const Notifications: React.FC = () => {
   };
 
   return (
-    <DashboardShell>
+    <>
       {/* Header */}
       <div className="relative z-sticky">
         <div className="bg-gradient-to-br from-[theme(colors.dashboard.gradientFrom)] to-[theme(colors.dashboard.gradientTo)]">
@@ -292,7 +291,7 @@ const Notifications: React.FC = () => {
             ))}
         </div>
       </div>
-    </DashboardShell>
+    </>
   );
 };
 
