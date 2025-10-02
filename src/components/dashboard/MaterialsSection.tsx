@@ -101,7 +101,6 @@ type MaterialsSectionProps = {
   materials: Material[] | MaterialWithLastViewed[] | (() => Promise<any>);
   onViewAll?: () => void;
   onFilter?: () => void;
-  onDownload?: (id: string) => void;
   onShare?: (id: string) => void;
   onRead?: (id: string) => void;
   scrollStep?: number;
@@ -122,7 +121,6 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
   materials,
   onViewAll,
   onFilter,
-  onDownload,
   onShare,
   onRead,
   scrollStep = 240,
@@ -436,7 +434,6 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
             <MaterialCard
               key={material.id}
               material={material}
-              onDownload={onDownload}
               onShare={onShare}
               onRead={onRead}
               lastViewedAt={material.lastViewedAt}
@@ -489,7 +486,6 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
               >
                 <MaterialCard
                   material={material}
-                  onDownload={onDownload}
                   onShare={onShare}
                   onRead={onRead}
                   lastViewedAt={material.lastViewedAt}

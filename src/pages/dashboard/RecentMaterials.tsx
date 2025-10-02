@@ -71,10 +71,6 @@ const RecentMaterials: React.FC = () => {
     console.log("Filter recent materials");
   };
 
-  const handleDownload = (materialId: string) => {
-    console.log(`Download material ${materialId}`);
-  };
-
   const handleShare = (materialId: string) => {
     console.log(`Share material ${materialId}`);
   };
@@ -105,7 +101,6 @@ const RecentMaterials: React.FC = () => {
         materials={filteredMaterials}
         onViewAll={() => {}}
         onFilter={handleFilter}
-        onDownload={handleDownload}
         onShare={handleShare}
         onRead={handleRead}
         showViewAll={false}

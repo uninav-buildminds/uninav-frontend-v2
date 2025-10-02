@@ -21,7 +21,6 @@ interface SearchResultsProps {
   } | null;
   advancedSearchEnabled: boolean;
   onToggleAdvancedSearch: () => void;
-  onDownload?: (id: string) => void;
   onShare?: (id: string) => void;
   onRead?: (id: string) => void;
   onClearSearch: () => void;
@@ -34,7 +33,6 @@ const SearchResults: React.FC<SearchResultsProps> = ({
   metadata,
   advancedSearchEnabled,
   onToggleAdvancedSearch,
-  onDownload,
   onShare,
   onRead,
   onClearSearch,
@@ -186,7 +184,6 @@ const SearchResults: React.FC<SearchResultsProps> = ({
             >
               <MaterialCard
                 material={material}
-                onDownload={onDownload}
                 onShare={onShare}
                 onRead={onRead}
               />

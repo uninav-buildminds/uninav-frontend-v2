@@ -229,3 +229,20 @@ export async function getMaterialById(id: string): Promise<Response<Material>> {
     };
   }
 }
+
+export async function trackMaterialDownload(
+  materialId: string
+): Promise<Response<null>> {
+  try {
+    const response = await httpClient.post(`/materials/${materialId}/download`);
+    return response.data;
+  } catch (error: any) {
+    console.error("Error tracking material download:", error);
+    throw {
+      statusCode: error.response?.status,
+      message:
+        error.response?.data?.message ||
+        "Tracking download failed. Please try again.",
+    };
+  }
+}

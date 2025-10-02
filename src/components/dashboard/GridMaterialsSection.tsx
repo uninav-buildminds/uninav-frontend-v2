@@ -94,7 +94,6 @@ type GridMaterialsSectionProps = {
   materials: Material[] | MaterialWithLastViewed[] | (() => Promise<any>);
   onViewAll?: () => void;
   onFilter?: () => void;
-  onDownload?: (id: string) => void;
   onShare?: (id: string) => void;
   onRead?: (id: string) => void;
   showViewAll?: boolean;
@@ -113,7 +112,6 @@ const GridMaterialsSection: React.FC<GridMaterialsSectionProps> = ({
   materials,
   onViewAll,
   onFilter,
-  onDownload,
   onShare,
   onRead,
   showViewAll = true,
@@ -402,7 +400,6 @@ const GridMaterialsSection: React.FC<GridMaterialsSectionProps> = ({
           <MaterialCard
             key={material.id}
             material={material}
-            onDownload={onDownload}
             onShare={onShare}
             onRead={onRead}
             lastViewedAt={material.lastViewedAt}

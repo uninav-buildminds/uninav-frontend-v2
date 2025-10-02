@@ -68,10 +68,6 @@ const Recommendations: React.FC = () => {
     console.log("Filter recommendations");
   };
 
-  const handleDownload = (materialId: string) => {
-    console.log(`Download material ${materialId}`);
-  };
-
   const handleShare = (materialId: string) => {
     console.log(`Share material ${materialId}`);
   };
@@ -93,7 +89,6 @@ const Recommendations: React.FC = () => {
         materials={filteredMaterials}
         onViewAll={() => {}}
         onFilter={handleFilter}
-        onDownload={handleDownload}
         onShare={handleShare}
         onRead={handleRead}
         showViewAll={false}

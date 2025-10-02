@@ -15,6 +15,9 @@ export type UserProfile = {
   updatedAt: string;
   department?: Department;
   profilePicture?: string;
+  downloadCount?: number;
+  uploadCount?: number;
+  bookmarkCount?: number;
   auth: {
     userId: string;
     email: string;

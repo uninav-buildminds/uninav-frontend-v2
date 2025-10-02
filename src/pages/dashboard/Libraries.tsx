@@ -114,10 +114,6 @@ const Libraries: React.FC = () => {
     console.log(`Filter ${section}`);
   };
 
-  const handleDownload = (materialId: string) => {
-    console.log(`Download material ${materialId}`);
-  };
-
   const handleShare = (materialId: string) => {
     console.log(`Share material ${materialId}`);
   };
@@ -200,7 +196,6 @@ const Libraries: React.FC = () => {
             materials={filteredSavedMaterials}
             onViewAll={() => {}} // No view all on this page
             onFilter={() => handleFilter("saved materials")}
-            onDownload={handleDownload}
             onShare={handleShare}
             onRead={handleRead}
             scrollStep={280}
@@ -216,7 +211,6 @@ const Libraries: React.FC = () => {
             materials={filteredUploads}
             onViewAll={() => {}} // No view all on this page
             onFilter={() => handleFilter("my uploads")}
-            onDownload={handleDownload}
             onShare={handleShare}
             onRead={handleRead}
             scrollStep={280}

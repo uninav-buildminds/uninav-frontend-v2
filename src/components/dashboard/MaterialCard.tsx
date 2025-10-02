@@ -1,5 +1,5 @@
 import React from "react";
-import { Download01Icon, Share08Icon } from "hugeicons-react";
+import { Share08Icon } from "hugeicons-react";
 import { toast } from "sonner";
 import { Material } from "../../lib/types/material.types";
 import { formatRelativeTime } from "../../lib/utils";
@@ -56,7 +56,6 @@ const BookmarkFilledIcon = ({
 
 interface MaterialCardProps {
   material: Material;
-  onDownload?: (id: string) => void;
   onShare?: (id: string) => void;
   onRead?: (id: string) => void;
   lastViewedAt?: string; // For recent materials - shows when the user last viewed this material
@@ -64,7 +63,6 @@ interface MaterialCardProps {
 
 const MaterialCard: React.FC<MaterialCardProps> = ({
   material,
-  onDownload,
   onShare,
   onRead,
   lastViewedAt,
@@ -77,12 +75,6 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
   const handleSave = (e: React.MouseEvent) => {
     e.stopPropagation();
     toggleBookmark(id);
-  };
-
-  const handleDownload = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    toast.success("Download started!");
-    onDownload?.(id);
   };
 
   const handleShare = (e: React.MouseEvent) => {
@@ -177,16 +169,8 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
                 )} • ${views} views • ${likes} likes`}
           </div>
 
-          {/* Action Icons - Download and Share */}
+          {/* Action Icons - Share only */}
           <div className="flex items-center gap-1 ml-2">
-            <button
-              onClick={handleDownload}
-              className="p-1 text-gray-600 hover:text-brand hover:bg-[#DCDFFE] rounded-md transition-colors duration-200"
-              aria-label="Download"
-            >
-              <Download01Icon size={16} />
-            </button>
-
             <button
               onClick={handleShare}
               className="p-1 text-gray-600 hover:text-brand hover:bg-[#DCDFFE] rounded-md transition-colors duration-200"

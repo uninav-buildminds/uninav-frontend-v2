@@ -22,12 +22,18 @@ import { useBookmarks } from "@/context/bookmark/BookmarkContextProvider";
 import { toast } from "sonner";
 import { formatRelativeTime } from "@/lib/utils";
 import { Material, MaterialTypeEnum } from "@/lib/types/material.types";
-import { getMaterialById } from "@/api/materials.api";
+import { getMaterialById, trackMaterialDownload } from "@/api/materials.api";
+import { allocateReadingPoints } from "@/api/points.api";
 import { ResponseStatus } from "@/lib/types/response.types";
+import { ResourceTypeEnum, RestrictionEnum } from "@/lib/types/material.types";
 import PDFViewer from "@/components/dashboard/viewers/PDFViewer";
 import GDriveFolderBrowser from "@/components/dashboard/viewers/GDriveFolderBrowser";
 import GDriveFileViewer from "@/components/dashboard/viewers/GDriveFileViewer";
 import { extractGDriveId, isGDriveFolder } from "@/lib/utils/gdriveUtils";
+import {
+  downloadGDriveFile,
+  downloadAllFilesFromFolder,
+} from "@/api/gdrive.api";
 
 const MaterialView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -83,22 +89,86 @@ const MaterialView: React.FC = () => {
     }
   }, [id, navigate]);
 
+  // Allocate reading points every 5 minutes
+  useEffect(() => {
+    if (!material?.id) return;
+
+    const allocatePoints = async () => {
+      try {
+        await allocateReadingPoints();
+      } catch (error) {
+        console.error("Error allocating reading points:", error);
+      }
+    };
+
+    // Allocate points immediately on mount
+    allocatePoints();
+
+    // Then every 5 minutes
+    const interval = setInterval(allocatePoints, 5 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [material?.id]);
+
   const handleBack = () => {
     navigate(-1);
   };
 
-  const handleDownload = () => {
-    if (material?.resource?.resourceAddress) {
-      // Create a temporary link to download the file
-      const link = document.createElement("a");
-      link.href = material.resource.resourceAddress;
-      link.download = material.label;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      toast.success("Download started!");
-    } else {
+  const handleDownload = async () => {
+    if (!material?.resource?.resourceAddress) {
       toast.error("Download not available for this material");
+      return;
+    }
+
+    // Check if material is read-only
+    if (material.restriction === RestrictionEnum.READONLY) {
+      toast.error("This material is read-only and cannot be downloaded");
+      return;
+    }
+
+    try {
+      // Track the download
+      if (material.id) {
+        await trackMaterialDownload(material.id);
+      }
+
+      // Handle Google Drive downloads
+      if (material.type === MaterialTypeEnum.GDRIVE) {
+        const gdriveId = extractGDriveId(material.resource.resourceAddress);
+
+        if (!gdriveId) {
+          toast.error("Invalid Google Drive link");
+          return;
+        }
+
+        // If it's a folder, download all files
+        if (gdriveId.type === "folder") {
+          toast.loading("Downloading files from folder...");
+          const count = await downloadAllFilesFromFolder(gdriveId.id);
+          toast.success(`Started downloading ${count} file(s) from folder`);
+        } else {
+          // Single file from GDrive
+          toast.loading("Downloading file...");
+          await downloadGDriveFile(gdriveId.id, material.label);
+          toast.success("Download started!");
+        }
+      } else {
+        // Handle regular uploaded files
+        if (material.resource.resourceType === ResourceTypeEnum.UPLOAD) {
+          const link = document.createElement("a");
+          link.href = material.resource.resourceAddress;
+          link.download = material.label;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          toast.success("Download started!");
+        } else {
+          toast.error("Download not available for this material type");
+        }
+      }
+    } catch (error: any) {
+      console.error("Error downloading material:", error);
+      toast.error(error.message || "Failed to download material");
     }
   };
 
@@ -356,13 +426,19 @@ const MaterialView: React.FC = () => {
               >
                 <Share08Icon size={14} />
               </Button>
-              <Button
-                onClick={handleDownload}
-                size="sm"
-                className="bg-brand text-white hover:bg-brand/90 h-7 px-3"
-              >
-                <Download01Icon size={14} />
-              </Button>
+              {/* Show download button only if not read-only and is either an uploaded file or GDrive material */}
+              {material &&
+                material.restriction !== RestrictionEnum.READONLY &&
+                (material.resource?.resourceType === ResourceTypeEnum.UPLOAD ||
+                  material.type === MaterialTypeEnum.GDRIVE) && (
+                  <Button
+                    onClick={handleDownload}
+                    size="sm"
+                    className="bg-brand text-white hover:bg-brand/90 h-7 px-3"
+                  >
+                    <Download01Icon size={14} />
+                  </Button>
+                )}
             </div>
           </div>
         </div>
@@ -378,30 +454,30 @@ const MaterialView: React.FC = () => {
             </div>
           </div>
 
+          {/* Collapse Toggle Button - At Junction */}
+          <button
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            className={`fixed ${
+              sidebarCollapsed ? "right-4" : "right-[calc(288px+1.5rem)]"
+            } top-1/2 -translate-y-1/2 z-20 p-2 bg-brand/90 hover:bg-brand border-2 border-white rounded-full shadow-lg transition-all duration-300`}
+            aria-label={
+              sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
+            }
+          >
+            <ChevronsRight
+              size={18}
+              className={`text-white transition-transform duration-300 ${
+                sidebarCollapsed ? "" : "rotate-180"
+              }`}
+            />
+          </button>
+
           {/* Right Sidebar - Material Info & Related Materials */}
           <div
             className={`relative bg-white rounded-t-3xl border border-gray-200 flex flex-col transition-all duration-300 ${
               sidebarCollapsed ? "w-0 border-0 overflow-hidden" : "w-72"
             }`}
           >
-            {/* Collapse Toggle Button - At Junction */}
-            <button
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className={`absolute ${
-                sidebarCollapsed ? "-left-8" : "-left-8"
-              } top-1/2 -translate-y-1/2 z-20 p-2 bg-brand/90 hover:bg-brand border-2 border-white rounded-full shadow-lg transition-all duration-300`}
-              aria-label={
-                sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
-              }
-            >
-              <ChevronsRight
-                size={18}
-                className={`text-white transition-transform duration-300 ${
-                  sidebarCollapsed ? "" : "rotate-180"
-                }`}
-              />
-            </button>
-
             {/* Material Information */}
             <div className="p-4 border-b border-gray-200">
               <h1 className="text-base font-semibold text-gray-900 mb-1.5">

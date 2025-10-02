@@ -17,6 +17,7 @@ import {
   getRecentMaterials,
   searchMaterials,
 } from "@/api/materials.api";
+import { getUserPoints } from "@/api/points.api";
 import { Material } from "@/lib/types/material.types";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
@@ -28,6 +29,10 @@ const Overview: React.FC = () => {
     MaterialWithLastViewed[]
   >([]);
   const [isLoadingRecent, setIsLoadingRecent] = useState(true);
+
+  // Metrics state
+  const [pointsPercentage, setPointsPercentage] = useState<string>("0%");
+  const [isLoadingMetrics, setIsLoadingMetrics] = useState(true);
 
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
@@ -54,10 +59,6 @@ const Overview: React.FC = () => {
 
   const handleFilter = (section: string) => {
     console.log(`Filter ${section}`);
-  };
-
-  const handleDownload = (id: string) => {
-    console.log(`Download material ${id}`);
   };
 
   const handleShare = (id: string) => {
@@ -264,34 +265,55 @@ const Overview: React.FC = () => {
     loadRecentMaterials();
   }, []);
 
+  // Load metrics data on component mount
+  useEffect(() => {
+    const loadMetrics = async () => {
+      try {
+        setIsLoadingMetrics(true);
+        const pointsResponse = await getUserPoints();
+        if (pointsResponse.status === "success" && pointsResponse.data) {
+          setPointsPercentage(pointsResponse.data.points);
+        }
+      } catch (error) {
+        console.error("Error fetching metrics:", error);
+      } finally {
+        setIsLoadingMetrics(false);
+      }
+    };
+
+    loadMetrics();
+  }, []);
+
   const metrics = [
     {
       icon: <Award01Icon size={20} />,
       title: "Your Points",
-      value: "85%",
+      value: pointsPercentage,
       description:
         "You're doing great! Upload 3 more materials to unlock Ad‑Free Week",
     },
     {
       icon: <DownloadSquare01Icon size={20} />,
       title: "Total Downloads",
-      value: "120",
+      value: user?.downloadCount?.toString() || "0",
       description:
         "You have downloaded helpful materials. You're on track to complete academic goals",
     },
     {
       icon: <UploadSquare01Icon size={20} />,
       title: "Total Uploads",
-      value: "50",
+      value: user?.uploadCount?.toString() || "0",
       description:
         "You have helped a lot of students. You're making a real difference",
     },
     {
       icon: <Bookmark01Icon size={20} />,
       title: "Saved Materials",
-      value: "12",
+      value: user?.bookmarkCount?.toString() || "0",
       description:
-        "Your materials were downloaded 120 times. You're making a difference!",
+        "Your materials were downloaded " +
+        (user?.downloadCount?.toString() || "0") +
+        " times. You're making a difference!",
     },
   ];
 
@@ -315,7 +337,6 @@ const Overview: React.FC = () => {
             metadata={searchMetadata}
             advancedSearchEnabled={advancedSearchEnabled}
             onToggleAdvancedSearch={toggleAdvancedSearch}
-            onDownload={handleDownload}
             onShare={handleShare}
             onRead={handleRead}
             onClearSearch={() => {
@@ -339,7 +360,6 @@ const Overview: React.FC = () => {
                   materials={recentMaterials}
                   onViewAll={() => handleViewAll("recent materials")}
                   onFilter={() => handleFilter("recent materials")}
-                  onDownload={handleDownload}
                   onShare={handleShare}
                   onRead={handleRead}
                   scrollStep={280}
@@ -352,7 +372,6 @@ const Overview: React.FC = () => {
                 materials={fetchRecommendations}
                 onViewAll={() => handleViewAll("recommendations")}
                 onFilter={() => handleFilter("recommendations")}
-                onDownload={handleDownload}
                 onShare={handleShare}
                 onRead={handleRead}
                 scrollStep={280}
