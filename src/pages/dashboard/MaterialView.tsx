@@ -51,7 +51,9 @@ const MaterialView: React.FC = () => {
     fileId: string;
     mimeType: string;
   } | null>(null);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(
+    typeof window !== "undefined" && window.innerWidth < 768 // Hide sidebar on mobile by default
+  );
 
   // Fetch material data from API
   useEffect(() => {
@@ -388,23 +390,21 @@ const MaterialView: React.FC = () => {
 
   return (
     <>
-      {/* Header with Breadcrumb - Compact */}
+      {/* Header with Breadcrumb - Ultra Compact */}
       <div className="bg-gradient-to-br from-[theme(colors.dashboard.gradientFrom)] to-[theme(colors.dashboard.gradientTo)]">
-        <div className="px-4 py-3">
+        <div className="px-3 sm:px-4 py-2">
           <div className="flex items-center justify-between">
             {/* Breadcrumb */}
-            <div className="flex items-center gap-4">
-              <button
-                onClick={handleBack}
-                className="flex items-center gap-1 text-sm text-gray-600 hover:text-brand transition-colors"
-              >
-                <ArrowLeft size={16} />
-                <span>Overview</span>
-              </button>
-            </div>
+            <button
+              onClick={handleBack}
+              className="flex items-center gap-1 text-sm text-gray-600 hover:text-brand transition-colors"
+            >
+              <ArrowLeft size={16} />
+              <span className="hidden sm:inline">Overview</span>
+            </button>
 
             {/* Action Buttons */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               <Button
                 variant="outline"
                 size="sm"
@@ -434,7 +434,7 @@ const MaterialView: React.FC = () => {
                   <Button
                     onClick={handleDownload}
                     size="sm"
-                    className="bg-brand text-white hover:bg-brand/90 h-7 px-3"
+                    className="bg-brand text-white hover:bg-brand/90 h-7 px-2 sm:px-3"
                   >
                     <Download01Icon size={14} />
                   </Button>
@@ -444,165 +444,168 @@ const MaterialView: React.FC = () => {
         </div>
       </div>
 
-      <div className="p-4 sm:p-6">
-        <div className="flex gap-6 h-[calc(100vh-180px)]">
-          {/* Main Content Area - Document Viewer */}
-          <div className="flex-1 flex flex-col">
-            {/* Document Viewer */}
-            <div className="flex-1 bg-gray-100 rounded-3xl overflow-hidden">
-              {renderViewer()}
-            </div>
+      {/* Main Content - Full Height */}
+      <div className="flex gap-2 sm:gap-3 h-[calc(100vh-120px)] px-2 sm:px-3 py-2">
+        {/* Document Viewer - Full Width/Height */}
+        <div className="flex-1 flex flex-col min-w-0">
+          <div className="flex-1 bg-gray-50 rounded-lg sm:rounded-xl overflow-hidden shadow-sm">
+            {renderViewer()}
           </div>
+        </div>
 
-          {/* Collapse Toggle Button - At Junction */}
-          <button
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className={`fixed ${
-              sidebarCollapsed ? "right-4" : "right-[calc(288px+1.5rem)]"
-            } top-1/2 -translate-y-1/2 z-20 p-2 bg-brand/90 hover:bg-brand border-2 border-white rounded-full shadow-lg transition-all duration-300`}
-            aria-label={
-              sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
-            }
-          >
-            <ChevronsRight
-              size={18}
-              className={`text-white transition-transform duration-300 ${
-                sidebarCollapsed ? "" : "rotate-180"
-              }`}
-            />
-          </button>
-
-          {/* Right Sidebar - Material Info & Related Materials */}
-          <div
-            className={`relative bg-white rounded-t-3xl border border-gray-200 flex flex-col transition-all duration-300 ${
-              sidebarCollapsed ? "w-0 border-0 overflow-hidden" : "w-72"
+        {/* Collapse Toggle Button - At Junction */}
+        <button
+          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+          className={`fixed ${
+            sidebarCollapsed
+              ? "right-2 sm:right-2"
+              : "right-[calc(256px+0.5rem)] sm:right-[calc(288px+0.5rem)]"
+          } top-1/2 -translate-y-1/2 z-20 p-1.5 sm:p-2 bg-brand/90 hover:bg-brand border-2 border-white rounded-full shadow-lg transition-all duration-300`}
+          aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          <ChevronsRight
+            size={16}
+            className={`sm:w-[18px] sm:h-[18px] text-white transition-transform duration-300 ${
+              sidebarCollapsed ? "" : "rotate-180"
             }`}
-          >
-            {/* Material Information */}
-            <div className="p-4 border-b border-gray-200">
-              <h1 className="text-base font-semibold text-gray-900 mb-1.5">
-                {material.label}
-              </h1>
-              {material.description && (
-                <p className="text-xs text-gray-600 mb-3">
-                  {material.description}
-                </p>
-              )}
+          />
+        </button>
 
-              {/* Tags */}
-              {material.tags && material.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mb-3">
-                  {material.tags.map((tag, index) => (
-                    <Badge
-                      key={index}
-                      variant="secondary"
-                      className="text-xs py-0 px-2"
-                    >
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              )}
+        {/* Right Sidebar - Material Info & Related Materials */}
+        <div
+          className={`relative bg-white rounded-lg sm:rounded-xl border border-gray-200 flex flex-col transition-all duration-300 shadow-sm ${
+            sidebarCollapsed ? "w-0 border-0 overflow-hidden" : "w-64 sm:w-72"
+          }`}
+        >
+          {/* Material Information */}
+          <div className="p-3 border-b border-gray-200">
+            <h1 className="text-sm font-semibold text-gray-900 mb-1 line-clamp-2">
+              {material.label}
+            </h1>
+            {material.description && (
+              <p className="text-xs text-gray-600 mb-2 line-clamp-2">
+                {material.description}
+              </p>
+            )}
 
-              {/* Material Metadata */}
-              <div className="space-y-1.5 text-xs">
-                {material.targetCourse && (
-                  <>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Course:</span>
-                      <span className="font-medium">
-                        {material.targetCourse.courseCode}
-                      </span>
-                    </div>
-                    {material.targetCourse.departments &&
-                      material.targetCourse.departments.length > 0 && (
-                        <>
+            {/* Tags */}
+            {material.tags && material.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1 mb-2">
+                {material.tags.slice(0, 3).map((tag, index) => (
+                  <Badge
+                    key={index}
+                    variant="secondary"
+                    className="text-xs py-0 px-1.5"
+                  >
+                    {tag}
+                  </Badge>
+                ))}
+                {material.tags.length > 3 && (
+                  <Badge variant="secondary" className="text-xs py-0 px-1.5">
+                    +{material.tags.length - 3}
+                  </Badge>
+                )}
+              </div>
+            )}
+
+            {/* Material Metadata */}
+            <div className="space-y-1 text-xs">
+              {material.targetCourse && (
+                <>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Course:</span>
+                    <span className="font-medium">
+                      {material.targetCourse.courseCode}
+                    </span>
+                  </div>
+                  {material.targetCourse.departments &&
+                    material.targetCourse.departments.length > 0 && (
+                      <>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Department:</span>
+                          <span className="font-medium">
+                            {
+                              material.targetCourse.departments[0].department
+                                .name
+                            }
+                          </span>
+                        </div>
+                        {material.targetCourse.departments[0].department
+                          .faculty && (
                           <div className="flex justify-between">
-                            <span className="text-gray-600">Department:</span>
+                            <span className="text-gray-600">Faculty:</span>
                             <span className="font-medium">
                               {
                                 material.targetCourse.departments[0].department
-                                  .name
+                                  .faculty.name
                               }
                             </span>
                           </div>
-                          {material.targetCourse.departments[0].department
-                            .faculty && (
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Faculty:</span>
-                              <span className="font-medium">
-                                {
-                                  material.targetCourse.departments[0]
-                                    .department.faculty.name
-                                }
-                              </span>
-                            </div>
-                          )}
-                        </>
-                      )}
-                  </>
-                )}
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Uploaded by:</span>
-                  <span className="font-medium">
-                    {material.creator?.firstName} {material.creator?.lastName}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Date:</span>
-                  <span className="font-medium">
-                    {formatRelativeTime(material.createdAt)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Type:</span>
-                  <span className="font-medium uppercase">{material.type}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Views:</span>
-                  <span className="font-medium">{material.views}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Downloads:</span>
-                  <span className="font-medium">{material.downloads}</span>
-                </div>
+                        )}
+                      </>
+                    )}
+                </>
+              )}
+              <div className="flex justify-between">
+                <span className="text-gray-600">Uploaded by:</span>
+                <span className="font-medium">
+                  {material.creator?.firstName} {material.creator?.lastName}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Date:</span>
+                <span className="font-medium">
+                  {formatRelativeTime(material.createdAt)}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Type:</span>
+                <span className="font-medium uppercase">{material.type}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Views:</span>
+                <span className="font-medium">{material.views}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Downloads:</span>
+                <span className="font-medium">{material.downloads}</span>
               </div>
             </div>
+          </div>
 
-            {/* Related Materials */}
-            <div className="flex-1 p-4 overflow-y-auto">
-              <h3 className="text-sm font-semibold text-gray-900 mb-3">
-                Related Materials
-              </h3>
-              {relatedMaterials.length === 0 ? (
-                <p className="text-xs text-gray-500 text-center py-8">
-                  No related materials found
-                </p>
-              ) : (
-                <div className="space-y-3">
-                  {relatedMaterials.map((relatedMaterial) => (
-                    <Card
-                      key={relatedMaterial.id}
-                      className="cursor-pointer hover:shadow-md transition-shadow"
-                      onClick={() =>
-                        navigate(`/dashboard/material/${relatedMaterial.id}`)
-                      }
-                    >
-                      <CardHeader className="pb-2 px-3 pt-3">
-                        <CardTitle className="text-xs font-medium text-gray-900">
-                          {relatedMaterial.label}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="pt-0 px-3 pb-3">
-                        <p className="text-xs text-gray-600 line-clamp-2">
-                          {relatedMaterial.description}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </div>
+          {/* Related Materials */}
+          <div className="flex-1 p-3 overflow-y-auto">
+            <h3 className="text-xs font-semibold text-gray-900 mb-2">
+              Related Materials
+            </h3>
+            {relatedMaterials.length === 0 ? (
+              <p className="text-xs text-gray-500 text-center py-6">
+                No related materials found
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {relatedMaterials.map((relatedMaterial) => (
+                  <Card
+                    key={relatedMaterial.id}
+                    className="cursor-pointer hover:shadow-md transition-shadow"
+                    onClick={() =>
+                      navigate(`/dashboard/material/${relatedMaterial.id}`)
+                    }
+                  >
+                    <CardHeader className="pb-1.5 px-2.5 pt-2.5">
+                      <CardTitle className="text-xs font-medium text-gray-900 line-clamp-1">
+                        {relatedMaterial.label}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0 px-2.5 pb-2.5">
+                      <p className="text-xs text-gray-600 line-clamp-2">
+                        {relatedMaterial.description}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
