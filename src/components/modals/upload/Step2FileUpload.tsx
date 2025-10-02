@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   UploadSquare01Icon,
@@ -23,17 +23,25 @@ import {
   generateDefaultTitle,
 } from "@/lib/utils/inferMaterialType";
 import { CreateMaterialFileForm } from "@/api/materials.api";
-import { VisibilityEnum, RestrictionEnum } from "@/lib/types/material.types";
+import {
+  VisibilityEnum,
+  RestrictionEnum,
+  Material,
+} from "@/lib/types/material.types";
 import { SelectCourse } from "./shared/SelectCourse";
 
 interface Step2FileUploadProps {
   onComplete: (data: CreateMaterialFileForm) => void;
   onBack: () => void;
+  editingMaterial?: Material | null;
+  isEditMode?: boolean;
 }
 
 const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
   onComplete,
   onBack,
+  editingMaterial = null,
+  isEditMode = false,
 }) => {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -63,6 +71,25 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
   });
 
   const watchedValues = watch();
+
+  // Prefill form when in edit mode
+  useEffect(() => {
+    if (isEditMode && editingMaterial) {
+      setValue("materialTitle", editingMaterial.label);
+      setValue("description", editingMaterial.description || "");
+      setValue("visibility", editingMaterial.visibility);
+      setValue("accessRestrictions", editingMaterial.restriction);
+
+      if (editingMaterial.tags && editingMaterial.tags.length > 0) {
+        setTags(editingMaterial.tags);
+        setValue("tags", editingMaterial.tags);
+      }
+
+      if (editingMaterial.targetCourseId) {
+        setTargetCourseId(editingMaterial.targetCourseId);
+      }
+    }
+  }, [isEditMode, editingMaterial, setValue]);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -142,13 +169,16 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
   };
 
   const onSubmit = (data: UploadFileInput) => {
-    if (!selectedFile) {
+    // In edit mode, file is optional (user might just update metadata)
+    if (!isEditMode && !selectedFile) {
       toast.error("Please select a file to upload");
       return;
     }
 
-    // Infer material type from file
-    const inferredType = inferMaterialType(selectedFile);
+    // Infer material type from file (or use existing type in edit mode)
+    const inferredType = selectedFile
+      ? inferMaterialType(selectedFile)
+      : editingMaterial?.type || "other";
 
     const formData: CreateMaterialFileForm = {
       materialTitle: data.materialTitle,
@@ -159,9 +189,9 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
       accessRestrictions: data.accessRestrictions,
       tags: data.tags || [],
       targetCourseId: targetCourseId || undefined,
-      file: selectedFile,
-      image: selectedImage,
-    };
+      ...(selectedFile && { file: selectedFile }),
+      ...(selectedImage && { image: selectedImage }),
+    } as CreateMaterialFileForm;
 
     onComplete(formData);
   };
@@ -174,8 +204,16 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
       className="space-y-6"
     >
       <HeaderStepper
-        title="Share Your Notes, Earn Your Rewards"
-        subtitle="Help your fellow students while earning points on UniNav"
+        title={
+          isEditMode
+            ? "Edit Your Material"
+            : "Share Your Notes, Earn Your Rewards"
+        }
+        subtitle={
+          isEditMode
+            ? "Update your material information"
+            : "Help your fellow students while earning points on UniNav"
+        }
         currentStep={2}
         totalSteps={2}
       />
@@ -183,8 +221,13 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
       {/* Upload File Section */}
       <div className="space-y-3">
         <h3 className="text-base sm:text-lg font-semibold text-gray-900">
-          Upload File
+          {isEditMode ? "Update File (Optional)" : "Upload File"}
         </h3>
+        {isEditMode && !selectedFile && (
+          <p className="text-xs text-gray-600">
+            Leave empty to keep the existing file
+          </p>
+        )}
 
         <div
           className={`border-2 border-dashed rounded-xl p-4 sm:p-6 text-center transition-colors ${
@@ -314,18 +357,20 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
 
       {/* Action Buttons */}
       <div className="flex space-x-3 pt-3">
-        <button
-          onClick={onBack}
-          className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2"
-        >
-          <ArrowLeft01Icon size={16} />
-          <span>Back</span>
-        </button>
+        {!isEditMode && (
+          <button
+            onClick={onBack}
+            className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2"
+          >
+            <ArrowLeft01Icon size={16} />
+            <span>Back</span>
+          </button>
+        )}
         <button
           onClick={handleSubmit(onSubmit)}
           className="flex-1 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors"
         >
-          Upload
+          {isEditMode ? "Done" : "Upload"}
         </button>
       </div>
     </motion.div>

@@ -114,6 +114,9 @@ type MaterialsSectionProps = {
   onEmptyStateAction?: () => void;
   isLoading?: boolean;
   layout?: "rail" | "grid"; // rail = horizontal scroll, grid = 2-row grid
+  onEdit?: (material: Material) => void; // For user uploads - edit material
+  onDelete?: (id: string) => void; // For user uploads - delete material
+  showEditDelete?: boolean; // Show edit/delete actions on cards
 };
 
 const MaterialsSection: React.FC<MaterialsSectionProps> = ({
@@ -129,6 +132,9 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
   onEmptyStateAction,
   isLoading = false,
   layout = "rail",
+  onEdit,
+  onDelete,
+  showEditDelete = false,
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -437,6 +443,9 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
               onShare={onShare}
               onRead={onRead}
               lastViewedAt={material.lastViewedAt}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              showEditDelete={showEditDelete}
             />
           ))}
         </div>
@@ -489,6 +498,9 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
                   onShare={onShare}
                   onRead={onRead}
                   lastViewedAt={material.lastViewedAt}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  showEditDelete={showEditDelete}
                 />
               </div>
             ))}

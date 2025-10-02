@@ -134,7 +134,7 @@ const MaterialView: React.FC = () => {
         await trackMaterialDownload(material.id);
       }
 
-      // Handle Google Drive downloads
+      // Handle Google Drive downloads (already works well)
       if (material.type === MaterialTypeEnum.GDRIVE) {
         const gdriveId = extractGDriveId(material.resource.resourceAddress);
 
@@ -155,21 +155,55 @@ const MaterialView: React.FC = () => {
           toast.success("Download started!");
         }
       } else {
-        // Handle regular uploaded files
+        // Handle regular uploaded files - fetch as blob to force download
         if (material.resource.resourceType === ResourceTypeEnum.UPLOAD) {
-          const link = document.createElement("a");
-          link.href = material.resource.resourceAddress;
-          link.download = material.label;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          toast.success("Download started!");
+          toast.loading("Preparing download...");
+
+          try {
+            // Fetch the file as a blob
+            const response = await fetch(material.resource.resourceAddress);
+
+            if (!response.ok) {
+              throw new Error("Failed to fetch file");
+            }
+
+            const blob = await response.blob();
+
+            // Create a blob URL and trigger download
+            const blobUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = blobUrl;
+            link.download = material.label;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            // Clean up the blob URL after a short delay
+            setTimeout(() => window.URL.revokeObjectURL(blobUrl), 100);
+
+            toast.dismiss();
+            toast.success("Download started!");
+          } catch (fetchError) {
+            console.error("Fetch failed, trying direct download:", fetchError);
+            toast.dismiss();
+
+            // Fallback to direct link if fetch fails (e.g., CORS issues)
+            const link = document.createElement("a");
+            link.href = material.resource.resourceAddress;
+            link.download = material.label;
+            link.target = "_blank";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            toast.success("Download started!");
+          }
         } else {
           toast.error("Download not available for this material type");
         }
       }
     } catch (error: any) {
       console.error("Error downloading material:", error);
+      toast.dismiss();
       toast.error(error.message || "Failed to download material");
     }
   };

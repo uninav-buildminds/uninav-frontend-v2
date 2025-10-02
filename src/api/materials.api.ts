@@ -246,3 +246,84 @@ export async function trackMaterialDownload(
     };
   }
 }
+
+// Update material (supports both file and metadata updates)
+export async function updateMaterial(
+  materialId: string,
+  rawForm: Partial<CreateMaterialForm>
+): Promise<Response<Material>> {
+  const formData = new FormData();
+
+  if (rawForm.materialTitle) {
+    formData.append("label", rawForm.materialTitle);
+  }
+  if (rawForm.description !== undefined) {
+    formData.append("description", rawForm.description);
+  }
+  if (rawForm.type) {
+    formData.append("type", rawForm.type);
+  }
+  if (rawForm.accessRestrictions) {
+    formData.append("restriction", rawForm.accessRestrictions);
+  }
+  if (rawForm.tags) {
+    formData.append(
+      "tags",
+      Array.isArray(rawForm.tags) ? rawForm.tags.join(",") : rawForm.tags
+    );
+  }
+  if (rawForm.targetCourseId) {
+    formData.append("targetCourseId", rawForm.targetCourseId);
+  }
+  if (rawForm.metaData) {
+    rawForm.metaData.forEach((meta: string) =>
+      formData.append("metaData", meta)
+    );
+  }
+  if (rawForm.visibility) {
+    formData.append("visibility", rawForm.visibility);
+  }
+
+  // Handle file upload for file-based materials
+  if ("file" in rawForm && rawForm.file) {
+    formData.append("file", rawForm.file);
+  }
+  // Handle URL updates for link-based materials
+  if ("url" in rawForm && rawForm.url) {
+    formData.append("resourceAddress", rawForm.url);
+  }
+
+  try {
+    const response = await httpClient.patch(
+      `/materials/${materialId}`,
+      formData
+    );
+    return response.data;
+  } catch (error: any) {
+    console.error("Error updating material:", error);
+    throw {
+      statusCode: error.response?.status,
+      message:
+        error.response?.data?.message ||
+        "Material update failed. Please try again.",
+    };
+  }
+}
+
+// Delete material
+export async function deleteMaterial(
+  materialId: string
+): Promise<Response<Material>> {
+  try {
+    const response = await httpClient.delete(`/materials/${materialId}`);
+    return response.data;
+  } catch (error: any) {
+    console.error("Error deleting material:", error);
+    throw {
+      statusCode: error.response?.status,
+      message:
+        error.response?.data?.message ||
+        "Material deletion failed. Please try again.",
+    };
+  }
+}

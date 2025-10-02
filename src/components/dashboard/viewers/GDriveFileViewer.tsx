@@ -152,28 +152,33 @@ const GDriveFileViewer: React.FC<GDriveFileViewerProps> = ({
 
     return (
       <div className="h-full flex flex-col bg-white rounded-lg overflow-hidden">
-        <div className="flex-1 flex items-center justify-center p-4 bg-gray-50">
-          <img
-            src={imageUrl}
-            alt={fileMetadata.name}
-            className="max-w-full max-h-full object-contain rounded shadow-lg"
-            style={{ transform: `scale(${zoom / 100})` }}
-            onError={(e) => {
-              // Fallback to thumbnail if direct link fails
-              const target = e.target as HTMLImageElement;
-              if (
-                fileMetadata.thumbnailLink &&
-                target.src !== fileMetadata.thumbnailLink
-              ) {
-                target.src = fileMetadata.thumbnailLink;
-              } else {
-                // Show error state
-                target.style.display = "none";
-              }
-            }}
-          />
+        <div className="flex-1 bg-gray-900 overflow-auto p-4">
+          <div className="min-h-full flex items-center justify-center">
+            <img
+              src={imageUrl}
+              alt={fileMetadata.name}
+              className="max-w-full h-auto"
+              style={{
+                transform: `scale(${zoom / 100})`,
+                transformOrigin: "center center",
+              }}
+              onError={(e) => {
+                // Fallback to thumbnail if direct link fails
+                const target = e.target as HTMLImageElement;
+                if (
+                  fileMetadata.thumbnailLink &&
+                  target.src !== fileMetadata.thumbnailLink
+                ) {
+                  target.src = fileMetadata.thumbnailLink;
+                } else {
+                  // Show error state
+                  target.style.display = "none";
+                }
+              }}
+            />
+          </div>
         </div>
-        <div className="p-3 border-t border-gray-200 flex justify-center">
+        <div className="p-2 border-t border-gray-200 flex justify-center bg-gray-50">
           <Button onClick={handleDownload} size="sm">
             <Download size={16} className="mr-2" />
             Download

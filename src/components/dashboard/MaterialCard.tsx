@@ -1,5 +1,5 @@
 import React from "react";
-import { Share08Icon } from "hugeicons-react";
+import { Share08Icon, PencilEdit02Icon, Delete02Icon } from "hugeicons-react";
 import { toast } from "sonner";
 import { Material } from "../../lib/types/material.types";
 import { formatRelativeTime } from "../../lib/utils";
@@ -59,6 +59,9 @@ interface MaterialCardProps {
   onShare?: (id: string) => void;
   onRead?: (id: string) => void;
   lastViewedAt?: string; // For recent materials - shows when the user last viewed this material
+  onEdit?: (material: Material) => void; // For user uploads - edit material
+  onDelete?: (id: string) => void; // For user uploads - delete material
+  showEditDelete?: boolean; // Show edit/delete actions instead of bookmark
 }
 
 const MaterialCard: React.FC<MaterialCardProps> = ({
@@ -66,6 +69,9 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
   onShare,
   onRead,
   lastViewedAt,
+  onEdit,
+  onDelete,
+  showEditDelete = false,
 }) => {
   const { id, label, createdAt, downloads, tags, views, likes } = material;
   const previewImage = material.previewUrl || "/placeholder.svg";
@@ -75,6 +81,16 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
   const handleSave = (e: React.MouseEvent) => {
     e.stopPropagation();
     toggleBookmark(id);
+  };
+
+  const handleEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onEdit?.(material);
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDelete?.(id);
   };
 
   const handleShare = (e: React.MouseEvent) => {
@@ -112,18 +128,39 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
           }}
         />
 
-        {/* Save Button - Top Right */}
-        <button
-          onClick={handleSave}
-          className="absolute top-2 right-2 p-1 text-gray-600 hover:text-brand hover:bg-[#DCDFFE] rounded-md transition-colors duration-200"
-          aria-label={saved ? "Remove from saved" : "Save material"}
-        >
-          {saved ? (
-            <BookmarkFilledIcon size={20} className="text-brand" />
-          ) : (
-            <BookmarkOutlineIcon size={20} />
-          )}
-        </button>
+        {/* Action Buttons - Top Right */}
+        {showEditDelete ? (
+          // Edit/Delete buttons for user uploads
+          <div className="absolute top-2 right-2 flex gap-1">
+            <button
+              onClick={handleEdit}
+              className="p-1 bg-white/90 backdrop-blur-sm text-gray-600 hover:text-brand hover:bg-[#DCDFFE] rounded-md transition-colors duration-200 shadow-sm"
+              aria-label="Edit material"
+            >
+              <PencilEdit02Icon size={18} />
+            </button>
+            <button
+              onClick={handleDelete}
+              className="p-1 bg-white/90 backdrop-blur-sm text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors duration-200 shadow-sm"
+              aria-label="Delete material"
+            >
+              <Delete02Icon size={18} />
+            </button>
+          </div>
+        ) : (
+          // Bookmark button for other materials
+          <button
+            onClick={handleSave}
+            className="absolute top-2 right-2 p-1 text-gray-600 hover:text-brand hover:bg-[#DCDFFE] rounded-md transition-colors duration-200"
+            aria-label={saved ? "Remove from saved" : "Save material"}
+          >
+            {saved ? (
+              <BookmarkFilledIcon size={20} className="text-brand" />
+            ) : (
+              <BookmarkOutlineIcon size={20} />
+            )}
+          </button>
+        )}
 
         {/* Tags - Bottom Left */}
         {tags && tags.length > 0 && (

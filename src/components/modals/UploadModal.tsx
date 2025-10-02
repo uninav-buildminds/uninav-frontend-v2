@@ -6,7 +6,12 @@ import Step1 from "./upload/Step1";
 import Step2FileUpload from "./upload/Step2FileUpload";
 import Step2HelpfulLink from "./upload/Step2HelpfulLink";
 import UploadSuccess from "./upload/UploadSuccess";
-import { createMaterials, CreateMaterialForm } from "@/api/materials.api";
+import {
+  createMaterials,
+  updateMaterial,
+  CreateMaterialForm,
+} from "@/api/materials.api";
+import { Material, ResourceTypeEnum } from "@/lib/types/material.types";
 
 export type MaterialType = "file" | "link";
 export type UploadStep = "type-selection" | "upload-details" | "success";
@@ -14,17 +19,45 @@ export type UploadStep = "type-selection" | "upload-details" | "success";
 interface UploadModalProps {
   isOpen: boolean;
   onClose: () => void;
+  editingMaterial?: Material | null; // Material to edit (if in editing mode)
+  onEditComplete?: () => void; // Callback after successful edit
 }
 
-const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose }) => {
-  const [currentStep, setCurrentStep] = useState<UploadStep>("type-selection");
-  const [materialType, setMaterialType] = useState<MaterialType | null>(null);
+const UploadModal: React.FC<UploadModalProps> = ({
+  isOpen,
+  onClose,
+  editingMaterial = null,
+  onEditComplete,
+}) => {
+  const isEditMode = !!editingMaterial;
+
+  const [currentStep, setCurrentStep] = useState<UploadStep>(
+    isEditMode ? "upload-details" : "type-selection"
+  );
+  const [materialType, setMaterialType] = useState<MaterialType | null>(
+    isEditMode
+      ? editingMaterial.resource?.resourceType === ResourceTypeEnum.URL
+        ? "link"
+        : "file"
+      : null
+  );
   const [uploadData, setUploadData] = useState<CreateMaterialForm | null>(null);
   const [submitting, setSubmitting] = useState(false); // Loader state
 
-  // useEffect(() => {
-  //   console.log("uploadData changed:", uploadData);
-  // }, [uploadData]);
+  // Reset state when modal opens/closes or editing material changes
+  useEffect(() => {
+    if (isOpen && editingMaterial) {
+      setCurrentStep("upload-details");
+      setMaterialType(
+        editingMaterial.resource?.resourceType === ResourceTypeEnum.URL
+          ? "link"
+          : "file"
+      );
+    } else if (isOpen && !editingMaterial) {
+      setCurrentStep("type-selection");
+      setMaterialType(null);
+    }
+  }, [isOpen, editingMaterial]);
 
   const handleMaterialTypeSelect = (type: MaterialType) => {
     setMaterialType(type);
@@ -35,11 +68,20 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose }) => {
     setUploadData(data);
     setSubmitting(true); // Start loader
     try {
-      const result = await createMaterials(data);
-      console.log("Upload result:", result);
-      setCurrentStep("success");
+      if (isEditMode && editingMaterial) {
+        // Update existing material
+        const result = await updateMaterial(editingMaterial.id, data);
+        console.log("Update result:", result);
+        onEditComplete?.();
+        handleClose();
+      } else {
+        // Create new material
+        const result = await createMaterials(data);
+        console.log("Upload result:", result);
+        setCurrentStep("success");
+      }
     } catch (error) {
-      console.error("Upload failed:", error);
+      console.error(isEditMode ? "Update failed:" : "Upload failed:", error);
     } finally {
       setSubmitting(false); // Stop loader
     }
@@ -73,6 +115,8 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose }) => {
             <Step2FileUpload
               onComplete={handleUploadComplete}
               onBack={handleBack}
+              editingMaterial={editingMaterial}
+              isEditMode={isEditMode}
             />
           );
         } else if (materialType === "link") {
@@ -80,6 +124,8 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose }) => {
             <Step2HelpfulLink
               onComplete={handleUploadComplete}
               onBack={handleBack}
+              editingMaterial={editingMaterial}
+              isEditMode={isEditMode}
             />
           );
         }

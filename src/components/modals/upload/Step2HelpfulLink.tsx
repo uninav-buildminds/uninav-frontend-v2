@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Link01Icon,
@@ -21,17 +21,25 @@ import {
   generateDefaultTitle,
 } from "@/lib/utils/inferMaterialType";
 import { CreateMaterialLinkForm } from "@/api/materials.api";
-import { VisibilityEnum, RestrictionEnum } from "@/lib/types/material.types";
+import {
+  VisibilityEnum,
+  RestrictionEnum,
+  Material,
+} from "@/lib/types/material.types";
 import { SelectCourse } from "./shared/SelectCourse";
 
 interface Step2HelpfulLinkProps {
   onComplete: (data: CreateMaterialLinkForm) => void;
   onBack: () => void;
+  editingMaterial?: Material | null;
+  isEditMode?: boolean;
 }
 
 const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
   onComplete,
   onBack,
+  editingMaterial = null,
+  isEditMode = false,
 }) => {
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
@@ -58,6 +66,30 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
   });
 
   const watchedValues = watch();
+
+  // Prefill form when in edit mode
+  useEffect(() => {
+    if (isEditMode && editingMaterial) {
+      setValue("materialTitle", editingMaterial.label);
+      setValue("description", editingMaterial.description || "");
+      setValue("visibility", editingMaterial.visibility);
+      setValue("accessRestrictions", editingMaterial.restriction);
+
+      // Prefill URL if it exists in resource
+      if (editingMaterial.resource?.resourceAddress) {
+        setValue("url", editingMaterial.resource.resourceAddress);
+      }
+
+      if (editingMaterial.tags && editingMaterial.tags.length > 0) {
+        setTags(editingMaterial.tags);
+        setValue("tags", editingMaterial.tags);
+      }
+
+      if (editingMaterial.targetCourseId) {
+        setTargetCourseId(editingMaterial.targetCourseId);
+      }
+    }
+  }, [isEditMode, editingMaterial, setValue]);
 
   // Handle URL input change to auto-populate title
   const handleUrlChange = (url: string) => {
@@ -133,8 +165,16 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
       className="space-y-6"
     >
       <HeaderStepper
-        title="Share Your Notes, Earn Your Rewards"
-        subtitle="Help your fellow students while earning points on UniNav"
+        title={
+          isEditMode
+            ? "Edit Your Material"
+            : "Share Your Notes, Earn Your Rewards"
+        }
+        subtitle={
+          isEditMode
+            ? "Update your material information"
+            : "Help your fellow students while earning points on UniNav"
+        }
         currentStep={2}
         totalSteps={2}
       />
@@ -227,18 +267,20 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
 
       {/* Action Buttons */}
       <div className="flex space-x-3 pt-3">
-        <button
-          onClick={onBack}
-          className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2"
-        >
-          <ArrowLeft01Icon size={16} />
-          <span>Back</span>
-        </button>
+        {!isEditMode && (
+          <button
+            onClick={onBack}
+            className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2"
+          >
+            <ArrowLeft01Icon size={16} />
+            <span>Back</span>
+          </button>
+        )}
         <button
           onClick={handleSubmit(onSubmit)}
           className="flex-1 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors"
         >
-          Upload
+          {isEditMode ? "Done" : "Upload"}
         </button>
       </div>
     </motion.div>

@@ -6,9 +6,10 @@ import { UploadModal } from "@/components/modals";
 import { useAuth } from "@/hooks/useAuth";
 import { useBookmarks } from "@/context/bookmark/BookmarkContextProvider";
 import { getAllBookmarks } from "@/api/user.api";
-import { searchMaterials } from "@/api/materials.api";
+import { searchMaterials, deleteMaterial } from "@/api/materials.api";
 import { Material } from "@/lib/types/material.types";
 import { Bookmark } from "@/lib/types/bookmark.types";
+import { toast } from "sonner";
 import { ResponseStatus } from "@/lib/types/response.types";
 
 const Libraries: React.FC = () => {
@@ -27,6 +28,7 @@ const Libraries: React.FC = () => {
   const [isNavigating, setIsNavigating] = useState(false);
   const [isLoadingUploads, setIsLoadingUploads] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);
 
   // Extract materials from bookmarks (materials are already included in bookmark objects)
   const fetchSavedMaterials = () => {
@@ -136,6 +138,49 @@ const Libraries: React.FC = () => {
     setShowUploadModal(true);
   };
 
+  const handleEditMaterial = (material: Material) => {
+    setEditingMaterial(material);
+    setShowUploadModal(true);
+  };
+
+  const handleDeleteMaterial = async (id: string) => {
+    // Show confirmation toast with action button
+    toast.warning("Are you sure you want to delete this material?", {
+      description: "This action cannot be undone.",
+      action: {
+        label: "Delete",
+        onClick: async () => {
+          try {
+            await deleteMaterial(id);
+            toast.success("Material deleted successfully");
+            // Refresh uploads list
+            await fetchUserUploads();
+          } catch (error: any) {
+            toast.error(
+              error.message || "Failed to delete material. Please try again."
+            );
+          }
+        },
+      },
+      cancel: {
+        label: "Cancel",
+        onClick: () => toast.dismiss(),
+      },
+    });
+  };
+
+  const handleEditComplete = async () => {
+    toast.success("Material updated successfully");
+    setEditingMaterial(null);
+    // Refresh uploads list
+    await fetchUserUploads();
+  };
+
+  const handleModalClose = () => {
+    setShowUploadModal(false);
+    setEditingMaterial(null);
+  };
+
   // Fetch data when component mounts or dependencies change
   useEffect(() => {
     if (user?.id) {
@@ -218,6 +263,9 @@ const Libraries: React.FC = () => {
             emptyStateType="uploads"
             onEmptyStateAction={handleUploadsEmptyStateAction}
             isLoading={isLoadingUploads}
+            onEdit={handleEditMaterial}
+            onDelete={handleDeleteMaterial}
+            showEditDelete={true}
           />
         </div>
       </div>
@@ -225,7 +273,9 @@ const Libraries: React.FC = () => {
       {/* Upload Modal */}
       <UploadModal
         isOpen={showUploadModal}
-        onClose={() => setShowUploadModal(false)}
+        onClose={handleModalClose}
+        editingMaterial={editingMaterial}
+        onEditComplete={handleEditComplete}
       />
     </>
   );
