@@ -29,6 +29,7 @@ import { ResourceTypeEnum, RestrictionEnum } from "@/lib/types/material.types";
 import PDFViewer from "@/components/dashboard/viewers/PDFViewer";
 import GDriveFolderBrowser from "@/components/dashboard/viewers/GDriveFolderBrowser";
 import GDriveFileViewer from "@/components/dashboard/viewers/GDriveFileViewer";
+import YouTubeViewer from "@/components/dashboard/viewers/YouTubeViewer";
 import { extractGDriveId, isGDriveFolder } from "@/lib/utils/gdriveUtils";
 import {
   downloadGDriveFile,
@@ -125,6 +126,12 @@ const MaterialView: React.FC = () => {
     // Check if material is read-only
     if (material.restriction === RestrictionEnum.READONLY) {
       toast.error("This material is read-only and cannot be downloaded");
+      return;
+    }
+
+    // YouTube videos cannot be downloaded
+    if (material.type === MaterialTypeEnum.YOUTUBE) {
+      toast.error("YouTube videos cannot be downloaded directly");
       return;
     }
 
@@ -362,6 +369,19 @@ const MaterialView: React.FC = () => {
       );
     }
 
+    // Handle YouTube videos
+    if (
+      material.type === MaterialTypeEnum.YOUTUBE &&
+      material.resource?.resourceAddress
+    ) {
+      return (
+        <YouTubeViewer
+          url={material.resource.resourceAddress}
+          title={material.label}
+        />
+      );
+    }
+
     // Handle regular PDF files
     if (
       material.type === MaterialTypeEnum.PDF &&
@@ -467,9 +487,10 @@ const MaterialView: React.FC = () => {
           >
             <Share08Icon size={15} className="sm:w-4 sm:h-4" />
           </Button>
-          {/* Show download button only if not read-only and is either an uploaded file or GDrive material */}
+          {/* Show download button only if not read-only, not YouTube, and is either an uploaded file or GDrive material */}
           {material &&
             material.restriction !== RestrictionEnum.READONLY &&
+            material.type !== MaterialTypeEnum.YOUTUBE &&
             (material.resource?.resourceType === ResourceTypeEnum.UPLOAD ||
               material.type === MaterialTypeEnum.GDRIVE) && (
               <Button
