@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useBookmarks } from "@/context/bookmark/BookmarkContextProvider";
 import { toast } from "sonner";
 import { formatRelativeTime } from "@/lib/utils";
@@ -55,6 +56,21 @@ const MaterialView: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(
     typeof window !== "undefined" && window.innerWidth < 768 // Hide sidebar on mobile by default
   );
+
+  // Force sidebar to stay collapsed on mobile
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setSidebarCollapsed(true);
+      }
+    };
+
+    // Set initial state
+    handleResize();
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Fetch material data from API
   useEffect(() => {
@@ -458,10 +474,8 @@ const MaterialView: React.FC = () => {
 
         {/* Floating Action Buttons - Top Right */}
         <div
-          className={`fixed top-3 sm:top-4 z-30 flex items-center gap-1.5 sm:gap-2 transition-all duration-300 ${
-            sidebarCollapsed
-              ? "right-3 sm:right-4"
-              : "right-[calc(264px+0.5rem)] sm:right-[calc(288px+0.5rem)]"
+          className={`fixed top-3 sm:top-4 z-30 flex items-center gap-1.5 sm:gap-2 transition-all duration-300 right-3 sm:right-4 ${
+            !sidebarCollapsed ? "md:right-[calc(288px+0.5rem)]" : ""
           }`}
         >
           <Button
@@ -510,10 +524,15 @@ const MaterialView: React.FC = () => {
           </div>
         </div>
 
-        {/* Collapse Toggle Button - At Junction */}
+        {/* Collapse Toggle Button - At Junction (Hidden on mobile) */}
         <button
-          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-          className={`fixed ${
+          onClick={() => {
+            // Only allow toggling on desktop
+            if (window.innerWidth >= 768) {
+              setSidebarCollapsed(!sidebarCollapsed);
+            }
+          }}
+          className={`hidden md:block fixed ${
             sidebarCollapsed
               ? "right-4"
               : "right-[calc(256px+0.75rem)] sm:right-[calc(288px+0.75rem)]"
@@ -528,9 +547,9 @@ const MaterialView: React.FC = () => {
           />
         </button>
 
-        {/* Right Sidebar - Material Info & Related Materials */}
+        {/* Right Sidebar - Material Info & Related Materials (Hidden on mobile) */}
         <div
-          className={`relative bg-white rounded-lg sm:rounded-xl border border-gray-200 flex flex-col transition-all duration-300 shadow-sm ${
+          className={`relative bg-white rounded-lg sm:rounded-xl border border-gray-200 flex-col transition-all duration-300 shadow-sm hidden md:flex ${
             sidebarCollapsed ? "w-0 border-0 overflow-hidden" : "w-64 sm:w-72"
           }`}
         >
@@ -603,11 +622,23 @@ const MaterialView: React.FC = () => {
                     )}
                 </>
               )}
-              <div className="flex justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <span className="text-gray-600">Uploaded by:</span>
-                <span className="font-medium">
-                  {material.creator?.firstName} {material.creator?.lastName}
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <Avatar className="h-5 w-5">
+                    <AvatarImage
+                      src={material.creator?.profilePicture || undefined}
+                      alt={`${material.creator?.firstName} ${material.creator?.lastName}`}
+                    />
+                    <AvatarFallback className="text-[10px] bg-brand/10 text-brand">
+                      {material.creator?.firstName?.[0]}
+                      {material.creator?.lastName?.[0]}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="font-medium">
+                    {material.creator?.firstName} {material.creator?.lastName}
+                  </span>
+                </div>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Date:</span>

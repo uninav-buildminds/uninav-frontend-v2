@@ -55,7 +55,10 @@ export interface Material {
   downloads: number;
   views: number;
   reviewStatus: ApprovalStatusEnum;
-  creator: Pick<UserProfile, "id" | "firstName" | "lastName" | "username">;
+  creator: Pick<
+    UserProfile,
+    "id" | "firstName" | "lastName" | "username" | "profilePicture"
+  >;
   targetCourse?: Course;
   createdAt: string;
   updatedAt: string;

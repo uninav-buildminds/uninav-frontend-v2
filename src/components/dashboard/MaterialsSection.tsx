@@ -40,6 +40,7 @@ export interface MaterialRecommendation {
     firstName: string;
     lastName: string;
     username: string;
+    profilePicture?: string;
   };
   targetCourse: {
     id: string;
@@ -117,6 +118,7 @@ type MaterialsSectionProps = {
   onEdit?: (material: Material) => void; // For user uploads - edit material
   onDelete?: (id: string) => void; // For user uploads - delete material
   showEditDelete?: boolean; // Show edit/delete actions on cards
+  preserveOrder?: boolean; // If true, materials are displayed in the order received (no custom sorting)
 };
 
 const MaterialsSection: React.FC<MaterialsSectionProps> = ({
@@ -135,6 +137,7 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
   onEdit,
   onDelete,
   showEditDelete = false,
+  preserveOrder = false,
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -198,7 +201,11 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
   }, [fetchedMaterials, materials]);
 
   // Memoize sortedMaterials based on displayMaterials and sortBy
+  // If preserveOrder is true, skip custom sorting and return materials as-is
   const sortedMaterials = useMemo(() => {
+    if (preserveOrder) {
+      return displayMaterials;
+    }
     return [...displayMaterials].sort((a, b) => {
       switch (sortBy) {
         case "name":
@@ -214,7 +221,7 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
           return 0;
       }
     });
-  }, [displayMaterials, sortBy]);
+  }, [displayMaterials, sortBy, preserveOrder]);
 
   useEffect(() => {
     updateScrollButtons();
@@ -259,7 +266,104 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
           <div className="flex items-center gap-3">
-            {/* Sort Button with Dropdown */}
+            {/* Sort Button with Dropdown - Hide when order is preserved */}
+            {!preserveOrder && (
+              <div className="relative sort-dropdown">
+                <button
+                  onClick={() => setShowSortOptions(!showSortOptions)}
+                  className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                  aria-label="Sort materials"
+                >
+                  <SortingAZ02Icon size={18} className="text-gray-600" />
+                </button>
+
+                {/* Sort Options Dropdown */}
+                <AnimatePresence>
+                  {showSortOptions && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                      transition={{ duration: 0.15, ease: "easeOut" }}
+                      className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-dropdown"
+                    >
+                      <div className="py-2">
+                        <button
+                          onClick={() => {
+                            setSortBy("name");
+                            setShowSortOptions(false);
+                          }}
+                          className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors ${
+                            sortBy === "name"
+                              ? "text-brand bg-brand/5"
+                              : "text-gray-700"
+                          }`}
+                        >
+                          Sort by Name (A-Z)
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSortBy("date");
+                            setShowSortOptions(false);
+                          }}
+                          className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors ${
+                            sortBy === "date"
+                              ? "text-brand bg-brand/5"
+                              : "text-gray-700"
+                          }`}
+                        >
+                          Sort by Date (Newest)
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSortBy("downloads");
+                            setShowSortOptions(false);
+                          }}
+                          className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors ${
+                            sortBy === "downloads"
+                              ? "text-brand bg-brand/5"
+                              : "text-gray-700"
+                          }`}
+                        >
+                          Sort by Downloads (Most)
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
+
+            {/* View All Button */}
+            {showViewAll && (
+              <button
+                onClick={onViewAll}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+              >
+                View All
+                <ArrowRight01Icon size={16} className="text-gray-500" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Empty State */}
+        <EmptyState
+          type={emptyStateType}
+          onAction={onEmptyStateAction}
+          isLoading={isLoading}
+        />
+      </section>
+    );
+  }
+  return (
+    <section className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+        <div className="flex items-center gap-3">
+          {/* Sort Button with Dropdown - Hide when order is preserved */}
+          {!preserveOrder && (
             <div className="relative sort-dropdown">
               <button
                 onClick={() => setShowSortOptions(!showSortOptions)}
@@ -324,100 +428,7 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
                 )}
               </AnimatePresence>
             </div>
-
-            {/* View All Button */}
-            {showViewAll && (
-              <button
-                onClick={onViewAll}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
-              >
-                View All
-                <ArrowRight01Icon size={16} className="text-gray-500" />
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Empty State */}
-        <EmptyState
-          type={emptyStateType}
-          onAction={onEmptyStateAction}
-          isLoading={isLoading}
-        />
-      </section>
-    );
-  }
-  return (
-    <section className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-        <div className="flex items-center gap-3">
-          {/* Sort Button with Dropdown */}
-          <div className="relative sort-dropdown">
-            <button
-              onClick={() => setShowSortOptions(!showSortOptions)}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
-              aria-label="Sort materials"
-            >
-              <SortingAZ02Icon size={18} className="text-gray-600" />
-            </button>
-
-            {/* Sort Options Dropdown */}
-            <AnimatePresence>
-              {showSortOptions && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                  transition={{ duration: 0.15, ease: "easeOut" }}
-                  className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-dropdown"
-                >
-                  <div className="py-2">
-                    <button
-                      onClick={() => {
-                        setSortBy("name");
-                        setShowSortOptions(false);
-                      }}
-                      className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors ${
-                        sortBy === "name"
-                          ? "text-brand bg-brand/5"
-                          : "text-gray-700"
-                      }`}
-                    >
-                      Sort by Name (A-Z)
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSortBy("date");
-                        setShowSortOptions(false);
-                      }}
-                      className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors ${
-                        sortBy === "date"
-                          ? "text-brand bg-brand/5"
-                          : "text-gray-700"
-                      }`}
-                    >
-                      Sort by Date (Newest)
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSortBy("downloads");
-                        setShowSortOptions(false);
-                      }}
-                      className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors ${
-                        sortBy === "downloads"
-                          ? "text-brand bg-brand/5"
-                          : "text-gray-700"
-                      }`}
-                    >
-                      Sort by Downloads (Most)
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+          )}
 
           {/* View All Button */}
           {showViewAll && (

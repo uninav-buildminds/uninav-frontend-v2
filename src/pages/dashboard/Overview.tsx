@@ -363,6 +363,7 @@ const Overview: React.FC = () => {
                   onShare={handleShare}
                   onRead={handleRead}
                   scrollStep={280}
+                  preserveOrder={true}
                 />
               )}
 

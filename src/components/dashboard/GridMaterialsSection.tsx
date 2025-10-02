@@ -33,6 +33,7 @@ export interface MaterialRecommendation {
     firstName: string;
     lastName: string;
     username: string;
+    profilePicture?: string;
   };
   targetCourse: {
     id: string;

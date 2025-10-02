@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import ReviewTabs from "@/components/management/ReviewTabs";
 import ReviewActionDialog from "@/components/management/ReviewActionDialog";
 import DeleteConfirmationDialog from "@/components/management/DeleteConfirmationDialog";
@@ -300,10 +301,22 @@ const MaterialsReviewContent: React.FC = () => {
                     <h3 className="font-semibold text-lg mb-1 line-clamp-1 group-hover:text-blue-600 transition-colors">
                       {material.label}
                     </h3>
-                    <p className="text-sm text-gray-500 mb-2">
-                      by {material.creator?.firstName}{" "}
-                      {material.creator?.lastName}
-                    </p>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Avatar className="h-6 w-6">
+                        <AvatarImage
+                          src={material.creator?.profilePicture || undefined}
+                          alt={`${material.creator?.firstName} ${material.creator?.lastName}`}
+                        />
+                        <AvatarFallback className="text-xs bg-brand/10 text-brand">
+                          {material.creator?.firstName?.[0]}
+                          {material.creator?.lastName?.[0]}
+                        </AvatarFallback>
+                      </Avatar>
+                      <p className="text-sm text-gray-500">
+                        by {material.creator?.firstName}{" "}
+                        {material.creator?.lastName}
+                      </p>
+                    </div>
                     <p className="text-sm text-gray-600 line-clamp-2 mb-3">
                       {material.description || "No description provided."}
                     </p>
