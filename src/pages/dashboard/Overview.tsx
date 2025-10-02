@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import DashboardShell from "@/components/dashboard/DashboardShell";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import MetricsSection from "@/components/dashboard/MetricsSection";
 import MaterialsSection, {
@@ -66,7 +66,7 @@ const Overview: React.FC = () => {
   };
 
   const handleRead = (id: string) => {
-    navigate(`/material/${id}`);
+    navigate(`/dashboard/material/${id}`);
   };
 
   // Debounce timer ref
@@ -297,7 +297,7 @@ const Overview: React.FC = () => {
   ];
 
   return (
-    <DashboardLayout>
+    <DashboardShell>
       <DashboardHeader
         firstName={user?.firstName || "User"}
         showSearch={true}
@@ -363,7 +363,7 @@ const Overview: React.FC = () => {
           </>
         )}
       </div>
-    </DashboardLayout>
+    </DashboardShell>
   );
 };
 

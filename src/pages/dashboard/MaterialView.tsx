@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import DashboardShell from "@/components/dashboard/DashboardShell";
 import { useBookmarks } from "@/context/bookmark/BookmarkContextProvider";
 import { toast } from "sonner";
 import { formatRelativeTime } from "@/lib/utils";
@@ -104,7 +104,7 @@ const MaterialView: React.FC = () => {
   };
 
   const handleShare = () => {
-    const link = `${window.location.origin}/material/${id}`;
+    const link = `${window.location.origin}/dashboard/material/${id}`;
     navigator.clipboard
       .writeText(link)
       .then(() => {
@@ -318,7 +318,7 @@ const MaterialView: React.FC = () => {
   const showZoomControls = material.type === MaterialTypeEnum.PDF;
 
   return (
-    <DashboardLayout>
+    <DashboardShell>
       {/* Header with Breadcrumb - Compact */}
       <div className="bg-gradient-to-br from-[theme(colors.dashboard.gradientFrom)] to-[theme(colors.dashboard.gradientTo)]">
         <div className="px-4 py-3">
@@ -510,7 +510,7 @@ const MaterialView: React.FC = () => {
                       key={relatedMaterial.id}
                       className="cursor-pointer hover:shadow-md transition-shadow"
                       onClick={() =>
-                        navigate(`/material/${relatedMaterial.id}`)
+                        navigate(`/dashboard/material/${relatedMaterial.id}`)
                       }
                     >
                       <CardHeader className="pb-2 px-3 pt-3">
@@ -531,7 +531,7 @@ const MaterialView: React.FC = () => {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </DashboardShell>
   );
 };
 

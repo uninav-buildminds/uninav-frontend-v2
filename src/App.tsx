@@ -16,6 +16,7 @@ import ResetSuccess from "./pages/auth/password/ResetSuccess";
 import ProcessEmailVerification from "./pages/auth/verification/ProcessEmailVerification";
 import { AuthRedirect, ProtectedRoute } from "./components/auth/AuthRedirect";
 import NotFound from "./pages/NotFound";
+import DashboardLayout from "./layouts/DashboardLayout";
 import Overview from "./pages/dashboard/Overview";
 import Libraries from "./pages/dashboard/Libraries";
 import RecentMaterials from "./pages/dashboard/RecentMaterials";
@@ -49,63 +50,32 @@ const App = () => {
               <BookmarkProvider>
                 <Routes>
                   <Route path="/" element={<Index />} />
-                  {/* Dashboard */}
+
+                  {/* Dashboard Routes - Nested */}
                   <Route
                     path="/dashboard"
                     element={
                       <ProtectedRoute>
-                        <Overview />
+                        <DashboardLayout />
                       </ProtectedRoute>
                     }
-                  />
-                  <Route
-                    path="/dashboard/libraries"
-                    element={
-                      <ProtectedRoute>
-                        <Libraries />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/dashboard/recent"
-                    element={
-                      <ProtectedRoute>
-                        <RecentMaterials />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/dashboard/recommendations"
-                    element={
-                      <ProtectedRoute>
-                        <Recommendations />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/dashboard/notifications"
-                    element={
-                      <ProtectedRoute>
-                        <Notifications />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/dashboard/settings"
-                    element={
-                      <ProtectedRoute>
-                        <SettingsPage />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/material/:id"
-                    element={
-                      <ProtectedRoute>
-                        <MaterialView />
-                      </ProtectedRoute>
-                    }
-                  />
+                  >
+                    {/* Dashboard Index - Overview */}
+                    <Route index element={<Overview />} />
+
+                    {/* Dashboard Sub-routes */}
+                    <Route path="libraries" element={<Libraries />} />
+                    <Route path="recent" element={<RecentMaterials />} />
+                    <Route
+                      path="recommendations"
+                      element={<Recommendations />}
+                    />
+                    <Route path="notifications" element={<Notifications />} />
+                    <Route path="settings" element={<SettingsPage />} />
+
+                    {/* Material View */}
+                    <Route path="material/:id" element={<MaterialView />} />
+                  </Route>
 
                   {/* Management Routes */}
                   <Route

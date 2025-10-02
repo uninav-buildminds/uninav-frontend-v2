@@ -1,13 +1,16 @@
 import React, { useEffect, useMemo, useState } from "react";
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import DashboardShell from "@/components/dashboard/DashboardShell";
 import Row from "@/components/notifications/Row";
 import FiltersDropdown from "@/components/notifications/FiltersDropdown";
-import type { NotificationItem, NotificationStatus } from "@/components/notifications/types";
+import type {
+  NotificationItem,
+  NotificationStatus,
+} from "@/components/notifications/types";
 import {
   ArrowLeft01Icon,
   Settings01Icon,
   FilterHorizontalIcon,
-  Award02Icon, 
+  Award02Icon,
   ArrowRight02Icon,
   Search01Icon,
   CheckmarkCircle02Icon,
@@ -88,19 +91,26 @@ const Notifications: React.FC = () => {
   const [query, setQuery] = useState("");
   const [items, setItems] = useState<NotificationItem[] | null>(null);
   const [showFilter, setShowFilter] = useState(false);
-  const [filterStatus, setFilterStatus] = useState<"all" | NotificationStatus>("all");
-  const [filterTime, setFilterTime] = useState<"all" | "today" | "last2days">("all");
+  const [filterStatus, setFilterStatus] = useState<"all" | NotificationStatus>(
+    "all"
+  );
+  const [filterTime, setFilterTime] = useState<"all" | "today" | "last2days">(
+    "all"
+  );
   const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
     if (!showFilter) return;
     const handler = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      if (!target.closest('[data-clickout-id="notif-filters"]') && !target.closest('[data-open-filters]')) {
+      if (
+        !target.closest('[data-clickout-id="notif-filters"]') &&
+        !target.closest("[data-open-filters]")
+      ) {
         setShowFilter(false);
       }
     };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
   }, [showFilter]);
 
   useEffect(() => {
@@ -118,7 +128,8 @@ const Notifications: React.FC = () => {
     const q = query.trim().toLowerCase();
     const arr = items || [];
     const base = arr.filter((n) => {
-      const statusOk = filterStatus === "all" ? true : n.status === filterStatus;
+      const statusOk =
+        filterStatus === "all" ? true : n.status === filterStatus;
       const timeOk =
         filterTime === "all"
           ? true
@@ -145,11 +156,13 @@ const Notifications: React.FC = () => {
   }, [filtered]);
 
   const markAllAsRead = () => {
-    setItems((prev) => (prev ? prev.map((n) => ({ ...n, status: "read" })) : prev));
+    setItems((prev) =>
+      prev ? prev.map((n) => ({ ...n, status: "read" })) : prev
+    );
   };
 
   return (
-    <DashboardLayout>
+    <DashboardShell>
       {/* Header */}
       <div className="relative z-sticky">
         <div className="bg-gradient-to-br from-[theme(colors.dashboard.gradientFrom)] to-[theme(colors.dashboard.gradientTo)]">
@@ -185,7 +198,8 @@ const Notifications: React.FC = () => {
                 Notifications
               </h2>
               <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                You have {unreadCount} new notification{unreadCount === 1 ? "" : "s"}
+                You have {unreadCount} new notification
+                {unreadCount === 1 ? "" : "s"}
               </p>
 
               {/* Search + Actions Row */}
@@ -237,7 +251,7 @@ const Notifications: React.FC = () => {
       <div className="max-w-6xl mx-auto px-2 sm:px-4 py-6 pb-28">
         <div className="rounded-xl border border-gray-200 overflow-hidden bg-white">
           {/* Header row */}
-              <div className="hidden sm:grid grid-cols-12 px-4 py-3 text-xs font-medium text-gray-500 border-b border-gray-200">
+          <div className="hidden sm:grid grid-cols-12 px-4 py-3 text-xs font-medium text-gray-500 border-b border-gray-200">
             <div className="col-span-7">Notifications</div>
             <div className="col-span-3 pl-6">Time</div>
             <div className="col-span-2">Status</div>
@@ -262,21 +276,24 @@ const Notifications: React.FC = () => {
             </div>
           )}
 
-          {!isLoading && grouped.map(([group, list]) => (
-            <div key={group} className="border-b border-gray-200 last:border-0">
-              <div className="px-4 py-3 text-xs sm:text-sm font-medium text-gray-600 bg-gray-50">
-                {group}
+          {!isLoading &&
+            grouped.map(([group, list]) => (
+              <div
+                key={group}
+                className="border-b border-gray-200 last:border-0"
+              >
+                <div className="px-4 py-3 text-xs sm:text-sm font-medium text-gray-600 bg-gray-50">
+                  {group}
+                </div>
+                {list.map((n) => (
+                  <Row key={n.id} n={n} />
+                ))}
               </div>
-              {list.map((n) => (
-                <Row key={n.id} n={n} />
-              ))}
-            </div>
-          ))}
+            ))}
         </div>
       </div>
-    </DashboardLayout>
+    </DashboardShell>
   );
 };
 
 export default Notifications;
-

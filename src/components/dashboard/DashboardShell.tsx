@@ -4,9 +4,7 @@ import MobileBottomNav from "./MobileBottomNav";
 import MobileMenuButton from "./MobileMenuButton";
 import MobilePanel from "./MobilePanel";
 
-const DashboardShell: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+const DashboardShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isMobilePanelOpen, setIsMobilePanelOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
@@ -38,13 +36,13 @@ const DashboardShell: React.FC<{ children: React.ReactNode }> = ({
         <Sidebar />
         <main className="flex-1 min-h-screen overflow-x-hidden">
           {/* Mobile Menu Button */}
-          <MobileMenuButton
-            isOpen={isMobilePanelOpen}
+          <MobileMenuButton 
+            isOpen={isMobilePanelOpen} 
             onClick={handleMobilePanelToggle}
             disabled={showLogoutModal}
             hidden={isMobilePanelOpen}
           />
-
+          
           {/* Tiny fixed outer spacing (persists when scrolling) */}
           <div className="pt-2 sm:pt-3 px-2 sm:px-3 h-screen pb-24 md:pb-2">
             <div className="h-[calc(100vh-0.5rem)] sm:h-[calc(100vh-0.75rem)] md:h-[calc(100vh-0.5rem)] lg:h-[calc(100vh-0.75rem)] rounded-t-3xl safari-rounded-top safari-accelerated bg-white border shadow-sm overflow-y-auto scroll-surface">

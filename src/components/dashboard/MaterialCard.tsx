@@ -87,7 +87,7 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
 
   const handleShare = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const link = `${window.location.origin}/material/${id}`;
+    const link = `${window.location.origin}/dashboard/material/${id}`;
     navigator.clipboard
       .writeText(link)
       .then(() => {

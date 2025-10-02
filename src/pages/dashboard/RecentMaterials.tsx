@@ -80,7 +80,7 @@ const RecentMaterials: React.FC = () => {
   };
 
   const handleRead = (materialId: string) => {
-    navigate(`/material/${materialId}`);
+    navigate(`/dashboard/material/${materialId}`);
   };
 
   const handleEmptyStateAction = () => {

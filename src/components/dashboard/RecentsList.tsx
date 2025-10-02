@@ -82,7 +82,7 @@ const RecentsList: React.FC<RecentsListProps> = ({ limit = 5, onViewAll }) => {
   }, [limit]);
 
   const handleMaterialClick = (materialId: string) => {
-    navigate(`/material/${materialId}`);
+    navigate(`/dashboard/material/${materialId}`);
   };
 
   if (isLoading) {

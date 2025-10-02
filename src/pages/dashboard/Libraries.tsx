@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import DashboardShell from "@/components/dashboard/DashboardShell";
 import PageHeader from "@/components/dashboard/PageHeader";
 import MaterialsSection from "@/components/dashboard/MaterialsSection";
 import { UploadModal } from "@/components/modals";
@@ -124,7 +124,7 @@ const Libraries: React.FC = () => {
   };
 
   const handleRead = (materialId: string) => {
-    navigate(`/material/${materialId}`);
+    navigate(`/dashboard/material/${materialId}`);
   };
 
   const handleSavedEmptyStateAction = () => {
@@ -165,7 +165,7 @@ const Libraries: React.FC = () => {
   }, [savedMaterials, userUploads]);
 
   return (
-    <DashboardLayout>
+    <DashboardShell>
       <PageHeader
         title="My Libraries"
         subtitle="Manage your saved materials and uploads in one place"
@@ -234,7 +234,7 @@ const Libraries: React.FC = () => {
         isOpen={showUploadModal}
         onClose={() => setShowUploadModal(false)}
       />
-    </DashboardLayout>
+    </DashboardShell>
   );
 };
 
