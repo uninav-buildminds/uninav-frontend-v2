@@ -1,19 +1,5 @@
 import Pic from "../../../public/placeholder.svg";
-
-// Helper to format date as 'x days ago', 'x hours ago', etc.
-function formatRelativeTime(dateString: string): string {
-  const now = new Date();
-  const date = new Date(dateString);
-  const diffMs = now.getTime() - date.getTime();
-  const diffSec = Math.floor(diffMs / 1000);
-  const diffMin = Math.floor(diffSec / 60);
-  const diffHour = Math.floor(diffMin / 60);
-  const diffDay = Math.floor(diffHour / 24);
-  if (diffDay > 0) return `${diffDay} day${diffDay > 1 ? "s" : ""} ago`;
-  if (diffHour > 0) return `${diffHour} hour${diffHour > 1 ? "s" : ""} ago`;
-  if (diffMin > 0) return `${diffMin} minute${diffMin > 1 ? "s" : ""} ago`;
-  return "just now";
-}
+import { Material } from "../../lib/types/material.types";
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import {
   ArrowRight01Icon,
@@ -21,7 +7,13 @@ import {
   ArrowLeft01Icon,
 } from "hugeicons-react";
 import MaterialCard from "./MaterialCard";
+import EmptyState from "./EmptyState";
 import { motion, AnimatePresence } from "framer-motion";
+
+// Extended Material type for recent materials that includes lastViewedAt
+export interface MaterialWithLastViewed extends Material {
+  lastViewedAt?: string;
+}
 
 export interface MaterialRecommendation {
   id: string;
@@ -48,6 +40,7 @@ export interface MaterialRecommendation {
     firstName: string;
     lastName: string;
     username: string;
+    profilePicture?: string;
   };
   targetCourse: {
     id: string;
@@ -72,62 +65,60 @@ export interface MaterialRecommendationsResponse {
   };
 }
 
-// Adapter to map API MaterialRecommendation to MaterialCard props
-export interface Material {
-  id: string;
-  name: string;
-  uploadTime: string;
-  downloads: number;
-  previewImage: string;
-  pages?: number;
-  description?: string;
-  type?: string;
-  tags?: string[] | null;
-  views?: number;
-  likes?: number;
-  creator?: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    username: string;
-  };
-  targetCourse?: {
-    id: string;
-    courseName: string;
-    courseCode: string;
-  };
-}
-
+// Adapter to map API MaterialRecommendation to Material type
 export function mapRecommendationToMaterial(
   rec: MaterialRecommendation
 ): Material {
   return {
     id: rec.id,
-    name: rec.label,
-    uploadTime: rec.createdAt,
-    downloads: rec.downloads,
-    previewImage: rec.previewUrl,
+    label: rec.label,
     description: rec.description,
-    type: rec.type,
-    tags: rec.tags,
-    views: rec.views,
+    type: rec.type as any, // MaterialTypeEnum
+    tags: rec.tags || [],
+    visibility: rec.visibility as any, // VisibilityEnum
+    restriction: rec.restriction as any, // RestrictionEnum
+    targetCourseId: rec.targetCourseId,
+    previewUrl: rec.previewUrl || undefined,
     likes: rec.likes,
+    downloads: rec.downloads,
+    views: rec.views,
+    reviewStatus: rec.reviewStatus as any, // ApprovalStatusEnum
     creator: rec.creator,
-    targetCourse: rec.targetCourse,
+    targetCourse: rec.targetCourse
+      ? {
+          ...rec.targetCourse,
+          reviewStatus: "approved" as any, // Default to approved for displayed materials
+          createdAt: rec.createdAt,
+          updatedAt: rec.updatedAt,
+        }
+      : undefined,
+    createdAt: rec.createdAt,
+    updatedAt: rec.updatedAt,
   };
 }
 
 type MaterialsSectionProps = {
   title: string;
-  materials: Material[] | (() => Promise<any>);
+  materials: Material[] | MaterialWithLastViewed[] | (() => Promise<any>);
   onViewAll?: () => void;
   onFilter?: () => void;
-  onDownload?: (id: string) => void;
-  onSave?: (id: string) => void;
   onShare?: (id: string) => void;
   onRead?: (id: string) => void;
   scrollStep?: number;
   showViewAll?: boolean;
+  emptyStateType?:
+    | "recent"
+    | "recommendations"
+    | "libraries"
+    | "saved"
+    | "uploads";
+  onEmptyStateAction?: () => void;
+  isLoading?: boolean;
+  layout?: "rail" | "grid"; // rail = horizontal scroll, grid = 2-row grid
+  onEdit?: (material: Material) => void; // For user uploads - edit material
+  onDelete?: (id: string) => void; // For user uploads - delete material
+  showEditDelete?: boolean; // Show edit/delete actions on cards
+  preserveOrder?: boolean; // If true, materials are displayed in the order received (no custom sorting)
 };
 
 const MaterialsSection: React.FC<MaterialsSectionProps> = ({
@@ -135,12 +126,18 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
   materials,
   onViewAll,
   onFilter,
-  onDownload,
-  onSave,
   onShare,
   onRead,
   scrollStep = 240,
   showViewAll = true,
+  emptyStateType = "recent",
+  onEmptyStateAction,
+  isLoading = false,
+  layout = "rail",
+  onEdit,
+  onDelete,
+  showEditDelete = false,
+  preserveOrder = false,
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -193,43 +190,30 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
   };
 
   // Memoize displayMaterials to avoid recalculating on every render
-  const displayMaterials: Material[] = useMemo(() => {
+  const displayMaterials: MaterialWithLastViewed[] = useMemo(() => {
     const mats =
       fetchedMaterials !== null
         ? fetchedMaterials
         : Array.isArray(materials)
         ? materials
         : [];
-    // Format uploadTime for display
-    return mats.map((mat) => ({
-      ...mat,
-      uploadTime:
-        mat.uploadTime && mat.uploadTime.includes("ago")
-          ? mat.uploadTime
-          : formatRelativeTime(mat.uploadTime),
-    }));
+    return mats;
   }, [fetchedMaterials, materials]);
 
   // Memoize sortedMaterials based on displayMaterials and sortBy
+  // If preserveOrder is true, skip custom sorting and return materials as-is
   const sortedMaterials = useMemo(() => {
+    if (preserveOrder) {
+      return displayMaterials;
+    }
     return [...displayMaterials].sort((a, b) => {
       switch (sortBy) {
         case "name":
-          return a.name.localeCompare(b.name);
+          return a.label.localeCompare(b.label);
         case "date": {
-          const getTimeValue = (timeStr: string) => {
-            if (typeof timeStr === "string" && timeStr.includes("T")) {
-              return new Date(timeStr).getTime();
-            }
-            if (typeof timeStr === "string" && timeStr.includes("hour"))
-              return 1;
-            if (typeof timeStr === "string" && timeStr.includes("day"))
-              return 24;
-            if (typeof timeStr === "string" && timeStr.includes("minute"))
-              return 0.1;
-            return 0;
-          };
-          return getTimeValue(b.uploadTime) - getTimeValue(a.uploadTime);
+          return (
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
         }
         case "downloads":
           return b.downloads - a.downloads;
@@ -237,7 +221,7 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
           return 0;
       }
     });
-  }, [displayMaterials, sortBy]);
+  }, [displayMaterials, sortBy, preserveOrder]);
 
   useEffect(() => {
     updateScrollButtons();
@@ -276,7 +260,101 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
     return <div className="py-8 text-center text-red-500">{error}</div>;
   }
   if (!sortedMaterials || sortedMaterials.length === 0) {
-    return <div>{""}</div>;
+    return (
+      <section className="space-y-4">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+          <div className="flex items-center gap-3">
+            {/* Sort Button with Dropdown - Hide when order is preserved */}
+            {!preserveOrder && (
+              <div className="relative sort-dropdown">
+                <button
+                  onClick={() => setShowSortOptions(!showSortOptions)}
+                  className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                  aria-label="Sort materials"
+                >
+                  <SortingAZ02Icon size={18} className="text-gray-600" />
+                </button>
+
+                {/* Sort Options Dropdown */}
+                <AnimatePresence>
+                  {showSortOptions && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                      transition={{ duration: 0.15, ease: "easeOut" }}
+                      className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-dropdown"
+                    >
+                      <div className="py-2">
+                        <button
+                          onClick={() => {
+                            setSortBy("name");
+                            setShowSortOptions(false);
+                          }}
+                          className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors ${
+                            sortBy === "name"
+                              ? "text-brand bg-brand/5"
+                              : "text-gray-700"
+                          }`}
+                        >
+                          Sort by Name (A-Z)
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSortBy("date");
+                            setShowSortOptions(false);
+                          }}
+                          className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors ${
+                            sortBy === "date"
+                              ? "text-brand bg-brand/5"
+                              : "text-gray-700"
+                          }`}
+                        >
+                          Sort by Date (Newest)
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSortBy("downloads");
+                            setShowSortOptions(false);
+                          }}
+                          className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors ${
+                            sortBy === "downloads"
+                              ? "text-brand bg-brand/5"
+                              : "text-gray-700"
+                          }`}
+                        >
+                          Sort by Downloads (Most)
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
+
+            {/* View All Button */}
+            {showViewAll && (
+              <button
+                onClick={onViewAll}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+              >
+                View All
+                <ArrowRight01Icon size={16} className="text-gray-500" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Empty State */}
+        <EmptyState
+          type={emptyStateType}
+          onAction={onEmptyStateAction}
+          isLoading={isLoading}
+        />
+      </section>
+    );
   }
   return (
     <section className="space-y-4">
@@ -284,71 +362,73 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
         <div className="flex items-center gap-3">
-          {/* Sort Button with Dropdown */}
-          <div className="relative sort-dropdown">
-            <button
-              onClick={() => setShowSortOptions(!showSortOptions)}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
-              aria-label="Sort materials"
-            >
-              <SortingAZ02Icon size={18} className="text-gray-600" />
-            </button>
+          {/* Sort Button with Dropdown - Hide when order is preserved */}
+          {!preserveOrder && (
+            <div className="relative sort-dropdown">
+              <button
+                onClick={() => setShowSortOptions(!showSortOptions)}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                aria-label="Sort materials"
+              >
+                <SortingAZ02Icon size={18} className="text-gray-600" />
+              </button>
 
-            {/* Sort Options Dropdown */}
-            <AnimatePresence>
-              {showSortOptions && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                  transition={{ duration: 0.15, ease: "easeOut" }}
-                  className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-dropdown"
-                >
-                  <div className="py-2">
-                    <button
-                      onClick={() => {
-                        setSortBy("name");
-                        setShowSortOptions(false);
-                      }}
-                      className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors ${
-                        sortBy === "name"
-                          ? "text-brand bg-brand/5"
-                          : "text-gray-700"
-                      }`}
-                    >
-                      Sort by Name (A-Z)
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSortBy("date");
-                        setShowSortOptions(false);
-                      }}
-                      className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors ${
-                        sortBy === "date"
-                          ? "text-brand bg-brand/5"
-                          : "text-gray-700"
-                      }`}
-                    >
-                      Sort by Date (Newest)
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSortBy("downloads");
-                        setShowSortOptions(false);
-                      }}
-                      className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors ${
-                        sortBy === "downloads"
-                          ? "text-brand bg-brand/5"
-                          : "text-gray-700"
-                      }`}
-                    >
-                      Sort by Downloads (Most)
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+              {/* Sort Options Dropdown */}
+              <AnimatePresence>
+                {showSortOptions && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                    className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-dropdown"
+                  >
+                    <div className="py-2">
+                      <button
+                        onClick={() => {
+                          setSortBy("name");
+                          setShowSortOptions(false);
+                        }}
+                        className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors ${
+                          sortBy === "name"
+                            ? "text-brand bg-brand/5"
+                            : "text-gray-700"
+                        }`}
+                      >
+                        Sort by Name (A-Z)
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSortBy("date");
+                          setShowSortOptions(false);
+                        }}
+                        className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors ${
+                          sortBy === "date"
+                            ? "text-brand bg-brand/5"
+                            : "text-gray-700"
+                        }`}
+                      >
+                        Sort by Date (Newest)
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSortBy("downloads");
+                          setShowSortOptions(false);
+                        }}
+                        className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors ${
+                          sortBy === "downloads"
+                            ? "text-brand bg-brand/5"
+                            : "text-gray-700"
+                        }`}
+                      >
+                        Sort by Downloads (Most)
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
 
           {/* View All Button */}
           {showViewAll && (
@@ -363,62 +443,83 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
         </div>
       </div>
 
-      {/* Materials rail */}
-      <div className="relative">
-        {/* Soft gradient edges (only when scrolling is possible) */}
-        {canScrollLeft && (
-          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-white/95 via-white/70 to-transparent z-sticky" />
-        )}
-        {canScrollRight && (
-          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-white/95 via-white/70 to-transparent z-sticky" />
-        )}
-
-        {/* Left Arrow */}
-        {canScrollLeft && (
-          <button
-            onClick={() => scrollByAmount(-scrollStep)}
-            className="absolute left-2 top-1/2 -translate-y-1/2 z-modal p-2 bg-white/90 backdrop-blur rounded-full shadow-md border border-gray-200 hover:bg-white"
-            aria-label="Scroll left"
-          >
-            <ArrowLeft01Icon size={16} className="text-brand" />
-          </button>
-        )}
-
-        {/* Right Arrow */}
-        {canScrollRight && (
-          <button
-            onClick={() => scrollByAmount(scrollStep)}
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-modal p-2 bg-white/90 backdrop-blur rounded-full shadow-md border border-gray-200 hover:bg-white"
-            aria-label="Scroll right"
-          >
-            <ArrowRight01Icon size={16} className="text-brand" />
-          </button>
-        )}
-
-        {/* Scroll container */}
-        <div
-          ref={scrollContainerRef}
-          onScroll={updateScrollButtons}
-          className="flex gap-6 overflow-x-auto overflow-y-visible pb-2 scrollbar-hide"
-        >
-          {sortedMaterials.map((material) => (
-            <div
+      {/* Materials display - either rail (horizontal scroll) or grid (2 rows) */}
+      {layout === "grid" ? (
+        // Grid layout - 2 rows with responsive columns
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 grid-rows-2">
+          {sortedMaterials.slice(0, 12).map((material) => (
+            <MaterialCard
               key={material.id}
-              className="flex-shrink-0 w-64 sm:w-72 md:w-80 lg:w-72 xl:w-64 2xl:w-72"
-            >
-              <MaterialCard
-                {...material}
-                onDownload={onDownload}
-                onSave={onSave}
-                onShare={onShare}
-                onRead={onRead}
-              />
-            </div>
+              material={material}
+              onShare={onShare}
+              onRead={onRead}
+              lastViewedAt={material.lastViewedAt}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              showEditDelete={showEditDelete}
+            />
           ))}
-          {/* Add padding to the last item to ensure proper spacing */}
-          <div className="flex-shrink-0 w-6" />
         </div>
-      </div>
+      ) : (
+        // Rail layout - horizontal scroll
+        <div className="relative">
+          {/* Soft gradient edges (only when scrolling is possible) */}
+          {canScrollLeft && (
+            <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-white/95 via-white/70 to-transparent z-sticky" />
+          )}
+          {canScrollRight && (
+            <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-white/95 via-white/70 to-transparent z-sticky" />
+          )}
+
+          {/* Left Arrow */}
+          {canScrollLeft && (
+            <button
+              onClick={() => scrollByAmount(-scrollStep)}
+              className="absolute left-2 top-1/2 -translate-y-1/2 z-modal p-2 bg-white/90 backdrop-blur rounded-full shadow-md border border-gray-200 hover:bg-white"
+              aria-label="Scroll left"
+            >
+              <ArrowLeft01Icon size={16} className="text-brand" />
+            </button>
+          )}
+
+          {/* Right Arrow */}
+          {canScrollRight && (
+            <button
+              onClick={() => scrollByAmount(scrollStep)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 z-modal p-2 bg-white/90 backdrop-blur rounded-full shadow-md border border-gray-200 hover:bg-white"
+              aria-label="Scroll right"
+            >
+              <ArrowRight01Icon size={16} className="text-brand" />
+            </button>
+          )}
+
+          {/* Scroll container */}
+          <div
+            ref={scrollContainerRef}
+            onScroll={updateScrollButtons}
+            className="flex gap-6 overflow-x-auto overflow-y-visible pb-2 scrollbar-hide"
+          >
+            {sortedMaterials.map((material) => (
+              <div
+                key={material.id}
+                className="flex-shrink-0 w-64 sm:w-72 md:w-80 lg:w-72 xl:w-64 2xl:w-72"
+              >
+                <MaterialCard
+                  material={material}
+                  onShare={onShare}
+                  onRead={onRead}
+                  lastViewedAt={material.lastViewedAt}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  showEditDelete={showEditDelete}
+                />
+              </div>
+            ))}
+            {/* Add padding to the last item to ensure proper spacing */}
+            <div className="flex-shrink-0 w-6" />
+          </div>
+        </div>
+      )}
     </section>
   );
 };

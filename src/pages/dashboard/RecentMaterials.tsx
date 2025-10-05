@@ -1,34 +1,74 @@
-import React, { useState } from 'react';
-import MaterialsLayout from '@/components/dashboard/MaterialsLayout';
-import GridMaterialsSection from '@/components/dashboard/GridMaterialsSection';
-import { recentMaterials } from '@/data/materials';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import MaterialsLayout from "@/components/dashboard/MaterialsLayout";
+import GridMaterialsSection from "@/components/dashboard/GridMaterialsSection";
+import { getRecentMaterials } from "@/api/materials.api";
+import { Material } from "@/lib/types/material.types";
+import { MaterialWithLastViewed } from "@/components/dashboard/MaterialsSection";
+import { toast } from "sonner";
 
 const RecentMaterials: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filteredMaterials, setFilteredMaterials] = useState(recentMaterials);
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [allMaterials, setAllMaterials] = useState<MaterialWithLastViewed[]>(
+    []
+  );
+  const [filteredMaterials, setFilteredMaterials] = useState<
+    MaterialWithLastViewed[]
+  >([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isNavigating, setIsNavigating] = useState(false);
+
+  // Fetch recent materials on component mount
+  useEffect(() => {
+    const loadRecentMaterials = async () => {
+      try {
+        setIsLoading(true);
+        const response = await getRecentMaterials();
+
+        // getRecentMaterials returns a paginated response with items already including lastViewedAt
+        let materials: MaterialWithLastViewed[] = [];
+        if (response.status === "success" && response.data?.items) {
+          // Materials already have lastViewedAt included from backend
+          materials = response.data.items;
+        }
+
+        setAllMaterials(materials);
+        setFilteredMaterials(materials);
+      } catch (error: any) {
+        console.error("Error fetching recent materials:", error);
+        toast.error(error.message || "Failed to load recent materials");
+        setAllMaterials([]);
+        setFilteredMaterials([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadRecentMaterials();
+  }, []);
 
   // Search suggestions based on material names
-  const searchSuggestions = recentMaterials.map(material => material.name).filter(Boolean);
+  const searchSuggestions = allMaterials
+    .map((material) => material.label)
+    .filter(Boolean);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    
-    const filtered = recentMaterials.filter(material =>
-      material.name.toLowerCase().includes(query.toLowerCase())
-    );
-    setFilteredMaterials(filtered);
+
+    if (query.trim() === "") {
+      // If search is empty, show all materials
+      setFilteredMaterials(allMaterials);
+    } else {
+      const filtered = allMaterials.filter((material) =>
+        material.label.toLowerCase().includes(query.toLowerCase())
+      );
+      setFilteredMaterials(filtered);
+    }
   };
 
   const handleFilter = () => {
-    console.log('Filter recent materials');
-  };
-
-  const handleDownload = (materialId: string) => {
-    console.log(`Download material ${materialId}`);
-  };
-
-  const handleSave = (materialId: string) => {
-    console.log(`Save material ${materialId}`);
+    console.log("Filter recent materials");
   };
 
   const handleShare = (materialId: string) => {
@@ -36,7 +76,16 @@ const RecentMaterials: React.FC = () => {
   };
 
   const handleRead = (materialId: string) => {
-    console.log(`Read material ${materialId}`);
+    navigate(`/dashboard/material/${materialId}`);
+  };
+
+  const handleEmptyStateAction = () => {
+    console.log("Browse materials clicked - navigating to dashboard");
+    setIsNavigating(true);
+    // Simulate a brief loading state for better UX
+    setTimeout(() => {
+      navigate("/dashboard");
+    }, 300);
   };
 
   return (
@@ -52,12 +101,12 @@ const RecentMaterials: React.FC = () => {
         materials={filteredMaterials}
         onViewAll={() => {}}
         onFilter={handleFilter}
-        onDownload={handleDownload}
-        onSave={handleSave}
         onShare={handleShare}
         onRead={handleRead}
-        scrollStep={280}
         showViewAll={false}
+        emptyStateType="recent"
+        onEmptyStateAction={handleEmptyStateAction}
+        isLoading={isLoading || isNavigating}
       />
     </MaterialsLayout>
   );

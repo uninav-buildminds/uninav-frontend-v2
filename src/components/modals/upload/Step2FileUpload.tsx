@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   UploadSquare01Icon,
@@ -9,13 +9,6 @@ import {
   Download01Icon,
   ArrowDown01Icon,
 } from "hugeicons-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -25,21 +18,38 @@ import {
 import { toast } from "sonner";
 import HeaderStepper from "./shared/HeaderStepper";
 import AdvancedOptions from "./shared/AdvancedOptions";
+import {
+  inferMaterialType,
+  generateDefaultTitle,
+} from "@/lib/utils/inferMaterialType";
+import { CreateMaterialFileForm } from "@/api/materials.api";
+import {
+  VisibilityEnum,
+  RestrictionEnum,
+  Material,
+} from "@/lib/types/material.types";
+import { SelectCourse } from "./shared/SelectCourse";
 
 interface Step2FileUploadProps {
-  onComplete: (data: Record<string, unknown>) => void;
+  onComplete: (data: CreateMaterialFileForm) => void;
   onBack: () => void;
+  editingMaterial?: Material | null;
+  isEditMode?: boolean;
 }
 
 const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
   onComplete,
   onBack,
+  editingMaterial = null,
+  isEditMode = false,
 }) => {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [classification, setClassification] = useState<string>("");
+  const [targetCourseId, setTargetCourseId] = useState<string>("");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -54,13 +64,32 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
     resolver: zodResolver(uploadFileSchema),
     mode: "onBlur",
     defaultValues: {
-      visibility: "Public",
-      accessRestrictions: "Downloadable",
+      visibility: VisibilityEnum.PUBLIC,
+      accessRestrictions: RestrictionEnum.DOWNLOADABLE,
       tags: [],
     },
   });
 
   const watchedValues = watch();
+
+  // Prefill form when in edit mode
+  useEffect(() => {
+    if (isEditMode && editingMaterial) {
+      setValue("materialTitle", editingMaterial.label);
+      setValue("description", editingMaterial.description || "");
+      setValue("visibility", editingMaterial.visibility);
+      setValue("accessRestrictions", editingMaterial.restriction);
+
+      if (editingMaterial.tags && editingMaterial.tags.length > 0) {
+        setTags(editingMaterial.tags);
+        setValue("tags", editingMaterial.tags);
+      }
+
+      if (editingMaterial.targetCourseId) {
+        setTargetCourseId(editingMaterial.targetCourseId);
+      }
+    }
+  }, [isEditMode, editingMaterial, setValue]);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -89,6 +118,12 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
       return;
     }
     setSelectedFile(file);
+
+    // Auto-populate title if current title is empty
+    if (!watchedValues.materialTitle) {
+      const defaultTitle = generateDefaultTitle(file);
+      setValue("materialTitle", defaultTitle);
+    }
   };
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -115,12 +150,16 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
 
   // Add classification value as tag if not already present
   const handleClassificationChange = (value: string) => {
-    setValue("classification", value);
-    if (!tags.includes(value)) {
+    setClassification(value);
+    if (value && !tags.includes(value)) {
       const newTags = [...tags, value];
       setTags(newTags);
       setValue("tags", newTags);
     }
+  };
+
+  const handleTargetCourseIdChange = (value: string) => {
+    setTargetCourseId(value);
   };
 
   const handleTagRemove = (index: number) => {
@@ -130,22 +169,29 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
   };
 
   const onSubmit = (data: UploadFileInput) => {
-    if (!selectedFile) {
+    // In edit mode, file is optional (user might just update metadata)
+    if (!isEditMode && !selectedFile) {
       toast.error("Please select a file to upload");
       return;
     }
 
-    const formData = {
-      type: "file",
-      file: selectedFile,
+    // Infer material type from file (or use existing type in edit mode)
+    const inferredType = selectedFile
+      ? inferMaterialType(selectedFile)
+      : editingMaterial?.type || "other";
+
+    const formData: CreateMaterialFileForm = {
       materialTitle: data.materialTitle,
-      classification: data.classification,
       description: data.description || "",
+      type: inferredType,
+      classification: classification || "",
       visibility: data.visibility,
       accessRestrictions: data.accessRestrictions,
       tags: data.tags || [],
-      image: selectedImage,
-    };
+      targetCourseId: targetCourseId || undefined,
+      ...(selectedFile && { file: selectedFile }),
+      ...(selectedImage && { image: selectedImage }),
+    } as CreateMaterialFileForm;
 
     onComplete(formData);
   };
@@ -158,8 +204,16 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
       className="space-y-6"
     >
       <HeaderStepper
-        title="Share Your Notes, Earn Your Rewards"
-        subtitle="Help your fellow students while earning points on UniNav"
+        title={
+          isEditMode
+            ? "Edit Your Material"
+            : "Share Your Notes, Earn Your Rewards"
+        }
+        subtitle={
+          isEditMode
+            ? "Update your material information"
+            : "Help your fellow students while earning points on UniNav"
+        }
         currentStep={2}
         totalSteps={2}
       />
@@ -167,8 +221,13 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
       {/* Upload File Section */}
       <div className="space-y-3">
         <h3 className="text-base sm:text-lg font-semibold text-gray-900">
-          Upload File
+          {isEditMode ? "Update File (Optional)" : "Upload File"}
         </h3>
+        {isEditMode && !selectedFile && (
+          <p className="text-xs text-gray-600">
+            Leave empty to keep the existing file
+          </p>
+        )}
 
         <div
           className={`border-2 border-dashed rounded-xl p-4 sm:p-6 text-center transition-colors ${
@@ -262,81 +321,15 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
             Be descriptive so everyone knows what's inside.
           </p>
         </div>
+      </div>
 
-        {/* Select Upload Classification */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Select Upload Classification
-          </label>
-          <Select
-            value={watchedValues.classification}
-            onValueChange={handleClassificationChange}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="e.g., Exam past question and Answers" />
-            </SelectTrigger>
-            <SelectContent className="z-[1060]">
-              <SelectItem value="exam-past-questions">
-                Exam Past Questions
-              </SelectItem>
-              <SelectItem value="lecture-notes">Lecture Notes</SelectItem>
-              <SelectItem value="assignments">Assignments</SelectItem>
-              <SelectItem value="tutorials">Tutorials</SelectItem>
-              <SelectItem value="lab-reports">Lab Reports</SelectItem>
-              <SelectItem value="study-guides">Study Guides</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
-            </SelectContent>
-          </Select>
-          {errors.classification && (
-            <p className="mt-1 text-xs text-red-600">
-              {errors.classification.message}
-            </p>
-          )}
-        </div>
-
-        {/* Select file type */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Select File Type
-          </label>
-          <Select
-            value={watchedValues.type}
-            onValueChange={(value) => setValue("type", value)}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="e.g., Docs" />
-            </SelectTrigger>
-            <SelectContent className="z-[1060]">
-              <SelectItem value="docs">Docs</SelectItem>
-              <SelectItem value="pdf">PDF</SelectItem>
-              <SelectItem value="gdrive">Gdrive</SelectItem>
-              <SelectItem value="excel">Excel</SelectItem>
-              <SelectItem value="image">Image</SelectItem>
-              <SelectItem value="video">Video</SelectItem>
-              <SelectItem value="article">Article</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
-            </SelectContent>
-          </Select>
-          {errors.type && (
-            <p className="mt-1 text-xs text-red-600">{errors.type.message}</p>
-          )}
-        </div>
-
-        {/* Description */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Description (Optional)
-          </label>
-          <textarea
-            {...register("description")}
-            placeholder="e.g., Covers key formulas from lectures 4 & 5"
-            rows={2}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors resize-none outline-none text-sm sm:text-base"
-          />
-          <p className="text-xs text-gray-600 mt-1">
-            What's good about this? What does it cover?
-          </p>
-        </div>
+      {/* Target Course Selection */}
+      <div className="space-y-3">
+        <SelectCourse
+          label="Target Course (Optional)"
+          currentValue={targetCourseId}
+          onChange={handleTargetCourseIdChange}
+        />
       </div>
 
       <AdvancedOptions
@@ -345,31 +338,39 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
         tags={tags}
         tagInput={tagInput}
         selectedImage={selectedImage}
-        onVisibilityChange={(value) => setValue("visibility", value)}
+        description={watchedValues.description || ""}
+        classification={classification}
+        onVisibilityChange={(value) =>
+          setValue("visibility", value as VisibilityEnum)
+        }
         onAccessRestrictionsChange={(value) =>
-          setValue("accessRestrictions", value)
+          setValue("accessRestrictions", value as RestrictionEnum)
         }
         onTagAdd={handleTagAdd}
         onTagRemove={handleTagRemove}
         onTagInputChange={setTagInput}
         onImageChange={setSelectedImage}
+        onDescriptionChange={(value) => setValue("description", value)}
+        onClassificationChange={handleClassificationChange}
         imageInputRef={imageInputRef}
       />
 
       {/* Action Buttons */}
       <div className="flex space-x-3 pt-3">
-        <button
-          onClick={onBack}
-          className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2"
-        >
-          <ArrowLeft01Icon size={16} />
-          <span>Back</span>
-        </button>
+        {!isEditMode && (
+          <button
+            onClick={onBack}
+            className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2"
+          >
+            <ArrowLeft01Icon size={16} />
+            <span>Back</span>
+          </button>
+        )}
         <button
           onClick={handleSubmit(onSubmit)}
           className="flex-1 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors"
         >
-          Upload
+          {isEditMode ? "Done" : "Upload"}
         </button>
       </div>
     </motion.div>

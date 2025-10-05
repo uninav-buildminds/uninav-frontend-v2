@@ -1,6 +1,9 @@
-import React, { useState } from "react";
-import { Download01Icon, Share08Icon } from "hugeicons-react";
+import React from "react";
+import { Share08Icon, PencilEdit02Icon, Delete02Icon } from "hugeicons-react";
 import { toast } from "sonner";
+import { Material } from "../../lib/types/material.types";
+import { formatRelativeTime } from "../../lib/utils";
+import { useBookmarks } from "../../context/bookmark/BookmarkContextProvider";
 
 // Custom Bookmark Icons
 const BookmarkOutlineIcon = ({
@@ -52,50 +55,47 @@ const BookmarkFilledIcon = ({
 );
 
 interface MaterialCardProps {
-  id: string;
-  name: string;
-  uploadTime: string;
-  downloads: number;
-  previewImage: string;
-  pages?: number;
-  isSaved?: boolean;
-  onDownload?: (id: string) => void;
-  onSave?: (id: string) => void;
+  material: Material;
   onShare?: (id: string) => void;
   onRead?: (id: string) => void;
+  lastViewedAt?: string; // For recent materials - shows when the user last viewed this material
+  onEdit?: (material: Material) => void; // For user uploads - edit material
+  onDelete?: (id: string) => void; // For user uploads - delete material
+  showEditDelete?: boolean; // Show edit/delete actions instead of bookmark
 }
 
 const MaterialCard: React.FC<MaterialCardProps> = ({
-  id,
-  name,
-  uploadTime,
-  downloads,
-  previewImage,
-  pages,
-  isSaved = false,
-  onDownload,
-  onSave,
+  material,
   onShare,
   onRead,
+  lastViewedAt,
+  onEdit,
+  onDelete,
+  showEditDelete = false,
 }) => {
-  const [saved, setSaved] = useState(isSaved);
+  const { id, label, createdAt, downloads, tags, views, likes } = material;
+  const previewImage = material.previewUrl || "/placeholder.svg";
+  const { isBookmarked, toggleBookmark } = useBookmarks();
+  const saved = isBookmarked(id);
 
   const handleSave = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setSaved(!saved);
-    toast.success(saved ? "Removed from saved" : "Added to saved materials");
-    onSave?.(id);
+    toggleBookmark(id);
   };
 
-  const handleDownload = (e: React.MouseEvent) => {
+  const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
-    toast.success("Download started!");
-    onDownload?.(id);
+    onEdit?.(material);
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDelete?.(id);
   };
 
   const handleShare = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const link = `${window.location.origin}/material/${id}`;
+    const link = `${window.location.origin}/dashboard/material/${id}`;
     navigator.clipboard
       .writeText(link)
       .then(() => {
@@ -119,8 +119,8 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
       {/* File Preview */}
       <div className="aspect-square overflow-hidden rounded-xl mb-3 relative">
         <img
-          src={previewImage ? previewImage : "/placeholder.svg"}
-          alt={name}
+          src={previewImage}
+          alt={label}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
           onError={(e) => {
             const target = e.target as HTMLImageElement;
@@ -128,18 +128,58 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
           }}
         />
 
-        {/* Save Button - Top Right */}
-        <button
-          onClick={handleSave}
-          className="absolute top-2 right-2 p-1 text-gray-600 hover:text-brand hover:bg-[#DCDFFE] rounded-md transition-colors duration-200"
-          aria-label={saved ? "Remove from saved" : "Save material"}
-        >
-          {saved ? (
-            <BookmarkFilledIcon size={20} className="text-brand" />
-          ) : (
-            <BookmarkOutlineIcon size={20} />
-          )}
-        </button>
+        {/* Action Buttons - Top Right */}
+        {showEditDelete ? (
+          // Edit/Delete buttons for user uploads
+          <div className="absolute top-2 right-2 flex gap-1">
+            <button
+              onClick={handleEdit}
+              className="p-1 bg-white/90 backdrop-blur-sm text-gray-600 hover:text-brand hover:bg-[#DCDFFE] rounded-md transition-colors duration-200 shadow-sm"
+              aria-label="Edit material"
+            >
+              <PencilEdit02Icon size={18} />
+            </button>
+            <button
+              onClick={handleDelete}
+              className="p-1 bg-white/90 backdrop-blur-sm text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors duration-200 shadow-sm"
+              aria-label="Delete material"
+            >
+              <Delete02Icon size={18} />
+            </button>
+          </div>
+        ) : (
+          // Bookmark button for other materials
+          <button
+            onClick={handleSave}
+            className="absolute top-2 right-2 p-1 text-gray-600 hover:text-brand hover:bg-[#DCDFFE] rounded-md transition-colors duration-200"
+            aria-label={saved ? "Remove from saved" : "Save material"}
+          >
+            {saved ? (
+              <BookmarkFilledIcon size={20} className="text-brand" />
+            ) : (
+              <BookmarkOutlineIcon size={20} />
+            )}
+          </button>
+        )}
+
+        {/* Tags - Bottom Left */}
+        {tags && tags.length > 0 && (
+          <div className="absolute bottom-2 left-2 flex flex-wrap gap-1">
+            {tags.slice(0, 2).map((tag, index) => (
+              <span
+                key={index}
+                className="inline-block px-2 py-0.5 text-xs bg-[#DCDFFE] text-brand rounded-md"
+              >
+                {tag}
+              </span>
+            ))}
+            {tags.length > 2 && (
+              <span className="inline-block px-2 py-0.5 text-xs bg-[#DCDFFE] text-brand rounded-md">
+                +{tags.length - 2}
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Content */}
@@ -153,26 +193,21 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
             WebkitBoxOrient: "vertical",
           }}
         >
-          {name}
+          {label}
         </h4>
 
         {/* Metadata and Action Icons */}
         <div className="flex items-center justify-between">
           <div className="text-xs text-gray-500 truncate flex-1">
-            {uploadTime} • {downloads} downloads
-            {typeof pages === "number" ? ` • ${pages} pages` : ""}
+            {lastViewedAt
+              ? `Viewed ${formatRelativeTime(lastViewedAt)}`
+              : `${formatRelativeTime(
+                  createdAt
+                )} • ${views} views • ${likes} likes`}
           </div>
 
-          {/* Action Icons - Download and Share */}
+          {/* Action Icons - Share only */}
           <div className="flex items-center gap-1 ml-2">
-            <button
-              onClick={handleDownload}
-              className="p-1 text-gray-600 hover:text-brand hover:bg-[#DCDFFE] rounded-md transition-colors duration-200"
-              aria-label="Download"
-            >
-              <Download01Icon size={16} />
-            </button>
-
             <button
               onClick={handleShare}
               className="p-1 text-gray-600 hover:text-brand hover:bg-[#DCDFFE] rounded-md transition-colors duration-200"

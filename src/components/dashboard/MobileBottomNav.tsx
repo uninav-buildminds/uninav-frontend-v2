@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import {
   Home01Icon,
-  Folder01Icon,
+  FolderLibraryIcon,
   Notification01Icon,
   Settings01Icon,
   Add01Icon
@@ -14,7 +14,7 @@ const MobileBottomNav: React.FC = () => {
   
   const navItems = [
     { to: "/dashboard", label: "Home", icon: Home01Icon },
-    { to: "/dashboard/libraries", label: "Folder", icon: Folder01Icon },
+    { to: "/dashboard/libraries", label: "Folder", icon: FolderLibraryIcon },
     { to: "/dashboard/notifications", label: "Notifications", icon: Notification01Icon },
     { to: "/dashboard/settings", label: "Settings", icon: Settings01Icon },
   ];
@@ -51,7 +51,7 @@ const MobileBottomNav: React.FC = () => {
         >
           {({ isActive }) => (
             <>
-              <Folder01Icon size={20} className={isActive ? 'fill-current' : ''} />
+              <FolderLibraryIcon size={20} className={isActive ? 'fill-current' : ''} />
               <span className="text-xs font-medium">Libraries</span>
             </>
           )}

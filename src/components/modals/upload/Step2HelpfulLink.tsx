@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Link01Icon,
@@ -7,13 +7,6 @@ import {
   Download01Icon,
   ArrowDown01Icon,
 } from "hugeicons-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -23,19 +16,36 @@ import {
 import { toast } from "sonner";
 import HeaderStepper from "./shared/HeaderStepper";
 import AdvancedOptions from "./shared/AdvancedOptions";
+import {
+  inferMaterialType,
+  generateDefaultTitle,
+} from "@/lib/utils/inferMaterialType";
+import { CreateMaterialLinkForm } from "@/api/materials.api";
+import {
+  VisibilityEnum,
+  RestrictionEnum,
+  Material,
+} from "@/lib/types/material.types";
+import { SelectCourse } from "./shared/SelectCourse";
 
 interface Step2HelpfulLinkProps {
-  onComplete: (data: Record<string, unknown>) => void;
+  onComplete: (data: CreateMaterialLinkForm) => void;
   onBack: () => void;
+  editingMaterial?: Material | null;
+  isEditMode?: boolean;
 }
 
 const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
   onComplete,
   onBack,
+  editingMaterial = null,
+  isEditMode = false,
 }) => {
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [classification, setClassification] = useState<string>("");
+  const [targetCourseId, setTargetCourseId] = useState<string>("");
 
   const imageInputRef = useRef<HTMLInputElement>(null);
 
@@ -49,13 +59,53 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
     resolver: zodResolver(uploadLinkSchema),
     mode: "onBlur",
     defaultValues: {
-      visibility: "Public",
-      accessRestrictions: "Downloadable",
+      visibility: VisibilityEnum.PUBLIC,
+      accessRestrictions: RestrictionEnum.DOWNLOADABLE,
       tags: [],
     },
   });
 
   const watchedValues = watch();
+
+  // Prefill form when in edit mode
+  useEffect(() => {
+    if (isEditMode && editingMaterial) {
+      setValue("materialTitle", editingMaterial.label);
+      setValue("description", editingMaterial.description || "");
+      setValue("visibility", editingMaterial.visibility);
+      setValue("accessRestrictions", editingMaterial.restriction);
+
+      // Prefill URL if it exists in resource
+      if (editingMaterial.resource?.resourceAddress) {
+        setValue("url", editingMaterial.resource.resourceAddress);
+      }
+
+      if (editingMaterial.tags && editingMaterial.tags.length > 0) {
+        setTags(editingMaterial.tags);
+        setValue("tags", editingMaterial.tags);
+      }
+
+      if (editingMaterial.targetCourseId) {
+        setTargetCourseId(editingMaterial.targetCourseId);
+      }
+    }
+  }, [isEditMode, editingMaterial, setValue]);
+
+  // Handle URL input change to auto-populate title
+  const handleUrlChange = (url: string) => {
+    setValue("url", url);
+
+    // Auto-populate title if current title is empty and URL is valid
+    if (!watchedValues.materialTitle && url.trim()) {
+      try {
+        new URL(url); // Validate URL
+        const defaultTitle = generateDefaultTitle(url);
+        setValue("materialTitle", defaultTitle);
+      } catch {
+        // Invalid URL, don't auto-populate
+      }
+    }
+  };
 
   const handleTagAdd = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && tagInput.trim()) {
@@ -69,12 +119,16 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
 
   // Add classification value as tag if not already present
   const handleClassificationChange = (value: string) => {
-    setValue("classification", value);
-    if (!tags.includes(value)) {
+    setClassification(value);
+    if (value && !tags.includes(value)) {
       const newTags = [...tags, value];
       setTags(newTags);
       setValue("tags", newTags);
     }
+  };
+
+  const handleTargetCourseIdChange = (value: string) => {
+    setTargetCourseId(value);
   };
 
   const handleTagRemove = (index: number) => {
@@ -84,15 +138,19 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
   };
 
   const onSubmit = (data: UploadLinkInput) => {
-    const formData = {
-      type: "link",
-      url: data.url,
+    // Infer material type from URL
+    const inferredType = inferMaterialType(data.url);
+
+    const formData: CreateMaterialLinkForm = {
       materialTitle: data.materialTitle,
-      classification: data.classification,
       description: data.description || "",
+      type: inferredType,
+      classification: classification || "",
       visibility: data.visibility,
       accessRestrictions: data.accessRestrictions,
       tags: data.tags || [],
+      targetCourseId: targetCourseId || undefined,
+      url: data.url,
       image: selectedImage,
     };
 
@@ -107,8 +165,16 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
       className="space-y-6"
     >
       <HeaderStepper
-        title="Share Your Notes, Earn Your Rewards"
-        subtitle="Help your fellow students while earning points on UniNav"
+        title={
+          isEditMode
+            ? "Edit Your Material"
+            : "Share Your Notes, Earn Your Rewards"
+        }
+        subtitle={
+          isEditMode
+            ? "Update your material information"
+            : "Help your fellow students while earning points on UniNav"
+        }
         currentStep={2}
         totalSteps={2}
       />
@@ -124,7 +190,8 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
           <div className="relative">
             <input
               type="url"
-              {...register("url")}
+              value={watchedValues.url || ""}
+              onChange={(e) => handleUrlChange(e.target.value)}
               placeholder="https://example.com/document.pdf"
               className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors"
             />
@@ -164,53 +231,15 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
             Be descriptive so everyone knows what's inside.
           </p>
         </div>
+      </div>
 
-        {/* Select Upload Classification */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Select Upload Classification
-          </label>
-          <Select
-            value={watchedValues.classification}
-            onValueChange={handleClassificationChange}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="e.g., Exam past question and Answers" />
-            </SelectTrigger>
-            <SelectContent className="z-[1060]">
-              <SelectItem value="exam-past-questions">
-                Exam Past Questions
-              </SelectItem>
-              <SelectItem value="lecture-notes">Lecture Notes</SelectItem>
-              <SelectItem value="assignments">Assignments</SelectItem>
-              <SelectItem value="tutorials">Tutorials</SelectItem>
-              <SelectItem value="lab-reports">Lab Reports</SelectItem>
-              <SelectItem value="study-guides">Study Guides</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
-            </SelectContent>
-          </Select>
-          {errors.classification && (
-            <p className="mt-1 text-xs text-red-600">
-              {errors.classification.message}
-            </p>
-          )}
-        </div>
-
-        {/* Description */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Description (Optional)
-          </label>
-          <textarea
-            {...register("description")}
-            placeholder="e.g., Covers key formulas from lectures 4 & 5"
-            rows={2}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors resize-none text-sm sm:text-base"
-          />
-          <p className="text-xs text-gray-600 mt-1">
-            What's good about this? What does it cover?
-          </p>
-        </div>
+      {/* Target Course Selection */}
+      <div className="space-y-3">
+        <SelectCourse
+          label="Target Course (Optional)"
+          currentValue={targetCourseId}
+          onChange={handleTargetCourseIdChange}
+        />
       </div>
 
       <AdvancedOptions
@@ -219,31 +248,39 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
         tags={tags}
         tagInput={tagInput}
         selectedImage={selectedImage}
-        onVisibilityChange={(value) => setValue("visibility", value)}
+        description={watchedValues.description || ""}
+        classification={classification}
+        onVisibilityChange={(value) =>
+          setValue("visibility", value as VisibilityEnum)
+        }
         onAccessRestrictionsChange={(value) =>
-          setValue("accessRestrictions", value)
+          setValue("accessRestrictions", value as RestrictionEnum)
         }
         onTagAdd={handleTagAdd}
         onTagRemove={handleTagRemove}
         onTagInputChange={setTagInput}
         onImageChange={setSelectedImage}
+        onDescriptionChange={(value) => setValue("description", value)}
+        onClassificationChange={handleClassificationChange}
         imageInputRef={imageInputRef}
       />
 
       {/* Action Buttons */}
       <div className="flex space-x-3 pt-3">
-        <button
-          onClick={onBack}
-          className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2"
-        >
-          <ArrowLeft01Icon size={16} />
-          <span>Back</span>
-        </button>
+        {!isEditMode && (
+          <button
+            onClick={onBack}
+            className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2"
+          >
+            <ArrowLeft01Icon size={16} />
+            <span>Back</span>
+          </button>
+        )}
         <button
           onClick={handleSubmit(onSubmit)}
           className="flex-1 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors"
         >
-          Upload
+          {isEditMode ? "Done" : "Upload"}
         </button>
       </div>
     </motion.div>
