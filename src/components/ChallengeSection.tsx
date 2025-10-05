@@ -40,7 +40,7 @@ const ChallengeSection: React.FC = () => {
   ];
 
   return (
-    <section className="bg-white">
+    <section className="bg-white" id="challenge">
       <motion.div
         className="container mx-auto max-w-6xl px-4 md:px-6 text-center py-8 sm:py-12 md:py-16"
         variants={containerVariants}

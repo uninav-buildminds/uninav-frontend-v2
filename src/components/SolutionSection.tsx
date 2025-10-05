@@ -38,7 +38,7 @@ const SolutionSection: React.FC = () => {
   ];
 
   return (
-    <section className="bg-[#010323]">
+    <section className="bg-[#010323]" id="solution">
       <motion.div
         className="container mx-auto max-w-6xl px-4 md:px-6 text-center py-12 sm:py-16 md:py-20"
         variants={containerVariants}

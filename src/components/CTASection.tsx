@@ -20,7 +20,7 @@ const imageVariants: Variants = {
 
 const CTASection: React.FC = () => {
   return (
-    <section className="bg-[#010323]">
+    <section className="bg-[#010323]" id="contact">
       <motion.div
         className="container mx-auto max-w-6xl px-4 md:px-6 py-12 sm:py-16 md:py-20"
         variants={containerVariants}

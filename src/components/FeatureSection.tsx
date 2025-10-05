@@ -57,7 +57,7 @@ const FeatureSection: React.FC = () => {
   ];
 
   return (
-    <section className="bg-white">
+    <section className="bg-white" id="features">
       <motion.div
         className="container mx-auto max-w-6xl px-4 md:px-6 text-center py-12 sm:py-16 md:py-20"
         variants={containerVariants}

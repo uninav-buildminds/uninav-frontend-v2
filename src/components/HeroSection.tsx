@@ -6,6 +6,9 @@ import type { Variants } from "framer-motion";
 import { searchMaterials, getPopularMaterials } from "@/api/materials.api";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+// import TrendingNow and its type; comment component import since it's currently disabled
+// import TrendingNow, { TrendingItem } from "@/components/TrendingNow";
+// import type { TrendingItem } from "@/components/TrendingNow";
 
 const Navbar: React.FC = () => <Header />;
 
@@ -47,7 +50,7 @@ const HeroSection: React.FC = () => {
     }[]
   >([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [popular, setPopular] = useState<any[]>([]);
+  const [popular, setPopular] = useState<TrendingItem[]>([]);
 
   const handleInputChange = async (q: string) => {
     if (!q) {
@@ -89,7 +92,18 @@ const HeroSection: React.FC = () => {
     (async () => {
       try {
         const res = await getPopularMaterials(10);
-        setPopular(res.data as any);
+        const items = Array.isArray(res?.data) ? res.data : [];
+        const mapped: TrendingItem[] = items.map((m: any) => ({
+          id: m.id,
+          label: m.label,
+          tags: Array.isArray(m.tags) ? m.tags : [],
+          previewUrl: m.previewUrl,
+          views: typeof m.views === "number" ? m.views : undefined,
+          targetCourse: m?.targetCourse?.courseCode
+            ? { courseCode: m.targetCourse.courseCode }
+            : undefined,
+        }));
+        setPopular(mapped);
       } catch (e) {}
     })();
   }, []);
@@ -154,94 +168,11 @@ const HeroSection: React.FC = () => {
               />
             </motion.div>
 
-            {popular.length > 0 && (
+            {/* {popular.length > 0 && (
               <motion.div className="mt-8" variants={itemVariants}>
-                <div className="text-sm text-muted-foreground mb-3">
-                  Trending now
-                </div>
-
-                {/* Horizontal auto-scroll list */}
-                <div className="relative overflow-hidden">
-                  <motion.div
-                    className="flex gap-4 px-1"
-                    animate={{ x: ["0%", "-50%"] }}
-                    transition={{
-                      duration: 30,
-                      repeat: Infinity,
-                      ease: "linear",
-                    }}
-                    style={{ willChange: "transform" }}
-                  >
-                    {[...popular, ...popular].map((m: any, idx: number) => (
-                      <button
-                        key={`${m.id}-${idx}`}
-                        onClick={() => {
-                          if (!loggedIn) return navigate("/auth/signin");
-                          navigate(`/dashboard/material/${m.id}`);
-                        }}
-                        className="group relative w-56 h-32 shrink-0 rounded-2xl border border-gray-200/70 bg-white/60 backdrop-blur-sm overflow-hidden text-left shadow-sm hover:shadow-md transition-all duration-200"
-                      >
-                        {/* Background preview */}
-                        {m.previewUrl && (
-                          <div
-                            className="absolute inset-0 bg-center bg-cover opacity-25 group-hover:opacity-30 transition-opacity"
-                            style={{ backgroundImage: `url(${m.previewUrl})` }}
-                          />
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-br from-white/90 to-white/60" />
-
-                        <div className="relative z-10 h-full flex flex-col justify-between p-3">
-                          <div>
-                            <div className="text-sm font-semibold text-foreground line-clamp-2">
-                              {m.label || "Material"}
-                            </div>
-                            <div className="mt-1 flex gap-1 flex-wrap">
-                              {(m.tags?.slice?.(0, 2) || []).map(
-                                (t: string) => (
-                                  <span
-                                    key={t}
-                                    className="text-[10px] px-2 py-0.5 rounded-full bg-brand/10 text-brand"
-                                  >
-                                    {t}
-                                  </span>
-                                )
-                              )}
-                              {m.targetCourse?.courseCode && (
-                                <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
-                                  {m.targetCourse.courseCode}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="flex items-center justify-between text-xs text-muted-foreground">
-                            <span className="">{m.views ?? 0} views</span>
-                            <span className="inline-flex items-center gap-1 text-brand">
-                              View
-                              <svg
-                                width="14"
-                                height="14"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                className="-mr-0.5"
-                              >
-                                <path
-                                  d="M5 12h14M13 5l7 7-7 7"
-                                  stroke="currentColor"
-                                  strokeWidth="1.5"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                />
-                              </svg>
-                            </span>
-                          </div>
-                        </div>
-                      </button>
-                    ))}
-                  </motion.div>
-                </div>
+                <TrendingNow items={popular as any} />
               </motion.div>
-            )}
+            )} */}
           </motion.div>
         </div>
 

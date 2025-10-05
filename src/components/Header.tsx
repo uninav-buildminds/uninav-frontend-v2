@@ -9,6 +9,7 @@ import {
   MenubarTrigger,
 } from "./ui/menubar";
 import AuthContext from "@/context/authentication/AuthContext";
+import { ArrowRight01Icon } from "hugeicons-react";
 
 const ChevronDownIcon = () => (
   <svg
@@ -57,18 +58,17 @@ const Header: React.FC = () => {
           <a href="#home" className="hover:text-brand transition-colors">
             Home
           </a>
-          <a
-            href="#browse"
-            className="flex items-center hover:text-brand transition-colors"
-          >
-            Browse Courses
-            <ChevronDownIcon />
+          <a href="#challenge" className="hover:text-brand transition-colors">
+            Challenge
+          </a>
+          <a href="#solution" className="hover:text-brand transition-colors">
+            Solution
+          </a>
+          <a href="#features" className="hover:text-brand transition-colors">
+            Features
           </a>
           <a href="#faqs" className="hover:text-brand transition-colors">
             FAQs
-          </a>
-          <a href="#contact" className="hover:text-brand transition-colors">
-            Contact
           </a>
         </nav>
 
@@ -78,9 +78,9 @@ const Header: React.FC = () => {
             <>
               <a
                 href="/dashboard"
-                className="flex items-center gap-2.5 px-3 py-2 rounded-full border border-gray-200 hover:border-brand/50 hover:bg-brand/5 transition-all cursor-pointer group"
+                className="flex items-center gap-2 px-2 py-1 rounded-full border border-gray-200 hover:border-brand/50 hover:bg-brand/5 transition-all cursor-pointer group"
               >
-                <div className="h-9 w-9 rounded-full overflow-hidden ring-2 ring-brand/20 group-hover:ring-brand/50 transition-all">
+                <div className="h-8 w-8 rounded-full overflow-hidden ring-2 ring-brand/20 group-hover:ring-brand/50 transition-all">
                   {user.profilePicture ? (
                     <img
                       src={user.profilePicture}
@@ -88,19 +88,14 @@ const Header: React.FC = () => {
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <div className="h-full w-full bg-brand text-white flex items-center justify-center text-xs font-semibold">
+                    <div className="h-full w-full bg-brand text-white flex items-center justify-center text-[10px] font-semibold">
                       {getInitials(user.firstName, user.lastName)}
                     </div>
                   )}
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium text-gray-700 group-hover:text-brand transition-colors leading-tight">
-                    {user.username}
-                  </span>
-                  <span className="text-[10px] text-gray-400 group-hover:text-gray-500 transition-colors leading-tight">
-                    Dashboard &gt;
-                  </span>
-                </div>
+                <span className="text-sm font-medium text-gray-700 group-hover:text-brand transition-colors leading-tight">
+                  Dashboard
+                </span>
               </a>
             </>
           )}
@@ -159,11 +154,25 @@ const Header: React.FC = () => {
                 Home
               </a>
               <a
-                href="#browse"
+                href="#challenge"
                 className="block px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors text-sm font-medium"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Browse Courses
+                Challenge
+              </a>
+              <a
+                href="#solution"
+                className="block px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors text-sm font-medium"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Solution
+              </a>
+              <a
+                href="#features"
+                className="block px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors text-sm font-medium"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Features
               </a>
               <a
                 href="#faqs"
@@ -172,62 +181,19 @@ const Header: React.FC = () => {
               >
                 FAQs
               </a>
-              <a
-                href="#contact"
-                className="block px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors text-sm font-medium"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Contact
-              </a>
             </nav>
 
             <div className="border-t p-4 space-y-3">
               {user && (
                 <>
-                  <div className="flex items-center gap-3 mb-3 px-2">
-                    <div className="h-10 w-10 rounded-full overflow-hidden ring-2 ring-brand/20">
-                      {user.profilePicture ? (
-                        <img
-                          src={user.profilePicture}
-                          alt={`${user.firstName} ${user.lastName}`}
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <div className="h-full w-full bg-brand text-white flex items-center justify-center text-sm font-semibold">
-                          {getInitials(user.firstName, user.lastName)}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-semibold text-gray-900">
-                        {user.firstName} {user.lastName}
-                      </p>
-                      <p className="text-xs text-gray-500">{user.email}</p>
-                    </div>
-                  </div>
-                  <a
-                    href="#upload"
-                    className="block w-full text-center rounded-xl px-4 py-3 text-sm font-medium text-white bg-brand"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Upload
-                  </a>
                   <a
                     href="/dashboard"
-                    className="block w-full text-center rounded-xl px-4 py-3 text-sm font-medium text-white bg-brand"
+                    className="flex items-center justify-between w-full rounded-xl px-4 py-3 text-sm font-medium text-white bg-brand hover:bg-brand/90 transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Dashboard
+                    <span>Dashboard</span>
+                    <ArrowRight01Icon size={18} />
                   </a>
-                  <button
-                    onClick={() => {
-                      logOut();
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="block w-full text-center rounded-xl px-4 py-3 text-sm font-medium text-white bg-red-600 hover:bg-red-700 transition-colors"
-                  >
-                    Logout
-                  </button>
                 </>
               )}
               {!user && isLoading && (
