@@ -5,16 +5,15 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Plus } from "lucide-react";
-import { 
-  CreateCourseRequest, 
-  LinkCourseRequest, 
-  createCourse, 
-  linkCourseToDepartment 
-} from "@/api/course.api";
+import { createCourse, linkCourseToDepartment } from "@/api/course.api";
 import { useToast } from "@/hooks/use-toast";
 import DepartmentSelector from "./DepartmentSelector";
 import CourseSelector from "./CourseSelector";
 import { ResponseStatus } from "@/lib/types/response.types";
+import {
+  CreateCourseRequest,
+  LinkCourseRequest,
+} from "@/lib/types/course.types";
 
 // Link Course Form Props
 export interface LinkCourseFormProps {
@@ -189,7 +188,9 @@ const CourseForm: React.FC<CourseFormProps> = ({ onSuccess }) => {
   const { toast } = useToast();
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target;
     if (name === "courseCode") {
@@ -198,7 +199,8 @@ const CourseForm: React.FC<CourseFormProps> = ({ onSuccess }) => {
       if (value !== cleanedValue) {
         toast({
           title: "Invalid Input",
-          description: "Course code cannot contain spaces. Spaces have been removed.",
+          description:
+            "Course code cannot contain spaces. Spaces have been removed.",
           variant: "destructive",
         });
       }
@@ -438,7 +440,9 @@ const CourseForm: React.FC<CourseFormProps> = ({ onSuccess }) => {
           {isSubmitting ? (
             <>
               <Loader2 size={16} className="animate-spin" />
-              {formData.useExistingCourse ? "Linking Course..." : "Creating Course..."}
+              {formData.useExistingCourse
+                ? "Linking Course..."
+                : "Creating Course..."}
             </>
           ) : (
             <>
