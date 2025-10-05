@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Material } from "../../lib/types/material.types";
 import { formatRelativeTime } from "../../lib/utils";
 import { useBookmarks } from "../../context/bookmark/BookmarkContextProvider";
+import Placeholder from "/placeholder.svg";
 
 // Custom Bookmark Icons
 const BookmarkOutlineIcon = ({
@@ -74,17 +75,11 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
   showEditDelete = false,
 }) => {
   const { id, label, createdAt, downloads, tags, views, likes } = material;
-  console.log("Raw material response:", material);
-  console.log("Material keys:", Object.keys(material));
-  console.log("Material previewUrl property:", {
-    exists: "previewUrl" in material,
-    value: material.previewUrl,
-    type: typeof material.previewUrl,
-  });
+
+  console.log("Rendering MaterialCard for material:", material);
 
   const previewImage = material.previewUrl;
 
-  console.log("Preview Image URL:", previewImage);
   const { isBookmarked, toggleBookmark } = useBookmarks();
   const saved = isBookmarked(id);
 
@@ -129,7 +124,7 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
       {/* File Preview */}
       <div className="aspect-square overflow-hidden rounded-xl mb-3 relative">
         <img
-          src={material.previewUrl}
+          src={material.previewUrl || Placeholder}
           alt={label}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
           onLoad={() => {
