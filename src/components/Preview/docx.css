@@ -1,0 +1,128 @@
+/* Small preview container styles */
+.docx-preview-container {
+  font-family: "Times New Roman", serif;
+  background: white;
+  color: black;
+  overflow: visible;
+  width: 100%;
+  height: 100%;
+}
+
+.docx-preview-container section {
+  background: white;
+  margin: 0;
+  padding: 25px;
+  width: 100%;
+  min-height: 100%;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+.docx-preview-container p {
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+  font-size: 16px;
+  text-align: left;
+}
+
+.docx-preview-container h1 {
+  margin: 0 0 16px 0;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.docx-preview-container h2 {
+  margin: 0 0 14px 0;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.docx-preview-container h3,
+.docx-preview-container h4,
+.docx-preview-container h5,
+.docx-preview-container h6 {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.docx-preview-container table {
+  font-size: 14px;
+  border-collapse: collapse;
+  width: 100%;
+  margin: 12px 0;
+}
+
+.docx-preview-container td,
+.docx-preview-container th {
+  padding: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  text-align: left;
+}
+
+.docx-preview-container ul,
+.docx-preview-container ol {
+  margin: 0 0 12px 25px;
+  padding: 0;
+}
+
+.docx-preview-container li {
+  margin: 0 0 6px 0;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.docx-preview-container strong,
+.docx-preview-container b {
+  font-weight: bold;
+}
+
+.docx-preview-container em,
+.docx-preview-container i {
+  font-style: italic;
+}
+
+/* Original wrapper styles for full view */
+.docx-wrapper {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: #f9fafb;
+  color: #111827;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  max-width: 700px;
+  margin: 20px auto;
+  overflow: hidden;
+  border: 1px solid red;
+}
+
+.docx-wrapper section {
+  background: white;
+  margin: 0 auto;
+  padding: 24px 32px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  scale: 0.9;
+}
+
+.docx-wrapper header {
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
+  color: white;
+  padding: 14px 20px;
+  border-radius: 8px 8px 0 0;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-align: center;
+}
+
+.docx-wrapper p {
+  margin: 12px 0;
+  line-height: 1.6;
+  font-size: 15px;
+}
+
+.docx-wrapper strong {
+  font-weight: 600;
+  color: #1f2937;
+}

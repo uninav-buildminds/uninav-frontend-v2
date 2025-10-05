@@ -1,4 +1,3 @@
-import Pic from "../../../public/placeholder.svg";
 import { Material } from "../../lib/types/material.types";
 import { MaterialWithLastViewed } from "./MaterialsSection";
 

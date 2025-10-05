@@ -29,6 +29,7 @@ export interface CreateMaterialFileForm {
   metaData?: string[];
   file: File;
   image?: File; // Optional preview image
+  filePreview?: File; // Base64 or blob URL for preview
 }
 
 // Form data interface for link/URL uploads
@@ -44,6 +45,7 @@ export interface CreateMaterialLinkForm {
   metaData?: string[];
   url: string;
   image?: File; // Optional preview image
+  filePreview?: File; // Base64 or blob URL for preview
 }
 
 // Union type for all material creation forms
@@ -339,6 +341,36 @@ export async function deleteMaterial(
       message:
         error.response?.data?.message ||
         "Material deletion failed. Please try again.",
+    };
+  }
+}
+
+export async function uploadMaterialPreview(
+  materialId: string,
+  previewFile?: File
+) {
+  const formData = new FormData();
+  if (previewFile) {
+    formData.append("preview", previewFile);
+  }
+
+  // Debug
+  for (const [key, value] of formData.entries()) {
+    console.log(key, value);
+  }
+
+  try {
+    const response = await httpClient.post(
+      `/materials/preview/upload/${materialId}`,
+      formData
+    );
+    return response.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status,
+      message:
+        error.response?.data?.message ||
+        "Material preview upload failed. Please try again.",
     };
   }
 }

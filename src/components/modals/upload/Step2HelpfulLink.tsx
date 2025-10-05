@@ -17,6 +17,14 @@ import { toast } from "sonner";
 import HeaderStepper from "./shared/HeaderStepper";
 import AdvancedOptions from "./shared/AdvancedOptions";
 import {
+  YoutubePreview,
+  checkIsYouTubeUrl,
+} from "@/components/Preview/youtube";
+import {
+  GDrivePreview,
+  checkIsGoogleDriveUrl,
+} from "@/components/Preview/gDrive";
+import {
   inferMaterialType,
   generateDefaultTitle,
 } from "@/lib/utils/inferMaterialType";
@@ -46,6 +54,25 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [classification, setClassification] = useState<string>("");
   const [targetCourseId, setTargetCourseId] = useState<string>("");
+
+  // Helper function to safely get hostname from URL
+  const getUrlHostname = (url: string): string => {
+    try {
+      return new URL(url).hostname;
+    } catch {
+      return url;
+    }
+  };
+
+  // Helper function to validate if URL is valid
+  const isValidUrl = (url: string): boolean => {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  };
 
   const imageInputRef = useRef<HTMLInputElement>(null);
 
@@ -203,6 +230,70 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
             <p className="mt-1 text-xs text-red-600">{errors.url.message}</p>
           )}
         </div>
+
+        {/* URL Preview Section */}
+        {watchedValues.url && (
+          <div className="mt-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
+            <h4 className="text-sm font-medium text-gray-700 mb-3">Preview</h4>
+
+            {!isValidUrl(watchedValues.url) ? (
+              <div className="flex items-center justify-center p-6 bg-yellow-50 rounded-lg border-2 border-dashed border-yellow-300">
+                <div className="text-center">
+                  <div className="text-yellow-600 mb-2">⚠️</div>
+                  <p className="text-sm text-yellow-700 font-medium">
+                    Invalid URL format
+                  </p>
+                  <p className="text-xs text-yellow-600 mt-1">
+                    Please enter a valid URL starting with http:// or https://
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* Valid URL Previews */}
+
+                {checkIsYouTubeUrl(watchedValues.url) ? (
+                  <div className="flex justify-center">
+                    <YoutubePreview
+                      url={watchedValues.url}
+                      width={280}
+                      height={157}
+                      className="shadow-sm"
+                    />
+                  </div>
+                ) : checkIsGoogleDriveUrl(watchedValues.url) ? (
+                  <div className="flex justify-center">
+                    <GDrivePreview
+                      url={watchedValues.url}
+                      width={280}
+                      height={157}
+                      className="shadow-sm"
+                    />
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center p-6 bg-white rounded-lg border-2 border-dashed border-gray-300">
+                    <div className="text-center">
+                      <Link01Icon
+                        size={32}
+                        className="text-gray-400 mx-auto mb-2"
+                      />
+                      <p className="text-sm text-gray-600 font-medium">
+                        {getUrlHostname(watchedValues.url)}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Link preview available
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
+            <div className="mt-3 text-center">
+              <p className="text-xs text-gray-500">URL: {watchedValues.url}</p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Tell us about it Section */}

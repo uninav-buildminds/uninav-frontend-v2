@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Course } from "@/lib/types/response.type";
 import { getCourses } from "@/api/course.api";
 import {
   Combobox,
@@ -24,7 +23,7 @@ export const SelectCourse = ({
   label,
   className,
 }: Props) => {
-  const [courses, setCourses] = useState<Course[]>([]);
+  const [courses, setCourses] = useState([]);
   const [query, setQuery] = useState("");
   const [value, setValue] = useState(currentValue || "");
   const [loading, setLoading] = useState(true);
