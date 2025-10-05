@@ -90,6 +90,11 @@ const MaterialView: React.FC = () => {
 
           // TODO: Fetch related materials based on tags or course
           setRelatedMaterials([]);
+
+          // Notify other components (e.g., sidebar Recents) to refresh
+          // when a material is opened/viewed. This keeps normal navigation
+          // snappy but ensures recents reflect latest server-side updates.
+          window.dispatchEvent(new Event("recents:refresh"));
         } else {
           toast.error("Failed to load material");
           navigate(-1);

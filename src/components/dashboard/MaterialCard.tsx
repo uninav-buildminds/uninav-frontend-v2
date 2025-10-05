@@ -198,7 +198,7 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
                 {tag}
               </span>
             ))}
-            {tags.length > 2 && (
+            {tags.length > 3 && (
               <span className="inline-block px-2 py-0.5 text-xs bg-[#DCDFFE] text-brand rounded-md">
                 +{tags.length - 2}
               </span>
