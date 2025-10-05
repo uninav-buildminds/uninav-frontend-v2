@@ -31,6 +31,7 @@ import PDFViewer from "@/components/dashboard/viewers/PDFViewer";
 import GDriveFolderBrowser from "@/components/dashboard/viewers/GDriveFolderBrowser";
 import GDriveFileViewer from "@/components/dashboard/viewers/GDriveFileViewer";
 import YouTubeViewer from "@/components/dashboard/viewers/YouTubeViewer";
+import PowerPointViewer from "@/components/dashboard/viewers/PowerPointViewer";
 import { extractGDriveId, isGDriveFolder } from "@/lib/utils/gdriveUtils";
 import {
   downloadGDriveFile,
@@ -90,6 +91,11 @@ const MaterialView: React.FC = () => {
 
           // TODO: Fetch related materials based on tags or course
           setRelatedMaterials([]);
+
+          // Notify other components (e.g., sidebar Recents) to refresh
+          // when a material is opened/viewed. This keeps normal navigation
+          // snappy but ensures recents reflect latest server-side updates.
+          window.dispatchEvent(new Event("recents:refresh"));
         } else {
           toast.error("Failed to load material");
           navigate(-1);
@@ -415,6 +421,19 @@ const MaterialView: React.FC = () => {
           onZoomIn={handleZoomIn}
           onZoomOut={handleZoomOut}
           showControls={true}
+        />
+      );
+    }
+
+    // Handle PowerPoint (ppt/pptx) using Office Online Viewer
+    if (
+      material.type === MaterialTypeEnum.PPT &&
+      material.resource?.resourceAddress
+    ) {
+      return (
+        <PowerPointViewer
+          url={material.resource.resourceAddress}
+          title={material.label}
         />
       );
     }

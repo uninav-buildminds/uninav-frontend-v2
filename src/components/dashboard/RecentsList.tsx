@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { getRecentMaterials } from "@/api/materials.api";
 import { MaterialWithLastViewed } from "./MaterialsSection";
@@ -58,28 +58,38 @@ const RecentsList: React.FC<RecentsListProps> = ({ limit = 5, onViewAll }) => {
   >([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const loadRecentMaterials = async () => {
-      try {
-        setIsLoading(true);
-        const response = await getRecentMaterials();
+  const loadRecentMaterials = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await getRecentMaterials();
 
-        if (response.status === "success" && response.data?.items) {
-          // Take only the specified limit
-          setRecentMaterials(response.data.items.slice(0, limit));
-        } else {
-          setRecentMaterials([]);
-        }
-      } catch (error) {
-        console.error("Error fetching recent materials for sidebar:", error);
+      if (response.status === "success" && response.data?.items) {
+        setRecentMaterials(response.data.items.slice(0, limit));
+      } else {
         setRecentMaterials([]);
-      } finally {
-        setIsLoading(false);
       }
+    } catch (error) {
+      console.error("Error fetching recent materials for sidebar:", error);
+      setRecentMaterials([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [limit]);
+
+  useEffect(() => {
+    // initial load
+    loadRecentMaterials();
+  }, [loadRecentMaterials]);
+
+  useEffect(() => {
+    const handleRefresh = () => {
+      // Refetch recents when a material is viewed
+      loadRecentMaterials();
     };
 
-    loadRecentMaterials();
-  }, [limit]);
+    window.addEventListener("recents:refresh", handleRefresh);
+    return () => window.removeEventListener("recents:refresh", handleRefresh);
+  }, [loadRecentMaterials]);
 
   const handleMaterialClick = (materialId: string) => {
     navigate(`/dashboard/material/${materialId}`);

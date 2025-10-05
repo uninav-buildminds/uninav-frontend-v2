@@ -29,6 +29,7 @@ export interface CreateMaterialFileForm {
   metaData?: string[];
   file: File;
   image?: File; // Optional preview image
+  filePreview?: File; // Base64 or blob URL for preview
 }
 
 // Form data interface for link/URL uploads
@@ -44,6 +45,7 @@ export interface CreateMaterialLinkForm {
   metaData?: string[];
   url: string;
   image?: File; // Optional preview image
+  filePreview?: File; // Base64 or blob URL for preview
 }
 
 // Union type for all material creation forms
@@ -61,6 +63,26 @@ interface MaterialRecommendation {
   reviewStatus?: ApprovalStatus;
   advancedSearch?: boolean;
   ignorePreference?: boolean;
+}
+export async function materialPreview(
+  materialId: string,
+  previewFile: File | Blob
+) {
+  const formData = new FormData();
+  formData.append("preview", previewFile, "preview.png"); // give it a name
+
+  try {
+    const response = await httpClient.post(
+      `/materials/preview/upload/${materialId}`,
+      formData
+    );
+    return response;
+  } catch (error: any) {
+    throw {
+      statusCode: error?.status,
+      message: error || "Material preview failed. Please try again.",
+    };
+  }
 }
 
 interface MaterialSearchParams {
@@ -117,11 +139,6 @@ export async function createMaterials(rawForm: CreateMaterialForm) {
   const visibility: VisibilityEnum =
     rawForm.visibility || VisibilityEnum.PUBLIC;
   formData.append("visibility", visibility);
-
-  // 🔍 Debug
-  for (const [key, value] of formData.entries()) {
-    console.log(key, value);
-  }
 
   try {
     const response = await httpClient.post("/materials", formData);
@@ -180,6 +197,26 @@ export async function getRecentMaterials(): Promise<
       message:
         error.response?.data?.message ||
         "Fetching recent materials failed. Please try again.",
+    };
+  }
+}
+
+export async function getPopularMaterials(limit: number = 10): Promise<
+  Response<{
+    items: Material[];
+  }>
+> {
+  try {
+    const response = await httpClient.get("/materials/popular", {
+      params: { limit },
+    });
+    return response.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status,
+      message:
+        error.response?.data?.message ||
+        "Fetching popular materials failed. Please try again.",
     };
   }
 }
@@ -324,6 +361,36 @@ export async function deleteMaterial(
       message:
         error.response?.data?.message ||
         "Material deletion failed. Please try again.",
+    };
+  }
+}
+
+export async function uploadMaterialPreview(
+  materialId: string,
+  previewFile?: File
+) {
+  const formData = new FormData();
+  if (previewFile) {
+    formData.append("preview", previewFile);
+  }
+
+  // Debug
+  for (const [key, value] of formData.entries()) {
+    console.log(key, value);
+  }
+
+  try {
+    const response = await httpClient.post(
+      `/materials/preview/upload/${materialId}`,
+      formData
+    );
+    return response.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status,
+      message:
+        error.response?.data?.message ||
+        "Material preview upload failed. Please try again.",
     };
   }
 }

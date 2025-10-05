@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Material } from "../../lib/types/material.types";
 import { formatRelativeTime } from "../../lib/utils";
 import { useBookmarks } from "../../context/bookmark/BookmarkContextProvider";
+import Placeholder from "/placeholder.svg";
 
 // Custom Bookmark Icons
 const BookmarkOutlineIcon = ({
@@ -74,7 +75,11 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
   showEditDelete = false,
 }) => {
   const { id, label, createdAt, downloads, tags, views, likes } = material;
-  const previewImage = material.previewUrl || "/placeholder.svg";
+
+  console.log("Rendering MaterialCard for material:", material);
+
+  const previewImage = material.previewUrl;
+
   const { isBookmarked, toggleBookmark } = useBookmarks();
   const saved = isBookmarked(id);
 
@@ -119,10 +124,30 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
       {/* File Preview */}
       <div className="aspect-square overflow-hidden rounded-xl mb-3 relative">
         <img
-          src={previewImage}
+          src={material.previewUrl || Placeholder}
           alt={label}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+          onLoad={() => {
+            console.log(
+              "Preview image loaded successfully:",
+              material.previewUrl
+            );
+          }}
           onError={(e) => {
+            console.error("Preview image failed to load:", {
+              src: material.previewUrl,
+              error: e,
+              materialId: material.id,
+            });
+
+            // Test if URL is accessible by trying to fetch it
+            if (material.previewUrl) {
+              console.log("Testing URL accessibility:", material.previewUrl);
+              fetch(material.previewUrl, { method: "HEAD", mode: "no-cors" })
+                .then(() => console.log("URL is accessible via fetch"))
+                .catch((err) => console.error("URL fetch failed:", err));
+            }
+
             const target = e.target as HTMLImageElement;
             target.src = "/placeholder.svg";
           }}
@@ -173,7 +198,7 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
                 {tag}
               </span>
             ))}
-            {tags.length > 2 && (
+            {tags.length > 3 && (
               <span className="inline-block px-2 py-0.5 text-xs bg-[#DCDFFE] text-brand rounded-md">
                 +{tags.length - 2}
               </span>

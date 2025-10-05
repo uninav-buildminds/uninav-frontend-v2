@@ -19,6 +19,10 @@ import {
   NewsIcon,
 } from "hugeicons-react";
 import { useNavigate, Link } from "react-router-dom";
+import {
+  getNotifications,
+  markAllNotificationsRead,
+} from "@/api/notifications.api";
 
 // types moved to components/notifications/types
 
@@ -113,12 +117,40 @@ const Notifications: React.FC = () => {
   }, [showFilter]);
 
   useEffect(() => {
+    let mounted = true;
     setIsLoading(true);
-    const t = setTimeout(() => {
-      setItems(seedNotifications);
-      setIsLoading(false);
-    }, 600);
-    return () => clearTimeout(t);
+    getNotifications({ page: 1, limit: 20 })
+      .then((res) => {
+        if (!mounted) return;
+        const mapped: NotificationItem[] = res.items.map((it) => ({
+          id: it.id,
+          title: it.title,
+          description: it.description,
+          timeLabel: new Date(it.createdAt).toLocaleString(),
+          status: it.status,
+          group:
+            new Date(it.createdAt).toDateString() === new Date().toDateString()
+              ? "Today"
+              : new Date(it.createdAt).toLocaleDateString(),
+          icon:
+            it.type === "material_approved" ? (
+              <CheckmarkCircle02Icon className="text-emerald-500" size={22} />
+            ) : it.type === "material_rejected" ? (
+              <CancelCircleIcon className="text-rose-500" size={22} />
+            ) : it.type === "points_awarded" ? (
+              <Award02Icon className="text-brand" size={22} />
+            ) : it.type === "email_verified" ? (
+              <CheckmarkCircle02Icon className="text-brand" size={22} />
+            ) : (
+              <Alert02Icon className="text-amber-500" size={22} />
+            ),
+        }));
+        setItems(mapped);
+      })
+      .finally(() => setIsLoading(false));
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const unreadCount = (items || []).filter((n) => n.status === "unread").length;
@@ -155,9 +187,11 @@ const Notifications: React.FC = () => {
   }, [filtered]);
 
   const markAllAsRead = () => {
-    setItems((prev) =>
-      prev ? prev.map((n) => ({ ...n, status: "read" })) : prev
-    );
+    markAllNotificationsRead().then(() => {
+      setItems((prev) =>
+        prev ? prev.map((n) => ({ ...n, status: "read" })) : prev
+      );
+    });
   };
 
   return (
