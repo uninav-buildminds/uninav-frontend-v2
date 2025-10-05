@@ -31,6 +31,7 @@ import PDFViewer from "@/components/dashboard/viewers/PDFViewer";
 import GDriveFolderBrowser from "@/components/dashboard/viewers/GDriveFolderBrowser";
 import GDriveFileViewer from "@/components/dashboard/viewers/GDriveFileViewer";
 import YouTubeViewer from "@/components/dashboard/viewers/YouTubeViewer";
+import PowerPointViewer from "@/components/dashboard/viewers/PowerPointViewer";
 import { extractGDriveId, isGDriveFolder } from "@/lib/utils/gdriveUtils";
 import {
   downloadGDriveFile,
@@ -420,6 +421,19 @@ const MaterialView: React.FC = () => {
           onZoomIn={handleZoomIn}
           onZoomOut={handleZoomOut}
           showControls={true}
+        />
+      );
+    }
+
+    // Handle PowerPoint (ppt/pptx) using Office Online Viewer
+    if (
+      material.type === MaterialTypeEnum.PPT &&
+      material.resource?.resourceAddress
+    ) {
+      return (
+        <PowerPointViewer
+          url={material.resource.resourceAddress}
+          title={material.label}
         />
       );
     }
