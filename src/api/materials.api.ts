@@ -201,6 +201,26 @@ export async function getRecentMaterials(): Promise<
   }
 }
 
+export async function getPopularMaterials(limit: number = 10): Promise<
+  Response<{
+    items: Material[];
+  }>
+> {
+  try {
+    const response = await httpClient.get("/materials/popular", {
+      params: { limit },
+    });
+    return response.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status,
+      message:
+        error.response?.data?.message ||
+        "Fetching popular materials failed. Please try again.",
+    };
+  }
+}
+
 // Search materials with pagination and filtering
 export async function searchMaterials(params: MaterialSearchParams): Promise<
   Response<{
