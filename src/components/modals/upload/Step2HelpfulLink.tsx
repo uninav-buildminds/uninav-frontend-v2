@@ -164,9 +164,57 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
     setValue("tags", newTags);
   };
 
+  // Utility function to generate YouTube thumbnail URL
+  const getYouTubeThumbnail = (url: string): string | null => {
+    if (!checkIsYouTubeUrl(url)) return null;
+
+    const regExp =
+      /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    const videoId = match && match[2].length === 11 ? match[2] : null;
+
+    return videoId
+      ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
+      : null;
+  };
+
+  // Utility function to generate Google Drive thumbnail URL
+  const getGoogleDriveThumbnail = (url: string): string | null => {
+    if (!checkIsGoogleDriveUrl(url)) return null;
+
+    const patterns = [
+      /\/file\/d\/([a-zA-Z0-9-_]+)/,
+      /\/document\/d\/([a-zA-Z0-9-_]+)/,
+      /\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/,
+      /\/presentation\/d\/([a-zA-Z0-9-_]+)/,
+      /[?&]id=([a-zA-Z0-9-_]+)/,
+    ];
+
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match && match[1]) {
+        return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w400-h300`;
+      }
+    }
+    return null;
+  };
+
+  // Generate preview URL based on the URL type
+  const generatePreviewUrl = (url: string): string | null => {
+    if (checkIsYouTubeUrl(url)) {
+      return getYouTubeThumbnail(url);
+    } else if (checkIsGoogleDriveUrl(url)) {
+      return getGoogleDriveThumbnail(url);
+    }
+    return null;
+  };
+
   const onSubmit = (data: UploadLinkInput) => {
     // Infer material type from URL
     const inferredType = inferMaterialType(data.url);
+
+    // Generate preview URL if possible
+    const previewUrl = generatePreviewUrl(data.url);
 
     const formData: CreateMaterialLinkForm = {
       materialTitle: data.materialTitle,
@@ -179,6 +227,7 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
       targetCourseId: targetCourseId || undefined,
       url: data.url,
       image: selectedImage,
+      filePreview: previewUrl || undefined, // Add the preview URL
     };
 
     onComplete(formData);
