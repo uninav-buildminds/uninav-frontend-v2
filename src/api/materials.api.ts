@@ -45,7 +45,7 @@ export interface CreateMaterialLinkForm {
   metaData?: string[];
   url: string;
   image?: File; // Optional preview image
-  filePreview?: File; // Base64 or blob URL for preview
+  filePreview?: File | string; // Base64 or blob URL for preview
 }
 
 // Union type for all material creation forms
@@ -139,6 +139,16 @@ export async function createMaterials(rawForm: CreateMaterialForm) {
   const visibility: VisibilityEnum =
     rawForm.visibility || VisibilityEnum.PUBLIC;
   formData.append("visibility", visibility);
+
+  // Handle preview URL (for link-based materials with string preview URLs)
+  if (rawForm.filePreview && typeof rawForm.filePreview === "string") {
+    formData.append("previewUrl", rawForm.filePreview);
+  }
+  // Handle preview file (for file-based materials will be uploaded separately)
+  if (rawForm.filePreview instanceof File) {
+    // File previews are handled separately via uploadMaterialPreview
+    // after material creation, so we don't append them here
+  }
 
   try {
     const response = await httpClient.post("/materials", formData);

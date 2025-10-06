@@ -80,52 +80,33 @@ const UploadModal: React.FC<UploadModalProps> = ({
         // Create new material
         const result = await createMaterials(data);
 
-        // ✅ Check if file has preview before uploading
-        console.log("Checking preview upload conditions:", {
-          materialId: result.data?.id,
-          hasFilePreview: data.filePreview instanceof File,
-          fileType: "file" in data ? data.file?.type : "N/A",
-          filePreview: data.filePreview,
-          filePreviewType: typeof data.filePreview,
-          filePreviewConstructor: data.filePreview?.constructor?.name,
-        });
-
-        if (
-          result.data?.id &&
-          data.filePreview instanceof File && // 👈 now it's guaranteed to be a File
-          "file" in data &&
-          (data.file?.type === "application/pdf" ||
-            data.file?.type ===
-              "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-        ) {
+        if (result.data?.id && data.filePreview instanceof File) {
+          // Handle file-based previews (PDF/DOCX thumbnails) - upload separately
           console.log("Uploading preview file...");
-          // Upload preview file directly
           const uploadResponse = await uploadMaterialPreview(
             result.data.id,
             data.filePreview
           );
-
-          // 👇 store preview URL in result so frontend can render without refetch
+          // Store preview URL in result so frontend can render without refetch
           result.data.previewUrl = uploadResponse.data?.previewUrl;
           console.log(
             "Final preview URL stored in material:",
             result.data.previewUrl
           );
-
-          console.log("Preview upload result:", uploadResponse);
+        } else if (typeof data.filePreview === "string") {
+          // String-based previews (YouTube/Google Drive URLs) are sent during creation
           console.log(
-            "Preview URL extracted:",
-            uploadResponse.data?.previewUrl
+            "Preview URL was sent during material creation:",
+            data.filePreview
           );
-          console.log("Upload response structure:", {
-            hasData: !!uploadResponse.data,
-            dataKeys: uploadResponse.data
-              ? Object.keys(uploadResponse.data)
-              : [],
-            fullResponse: JSON.stringify(uploadResponse, null, 2),
-          });
+          // The preview URL should already be set by the backend, but ensure it's available
+          result.data.previewUrl = result.data.previewUrl || data.filePreview;
+          console.log(
+            "Final preview URL stored in material:",
+            result.data.previewUrl
+          );
         } else {
-          console.log("Preview upload skipped - conditions not met");
+          console.log("No preview to process");
         }
 
         setCurrentStep("success");
