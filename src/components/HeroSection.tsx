@@ -1,11 +1,13 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useState } from "react";
 import Header from "@/components/Header";
 import SearchBar from "@/components/shared/SearchBar";
 import { motion } from "framer-motion";
 import type { Variants } from "framer-motion";
-import { searchMaterials, getPopularMaterials } from "@/api/materials.api";
+import { searchMaterials } from "@/api/materials.api";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import type { Material } from "@/lib/types/material.types";
+import { ResponseStatus } from "@/lib/types/response.types";
 // import TrendingNow and its type; comment component import since it's currently disabled
 // import TrendingNow, { TrendingItem } from "@/components/TrendingNow";
 // import type { TrendingItem } from "@/components/TrendingNow";
@@ -40,7 +42,7 @@ const imageVariants: Variants = {
 
 const HeroSection: React.FC = () => {
   const navigate = useNavigate();
-  const { loggedIn } = useAuth();
+  const { user } = useAuth();
   const [suggestions, setSuggestions] = useState<
     {
       id: string;
@@ -50,7 +52,6 @@ const HeroSection: React.FC = () => {
     }[]
   >([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [popular, setPopular] = useState<TrendingItem[]>([]);
 
   const handleInputChange = async (q: string) => {
     if (!q) {
@@ -65,9 +66,10 @@ const HeroSection: React.FC = () => {
         page: 1,
         ignorePreference: true,
       });
-      const items = res.data.items || [];
+      const items =
+        res.status === ResponseStatus.SUCCESS ? res.data.items : [];
       setSuggestions(
-        items.map((m: any) => ({
+        items.map((m: Material) => ({
           id: m.id,
           title: m.label || m.targetCourse?.courseName || "Material",
           type: "material" as const,
@@ -81,32 +83,17 @@ const HeroSection: React.FC = () => {
 
   const handleSearchSelect = (titleOrId: string) => {
     // If user is not logged in, redirect to signin
-    if (!loggedIn) {
+    if (!user) {
       navigate("/auth/signin");
       return;
     }
     // Fallback: go to dashboard search page in the future; for now do nothing
   };
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await getPopularMaterials(10);
-        const items = Array.isArray(res?.data) ? res.data : [];
-        const mapped: TrendingItem[] = items.map((m: any) => ({
-          id: m.id,
-          label: m.label,
-          tags: Array.isArray(m.tags) ? m.tags : [],
-          previewUrl: m.previewUrl,
-          views: typeof m.views === "number" ? m.views : undefined,
-          targetCourse: m?.targetCourse?.courseCode
-            ? { courseCode: m.targetCourse.courseCode }
-            : undefined,
-        }));
-        setPopular(mapped);
-      } catch (e) {}
-    })();
-  }, []);
+  // Reserved for future popular materials fetching
+  // useEffect(() => {
+  //   // Fetch and display popular items here
+  // }, []);
 
   return (
     <>
