@@ -24,6 +24,12 @@ import {
   GDrivePreview,
   checkIsGoogleDriveUrl,
 } from "@/components/Preview/gDrive";
+import { listFolderFiles } from "@/api/gdrive.api";
+import {
+  extractGDriveId,
+  getGDriveUrls,
+  isGDriveFolder,
+} from "@/lib/utils/gdriveUtils";
 import {
   inferMaterialType,
   generateDefaultTitle,
@@ -54,6 +60,11 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [classification, setClassification] = useState<string>("");
   const [targetCourseId, setTargetCourseId] = useState<string>("");
+  const [derivedPreviewUrl, setDerivedPreviewUrl] = useState<string | null>(
+    null
+  );
+  const [resolvingGDrivePreview, setResolvingGDrivePreview] =
+    useState<boolean>(false);
 
   // Helper function to safely get hostname from URL
   const getUrlHostname = (url: string): string => {
@@ -134,6 +145,52 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
     }
   };
 
+  // When URL looks like a Google Drive folder, fetch the first file and derive a thumbnail
+  useEffect(() => {
+    const url = watchedValues.url || "";
+    // reset when url changes
+    setDerivedPreviewUrl(null);
+
+    if (!url || !checkIsGoogleDriveUrl(url)) return;
+
+    // Only attempt special handling for folders
+    if (!isGDriveFolder(url)) return;
+
+    const identifier = extractGDriveId(url);
+    if (!identifier || identifier.type !== "folder") return;
+
+    let cancelled = false;
+    const resolvePreview = async () => {
+      try {
+        setResolvingGDrivePreview(true);
+        const contents = await listFolderFiles(identifier.id);
+        if (cancelled) return;
+
+        // Prefer the first non-folder file; otherwise fallback to first entry
+        const firstFile =
+          contents.files.find(
+            (f) => f.mimeType !== "application/vnd.google-apps.folder"
+          ) || contents.files[0];
+
+        if (!firstFile) return; // empty folder => no preview
+        // Prefer the stable drive.google.com thumbnail endpoint to avoid 429s from lh3.googleusercontent.com
+        const thumb = getGDriveUrls(firstFile.id).thumbnail;
+        setDerivedPreviewUrl(thumb);
+      } catch (err) {
+        // Silent fail; user can still submit without preview
+        setDerivedPreviewUrl(null);
+      } finally {
+        setResolvingGDrivePreview(false);
+      }
+    };
+
+    resolvePreview();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watchedValues.url]);
+
   const handleTagAdd = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && tagInput.trim()) {
       e.preventDefault();
@@ -204,6 +261,10 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
     if (checkIsYouTubeUrl(url)) {
       return getYouTubeThumbnail(url);
     } else if (checkIsGoogleDriveUrl(url)) {
+      // For folders, use the derived preview we resolved via API; for files, compute directly
+      if (isGDriveFolder(url)) {
+        return derivedPreviewUrl;
+      }
       return getGoogleDriveThumbnail(url);
     }
     return null;
@@ -227,7 +288,7 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
       targetCourseId: targetCourseId || undefined,
       url: data.url,
       image: selectedImage,
-      filePreview: previewUrl || undefined, // Add the preview URL
+      filePreview: previewUrl || undefined, // Add the preview URL (supports GDrive folders)
     };
 
     onComplete(formData);
@@ -311,14 +372,40 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
                     />
                   </div>
                 ) : checkIsGoogleDriveUrl(watchedValues.url) ? (
-                  <div className="flex justify-center">
-                    <GDrivePreview
-                      url={watchedValues.url}
-                      width={280}
-                      height={157}
-                      className="shadow-sm"
-                    />
-                  </div>
+                  isGDriveFolder(watchedValues.url) ? (
+                    <div className="flex justify-center">
+                      <div
+                        className="rounded-xl overflow-hidden shadow-md bg-white border border-gray-200 w-[280px] h-[157px] flex items-center justify-center"
+                        title="Google Drive folder preview"
+                      >
+                        {resolvingGDrivePreview ? (
+                          <div className="text-xs text-gray-500">
+                            Resolving preview…
+                          </div>
+                        ) : derivedPreviewUrl ? (
+                          <img
+                            src={derivedPreviewUrl}
+                            alt="Google Drive folder preview"
+                            className="w-full h-full object-cover"
+                            onError={() => undefined}
+                          />
+                        ) : (
+                          <div className="text-center p-4 text-xs text-gray-500">
+                            No preview available for this folder
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex justify-center">
+                      <GDrivePreview
+                        url={watchedValues.url}
+                        width={280}
+                        height={157}
+                        className="shadow-sm"
+                      />
+                    </div>
+                  )
                 ) : (
                   <div className="flex items-center justify-center p-6 bg-white rounded-lg border-2 border-dashed border-gray-300">
                     <div className="text-center">
