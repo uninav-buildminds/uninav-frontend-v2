@@ -411,3 +411,17 @@ export async function uploadMaterialPreview(
     };
   }
 }
+
+export async function getGDriveThumbnail(fileId: string) {
+  try {
+    const response = await httpClient.get(`/gdrive/thumbnail/${fileId}`);
+    return response.data.data.url;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status,
+      message:
+        error.response?.data?.message ||
+        "Getting GDrive thumbnail failed. Please try again.",
+    };
+  }
+}

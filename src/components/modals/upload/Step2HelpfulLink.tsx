@@ -34,7 +34,10 @@ import {
   inferMaterialType,
   generateDefaultTitle,
 } from "@/lib/utils/inferMaterialType";
-import { CreateMaterialLinkForm } from "@/api/materials.api";
+import {
+  CreateMaterialLinkForm,
+  getGDriveThumbnail,
+} from "@/api/materials.api";
 import {
   VisibilityEnum,
   RestrictionEnum,
@@ -174,8 +177,8 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
 
         if (!firstFile) return; // empty folder => no preview
         // Prefer the stable drive.google.com thumbnail endpoint to avoid 429s from lh3.googleusercontent.com
-        const thumb = getGDriveUrls(firstFile.id).thumbnail;
-        setDerivedPreviewUrl(thumb);
+        const thumb = await getGDriveThumbnail(firstFile.id);
+        if (thumb) setDerivedPreviewUrl(thumb);
       } catch (err) {
         // Silent fail; user can still submit without preview
         setDerivedPreviewUrl(null);
