@@ -1,15 +1,13 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { ENV } from "./env.config";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// This is the URL where the backend API is hosted
-// It can be set in the .env file as VITE_API_BASE_URL
-// If not set, it defaults to "http://localhost:3200"
-export const API_BASE_URL: string =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:3200";
+// Re-export API_BASE_URL from env config for backward compatibility
+export const API_BASE_URL = ENV.API_BASE_URL;
 
 // Format relative time with proper units (days, weeks, months)
 export function formatRelativeTime(dateString: string): string {

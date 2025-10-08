@@ -24,12 +24,12 @@ import {
   GDrivePreview,
   checkIsGoogleDriveUrl,
 } from "@/components/Preview/gDrive";
-import { listFolderFiles } from "@/api/gdrive.api";
 import {
+  listFolderFiles,
+  generateAndUploadPreview,
   extractGDriveId,
-  getGDriveUrls,
-  isGDriveFolder,
-} from "@/lib/utils/gdriveUtils";
+} from "@/lib/gdrive-preview";
+import { isGDriveFolder } from "@/lib/utils/gdriveUtils";
 import {
   inferMaterialType,
   generateDefaultTitle,
@@ -176,9 +176,15 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
           ) || contents.files[0];
 
         if (!firstFile) return; // empty folder => no preview
-        // Prefer the stable drive.google.com thumbnail endpoint to avoid 429s from lh3.googleusercontent.com
-        const thumb = await getGDriveThumbnail(firstFile.id);
-        if (thumb) setDerivedPreviewUrl(thumb);
+
+        // Generate preview and upload to Cloudinary
+        const cloudinaryUrl = await generateAndUploadPreview(
+          firstFile.id,
+          firstFile.name
+        );
+        if (cloudinaryUrl) {
+          setDerivedPreviewUrl(cloudinaryUrl);
+        }
       } catch (err) {
         // Silent fail; user can still submit without preview
         setDerivedPreviewUrl(null);
@@ -378,7 +384,7 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
                   isGDriveFolder(watchedValues.url) ? (
                     <div className="flex justify-center">
                       <div
-                        className="rounded-xl overflow-hidden shadow-md bg-white border border-gray-200 w-[280px] h-[157px] flex items-center justify-center"
+                        className="rounded-lg overflow-hidden shadow-sm bg-white border border-gray-200 w-[200px] h-[120px] flex items-center justify-center"
                         title="Google Drive folder preview"
                       >
                         {resolvingGDrivePreview ? (
