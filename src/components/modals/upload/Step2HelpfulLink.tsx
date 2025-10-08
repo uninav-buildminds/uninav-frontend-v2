@@ -50,6 +50,7 @@ interface Step2HelpfulLinkProps {
   onBack: () => void;
   editingMaterial?: Material | null;
   isEditMode?: boolean;
+  onTempPreviewChange?: (url: string | null) => void; // Callback to track temp preview
 }
 
 const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
@@ -57,6 +58,7 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
   onBack,
   editingMaterial = null,
   isEditMode = false,
+  onTempPreviewChange,
 }) => {
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
@@ -153,6 +155,8 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
     const url = watchedValues.url || "";
     // reset when url changes
     setDerivedPreviewUrl(null);
+    // Clear temp preview tracking when URL changes
+    onTempPreviewChange?.(null);
 
     if (!url || !checkIsGoogleDriveUrl(url)) return;
 
@@ -184,6 +188,8 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
         );
         if (cloudinaryUrl) {
           setDerivedPreviewUrl(cloudinaryUrl);
+          // Notify parent component about temp preview
+          onTempPreviewChange?.(cloudinaryUrl);
         }
       } catch (err) {
         // Silent fail; user can still submit without preview
@@ -433,10 +439,6 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
                 )}
               </>
             )}
-
-            <div className="mt-3 text-center">
-              <p className="text-xs text-gray-500">URL: {watchedValues.url}</p>
-            </div>
           </div>
         )}
       </div>

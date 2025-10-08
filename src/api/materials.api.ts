@@ -425,3 +425,24 @@ export async function getGDriveThumbnail(fileId: string) {
     };
   }
 }
+
+export const cleanupTempPreview = async (
+  previewUrl: string
+): Promise<Response<{ deleted: boolean }>> => {
+  try {
+    const response = await httpClient.delete(
+      "/materials/preview/cleanup/temp",
+      {
+        data: { previewUrl },
+      }
+    );
+
+    return response.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status || 500,
+      message:
+        error.response?.data?.message || "Failed to cleanup temp preview",
+    };
+  }
+};
