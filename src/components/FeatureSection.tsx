@@ -27,32 +27,38 @@ const FeatureSection: React.FC = () => {
     {
       title: "Smart Search",
       description: "Type anything - 'PHY 205 slides', 'last year's quiz' - we'll find it. Find any material in seconds, not hours of digging through folders",
-      icon: <Search size={24} />
-    },
-    {
-      title: "WhatsApp Bot",
-      description: "Get notes via chat when you're offline. Just message 'Send BIO 103 notes'. Access your study materials anywhere, even without internet",
-      icon: <MessageCircle size={24} />
-    },
-    {
-      title: "Rewards That Matter",
-      description: "10 uploads = Skip the queue for popular materials. 50 = Free printing credit. Turn your knowledge sharing into real campus perks",
-      icon: <Trophy size={24} />
+      icon: <Search size={24} />,
+      isComingSoon: false
     },
     {
       title: "Instant Verification",
       description: "All materials are checked by senior students and teaching assistants. Study with confidence knowing content is accurate and up-to-date",
-      icon: <Zap size={24} />
+      icon: <Zap size={24} />,
+      isComingSoon: false
     },
     {
       title: "Honor Code Compliant",
       description: "Built with academic integrity in mind. Past papers only, no current assignments. Share and access materials without worrying about academic violations",
-      icon: <Shield size={24} />
+      icon: <Shield size={24} />,
+      isComingSoon: false
+    },
+    {
+      title: "WhatsApp Bot",
+      description: "Get notes via chat when you're offline. Just message 'Send BIO 103 notes'. Access your study materials anywhere, even without internet",
+      icon: <MessageCircle size={24} />,
+      isComingSoon: true
+    },
+    {
+      title: "Rewards That Matter",
+      description: "10 uploads = Skip the queue for popular materials. 50 = Free printing credit. Turn your knowledge sharing into real campus perks",
+      icon: <Trophy size={24} />,
+      isComingSoon: true
     },
     {
       title: "Community Driven",
       description: "Connect with study groups, find study partners, and build your academic network. Build lasting relationships while succeeding academically",
-      icon: <Users size={24} />
+      icon: <Users size={24} />,
+      isComingSoon: true
     }
   ];
 
@@ -92,11 +98,13 @@ const Feature = ({
   description,
   icon,
   index,
+  isComingSoon,
 }: {
   title: string;
   description: string;
   icon: React.ReactNode;
   index: number;
+  isComingSoon: boolean;
 }) => {
   return (
     <motion.div
@@ -124,6 +132,14 @@ const Feature = ({
           {title}
         </span>
       </div>
+      
+      {isComingSoon && (
+        <div className="absolute top-4 right-4 z-20">
+          <span className="text-xs bg-brand/10 text-brand px-2 py-1 rounded-full font-medium">
+            COMING SOON
+          </span>
+        </div>
+      )}
       
       <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-xs relative z-10 px-6 sm:px-8 md:px-10 text-left">
         {description}

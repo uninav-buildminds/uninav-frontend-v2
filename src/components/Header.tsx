@@ -183,7 +183,7 @@ const Header: React.FC = () => {
               </a>
             </nav>
 
-            <div className="border-t p-4 space-y-3">
+            <div className="border-t p-10 space-y-3">
               {user && (
                 <>
                   <a
