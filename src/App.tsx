@@ -36,7 +36,7 @@ import UserManagementPage from "./pages/management/user-management";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import AuthContextProvider from "./context/authentication/AuthContextProvider";
 import { BookmarkProvider } from "./context/bookmark/BookmarkContextProvider";
-
+import DashboardPage from "./pages/dashboard/DashboardPage";
 const queryClient = new QueryClient();
 
 const App = () => {
@@ -52,6 +52,7 @@ const App = () => {
                 <Routes>
                   <Route path="/" element={<Index />} />
 
+                  <Route path="/dashboard-batch" element={<DashboardPage />} />
                   {/* Dashboard Routes - Nested */}
                   <Route
                     path="/dashboard"

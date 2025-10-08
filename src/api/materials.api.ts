@@ -446,3 +446,17 @@ export const cleanupTempPreview = async (
     };
   }
 };
+
+export async function getDownloadUrl(materialId: string) {
+  try {
+    const response = await httpClient.get(`/materials/download/${materialId}`);
+    return response.data.data.url;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status,
+      message:
+        error.response?.data?.message ||
+        "Getting download URL failed. Please try again.",
+    };
+  }
+}

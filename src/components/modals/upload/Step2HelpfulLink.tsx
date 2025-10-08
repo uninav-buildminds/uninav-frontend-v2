@@ -28,6 +28,7 @@ import {
   listFolderFiles,
   generateAndUploadPreview,
   extractGDriveId,
+  generateGDrivePreviewBlob,
 } from "@/lib/gdrive-preview";
 import { isGDriveFolder } from "@/lib/utils/gdriveUtils";
 import {

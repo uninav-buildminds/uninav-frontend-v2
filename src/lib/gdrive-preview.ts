@@ -152,6 +152,28 @@ export async function generateAndUploadPreview(
 }
 
 /**
+ * Generate a preview Blob from a GDrive file ID without uploading it.
+ * This is useful for batch processing.
+ */
+export async function generateGDrivePreviewBlob(
+  fileId: string
+): Promise<Blob | null> {
+  try {
+    const fileMeta = await getFileMetadata(fileId);
+    if (!fileMeta.thumbnailLink) {
+      console.warn("No thumbnail available for GDrive file:", fileId);
+      return null;
+    }
+    // Use the canvas method to bypass CORS issues with the thumbnail link
+    const imageData = await fetchThumbnailViaCanvas(fileMeta.thumbnailLink);
+    return imageData;
+  } catch (error) {
+    console.error("GDrive preview blob generation failed:", error);
+    return null;
+  }
+}
+
+/**
  * Fetch thumbnail via canvas to bypass origin restrictions
  */
 async function fetchThumbnailViaCanvas(

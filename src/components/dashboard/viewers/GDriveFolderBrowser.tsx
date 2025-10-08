@@ -12,6 +12,7 @@ import {
   listFolderFiles,
   getFileMetadata,
   GDriveFile,
+  generateGDrivePreviewBlob,
 } from "@/lib/gdrive-preview";
 import {
   extractGDriveId,
