@@ -137,7 +137,15 @@ export async function runBatchPreviewUpdate(
 
             // Fetch full material details to get resource information
             console.log(`Fetching full material details for: ${material.id}`);
-            const fullMaterial = await getMaterialById(material.id);
+            let fullMaterial;
+            try {
+              fullMaterial = await getMaterialById(material.id);
+            } catch (error: any) {
+              console.error(`Failed to fetch material ${material.id}:`, error);
+              progress.failed++;
+              progress.currentTask = `❌ Failed to fetch material: ${material.label}`;
+              continue; // Skip this material and move to the next one
+            }
 
             // Small delay to avoid overwhelming the API
             await sleep(200);
@@ -159,27 +167,43 @@ export async function runBatchPreviewUpdate(
                   console.log(
                     `GDrive file detected, generating preview directly for file ID: ${gdriveId.id}`
                   );
-                  previewBlob = await generateGDrivePreviewBlob(gdriveId.id);
+                  try {
+                    previewBlob = await generateGDrivePreviewBlob(gdriveId.id);
+                  } catch (error) {
+                    console.error(
+                      `Failed to generate GDrive file preview for ${gdriveId.id}:`,
+                      error
+                    );
+                  }
                 } else if (gdriveId.type === "folder") {
                   console.log(
                     `GDrive folder detected, listing contents for folder ID: ${gdriveId.id}`
                   );
-                  // For folders, we need to list contents and get the first file
-                  const folderContents = await listFolderFiles(gdriveId.id);
-                  if (folderContents.files.length > 0) {
-                    // Get the first non-folder file
-                    const firstFile =
-                      folderContents.files.find(
-                        (f) =>
-                          f.mimeType !== "application/vnd.google-apps.folder"
-                      ) || folderContents.files[0];
+                  try {
+                    // For folders, we need to list contents and get the first file
+                    const folderContents = await listFolderFiles(gdriveId.id);
+                    if (folderContents.files.length > 0) {
+                      // Get the first non-folder file
+                      const firstFile =
+                        folderContents.files.find(
+                          (f) =>
+                            f.mimeType !== "application/vnd.google-apps.folder"
+                        ) || folderContents.files[0];
 
-                    console.log(
-                      `Using first file from folder: ${firstFile.name} (${firstFile.id})`
+                      console.log(
+                        `Using first file from folder: ${firstFile.name} (${firstFile.id})`
+                      );
+                      previewBlob = await generateGDrivePreviewBlob(
+                        firstFile.id
+                      );
+                    } else {
+                      console.warn(`GDrive folder is empty: ${gdriveId.id}`);
+                    }
+                  } catch (error) {
+                    console.error(
+                      `Failed to list GDrive folder contents for ${gdriveId.id}:`,
+                      error
                     );
-                    previewBlob = await generateGDrivePreviewBlob(firstFile.id);
-                  } else {
-                    console.warn(`GDrive folder is empty: ${gdriveId.id}`);
                   }
                 }
               } else {

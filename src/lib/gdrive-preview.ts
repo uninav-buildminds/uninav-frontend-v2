@@ -164,6 +164,20 @@ export async function generateGDrivePreviewBlob(
       console.warn("No thumbnail available for GDrive file:", fileId);
       return null;
     }
+
+    console.log("GDrive file metadata:", {
+      name: fileMeta.name,
+      mimeType: fileMeta.mimeType,
+      hasThumbnail: !!fileMeta.thumbnailLink,
+      thumbnailUrl: fileMeta.thumbnailLink,
+    });
+
+    // Check if this is a file that can have a thumbnail
+    if (fileMeta.mimeType === "application/vnd.google-apps.folder") {
+      console.warn("Cannot generate preview for folder:", fileId);
+      return null;
+    }
+
     // Use the canvas method to bypass CORS issues with the thumbnail link
     const imageData = await fetchThumbnailViaCanvas(fileMeta.thumbnailLink);
     return imageData;
@@ -212,12 +226,14 @@ async function fetchThumbnailViaCanvas(
       }
     };
 
-    img.onerror = () => {
-      console.warn("Failed to load thumbnail image");
+    img.onerror = (error) => {
+      console.warn("Failed to load thumbnail image:", error);
+      console.warn("Thumbnail URL:", thumbnailUrl);
       resolve(null);
     };
 
     // Set the source to trigger loading
+    console.log("Attempting to load thumbnail:", thumbnailUrl);
     img.src = thumbnailUrl;
   });
 }
