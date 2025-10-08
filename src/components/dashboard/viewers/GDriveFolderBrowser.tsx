@@ -8,7 +8,12 @@ import { ChevronRight, Loader2 } from "lucide-react";
 import { Download01Icon } from "hugeicons-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { listFolderFiles, getFileMetadata, GDriveFile } from "@/api/gdrive.api";
+import {
+  listFolderFiles,
+  getFileMetadata,
+  GDriveFile,
+  generateGDrivePreviewBlob,
+} from "@/lib/gdrive-preview";
 import {
   extractGDriveId,
   getFileIcon,

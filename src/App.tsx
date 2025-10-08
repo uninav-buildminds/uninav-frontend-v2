@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ENV } from "@/lib/env.config";
 import Index from "./pages/Index";
 import SignupForm from "./pages/auth/signup/SignupForm";
 import RequestEmailVerification from "./pages/auth/verification/RequestEmailVerification";
@@ -35,7 +36,7 @@ import UserManagementPage from "./pages/management/user-management";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import AuthContextProvider from "./context/authentication/AuthContextProvider";
 import { BookmarkProvider } from "./context/bookmark/BookmarkContextProvider";
-
+import DashboardPage from "./pages/dashboard/DashboardPage";
 const queryClient = new QueryClient();
 
 const App = () => {
@@ -45,12 +46,13 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+          <GoogleOAuthProvider clientId={ENV.GOOGLE_CLIENT_ID}>
             <AuthContextProvider>
               <BookmarkProvider>
                 <Routes>
                   <Route path="/" element={<Index />} />
 
+                  <Route path="/dashboard-batch" element={<DashboardPage />} />
                   {/* Dashboard Routes - Nested */}
                   <Route
                     path="/dashboard"

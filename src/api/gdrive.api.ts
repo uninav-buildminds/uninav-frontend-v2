@@ -3,20 +3,10 @@
  * Uses Google Drive API v3 with API key authentication
  */
 
-const API_KEY = import.meta.env.VITE_GOOGLE_DRIVE_API_KEY;
-const BASE_URL = "https://www.googleapis.com/drive/v3";
+import { ENV } from "@/lib/env.config";
 
-// Log API key status on module load (only in development)
-if (import.meta.env.DEV) {
-  if (!API_KEY) {
-    console.warn(
-      "⚠️ VITE_GOOGLE_DRIVE_API_KEY is not set. Google Drive features will not work.\n" +
-        "Please add it to your .env file. See GDRIVE_SETUP.md for instructions."
-    );
-  } else {
-    console.log("✅ Google Drive API key detected");
-  }
-}
+const API_KEY = ENV.GOOGLE_DRIVE_API_KEY;
+const BASE_URL = "https://www.googleapis.com/drive/v3";
 
 export interface GDriveFile {
   id: string;

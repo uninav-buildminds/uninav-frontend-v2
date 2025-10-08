@@ -45,7 +45,9 @@ export interface CreateMaterialLinkForm {
   metaData?: string[];
   url: string;
   image?: File; // Optional preview image
-  filePreview?: File | string; // Base64 or blob URL for preview
+  previewUrl?: string; // direct url for preview useful for links (YouTube, Google Drive, etc.)
+
+  filePreview?: File | string; // Base64 or blob URL for preview,if specified overrides previewUrl useful for files (PDF, DOCX, etc.)
 }
 
 // Union type for all material creation forms
@@ -98,54 +100,59 @@ interface MaterialSearchParams {
   ignorePreference?: boolean; // if to ignore the user's preference (should be used if the user is not logged in or admin is searching on management page)
 }
 
-export async function createMaterials(rawForm: CreateMaterialForm) {
+export async function createMaterials(materialData: CreateMaterialForm) {
   const formData = new FormData();
 
-  formData.append("label", rawForm.materialTitle);
-  formData.append("description", rawForm.description);
+  formData.append("label", materialData.materialTitle);
+  formData.append("description", materialData.description);
 
   // Type is now inferred and passed from the form, with proper validation
-  const type: MaterialTypeEnum = rawForm.type || MaterialTypeEnum.OTHER;
+  const type: MaterialTypeEnum = materialData.type || MaterialTypeEnum.OTHER;
   formData.append("type", type);
 
   // Ensure restriction matches backend enum values
   const restriction: RestrictionEnum =
-    rawForm.accessRestrictions || RestrictionEnum.DOWNLOADABLE;
+    materialData.accessRestrictions || RestrictionEnum.DOWNLOADABLE;
   formData.append("restriction", restriction);
 
   formData.append(
     "tags",
-    Array.isArray(rawForm.tags) ? rawForm.tags.join(",") : rawForm.tags || ""
+    Array.isArray(materialData.tags)
+      ? materialData.tags.join(",")
+      : materialData.tags || ""
   );
 
   // Handle file upload (for CreateMaterialFileForm)
-  if ("file" in rawForm && rawForm.file) {
-    formData.append("file", rawForm.file);
+  if ("file" in materialData && materialData.file) {
+    formData.append("file", materialData.file);
   }
   // Handle URL/link (for CreateMaterialLinkForm)
-  if ("url" in rawForm && rawForm.url) {
-    formData.append("resourceAddress", rawForm.url);
+  if ("url" in materialData && materialData.url) {
+    formData.append("resourceAddress", materialData.url);
   }
-  if (rawForm.targetCourseId) {
-    formData.append("targetCourseId", rawForm.targetCourseId);
+  if (materialData.targetCourseId) {
+    formData.append("targetCourseId", materialData.targetCourseId);
   }
-  if (rawForm.metaData) {
-    rawForm.metaData.forEach((meta: string) =>
+  if (materialData.metaData) {
+    materialData.metaData.forEach((meta: string) =>
       formData.append("metaData", meta)
     );
   }
 
   // Ensure visibility matches backend enum values
   const visibility: VisibilityEnum =
-    rawForm.visibility || VisibilityEnum.PUBLIC;
+    materialData.visibility || VisibilityEnum.PUBLIC;
   formData.append("visibility", visibility);
 
   // Handle preview URL (for link-based materials with string preview URLs)
-  if (rawForm.filePreview && typeof rawForm.filePreview === "string") {
-    formData.append("previewUrl", rawForm.filePreview);
+  if (
+    materialData.filePreview &&
+    typeof materialData.filePreview === "string"
+  ) {
+    formData.append("previewUrl", materialData.filePreview);
   }
   // Handle preview file (for file-based materials will be uploaded separately)
-  if (rawForm.filePreview instanceof File) {
+  if (materialData.filePreview instanceof File) {
     // File previews are handled separately via uploadMaterialPreview
     // after material creation, so we don't append them here
   }
@@ -401,6 +408,55 @@ export async function uploadMaterialPreview(
       message:
         error.response?.data?.message ||
         "Material preview upload failed. Please try again.",
+    };
+  }
+}
+
+export async function getGDriveThumbnail(fileId: string) {
+  try {
+    const response = await httpClient.get(`/gdrive/thumbnail/${fileId}`);
+    return response.data.data.url;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status,
+      message:
+        error.response?.data?.message ||
+        "Getting GDrive thumbnail failed. Please try again.",
+    };
+  }
+}
+
+export const cleanupTempPreview = async (
+  previewUrl: string
+): Promise<Response<{ deleted: boolean }>> => {
+  try {
+    const response = await httpClient.delete(
+      "/materials/preview/cleanup/temp",
+      {
+        data: { previewUrl },
+      }
+    );
+
+    return response.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status || 500,
+      message:
+        error.response?.data?.message || "Failed to cleanup temp preview",
+    };
+  }
+};
+
+export async function getDownloadUrl(materialId: string) {
+  try {
+    const response = await httpClient.get(`/materials/download/${materialId}`);
+    return response.data.data.url;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status,
+      message:
+        error.response?.data?.message ||
+        "Getting download URL failed. Please try again.",
     };
   }
 }

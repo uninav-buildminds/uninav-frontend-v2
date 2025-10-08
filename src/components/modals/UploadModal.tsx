@@ -11,6 +11,7 @@ import {
   updateMaterial,
   CreateMaterialForm,
   uploadMaterialPreview,
+  cleanupTempPreview,
 } from "@/api/materials.api";
 import { Material, ResourceTypeEnum } from "@/lib/types/material.types";
 import { dataURLtoFile } from "../Preview/urlToFile";
@@ -45,6 +46,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
   );
   const [uploadData, setUploadData] = useState<CreateMaterialForm | null>(null);
   const [submitting, setSubmitting] = useState(false); // Loader state
+  const [tempPreviewUrl, setTempPreviewUrl] = useState<string | null>(null); // Track temp preview for cleanup
 
   // Reset state when modal opens/closes or editing material changes
   useEffect(() => {
@@ -125,10 +127,21 @@ const UploadModal: React.FC<UploadModalProps> = ({
     }
   };
 
-  const handleClose = () => {
+  const handleClose = async () => {
+    // Cleanup temp preview if it exists
+    if (tempPreviewUrl) {
+      try {
+        await cleanupTempPreview(tempPreviewUrl);
+        console.log("Temp preview cleaned up successfully");
+      } catch (error) {
+        console.warn("Failed to cleanup temp preview:", error);
+      }
+    }
+
     setCurrentStep("type-selection");
     setMaterialType(null);
     setUploadData(null);
+    setTempPreviewUrl(null);
     onClose();
   };
 
@@ -157,6 +170,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
               onBack={handleBack}
               editingMaterial={editingMaterial}
               isEditMode={isEditMode}
+              onTempPreviewChange={setTempPreviewUrl}
             />
           );
         }

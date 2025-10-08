@@ -45,3 +45,37 @@ export async function generatePreviewAndUpload(file: File, materialId: string) {
     console.error("Error sending preview:", err);
   }
 }
+
+export async function generatePdfPreviewBlob(
+  fileUrl: string
+): Promise<Blob | null> {
+  try {
+    const response = await fetch(fileUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch PDF: ${response.statusText}`);
+    }
+    const arrayBuffer = await response.arrayBuffer();
+
+    const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+    const page = await pdf.getPage(1);
+
+    const canvas = document.createElement("canvas");
+    const viewport = page.getViewport({ scale: 1.5 }); // Use a slightly higher scale for better quality
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      throw new Error("Could not get canvas context");
+    }
+
+    await page.render({ canvasContext: ctx, viewport }).promise;
+
+    return await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob((b) => resolve(b), "image/jpeg", 0.8)
+    );
+  } catch (error) {
+    console.error("Error generating PDF preview blob:", error);
+    return null;
+  }
+}

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Download, ZoomIn, ZoomOut, RotateCw } from "lucide-react";
 import { toast } from "sonner";
 import { getFileMetadata, GDriveFile } from "@/api/gdrive.api";
+import { ENV } from "@/lib/env.config";
 import {
   getGDriveUrls,
   getGoogleWorkspaceEmbedUrl,
@@ -75,7 +76,7 @@ const GDriveFileViewer: React.FC<GDriveFileViewerProps> = ({
 
   const loadImageContent = async (fileId: string) => {
     try {
-      const API_KEY = import.meta.env.VITE_GOOGLE_DRIVE_API_KEY;
+      const API_KEY = ENV.GOOGLE_DRIVE_API_KEY;
       if (!API_KEY) {
         throw new Error("Google Drive API key is not configured");
       }
