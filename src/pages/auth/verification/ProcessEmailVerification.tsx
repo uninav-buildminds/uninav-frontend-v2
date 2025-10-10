@@ -1,3 +1,4 @@
+import { httpClient } from "@/api/api";
 import { verifyEmail } from "@/api/auth.api";
 import AuthCard from "@/components/auth/AuthCard";
 import AuthLayout from "@/components/auth/AuthLayout";
@@ -10,7 +11,7 @@ import { preload } from "swr";
 
 // Start prefetching all the faculties and their departments, they will be used in profile setup
 preload(`${API_BASE_URL}/faculty`, (url: string) =>
-  fetch(url).then((res) => res.json())
+	httpClient(url).then((res) => res.data)
 );
 
 const ProcessEmailVerification: React.FC = () => {
