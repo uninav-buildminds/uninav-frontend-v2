@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Material } from "../../lib/types/material.types";
 import { formatRelativeTime } from "../../lib/utils";
 import { useBookmarks } from "../../context/bookmark/BookmarkContextProvider";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import Placeholder from "/placeholder.svg";
 
 // Custom Bookmark Icons
@@ -120,38 +121,39 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
   };
 
   return (
-    <div className="group relative cursor-pointer" onClick={() => onRead?.(id)}>
-      {/* File Preview */}
-      <div className="aspect-square overflow-hidden rounded-xl mb-3 relative">
-        <img
-          src={material.previewUrl || Placeholder}
-          alt={label}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-          onLoad={() => {
-            console.log(
-              "Preview image loaded successfully:",
-              material.previewUrl
-            );
-          }}
-          onError={(e) => {
-            console.error("Preview image failed to load:", {
-              src: material.previewUrl,
-              error: e,
-              materialId: material.id,
-            });
+    <TooltipProvider>
+      <div className="group relative cursor-pointer" onClick={() => onRead?.(id)}>
+        {/* File Preview */}
+        <div className="aspect-square overflow-hidden rounded-xl mb-3 relative border border-brand/20 shadow-sm">
+          <img
+            src={material.previewUrl || Placeholder}
+            alt={label}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+            onLoad={() => {
+              console.log(
+                "Preview image loaded successfully:",
+                material.previewUrl
+              );
+            }}
+            onError={(e) => {
+              console.error("Preview image failed to load:", {
+                src: material.previewUrl,
+                error: e,
+                materialId: material.id,
+              });
 
-            // Test if URL is accessible by trying to fetch it
-            if (material.previewUrl) {
-              console.log("Testing URL accessibility:", material.previewUrl);
-              fetch(material.previewUrl, { method: "HEAD", mode: "no-cors" })
-                .then(() => console.log("URL is accessible via fetch"))
-                .catch((err) => console.error("URL fetch failed:", err));
-            }
+              // Test if URL is accessible by trying to fetch it
+              if (material.previewUrl) {
+                console.log("Testing URL accessibility:", material.previewUrl);
+                fetch(material.previewUrl, { method: "HEAD", mode: "no-cors" })
+                  .then(() => console.log("URL is accessible via fetch"))
+                  .catch((err) => console.error("URL fetch failed:", err));
+              }
 
-            const target = e.target as HTMLImageElement;
-            target.src = "/placeholder.svg";
-          }}
-        />
+              const target = e.target as HTMLImageElement;
+              target.src = "/placeholder.svg";
+            }}
+          />
 
         {/* Action Buttons - Top Right */}
         {showEditDelete ? (
@@ -176,7 +178,7 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
           // Bookmark button for other materials
           <button
             onClick={handleSave}
-            className="absolute top-2 right-2 p-1 text-gray-600 hover:text-brand hover:bg-[#DCDFFE] rounded-md transition-colors duration-200"
+            className="absolute top-2 right-2 p-1 text-gray-600 hover:text-brand bg-[#DCDFFE] rounded-md transition-colors duration-200"
             aria-label={saved ? "Remove from saved" : "Save material"}
           >
             {saved ? (
@@ -210,16 +212,19 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
       {/* Content */}
       <div className="space-y-1">
         {/* Name */}
-        <h4
-          className="font-medium text-sm text-gray-900 leading-tight overflow-hidden"
-          style={{
-            display: "-webkit-box",
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: "vertical",
-          }}
-        >
-          {label}
-        </h4>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <h4
+              className="font-medium text-sm text-gray-900 leading-tight truncate"
+              title={label}
+            >
+              {label}
+            </h4>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{label}</p>
+          </TooltipContent>
+        </Tooltip>
 
         {/* Metadata and Action Icons */}
         <div className="flex items-center justify-between">
@@ -244,6 +249,7 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
         </div>
       </div>
     </div>
+    </TooltipProvider>
   );
 };
 

@@ -13,6 +13,8 @@ import {
   Maximize01Icon,
   Minimize01Icon,
   Search01Icon,
+  Triangle01Icon,
+  File01Icon,
 } from "hugeicons-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -136,7 +138,13 @@ const MaterialView: React.FC = () => {
   }, [material?.id]);
 
   const handleBack = () => {
-    navigate(-1);
+    // If viewing a GDrive file within a folder, go back to folder
+    if (viewingGDriveFile) {
+      handleBackToFolder();
+    } else {
+      // Otherwise, go back in browser history
+      navigate(-1);
+    }
   };
 
   const handleDownload = async () => {
@@ -350,7 +358,7 @@ const MaterialView: React.FC = () => {
         return (
           <div className="h-full flex items-center justify-center text-gray-500">
             <div className="text-center">
-              <div className="text-4xl mb-4">⚠️</div>
+              <Triangle01Icon size={48} className="mx-auto mb-4 text-yellow-400" />
               <p>Invalid Google Drive link</p>
               <p className="text-sm text-gray-600 mt-2">
                 The provided link could not be processed.
@@ -459,7 +467,7 @@ const MaterialView: React.FC = () => {
     return (
       <div className="h-full flex items-center justify-center text-gray-500 bg-white rounded-lg">
         <div className="text-center">
-          <div className="text-4xl mb-4">📄</div>
+          <File01Icon size={48} className="mx-auto mb-4 text-gray-400" />
           <p>Document preview not available</p>
           <Button
             onClick={handleDownload}
@@ -481,7 +489,7 @@ const MaterialView: React.FC = () => {
   return (
     <>
       {/* Main Content - Full Height with Floating Controls */}
-      <div className="flex gap-2 sm:gap-3 h-full px-2 sm:px-3 py-2 relative">
+      <div className="flex gap-2 sm:gap-3 h-full px-2 sm:px-3 py-2 relative pb-16 md:pb-2">
         {/* Floating Back Button - Top Left */}
         <button
           onClick={handleBack}
@@ -537,8 +545,8 @@ const MaterialView: React.FC = () => {
         </div>
 
         {/* Document Viewer - Full Width/Height */}
-        <div className="flex-1 flex flex-col min-w-0">
-          <div className="flex-1 bg-gray-50 rounded-lg sm:rounded-xl overflow-hidden shadow-sm">
+        <div className="flex-1 flex flex-col min-w-0 h-full">
+          <div className="flex-1 bg-gray-50 rounded-lg sm:rounded-xl overflow-hidden shadow-sm h-full">
             {renderViewer()}
           </div>
         </div>
@@ -561,7 +569,7 @@ const MaterialView: React.FC = () => {
           <ChevronsRight
             size={18}
             className={`text-white transition-transform duration-300 ${
-              sidebarCollapsed ? "" : "rotate-180"
+              sidebarCollapsed ? "rotate-180" : ""
             }`}
           />
         </button>

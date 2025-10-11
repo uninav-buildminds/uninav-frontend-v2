@@ -42,7 +42,7 @@ const DashboardShell: React.FC<{ children: React.ReactNode }> = ({
             isOpen={isMobilePanelOpen}
             onClick={handleMobilePanelToggle}
             disabled={showLogoutModal}
-            hidden={isMobilePanelOpen}
+            hidden={false}
           />
 
           {/* Tiny fixed outer spacing (persists when scrolling) */}

@@ -475,7 +475,7 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
           {canScrollLeft && (
             <button
               onClick={() => scrollByAmount(-scrollStep)}
-              className="absolute left-2 top-1/2 -translate-y-1/2 z-modal p-2 bg-white/90 backdrop-blur rounded-full shadow-md border border-gray-200 hover:bg-white"
+              className="absolute -left-1 top-1/2 -translate-y-1/2 z-modal p-2 bg-white/90 backdrop-blur rounded-full shadow-md border border-gray-200 hover:bg-white"
               aria-label="Scroll left"
             >
               <ArrowLeft01Icon size={16} className="text-brand" />
@@ -486,7 +486,7 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
           {canScrollRight && (
             <button
               onClick={() => scrollByAmount(scrollStep)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 z-modal p-2 bg-white/90 backdrop-blur rounded-full shadow-md border border-gray-200 hover:bg-white"
+              className="absolute -right-1 top-1/2 -translate-y-1/2 z-modal p-2 bg-white/90 backdrop-blur rounded-full shadow-md border border-gray-200 hover:bg-white"
               aria-label="Scroll right"
             >
               <ArrowRight01Icon size={16} className="text-brand" />
@@ -502,7 +502,7 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
             {sortedMaterials.map((material) => (
               <div
                 key={material.id}
-                className="flex-shrink-0 w-64 sm:w-72 md:w-80 lg:w-72 xl:w-64 2xl:w-72"
+                className="flex-shrink-0 w-48 sm:w-72 md:w-80 lg:w-72 xl:w-64"
               >
                 <MaterialCard
                   material={material}

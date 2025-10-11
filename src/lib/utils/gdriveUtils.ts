@@ -2,6 +2,20 @@
  * Utility functions for parsing and handling Google Drive URLs
  */
 
+import React from "react";
+import {
+  Folder01Icon,
+  File01Icon,
+  Image01Icon,
+  Video01Icon,
+  Mic01Icon,
+  File01Icon as FileTextIcon,
+  AiChat01Icon,
+  Presentation01Icon,
+  Archive01Icon,
+  Attachment01Icon,
+} from "hugeicons-react";
+
 export interface GDriveIdentifier {
   id: string;
   type: 'folder' | 'file' | 'doc' | 'sheet' | 'presentation';
@@ -118,17 +132,17 @@ export function getGoogleWorkspaceEmbedUrl(
 /**
  * Get file type icon based on MIME type
  */
-export function getFileIcon(mimeType: string): string {
-  if (mimeType === 'application/vnd.google-apps.folder') return '📁';
-  if (mimeType === 'application/pdf') return '📄';
-  if (mimeType.includes('image')) return '🖼️';
-  if (mimeType.includes('video')) return '🎥';
-  if (mimeType.includes('audio')) return '🎵';
-  if (mimeType.includes('document') || mimeType.includes('doc')) return '📝';
-  if (mimeType.includes('spreadsheet') || mimeType.includes('excel')) return '📊';
-  if (mimeType.includes('presentation') || mimeType.includes('powerpoint')) return '📽️';
-  if (mimeType.includes('zip') || mimeType.includes('compressed')) return '🗜️';
-  return '📎';
+export function getFileIcon(mimeType: string): React.ComponentType<any> {
+  if (mimeType === 'application/vnd.google-apps.folder') return Folder01Icon;
+  if (mimeType === 'application/pdf') return File01Icon;
+  if (mimeType.includes('image')) return Image01Icon;
+  if (mimeType.includes('video')) return Video01Icon;
+  if (mimeType.includes('audio')) return Mic01Icon;
+  if (mimeType.includes('document') || mimeType.includes('doc')) return FileTextIcon;
+  if (mimeType.includes('spreadsheet') || mimeType.includes('excel')) return AiChat01Icon;
+  if (mimeType.includes('presentation') || mimeType.includes('powerpoint')) return Presentation01Icon;
+  if (mimeType.includes('zip') || mimeType.includes('compressed')) return Archive01Icon;
+  return Attachment01Icon;
 }
 
 /**

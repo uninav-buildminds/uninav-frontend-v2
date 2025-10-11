@@ -25,7 +25,7 @@ const Sidebar: React.FC = () => {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const { user, logOut } = useAuth();
 
-  // Base navigation items
+  // Base navigation items (excluding help)
   const baseNavItems = [
     { to: "/dashboard", label: "Overview", icon: Home01Icon },
     { to: "/dashboard/libraries", label: "Libraries", icon: FolderLibraryIcon },
@@ -35,16 +35,18 @@ const Sidebar: React.FC = () => {
       icon: Notification01Icon,
     },
     { to: "/dashboard/settings", label: "Settings", icon: Settings01Icon },
-    { to: "/dashboard/help", label: "Help", icon: HelpCircleIcon },
   ];
+
+  // Help item (separate for right positioning)
+  const helpItem = { to: "/dashboard/help", label: "Help", icon: HelpCircleIcon };
 
   // Add management item for admin/moderator users
   const navItems =
     user && (user.role === "admin" || user.role === "moderator")
       ? [
-          ...baseNavItems.slice(0, -2), // All except Settings and Help
+          ...baseNavItems.slice(0, -1), // All except Settings
           { to: "/management", label: "Management", icon: UserGroupIcon },
-          ...baseNavItems.slice(-2), // Settings and Help
+          ...baseNavItems.slice(-1), // Settings
         ]
       : baseNavItems;
 
@@ -151,6 +153,37 @@ const Sidebar: React.FC = () => {
                   </NavLink>
                 ))}
               </nav>
+              
+              {/* Help icon positioned separately on the right */}
+              <div className="mt-6">
+                <NavLink
+                  to={helpItem.to}
+                  className="flex flex-col items-center gap-1"
+                >
+                  {({ isActive }) => (
+                    <>
+                      <div
+                        className={`grid place-items-center h-10 w-10 rounded-2xl transition-all duration-200 hover:scale-105 ${
+                          isActive
+                            ? "bg-brand text-white shadow-md"
+                            : "text-gray-700 hover:bg-[#DCDFFE]"
+                        }`}
+                      >
+                        <HelpCircleIcon size={18} />
+                      </div>
+                      <span
+                        className={`text-[11px] transition-colors ${
+                          isActive
+                            ? "text-brand font-medium"
+                            : "text-gray-700"
+                        }`}
+                      >
+                        {helpItem.label}
+                      </span>
+                    </>
+                  )}
+                </NavLink>
+              </div>
             </div>
 
             {/* User avatar fixed on rail bottom */}
