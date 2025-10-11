@@ -97,7 +97,7 @@ const getQuickActions = (reviewCounts: any) => [
   },
 ];
 
-// Status overview cards
+// Status overview cards - streamlined with only useful real data
 const getStatusOverview = (stats: any, reviewCounts: any) => [
   {
     name: "Pending Reviews",
@@ -110,28 +110,18 @@ const getStatusOverview = (stats: any, reviewCounts: any) => [
         reviewCounts?.moderators?.pending || 0,
     icon: Clock,
     color: "bg-amber-50 text-amber-600 border-amber-200",
-    change: "+3 today",
   },
   {
     name: "Approved Today",
     count: stats?.approvedToday || 0,
     icon: CheckCircle,
     color: "bg-green-50 text-green-600 border-green-200",
-    change: "+12 vs yesterday",
   },
   {
     name: "Rejected Items",
     count: stats?.rejectedItems || 0,
     icon: XCircle,
     color: "bg-red-50 text-red-600 border-red-200",
-    change: "-2 vs yesterday",
-  },
-  {
-    name: "Total Views",
-    count: stats?.totalViews ? `${(stats.totalViews / 1000).toFixed(1)}k` : "0",
-    icon: Eye,
-    color: "bg-blue-50 text-blue-600 border-blue-200",
-    change: "+15% this week",
   },
 ];
 
@@ -185,18 +175,17 @@ const ManagementDashboardContent: React.FC = () => {
       {/* Status Overview */}
       <div className="mb-8">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Overview</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {statusOverview.map((stat) => (
             <div
               key={stat.name}
-              className={`${stat.color} p-6 rounded-xl border-2 transition-all duration-200 hover:shadow-sm`}
+              className={`${stat.color} p-4 rounded-lg border transition-all duration-200 hover:shadow-sm`}
             >
               <div className="flex items-center justify-between mb-2">
-                <stat.icon size={24} />
-                <span className="text-2xl font-bold">{stat.count}</span>
+                <stat.icon size={20} />
+                <span className="text-xl font-bold">{stat.count}</span>
               </div>
-              <h3 className="font-medium mb-1">{stat.name}</h3>
-              <p className="text-sm opacity-80">{stat.change}</p>
+              <h3 className="font-medium text-sm">{stat.name}</h3>
             </div>
           ))}
         </div>

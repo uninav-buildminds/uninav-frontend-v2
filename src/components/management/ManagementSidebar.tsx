@@ -1,6 +1,7 @@
 import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useSidebar } from "@/hooks/useSidebar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -14,6 +15,8 @@ import {
   UserCheck,
   ArrowLeft,
   LayoutDashboard,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { UserRole } from "@/lib/types/response.types";
 // import LogoIcon from "/assets/logo.svg";
@@ -81,6 +84,7 @@ const navigationItems = [
 const ManagementSidebar: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { isCollapsed, setIsCollapsed } = useSidebar();
 
   const handleBackToDashboard = () => {
     navigate("/dashboard");
@@ -90,46 +94,78 @@ const ManagementSidebar: React.FC = () => {
     navigate("/");
   };
 
+  const toggleCollapse = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
   // Filter navigation items based on user role
   const filteredNavigationItems = navigationItems.filter(
     (item) => !item.adminOnly || user?.role === UserRole.ADMIN
   );
 
   return (
-    <div className="w-64 bg-white border-r border-gray-200 flex flex-col fixed left-0 top-0 h-full z-40">
+    <div
+      className={cn(
+        "bg-white border-r border-gray-200 flex flex-col fixed left-0 top-0 h-full z-40 transition-all duration-300",
+        isCollapsed ? "w-16" : "w-64"
+      )}
+    >
       {/* Header */}
       <div className="p-6 border-b border-gray-200">
-        <div
-          className="flex items-center gap-3 mb-4 cursor-pointer hover:opacity-80 transition-opacity"
-          onClick={handleLogoClick}
-        >
-          <img src="/assets/logo.svg" alt="UniNav Logo" className="w-8 h-8" />
-          <div>
-            <h2 className="font-bold text-lg text-gray-900">UniNav</h2>
-            <p className="text-xs text-gray-500">Management Portal</p>
+        <div className="flex items-center justify-between mb-4">
+          <div
+            className={cn(
+              "flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity",
+              isCollapsed ? "justify-center" : ""
+            )}
+            onClick={handleLogoClick}
+          >
+            <img src="/assets/logo.svg" alt="UniNav Logo" className="w-8 h-8" />
+            {!isCollapsed && (
+              <div>
+                <h2 className="font-bold text-lg text-gray-900">UniNav</h2>
+                <p className="text-xs text-gray-500">Management Portal</p>
+              </div>
+            )}
           </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleCollapse}
+            className="p-1 h-8 w-8"
+          >
+            {isCollapsed ? (
+              <ChevronRight size={16} />
+            ) : (
+              <ChevronLeft size={16} />
+            )}
+          </Button>
         </div>
 
         {/* Navigation buttons */}
-        <div className="space-y-2">
-          <Button
-            variant="ghost"
-            onClick={handleBackToDashboard}
-            className="w-full justify-start gap-2 text-sm"
-          >
-            <ArrowLeft size={16} />
-            Back to Dashboard
-          </Button>
-        </div>
+        {!isCollapsed && (
+          <div className="space-y-2">
+            <Button
+              variant="ghost"
+              onClick={handleBackToDashboard}
+              className="w-full justify-start gap-2 text-sm"
+            >
+              <ArrowLeft size={16} />
+              Back to Dashboard
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1">
-        <div className="mb-4">
-          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-            Management
-          </h3>
-        </div>
+        {!isCollapsed && (
+          <div className="mb-4">
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+              Management
+            </h3>
+          </div>
+        )}
 
         {filteredNavigationItems.map((item) => (
           <NavLink
@@ -141,9 +177,11 @@ const ManagementSidebar: React.FC = () => {
                 "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors group",
                 isActive
                   ? "bg-blue-100 text-blue-700 border border-blue-200"
-                  : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                  : "text-gray-700 hover:bg-gray-100 hover:text-gray-900",
+                isCollapsed ? "justify-center" : ""
               )
             }
+            title={isCollapsed ? item.title : undefined}
           >
             {({ isActive }) => (
               <>
@@ -156,7 +194,7 @@ const ManagementSidebar: React.FC = () => {
                       : "text-gray-500 group-hover:text-gray-700"
                   )}
                 />
-                <span className="truncate">{item.title}</span>
+                {!isCollapsed && <span className="truncate">{item.title}</span>}
               </>
             )}
           </NavLink>
@@ -164,14 +202,16 @@ const ManagementSidebar: React.FC = () => {
       </nav>
 
       {/* Footer */}
-      <div className="p-4 border-t border-gray-200">
-        <div className="text-xs text-gray-500">
-          <p className="font-medium">
-            {user?.firstName} {user?.lastName}
-          </p>
-          <p className="capitalize">{user?.role.toLowerCase()} Access</p>
+      {!isCollapsed && (
+        <div className="p-4 border-t border-gray-200">
+          <div className="text-xs text-gray-500">
+            <p className="font-medium">
+              {user?.firstName} {user?.lastName}
+            </p>
+            <p className="capitalize">{user?.role.toLowerCase()} Access</p>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

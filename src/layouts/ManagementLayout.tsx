@@ -1,5 +1,6 @@
 import React from "react";
 import { DepartmentProvider } from "@/context/department/DepartmentContextProvider";
+import { useSidebar } from "@/hooks/useSidebar";
 import ManagementSidebar from "@/components/management/ManagementSidebar";
 
 interface ManagementLayoutProps {
@@ -7,11 +8,19 @@ interface ManagementLayoutProps {
 }
 
 const ManagementLayout: React.FC<ManagementLayoutProps> = ({ children }) => {
+  const { isCollapsed } = useSidebar();
+
   return (
     <DepartmentProvider>
       <div className="flex min-h-screen bg-gray-50">
         <ManagementSidebar />
-        <main className="flex-1 ml-64">{children}</main>
+        <main
+          className={`flex-1 transition-all duration-300 ${
+            isCollapsed ? "ml-16" : "ml-64"
+          }`}
+        >
+          {children}
+        </main>
       </div>
     </DepartmentProvider>
   );

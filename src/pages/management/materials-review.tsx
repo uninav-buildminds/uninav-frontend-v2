@@ -96,7 +96,7 @@ const MaterialsReviewContent: React.FC = () => {
       const response = await getMaterialReviews({
         status: activeTab,
         page: currentPage,
-        limit: 6,
+        limit: 12,
         query: searchQuery || undefined,
       });
       if (response && response.status === ResponseStatus.SUCCESS) {
@@ -280,119 +280,137 @@ const MaterialsReviewContent: React.FC = () => {
               </p>
             </div>
           ) : (
-            <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
               {materials.map((material) => (
                 <div
                   key={material.id}
                   className="bg-white border rounded-xl overflow-hidden hover:shadow-lg transition-shadow group cursor-pointer"
                   onClick={() => handleMaterialClick(material)}
                 >
-                  <div className="relative w-full aspect-video bg-gray-100">
-                    <div className="flex items-center justify-center h-full">
-                      <BookOpen className="h-12 w-12 text-gray-300" />
-                    </div>
-                    <div className="absolute top-2 right-2">
-                      <Badge className="bg-blue-600 text-white capitalize">
+                  <div className="p-3 sm:p-4">
+                    <div className="flex items-start justify-between mb-3 gap-2">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-base sm:text-lg mb-1 line-clamp-1 group-hover:text-blue-600 transition-colors">
+                          {material.label}
+                        </h3>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Avatar className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0">
+                            <AvatarImage
+                              src={
+                                material.creator?.profilePicture || undefined
+                              }
+                              alt={`${material.creator?.firstName} ${material.creator?.lastName}`}
+                            />
+                            <AvatarFallback className="text-xs bg-brand/10 text-brand">
+                              {material.creator?.firstName?.[0]}
+                              {material.creator?.lastName?.[0]}
+                            </AvatarFallback>
+                          </Avatar>
+                          <p className="text-xs sm:text-sm text-gray-500 truncate">
+                            by {material.creator?.firstName}{" "}
+                            {material.creator?.lastName}
+                          </p>
+                        </div>
+                      </div>
+                      <Badge className="bg-blue-600 text-white capitalize text-xs flex-shrink-0">
                         {(material.type as any)?.toString().replace(/_/g, " ")}
                       </Badge>
                     </div>
-                  </div>
-                  <div className="p-5">
-                    <h3 className="font-semibold text-lg mb-1 line-clamp-1 group-hover:text-blue-600 transition-colors">
-                      {material.label}
-                    </h3>
-                    <div className="flex items-center gap-2 mb-2">
-                      <Avatar className="h-6 w-6">
-                        <AvatarImage
-                          src={material.creator?.profilePicture || undefined}
-                          alt={`${material.creator?.firstName} ${material.creator?.lastName}`}
-                        />
-                        <AvatarFallback className="text-xs bg-brand/10 text-brand">
-                          {material.creator?.firstName?.[0]}
-                          {material.creator?.lastName?.[0]}
-                        </AvatarFallback>
-                      </Avatar>
-                      <p className="text-sm text-gray-500">
-                        by {material.creator?.firstName}{" "}
-                        {material.creator?.lastName}
-                      </p>
-                    </div>
                     {material.description && (
-                      <p className="text-sm text-gray-600 line-clamp-2 mb-3">
+                      <p className="text-xs sm:text-sm text-gray-600 line-clamp-2 mb-3">
                         {material.description}
                       </p>
                     )}
+
+                    <div className="flex items-center justify-between mb-3 gap-2">
+                      <div className="flex items-center gap-2 sm:gap-4 text-xs text-gray-500">
+                        <span className="hidden xs:inline">
+                          Views: {material.views}
+                        </span>
+                        <span className="xs:hidden">{material.views}</span>
+                        <span className="hidden sm:inline">
+                          Downloads: {material.downloads}
+                        </span>
+                        <span className="sm:hidden">{material.downloads}</span>
+                        <span className="hidden sm:inline">
+                          Likes: {material.likes}
+                        </span>
+                        <span className="sm:hidden">{material.likes}</span>
+                      </div>
+                      {material.targetCourse && (
+                        <Badge
+                          variant="outline"
+                          className="text-xs flex-shrink-0"
+                        >
+                          {material.targetCourse.courseCode}
+                        </Badge>
+                      )}
+                    </div>
+
                     {Array.isArray(material.tags) &&
                       material.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mb-4">
-                          {material.tags.slice(0, 3).map((tag) => (
+                        <div className="flex flex-wrap gap-1 mb-3">
+                          {material.tags.slice(0, 1).map((tag) => (
                             <Badge
                               key={tag}
                               variant="outline"
-                              className="text-xs"
+                              className="text-xs truncate max-w-[80px]"
                             >
                               {tag}
                             </Badge>
                           ))}
-                          {material.tags.length > 3 && (
+                          {material.tags.length > 1 && (
                             <Badge variant="outline" className="text-xs">
-                              +{material.tags.length - 3} more
+                              +{material.tags.length - 1} more
                             </Badge>
                           )}
                         </div>
                       )}
-                    <div className="grid grid-cols-3 gap-2 text-xs text-gray-500 mb-4">
-                      <span>Views: {material.views}</span>
-                      <span>Downloads: {material.downloads}</span>
-                      <span>Likes: {material.likes}</span>
-                    </div>
-                    {material.targetCourse && (
-                      <div className="mb-3">
-                        <Badge variant="outline" className="text-xs">
-                          {material.targetCourse.courseCode}
-                        </Badge>
+                    <div className="flex items-center justify-between gap-1">
+                      <div className="flex items-center gap-1">
+                        {activeTab === ApprovalStatusEnum.PENDING && (
+                          <>
+                            <Button
+                              size="sm"
+                              className="bg-green-600 hover:bg-green-700 text-xs px-2 py-1 h-7"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                approveMaterialNow(material);
+                              }}
+                            >
+                              <CheckCircle size={12} className="mr-1" />
+                              <span className="hidden sm:inline">Approve</span>
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              className="text-xs px-2 py-1 h-7"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleReviewAction(
+                                  material,
+                                  ApprovalStatusEnum.REJECTED
+                                );
+                              }}
+                            >
+                              <XCircle size={12} className="mr-1" />
+                              <span className="hidden sm:inline">Reject</span>
+                            </Button>
+                          </>
+                        )}
                       </div>
-                    )}
-                    <div className="flex flex-wrap gap-2">
-                      {activeTab === ApprovalStatusEnum.PENDING && (
-                        <>
-                          <Button
-                            size="sm"
-                            className="bg-green-600 hover:bg-green-700 gap-1"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              approveMaterialNow(material);
-                            }}
-                          >
-                            <CheckCircle size={14} /> Approve
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            className="gap-1"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleReviewAction(
-                                material,
-                                ApprovalStatusEnum.REJECTED
-                              );
-                            }}
-                          >
-                            <XCircle size={14} /> Reject
-                          </Button>
-                        </>
-                      )}
                       {user.role === UserRole.ADMIN && (
                         <Button
                           size="sm"
                           variant="destructive"
-                          className="gap-1"
+                          className="text-xs p-1 h-7 w-7"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleDeleteAction(material);
                           }}
+                          title="Delete material"
                         >
-                          <Trash2 size={14} /> Delete
+                          <Trash2 size={12} />
                         </Button>
                       )}
                     </div>

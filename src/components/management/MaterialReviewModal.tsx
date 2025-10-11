@@ -32,6 +32,7 @@ import {
   updateMaterial,
   getDownloadUrl,
   getMaterialById,
+  uploadMaterialPreview,
 } from "@/api/materials.api";
 import {
   BookOpen,
@@ -70,6 +71,8 @@ const MaterialReviewModal: React.FC<MaterialReviewModalProps> = ({
   const [isLoadingDownload, setIsLoadingDownload] = useState(false);
   const [isLoadingMaterial, setIsLoadingMaterial] = useState(false);
   const [fullMaterial, setFullMaterial] = useState<Material | null>(material);
+  const [isUploadingPreview, setIsUploadingPreview] = useState(false);
+  const [previewFile, setPreviewFile] = useState<File | null>(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -126,6 +129,7 @@ const MaterialReviewModal: React.FC<MaterialReviewModalProps> = ({
       });
       setTagInput("");
       setIsEditing(false);
+      setPreviewFile(null); // Reset preview file when material changes
     }
   }, [fullMaterial]);
 
@@ -236,27 +240,110 @@ const MaterialReviewModal: React.FC<MaterialReviewModalProps> = ({
     }
   };
 
+  const handlePreviewFileChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        toast({
+          title: "Invalid file type",
+          description: "Please select an image file",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Please select an image smaller than 5MB",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setPreviewFile(file);
+    }
+  };
+
+  // Cleanup object URL when component unmounts or file changes
+  useEffect(() => {
+    return () => {
+      if (previewFile) {
+        URL.revokeObjectURL(URL.createObjectURL(previewFile));
+      }
+    };
+  }, [previewFile]);
+
+  const handleUploadPreview = async () => {
+    if (!previewFile || !fullMaterial) return;
+
+    setIsUploadingPreview(true);
+    try {
+      const response = await uploadMaterialPreview(
+        fullMaterial.id,
+        previewFile
+      );
+      if (response.status === ResponseStatus.SUCCESS) {
+        toast({
+          title: "Success",
+          description: "Preview image updated successfully",
+        });
+
+        // Update the full material with new preview URL
+        setFullMaterial((prev) =>
+          prev
+            ? {
+                ...prev,
+                previewUrl: response.data.previewUrl,
+              }
+            : null
+        );
+
+        setPreviewFile(null);
+        onUpdate(); // Refresh the parent component
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to update preview image",
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update preview image",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploadingPreview(false);
+    }
+  };
+
   if (!material) return null;
 
   // Show loading state while fetching full material data
-  if (isLoadingMaterial) {
-    return (
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5" />
-              Material Review
-            </DialogTitle>
-          </DialogHeader>
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-            <span className="ml-2">Loading material details...</span>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
+  // if (isLoadingMaterial) {
+  //   return (
+  //     <Dialog open={isOpen} onOpenChange={onClose}>
+  //       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+  //         <DialogHeader>
+  //           <DialogTitle className="flex items-center gap-2">
+  //             <BookOpen className="h-5 w-5" />
+  //             Material Review
+  //           </DialogTitle>
+  //         </DialogHeader>
+  //         <div className="flex items-center justify-center py-20">
+  //           <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+  //           <span className="ml-2">Loading material details...</span>
+  //         </div>
+  //       </DialogContent>
+  //     </Dialog>
+  //   );
+  // }
 
   // Use fullMaterial if available, otherwise fallback to material
   const displayMaterial = fullMaterial || material;
@@ -293,6 +380,61 @@ const MaterialReviewModal: React.FC<MaterialReviewModalProps> = ({
                 {displayMaterial.type.replace(/_/g, " ")}
               </Badge>
             </div>
+
+            {/* Preview Image Change Controls - Only show when editing */}
+            {isEditing && canEdit && (
+              <div className="absolute bottom-2 left-2 right-2">
+                <div className="bg-black/50 backdrop-blur-sm rounded-lg p-3">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePreviewFileChange}
+                      className="hidden"
+                      id="preview-file-input"
+                    />
+                    <label
+                      htmlFor="preview-file-input"
+                      className="flex items-center gap-2 px-3 py-1 bg-white/20 hover:bg-white/30 text-white text-sm rounded cursor-pointer transition-colors"
+                    >
+                      <FileText className="h-4 w-4" />
+                      {previewFile ? "Change Selected" : "Change Image"}
+                    </label>
+
+                    {previewFile && (
+                      <Button
+                        onClick={handleUploadPreview}
+                        disabled={isUploadingPreview}
+                        size="sm"
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        {isUploadingPreview ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Save className="h-4 w-4" />
+                        )}
+                        Upload
+                      </Button>
+                    )}
+                  </div>
+
+                  {previewFile && (
+                    <div className="mt-2 space-y-2">
+                      <div className="text-xs text-white/80">
+                        Selected: {previewFile.name}
+                      </div>
+                      <div className="w-16 h-10 rounded overflow-hidden border border-white/20">
+                        <img
+                          src={URL.createObjectURL(previewFile)}
+                          alt="Preview"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Action Buttons */}
@@ -654,7 +796,10 @@ const MaterialReviewModal: React.FC<MaterialReviewModalProps> = ({
                       Save Changes
                     </Button>
                     <Button
-                      onClick={() => setIsEditing(false)}
+                      onClick={() => {
+                        setIsEditing(false);
+                        setPreviewFile(null); // Clear selected file when cancelling
+                      }}
                       variant="outline"
                       disabled={isSaving}
                     >
