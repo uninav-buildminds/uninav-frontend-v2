@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import ReviewTabs from "@/components/management/ReviewTabs";
 import ReviewActionDialog from "@/components/management/ReviewActionDialog";
 import DeleteConfirmationDialog from "@/components/management/DeleteConfirmationDialog";
-import ManagementLayout from "@/layouts/ManagementLayout";
 import {
   listAdvertReviews,
   reviewAdvert,
@@ -427,11 +426,7 @@ const AdvertsReviewContent: React.FC = () => {
 };
 
 const AdvertsReviewPage: React.FC = () => {
-  return (
-    <ManagementLayout>
-      <AdvertsReviewContent />
-    </ManagementLayout>
-  );
+  return <AdvertsReviewContent />;
 };
 
 export default AdvertsReviewPage;

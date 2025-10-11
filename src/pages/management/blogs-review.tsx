@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useUrlState } from "@/hooks/useUrlState";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import SearchBar from "@/components/management/SearchBar";
 import ReviewTabs from "@/components/management/ReviewTabs";
+import ReviewPagination from "@/components/management/ReviewPagination";
 import ReviewActionDialog from "@/components/management/ReviewActionDialog";
 import DeleteConfirmationDialog from "@/components/management/DeleteConfirmationDialog";
-import ManagementLayout from "@/layouts/ManagementLayout";
 import {
   listBlogReviews,
   reviewBlog,
@@ -24,10 +25,7 @@ import {
 } from "@/lib/types/response.types";
 import {
   FileText,
-  ChevronLeft,
-  ChevronRight,
   Loader2,
-  Search,
   Trash2,
   CheckCircle,
   XCircle,
@@ -38,14 +36,21 @@ const BlogsReviewContent: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<string>(
-    ApprovalStatusEnum.PENDING
-  );
+
+  // Use URL state hook
+  const {
+    activeTab,
+    currentPage,
+    searchQuery,
+    handleTabChange,
+    handlePageChange,
+    handleSearchChange,
+    setSearchQuery,
+  } = useUrlState({ defaultTab: "ALL" });
+
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [selectedBlog, setSelectedBlog] = useState<Blog | null>(null);
   const [reviewAction, setReviewAction] = useState<ApprovalStatusEnum | null>(
@@ -56,6 +61,7 @@ const BlogsReviewContent: React.FC = () => {
     pending: 0,
     approved: 0,
     rejected: 0,
+    all: 0,
   });
 
   // Access Control
@@ -77,7 +83,11 @@ const BlogsReviewContent: React.FC = () => {
     const fetchCounts = async () => {
       const response = await getBlogReviewCounts();
       if (response && response.status === ResponseStatus.SUCCESS) {
-        setCounts(response.data);
+        const data = response.data;
+        setCounts({
+          ...data,
+          all: data.pending + data.approved + data.rejected,
+        });
       }
     };
     fetchCounts();
@@ -88,7 +98,7 @@ const BlogsReviewContent: React.FC = () => {
     setError(null);
     try {
       const response = await listBlogReviews({
-        status: activeTab,
+        status: activeTab === "ALL" ? undefined : activeTab,
         page: currentPage,
         limit: 6,
         query: searchQuery || undefined,
@@ -106,15 +116,10 @@ const BlogsReviewContent: React.FC = () => {
     }
   };
 
-  const handleTabChange = (value: string) => {
-    setActiveTab(value);
-    setCurrentPage(1);
-  };
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setCurrentPage(1);
-    fetchBlogs();
+    handleSearchChange(searchQuery);
+    fetchBlogs(); // Trigger the actual search
   };
 
   const handleReviewAction = (blog: Blog, action: ApprovalStatusEnum) => {
@@ -190,8 +195,6 @@ const BlogsReviewContent: React.FC = () => {
   )
     return null;
 
-  
-
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex items-center gap-2 mb-6">
@@ -206,17 +209,12 @@ const BlogsReviewContent: React.FC = () => {
         <h1 className="text-2xl font-bold">Blogs Review</h1>
       </div>
 
-      <form onSubmit={handleSearch} className="flex flex-wrap gap-2 mb-4">
-        <Input
-          placeholder="Search blogs..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="flex-1 min-w-[240px]"
-        />
-        <Button type="submit" className="gap-1">
-          <Search size={16} /> Search
-        </Button>
-      </form>
+      <SearchBar
+        searchQuery={searchQuery}
+        onSearchQueryChange={setSearchQuery}
+        onSubmit={handleSearch}
+        placeholder="Search blogs..."
+      />
 
       <ReviewTabs
         activeTab={activeTab}
@@ -224,6 +222,7 @@ const BlogsReviewContent: React.FC = () => {
         pendingCount={counts.pending}
         approvedCount={counts.approved}
         rejectedCount={counts.rejected}
+        allCount={counts.all}
       >
         <div className="space-y-4">
           {isLoading ? (
@@ -237,7 +236,9 @@ const BlogsReviewContent: React.FC = () => {
               <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium mb-2">No blogs found</h3>
               <p className="text-gray-600">
-                {activeTab === ApprovalStatusEnum.PENDING
+                {activeTab === "ALL"
+                  ? "There are no blogs found."
+                  : activeTab === ApprovalStatusEnum.PENDING
                   ? "There are no blogs waiting for review."
                   : activeTab === ApprovalStatusEnum.APPROVED
                   ? "There are no approved blogs."
@@ -305,35 +306,25 @@ const BlogsReviewContent: React.FC = () => {
                       <span>Likes: {blog.likes}</span>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {activeTab === ApprovalStatusEnum.PENDING && (
-                        <>
-                          <Button
-                            size="sm"
-                            className="bg-green-600 hover:bg-green-700 gap-1"
-                            onClick={() =>
-                              handleReviewAction(
-                                blog,
-                                ApprovalStatusEnum.APPROVED
-                              )
-                            }
-                          >
-                            <CheckCircle size={14} /> Approve
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            className="gap-1"
-                            onClick={() =>
-                              handleReviewAction(
-                                blog,
-                                ApprovalStatusEnum.REJECTED
-                              )
-                            }
-                          >
-                            <XCircle size={14} /> Reject
-                          </Button>
-                        </>
-                      )}
+                      <Button
+                        size="sm"
+                        className="bg-green-600 hover:bg-green-700 gap-1"
+                        onClick={() =>
+                          handleReviewAction(blog, ApprovalStatusEnum.APPROVED)
+                        }
+                      >
+                        <CheckCircle size={14} /> Approve
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        className="gap-1"
+                        onClick={() =>
+                          handleReviewAction(blog, ApprovalStatusEnum.REJECTED)
+                        }
+                      >
+                        <XCircle size={14} /> Reject
+                      </Button>
                       {user.role === UserRole.ADMIN && (
                         <Button
                           size="sm"
@@ -351,35 +342,11 @@ const BlogsReviewContent: React.FC = () => {
             </div>
           )}
 
-          {blogs.length > 0 && (
-            <div className="flex items-center justify-between pt-6">
-              <p className="text-sm text-gray-600">
-                Page {currentPage} of {totalPages}
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    currentPage > 1 && setCurrentPage(currentPage - 1)
-                  }
-                  disabled={currentPage <= 1}
-                >
-                  <ChevronLeft size={14} /> Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    currentPage < totalPages && setCurrentPage(currentPage + 1)
-                  }
-                  disabled={currentPage >= totalPages}
-                >
-                  Next <ChevronRight size={14} />
-                </Button>
-              </div>
-            </div>
-          )}
+          <ReviewPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
         </div>
       </ReviewTabs>
 
@@ -407,11 +374,7 @@ const BlogsReviewContent: React.FC = () => {
 };
 
 const BlogsReviewPage: React.FC = () => {
-  return (
-    <ManagementLayout>
-      <BlogsReviewContent />
-    </ManagementLayout>
-  );
+  return <BlogsReviewContent />;
 };
 
 export default BlogsReviewPage;

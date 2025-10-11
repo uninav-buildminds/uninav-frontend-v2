@@ -19,7 +19,6 @@ import { Course } from "@/lib/types/course.types";
 import { ResponseStatus, UserRole } from "@/lib/types/response.types";
 import CourseForm from "@/components/management/CourseForm";
 import CourseModal from "@/components/management/CourseModal";
-import ManagementLayout from "@/layouts/ManagementLayout";
 
 const CourseManagementContent: React.FC = () => {
   const navigate = useNavigate();
@@ -361,11 +360,7 @@ const CourseManagementContent: React.FC = () => {
 };
 
 const CourseManagement: React.FC = () => {
-  return (
-    <ManagementLayout>
-      <CourseManagementContent />
-    </ManagementLayout>
-  );
+  return <CourseManagementContent />;
 };
 
 export default CourseManagement;

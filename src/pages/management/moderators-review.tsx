@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import ReviewTabs from "@/components/management/ReviewTabs";
 import ReviewActionDialog from "@/components/management/ReviewActionDialog";
-import ManagementLayout from "@/layouts/ManagementLayout";
 import {
   listModeratorApplications,
   reviewModeratorApplication,
@@ -364,11 +363,7 @@ const ModeratorsReviewContent: React.FC = () => {
 };
 
 const ModeratorsReviewPage: React.FC = () => {
-  return (
-    <ManagementLayout>
-      <ModeratorsReviewContent />
-    </ManagementLayout>
-  );
+  return <ModeratorsReviewContent />;
 };
 
 export default ModeratorsReviewPage;

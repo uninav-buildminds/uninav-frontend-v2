@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { LogoutModal } from "@/components/modals";
 import { updateUserProfile, updateProfilePicture } from "@/api/user.api";
 import { useToast } from "@/hooks/use-toast";
+import { UserIcon } from "hugeicons-react";
 
 const AccountSection: React.FC = () => {
   const { logOut, user, setUser } = useAuth();
@@ -31,7 +32,9 @@ const AccountSection: React.FC = () => {
       setFirstName(user.firstName || "");
       setLastName(user.lastName || "");
       setUsername(user.username || "");
-      setAvatar(user.profilePicture || `https://i.pravatar.cc/80?u=${user.id}`);
+      if (user.profilePicture) {
+        setAvatar(user.profilePicture);
+      }
     }
   }, [user]);
 
@@ -162,11 +165,15 @@ const AccountSection: React.FC = () => {
       <div className="space-y-6">
         <div className="flex items-center gap-4">
           <div className="relative">
-            <img
-              src={avatar}
-              alt="avatar"
-              className="w-14 h-14 rounded-full object-cover"
-            />
+            {avatar ? (
+              <img
+                src={avatar}
+                alt="avatar"
+                className="w-14 h-14 rounded-full object-cover"
+              />
+            ) : (
+              <UserIcon size={56} />
+            )}
             {isEditing && (
               <button
                 onClick={onPickAvatar}

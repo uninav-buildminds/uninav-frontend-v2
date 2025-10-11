@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useUrlState } from "@/hooks/useUrlState";
 import { useToast } from "@/hooks/use-toast";
 import { useDepartments } from "@/hooks/useDepartments";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import SearchBar from "@/components/management/SearchBar";
 import ReviewTabs from "@/components/management/ReviewTabs";
+import ReviewPagination from "@/components/management/ReviewPagination";
 import ReviewActionDialog from "@/components/management/ReviewActionDialog";
 import DeleteConfirmationDialog from "@/components/management/DeleteConfirmationDialog";
-import ManagementLayout from "@/layouts/ManagementLayout";
+import DLCReviewModal from "@/components/management/DLCReviewModal";
 import {
   listDLCReviews,
   reviewDLC,
@@ -24,14 +26,10 @@ import {
 } from "@/lib/types/response.types";
 import {
   Award,
-  ChevronLeft,
-  ChevronRight,
   Loader2,
-  Search,
   Trash2,
   CheckCircle,
   XCircle,
-  ArrowLeft,
   Building,
   GraduationCap,
 } from "lucide-react";
@@ -42,24 +40,33 @@ const DLCReviewContent: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { getDepartmentById } = useDepartments();
-  const [activeTab, setActiveTab] = useState<string>(
-    ApprovalStatusEnum.PENDING
-  );
+
+  // Use URL state hook
+  const {
+    activeTab,
+    currentPage,
+    searchQuery,
+    handleTabChange,
+    handlePageChange,
+    handleSearchChange,
+    setSearchQuery,
+  } = useUrlState({ defaultTab: "ALL" });
+
   const [dlcs, setDLCs] = useState<DLC[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [selectedDLC, setSelectedDLC] = useState<DLC | null>(null);
   const [reviewAction, setReviewAction] = useState<ApprovalStatusEnum | null>(
     null
   );
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [counts, setCounts] = useState({
     pending: 0,
     approved: 0,
     rejected: 0,
+    all: 0,
   });
 
   useEffect(() => {
@@ -80,7 +87,11 @@ const DLCReviewContent: React.FC = () => {
     const fetchCounts = async () => {
       const response = await getDLCReviewCounts();
       if (response && response.status === ResponseStatus.SUCCESS) {
-        setCounts(response.data);
+        const data = response.data;
+        setCounts({
+          ...data,
+          all: data.pending + data.approved + data.rejected,
+        });
       }
     };
     fetchCounts();
@@ -91,7 +102,7 @@ const DLCReviewContent: React.FC = () => {
     setError(null);
     try {
       const response = await listDLCReviews({
-        status: activeTab,
+        status: activeTab === "ALL" ? undefined : activeTab,
         page: currentPage,
         limit: 9,
         query: searchQuery || undefined,
@@ -109,15 +120,10 @@ const DLCReviewContent: React.FC = () => {
     }
   };
 
-  const handleTabChange = (value: string) => {
-    setActiveTab(value);
-    setCurrentPage(1);
-  };
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setCurrentPage(1);
-    fetchDLCs();
+    handleSearchChange(searchQuery);
+    fetchDLCs(); // Trigger the actual search
   };
 
   const handleReviewAction = (dlc: DLC, action: ApprovalStatusEnum) => {
@@ -152,6 +158,16 @@ const DLCReviewContent: React.FC = () => {
   const handleDeleteAction = (dlc: DLC) => {
     setSelectedDLC(dlc);
     setIsDeleteDialogOpen(true);
+  };
+
+  const handleDLCClick = (dlc: DLC) => {
+    setSelectedDLC(dlc);
+    setIsReviewModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsReviewModalOpen(false);
+    setSelectedDLC(null);
   };
 
   const confirmReviewAction = async (
@@ -227,28 +243,15 @@ const DLCReviewContent: React.FC = () => {
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex items-center gap-2 mb-6">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate(-1)}
-          className="gap-1 text-gray-600"
-        >
-          <ArrowLeft size={16} /> Back
-        </Button>
         <h1 className="text-2xl font-bold">DLC Review</h1>
       </div>
 
-      <form onSubmit={handleSearch} className="flex flex-wrap gap-2 mb-4">
-        <Input
-          placeholder="Search DLCs..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="flex-1 min-w-[240px]"
-        />
-        <Button type="submit" className="gap-1">
-          <Search size={16} /> Search
-        </Button>
-      </form>
+      <SearchBar
+        searchQuery={searchQuery}
+        onSearchQueryChange={setSearchQuery}
+        onSubmit={handleSearch}
+        placeholder="Search DLCs..."
+      />
 
       <ReviewTabs
         activeTab={activeTab}
@@ -256,6 +259,7 @@ const DLCReviewContent: React.FC = () => {
         pendingCount={counts.pending}
         approvedCount={counts.approved}
         rejectedCount={counts.rejected}
+        allCount={counts.all}
       >
         <div className="space-y-4">
           {isLoading ? (
@@ -279,114 +283,120 @@ const DLCReviewContent: React.FC = () => {
               </p>
             </div>
           ) : (
-            <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4">
               {dlcs.map((dlc) => (
                 <div
                   key={`${dlc.departmentId}-${dlc.courseId}`}
-                  className="bg-white border rounded-xl p-6 hover:shadow-lg transition-shadow"
+                  className="bg-white border rounded-xl overflow-hidden hover:shadow-lg transition-shadow group cursor-pointer"
+                  onClick={() => handleDLCClick(dlc)}
                 >
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2 text-blue-700 font-medium">
-                      <Building size={18} /> Department
+                  <div className="p-3 sm:p-4">
+                    <div className="flex items-start justify-between mb-3 gap-2">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-base sm:text-lg mb-1 line-clamp-1 group-hover:text-blue-600 transition-colors">
+                          {dlc.course.courseName}
+                        </h3>
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 bg-blue-100 rounded-full flex items-center justify-center">
+                            <Building size={10} className="text-blue-600" />
+                          </div>
+                          <p className="text-xs sm:text-sm text-gray-500 truncate">
+                            {getDepartmentById(dlc.departmentId)?.name ||
+                              dlc.departmentId}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <Badge className="bg-purple-600 text-white text-xs flex-shrink-0">
+                          Level {dlc.level}
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className={`text-xs flex-shrink-0 ${
+                            dlc.reviewStatus === ApprovalStatusEnum.APPROVED
+                              ? "bg-green-100 text-green-700 border-green-200"
+                              : dlc.reviewStatus === ApprovalStatusEnum.REJECTED
+                              ? "bg-red-100 text-red-700 border-red-200"
+                              : "bg-yellow-100 text-yellow-700 border-yellow-200"
+                          }`}
+                        >
+                          {dlc.reviewStatus}
+                        </Badge>
+                      </div>
                     </div>
-                    <Badge
-                      variant="outline"
-                      className="bg-purple-50 text-purple-700"
-                    >
-                      Level {dlc.level}
-                    </Badge>
-                  </div>
-                  <div className="mb-4 pb-4 border-b border-gray-100">
-                    <h3 className="font-semibold text-lg mb-1">
-                      {getDepartmentById(dlc.departmentId)?.name ||
-                        dlc.departmentId}
-                    </h3>
-                    <p className="text-sm text-gray-600 line-clamp-2">
-                      {getDepartmentById(dlc.departmentId)?.description ||
-                        "No description"}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 text-green-700 font-medium mb-2">
-                    <GraduationCap size={18} /> Course
-                  </div>
-                  <div className="mb-4">
-                    <div className="flex items-center justify-between mb-1">
-                      <h4 className="font-semibold">{dlc.course.courseName}</h4>
-                      <Badge className="bg-blue-100 text-blue-700 uppercase">
-                        {dlc.course.courseCode}
-                      </Badge>
+
+                    {dlc.course.description && (
+                      <p className="text-xs sm:text-sm text-gray-600 line-clamp-2 mb-3">
+                        {dlc.course.description}
+                      </p>
+                    )}
+
+                    <div className="flex items-center justify-between mb-3 gap-2">
+                      <div className="flex items-center gap-2 sm:gap-4 text-xs text-gray-500">
+                        <span className="hidden xs:inline">
+                          Code: {dlc.course.courseCode}
+                        </span>
+                        <span className="xs:hidden">
+                          {dlc.course.courseCode}
+                        </span>
+                      </div>
                     </div>
-                    <p className="text-sm text-gray-600 line-clamp-2">
-                      {dlc.course.description || "No description"}
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap gap-2 justify-end">
-                    {activeTab === ApprovalStatusEnum.PENDING && (
-                      <>
+
+                    <div className="flex items-center justify-between gap-1">
+                      <div className="flex items-center gap-1">
                         <Button
                           size="sm"
-                          className="bg-green-600 hover:bg-green-700 gap-1"
-                          onClick={() => approveDLCNow(dlc)}
+                          className="bg-green-600 hover:bg-green-700 text-xs px-2 py-1 h-7"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            approveDLCNow(dlc);
+                          }}
                         >
-                          <CheckCircle size={14} /> Approve
+                          <CheckCircle size={12} className="mr-1" />
+                          <span className="hidden sm:inline">Approve</span>
                         </Button>
                         <Button
                           size="sm"
                           variant="destructive"
-                          className="gap-1"
-                          onClick={() =>
-                            handleReviewAction(dlc, ApprovalStatusEnum.REJECTED)
-                          }
+                          className="text-xs px-2 py-1 h-7"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleReviewAction(
+                              dlc,
+                              ApprovalStatusEnum.REJECTED
+                            );
+                          }}
                         >
-                          <XCircle size={14} /> Reject
+                          <XCircle size={12} className="mr-1" />
+                          <span className="hidden sm:inline">Reject</span>
                         </Button>
-                      </>
-                    )}
-                    {user.role === UserRole.ADMIN && (
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        className="gap-1"
-                        onClick={() => handleDeleteAction(dlc)}
-                      >
-                        <Trash2 size={14} /> Delete
-                      </Button>
-                    )}
+                      </div>
+                      {user.role === UserRole.ADMIN && (
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="text-xs p-1 h-7 w-7"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteAction(dlc);
+                          }}
+                          title="Delete DLC"
+                        >
+                          <Trash2 size={12} />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
           )}
 
-          {dlcs.length > 0 && (
-            <div className="flex items-center justify-between pt-6">
-              <p className="text-sm text-gray-600">
-                Page {currentPage} of {totalPages}
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    currentPage > 1 && setCurrentPage(currentPage - 1)
-                  }
-                  disabled={currentPage <= 1}
-                >
-                  <ChevronLeft size={14} /> Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    currentPage < totalPages && setCurrentPage(currentPage + 1)
-                  }
-                  disabled={currentPage >= totalPages}
-                >
-                  Next <ChevronRight size={14} />
-                </Button>
-              </div>
-            </div>
-          )}
+          <ReviewPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
         </div>
       </ReviewTabs>
 
@@ -412,16 +422,22 @@ const DLCReviewContent: React.FC = () => {
           } (Level ${selectedDLC.level})`}
         />
       )}
+
+      <DLCReviewModal
+        isOpen={isReviewModalOpen}
+        onClose={handleModalClose}
+        dlc={selectedDLC}
+        onApprove={approveDLCNow}
+        onReject={(dlc) => handleReviewAction(dlc, ApprovalStatusEnum.REJECTED)}
+        onDelete={handleDeleteAction}
+        activeTab={activeTab}
+      />
     </div>
   );
 };
 
 const DLCReviewPage: React.FC = () => {
-  return (
-    <ManagementLayout>
-      <DLCReviewContent />
-    </ManagementLayout>
-  );
+  return <DLCReviewContent />;
 };
 
 export default DLCReviewPage;

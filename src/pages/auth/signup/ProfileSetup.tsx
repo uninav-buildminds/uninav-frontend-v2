@@ -16,8 +16,9 @@ import { Department } from "@/lib/types/department.types";
 import { updateUserProfile } from "@/api/user.api";
 import { toast } from "@/components/ui/sonner";
 import LoadingButton from "@/components/auth/LoadingButton";
+import { httpClient } from "@/api/api";
 
-const fetchFaculties: Fetcher<{ data: Faculty[] }> = (url: string) => fetch(url).then((res) => res.json());
+const fetchFaculties: Fetcher<{ data: Faculty[] }> = (url: string) => httpClient<{ data: Faculty[] }>(url).then((res) => res.data);
 const ProfileSetup: React.FC = () => {
   const navigate = useNavigate();
   const {
