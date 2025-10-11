@@ -9,6 +9,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import ReviewTabs from "@/components/management/ReviewTabs";
 import ReviewActionDialog from "@/components/management/ReviewActionDialog";
 import DeleteConfirmationDialog from "@/components/management/DeleteConfirmationDialog";
+import MaterialReviewModal from "@/components/management/MaterialReviewModal";
 import ManagementLayout from "@/layouts/ManagementLayout";
 import {
   getMaterialReviews,
@@ -56,6 +57,7 @@ const MaterialsReviewContent: React.FC = () => {
     null
   );
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [counts, setCounts] = useState({
     pending: 0,
     approved: 0,
@@ -162,6 +164,11 @@ const MaterialsReviewContent: React.FC = () => {
     setIsDeleteDialogOpen(true);
   };
 
+  const handleMaterialClick = (material: Material) => {
+    setSelectedMaterial(material);
+    setIsReviewModalOpen(true);
+  };
+
   const confirmReviewAction = async (
     action: ApprovalStatusEnum,
     comment: string
@@ -231,14 +238,6 @@ const MaterialsReviewContent: React.FC = () => {
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex items-center gap-2 mb-6">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate(-1)}
-          className="gap-1 text-gray-600"
-        >
-          <ArrowLeft size={16} /> Back
-        </Button>
         <h1 className="text-2xl font-bold">Materials Review</h1>
       </div>
 
@@ -285,7 +284,8 @@ const MaterialsReviewContent: React.FC = () => {
               {materials.map((material) => (
                 <div
                   key={material.id}
-                  className="bg-white border rounded-xl overflow-hidden hover:shadow-lg transition-shadow group"
+                  className="bg-white border rounded-xl overflow-hidden hover:shadow-lg transition-shadow group cursor-pointer"
+                  onClick={() => handleMaterialClick(material)}
                 >
                   <div className="relative w-full aspect-video bg-gray-100">
                     <div className="flex items-center justify-center h-full">
@@ -317,9 +317,11 @@ const MaterialsReviewContent: React.FC = () => {
                         {material.creator?.lastName}
                       </p>
                     </div>
-                    <p className="text-sm text-gray-600 line-clamp-2 mb-3">
-                      {material.description || "No description provided."}
-                    </p>
+                    {material.description && (
+                      <p className="text-sm text-gray-600 line-clamp-2 mb-3">
+                        {material.description}
+                      </p>
+                    )}
                     {Array.isArray(material.tags) &&
                       material.tags.length > 0 && (
                         <div className="flex flex-wrap gap-1 mb-4">
@@ -339,17 +341,28 @@ const MaterialsReviewContent: React.FC = () => {
                           )}
                         </div>
                       )}
-                    <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
+                    <div className="grid grid-cols-3 gap-2 text-xs text-gray-500 mb-4">
+                      <span>Views: {material.views}</span>
                       <span>Downloads: {material.downloads}</span>
                       <span>Likes: {material.likes}</span>
                     </div>
+                    {material.targetCourse && (
+                      <div className="mb-3">
+                        <Badge variant="outline" className="text-xs">
+                          {material.targetCourse.courseCode}
+                        </Badge>
+                      </div>
+                    )}
                     <div className="flex flex-wrap gap-2">
                       {activeTab === ApprovalStatusEnum.PENDING && (
                         <>
                           <Button
                             size="sm"
                             className="bg-green-600 hover:bg-green-700 gap-1"
-                            onClick={() => approveMaterialNow(material)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              approveMaterialNow(material);
+                            }}
                           >
                             <CheckCircle size={14} /> Approve
                           </Button>
@@ -357,12 +370,13 @@ const MaterialsReviewContent: React.FC = () => {
                             size="sm"
                             variant="destructive"
                             className="gap-1"
-                            onClick={() =>
+                            onClick={(e) => {
+                              e.stopPropagation();
                               handleReviewAction(
                                 material,
                                 ApprovalStatusEnum.REJECTED
-                              )
-                            }
+                              );
+                            }}
                           >
                             <XCircle size={14} /> Reject
                           </Button>
@@ -373,7 +387,10 @@ const MaterialsReviewContent: React.FC = () => {
                           size="sm"
                           variant="destructive"
                           className="gap-1"
-                          onClick={() => handleDeleteAction(material)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteAction(material);
+                          }}
                         >
                           <Trash2 size={14} /> Delete
                         </Button>
@@ -436,6 +453,23 @@ const MaterialsReviewContent: React.FC = () => {
           itemName={selectedMaterial.label}
         />
       )}
+
+      <MaterialReviewModal
+        material={selectedMaterial}
+        isOpen={isReviewModalOpen}
+        onClose={() => setIsReviewModalOpen(false)}
+        onUpdate={() => {
+          fetchMaterials();
+          // Refresh counts as well
+          const fetchCounts = async () => {
+            const response = await getMaterialReviewCounts();
+            if (response && response.status === ResponseStatus.SUCCESS) {
+              setCounts(response.data);
+            }
+          };
+          fetchCounts();
+        }}
+      />
     </div>
   );
 };

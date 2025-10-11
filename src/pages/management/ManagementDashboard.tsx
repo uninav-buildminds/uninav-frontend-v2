@@ -1,6 +1,10 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import {
+  useManagementStats,
+  useReviewCounts,
+} from "@/hooks/useManagementStats";
 import { Button } from "@/components/ui/button";
 import ManagementLayout from "@/layouts/ManagementLayout";
 import {
@@ -19,16 +23,17 @@ import {
   BarChart3,
   Clock,
   Eye,
+  Loader2,
 } from "lucide-react";
 import { UserRole } from "@/lib/types/response.types";
 
 // Define quick action cards
-const quickActions = [
+const getQuickActions = (reviewCounts: any) => [
   {
     title: "Course Management",
     description: "Create and link courses to departments",
     icon: School,
-    path: "/management/course-management",
+    path: "/management/CourseManagement",
     color: "bg-teal-50 text-teal-600 border-teal-100",
     stats: "Active management",
   },
@@ -38,7 +43,7 @@ const quickActions = [
     icon: BookOpen,
     path: "/management/materials-review",
     color: "bg-blue-50 text-blue-600 border-blue-100",
-    stats: "12 pending",
+    stats: `${reviewCounts?.materials?.pending || 0} pending`,
   },
   {
     title: "Blogs Review",
@@ -46,7 +51,7 @@ const quickActions = [
     icon: FileText,
     path: "/management/blogs-review",
     color: "bg-green-50 text-green-600 border-green-100",
-    stats: "5 pending",
+    stats: `${reviewCounts?.blogs?.pending || 0} pending`,
   },
   {
     title: "Courses Review",
@@ -54,7 +59,7 @@ const quickActions = [
     icon: GraduationCap,
     path: "/management/courses-review",
     color: "bg-purple-50 text-purple-600 border-purple-100",
-    stats: "3 pending",
+    stats: `${reviewCounts?.courses?.pending || 0} pending`,
   },
   {
     title: "DLC Review",
@@ -62,7 +67,7 @@ const quickActions = [
     icon: Award,
     path: "/management/dlc-review",
     color: "bg-amber-50 text-amber-600 border-amber-100",
-    stats: "2 pending",
+    stats: `${reviewCounts?.dlc?.pending || 0} pending`,
   },
   {
     title: "Adverts Review",
@@ -70,7 +75,7 @@ const quickActions = [
     icon: Megaphone,
     path: "/management/adverts-review",
     color: "bg-rose-50 text-rose-600 border-rose-100",
-    stats: "1 pending",
+    stats: `${reviewCounts?.adverts?.pending || 0} pending`,
   },
   {
     title: "Moderator Applications",
@@ -78,7 +83,7 @@ const quickActions = [
     icon: UserCheck,
     path: "/management/moderators-review",
     color: "bg-indigo-50 text-indigo-600 border-indigo-100",
-    stats: "2 applications",
+    stats: `${reviewCounts?.moderators?.pending || 0} applications`,
     adminOnly: true,
   },
   {
@@ -93,31 +98,37 @@ const quickActions = [
 ];
 
 // Status overview cards
-const statusOverview = [
+const getStatusOverview = (stats: any, reviewCounts: any) => [
   {
     name: "Pending Reviews",
-    count: 24,
+    count:
+      reviewCounts?.materials?.pending +
+        reviewCounts?.blogs?.pending +
+        reviewCounts?.courses?.pending +
+        reviewCounts?.dlc?.pending +
+        reviewCounts?.adverts?.pending +
+        reviewCounts?.moderators?.pending || 0,
     icon: Clock,
     color: "bg-amber-50 text-amber-600 border-amber-200",
     change: "+3 today",
   },
   {
     name: "Approved Today",
-    count: 18,
+    count: stats?.approvedToday || 0,
     icon: CheckCircle,
     color: "bg-green-50 text-green-600 border-green-200",
     change: "+12 vs yesterday",
   },
   {
     name: "Rejected Items",
-    count: 7,
+    count: stats?.rejectedItems || 0,
     icon: XCircle,
     color: "bg-red-50 text-red-600 border-red-200",
     change: "-2 vs yesterday",
   },
   {
     name: "Total Views",
-    count: "12.4k",
+    count: stats?.totalViews ? `${(stats.totalViews / 1000).toFixed(1)}k` : "0",
     icon: Eye,
     color: "bg-blue-50 text-blue-600 border-blue-200",
     change: "+15% this week",
@@ -127,10 +138,37 @@ const statusOverview = [
 const ManagementDashboardContent: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const {
+    data: stats,
+    isLoading: statsLoading,
+    error: statsError,
+  } = useManagementStats();
+  const {
+    data: reviewCounts,
+    isLoading: reviewLoading,
+    error: reviewError,
+  } = useReviewCounts();
 
   const handleQuickActionClick = (path: string) => {
     navigate(path);
   };
+
+  const isLoading = statsLoading || reviewLoading;
+  const quickActions = getQuickActions(reviewCounts?.data);
+  const statusOverview = getStatusOverview(stats?.data, reviewCounts?.data);
+
+  if (isLoading) {
+    return (
+      <div className="p-6 max-w-7xl mx-auto">
+        <div className="flex items-center justify-center h-64">
+          <div className="flex items-center gap-2">
+            <Loader2 className="w-6 h-6 animate-spin" />
+            <span>Loading dashboard data...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 max-w-7xl mx-auto">

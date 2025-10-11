@@ -418,31 +418,31 @@ const CourseModal: React.FC<CourseModalProps> = ({
                           </Button>
                         </div>
                       ) : (
-                        <div className="gap-4 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+                        <div className="gap-4 grid grid-cols-1 lg:grid-cols-2">
                           {course.departments.map((dept) => (
                             <div
                               key={`${dept.departmentId}-${dept.level}`}
-                              className="flex justify-between items-center bg-gray-50 p-6 border rounded-xl min-h-[80px]"
+                              className="flex justify-between items-center bg-gray-50 p-6 border rounded-xl min-h-[100px]"
                             >
-                              <div className="flex-1">
-                                <p className="font-medium text-base">
+                              <div className="flex-1 pr-4">
+                                <p className="font-medium text-base leading-tight break-words">
                                   {dept.department.name}
                                 </p>
-                                <p className="text-sm text-muted-foreground mt-1">
+                                <p className="text-sm text-muted-foreground mt-2">
                                   Level {dept.level}
                                 </p>
                               </div>
-                              <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-3 flex-shrink-0">
                                 <Badge
                                   variant="default"
-                                  className="bg-green-100 text-green-700 border-green-200 px-3 py-1"
+                                  className="bg-green-100 text-green-700 border-green-200 px-3 py-1 whitespace-nowrap"
                                 >
                                   linked
                                 </Badge>
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2"
+                                  className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 flex-shrink-0"
                                   onClick={() =>
                                     handleUnlinkClick(dept.departmentId)
                                   }

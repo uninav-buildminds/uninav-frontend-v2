@@ -14,9 +14,9 @@ import {
   UserCheck,
   ArrowLeft,
   LayoutDashboard,
-  Home,
 } from "lucide-react";
 import { UserRole } from "@/lib/types/response.types";
+// import LogoIcon from "/assets/logo.svg";
 
 // Define navigation items
 const navigationItems = [
@@ -86,7 +86,7 @@ const ManagementSidebar: React.FC = () => {
     navigate("/dashboard");
   };
 
-  const handleBackToHome = () => {
+  const handleLogoClick = () => {
     navigate("/");
   };
 
@@ -96,13 +96,14 @@ const ManagementSidebar: React.FC = () => {
   );
 
   return (
-    <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
+    <div className="w-64 bg-white border-r border-gray-200 flex flex-col fixed left-0 top-0 h-full z-40">
       {/* Header */}
       <div className="p-6 border-b border-gray-200">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">UN</span>
-          </div>
+        <div
+          className="flex items-center gap-3 mb-4 cursor-pointer hover:opacity-80 transition-opacity"
+          onClick={handleLogoClick}
+        >
+          <img src="/assets/logo.svg" alt="UniNav Logo" className="w-8 h-8" />
           <div>
             <h2 className="font-bold text-lg text-gray-900">UniNav</h2>
             <p className="text-xs text-gray-500">Management Portal</p>
@@ -111,14 +112,6 @@ const ManagementSidebar: React.FC = () => {
 
         {/* Navigation buttons */}
         <div className="space-y-2">
-          <Button
-            variant="ghost"
-            onClick={handleBackToHome}
-            className="w-full justify-start gap-2 text-sm"
-          >
-            <Home size={16} />
-            Back to Home
-          </Button>
           <Button
             variant="ghost"
             onClick={handleBackToDashboard}

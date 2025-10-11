@@ -227,14 +227,6 @@ const DLCReviewContent: React.FC = () => {
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex items-center gap-2 mb-6">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate(-1)}
-          className="gap-1 text-gray-600"
-        >
-          <ArrowLeft size={16} /> Back
-        </Button>
         <h1 className="text-2xl font-bold">DLC Review</h1>
       </div>
 
