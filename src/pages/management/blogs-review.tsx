@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useUrlState } from "@/hooks/useUrlState";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,14 +39,21 @@ const BlogsReviewContent: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<string>(
-    ApprovalStatusEnum.PENDING
-  );
+  
+  // Use URL state hook
+  const {
+    activeTab,
+    currentPage,
+    searchQuery,
+    handleTabChange,
+    handlePageChange,
+    handleSearchChange,
+    setSearchQuery,
+  } = useUrlState({ defaultTab: "ALL" });
+
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [selectedBlog, setSelectedBlog] = useState<Blog | null>(null);
   const [reviewAction, setReviewAction] = useState<ApprovalStatusEnum | null>(
@@ -56,6 +64,7 @@ const BlogsReviewContent: React.FC = () => {
     pending: 0,
     approved: 0,
     rejected: 0,
+    all: 0,
   });
 
   // Access Control
@@ -77,7 +86,11 @@ const BlogsReviewContent: React.FC = () => {
     const fetchCounts = async () => {
       const response = await getBlogReviewCounts();
       if (response && response.status === ResponseStatus.SUCCESS) {
-        setCounts(response.data);
+        const data = response.data;
+        setCounts({
+          ...data,
+          all: data.pending + data.approved + data.rejected,
+        });
       }
     };
     fetchCounts();
@@ -88,7 +101,7 @@ const BlogsReviewContent: React.FC = () => {
     setError(null);
     try {
       const response = await listBlogReviews({
-        status: activeTab,
+        status: activeTab === "ALL" ? undefined : activeTab,
         page: currentPage,
         limit: 6,
         query: searchQuery || undefined,
@@ -106,15 +119,9 @@ const BlogsReviewContent: React.FC = () => {
     }
   };
 
-  const handleTabChange = (value: string) => {
-    setActiveTab(value);
-    setCurrentPage(1);
-  };
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setCurrentPage(1);
-    fetchBlogs();
+    handleSearchChange(searchQuery);
   };
 
   const handleReviewAction = (blog: Blog, action: ApprovalStatusEnum) => {
@@ -224,6 +231,7 @@ const BlogsReviewContent: React.FC = () => {
         pendingCount={counts.pending}
         approvedCount={counts.approved}
         rejectedCount={counts.rejected}
+        allCount={counts.all}
       >
         <div className="space-y-4">
           {isLoading ? (
@@ -237,7 +245,9 @@ const BlogsReviewContent: React.FC = () => {
               <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium mb-2">No blogs found</h3>
               <p className="text-gray-600">
-                {activeTab === ApprovalStatusEnum.PENDING
+                {activeTab === "ALL"
+                  ? "There are no blogs found."
+                  : activeTab === ApprovalStatusEnum.PENDING
                   ? "There are no blogs waiting for review."
                   : activeTab === ApprovalStatusEnum.APPROVED
                   ? "There are no approved blogs."
@@ -305,35 +315,31 @@ const BlogsReviewContent: React.FC = () => {
                       <span>Likes: {blog.likes}</span>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {activeTab === ApprovalStatusEnum.PENDING && (
-                        <>
-                          <Button
-                            size="sm"
-                            className="bg-green-600 hover:bg-green-700 gap-1"
-                            onClick={() =>
-                              handleReviewAction(
-                                blog,
-                                ApprovalStatusEnum.APPROVED
-                              )
-                            }
-                          >
-                            <CheckCircle size={14} /> Approve
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            className="gap-1"
-                            onClick={() =>
-                              handleReviewAction(
-                                blog,
-                                ApprovalStatusEnum.REJECTED
-                              )
-                            }
-                          >
-                            <XCircle size={14} /> Reject
-                          </Button>
-                        </>
-                      )}
+                      <Button
+                        size="sm"
+                        className="bg-green-600 hover:bg-green-700 gap-1"
+                        onClick={() =>
+                          handleReviewAction(
+                            blog,
+                            ApprovalStatusEnum.APPROVED
+                          )
+                        }
+                      >
+                        <CheckCircle size={14} /> Approve
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        className="gap-1"
+                        onClick={() =>
+                          handleReviewAction(
+                            blog,
+                            ApprovalStatusEnum.REJECTED
+                          )
+                        }
+                      >
+                        <XCircle size={14} /> Reject
+                      </Button>
                       {user.role === UserRole.ADMIN && (
                         <Button
                           size="sm"
@@ -361,7 +367,7 @@ const BlogsReviewContent: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={() =>
-                    currentPage > 1 && setCurrentPage(currentPage - 1)
+                    currentPage > 1 && handlePageChange(currentPage - 1)
                   }
                   disabled={currentPage <= 1}
                 >
@@ -371,7 +377,7 @@ const BlogsReviewContent: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={() =>
-                    currentPage < totalPages && setCurrentPage(currentPage + 1)
+                    currentPage < totalPages && handlePageChange(currentPage + 1)
                   }
                   disabled={currentPage >= totalPages}
                 >

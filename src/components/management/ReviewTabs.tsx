@@ -9,6 +9,7 @@ interface ReviewTabsProps {
   pendingCount?: number;
   approvedCount?: number;
   rejectedCount?: number;
+  allCount?: number;
   children: React.ReactNode;
 }
 
@@ -18,9 +19,17 @@ const ReviewTabs: React.FC<ReviewTabsProps> = ({
   pendingCount = 0,
   approvedCount = 0,
   rejectedCount = 0,
+  allCount = 0,
   children,
 }) => {
   const tabItems = [
+    {
+      value: "ALL",
+      label: "All",
+      count: allCount,
+      badgeClass: "bg-blue-200 text-blue-900",
+      activeClass: "data-[state=active]:bg-blue-50 data-[state=active]:border-blue-200",
+    },
     {
       value: ApprovalStatusEnum.PENDING,
       label: "Pending",
@@ -47,7 +56,7 @@ const ReviewTabs: React.FC<ReviewTabsProps> = ({
   return (
     <Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
       <TabsList
-        className="grid grid-cols-3 w-full mb-4 rounded-lg bg-muted/40 p-0 border overflow-hidden"
+        className="grid grid-cols-4 w-full mb-4 rounded-lg bg-muted/40 p-0 border overflow-hidden"
       >
         {tabItems.map((tab) => (
           <TabsTrigger

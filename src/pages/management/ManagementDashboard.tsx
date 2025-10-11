@@ -6,7 +6,6 @@ import {
   useReviewCounts,
 } from "@/hooks/useManagementStats";
 import { Button } from "@/components/ui/button";
-import ManagementLayout from "@/layouts/ManagementLayout";
 import {
   BookOpen,
   FileText,
@@ -350,11 +349,7 @@ const ManagementDashboardContent: React.FC = () => {
 };
 
 const ManagementDashboard: React.FC = () => {
-  return (
-    <ManagementLayout>
-      <ManagementDashboardContent />
-    </ManagementLayout>
-  );
+  return <ManagementDashboardContent />;
 };
 
 export default ManagementDashboard;

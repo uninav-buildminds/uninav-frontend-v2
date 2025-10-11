@@ -106,7 +106,7 @@ const ManagementSidebar: React.FC = () => {
   return (
     <div
       className={cn(
-        "bg-white border-r border-gray-200 flex flex-col fixed left-0 top-0 h-full z-40 transition-all duration-300",
+        "bg-white border-r border-gray-200 flex flex-col h-screen sticky top-0 transition-all duration-300",
         isCollapsed ? "w-16" : "w-64"
       )}
     >

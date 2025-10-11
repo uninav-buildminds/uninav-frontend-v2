@@ -12,15 +12,9 @@ const ManagementLayout: React.FC<ManagementLayoutProps> = ({ children }) => {
 
   return (
     <DepartmentProvider>
-      <div className="min-h-screen bg-gray-50">
+      <div className="flex min-h-screen bg-gray-50">
         <ManagementSidebar />
-        <main
-          className={`transition-all duration-300 ${
-            isCollapsed ? "ml-16" : "ml-64"
-          }`}
-        >
-          {children}
-        </main>
+        <main className="flex-1 overflow-auto">{children}</main>
       </div>
     </DepartmentProvider>
   );

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useUrlState } from "@/hooks/useUrlState";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +15,6 @@ import {
   reviewCourse,
   deleteCourseAsAdmin,
   getCourseReviewCounts,
-  ReviewActionDTO,
 } from "@/api/review.api";
 import { Course } from "@/lib/types/course.types";
 import {
@@ -22,6 +22,7 @@ import {
   ResponseStatus,
   UserRole,
 } from "@/lib/types/response.types";
+import { ReviewActionDTO } from "@/lib/types/review.types";
 import {
   GraduationCap,
   ChevronLeft,
@@ -38,14 +39,21 @@ const CoursesReviewContent: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<string>(
-    ApprovalStatusEnum.PENDING
-  );
+  
+  // Use URL state hook
+  const {
+    activeTab,
+    currentPage,
+    searchQuery,
+    handleTabChange,
+    handlePageChange,
+    handleSearchChange,
+    setSearchQuery,
+  } = useUrlState({ defaultTab: "ALL" });
+
   const [courses, setCourses] = useState<Course[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [reviewAction, setReviewAction] = useState<ApprovalStatusEnum | null>(
@@ -56,6 +64,7 @@ const CoursesReviewContent: React.FC = () => {
     pending: 0,
     approved: 0,
     rejected: 0,
+    all: 0,
   });
 
   useEffect(() => {
@@ -76,7 +85,11 @@ const CoursesReviewContent: React.FC = () => {
     const fetchCounts = async () => {
       const response = await getCourseReviewCounts();
       if (response && response.status === ResponseStatus.SUCCESS) {
-        setCounts(response.data);
+        const data = response.data;
+        setCounts({
+          ...data,
+          all: data.pending + data.approved + data.rejected,
+        });
       }
     };
     fetchCounts();
@@ -87,7 +100,7 @@ const CoursesReviewContent: React.FC = () => {
     setError(null);
     try {
       const response = await listCourseReviews({
-        status: activeTab,
+        status: activeTab === "ALL" ? undefined : activeTab,
         page: currentPage,
         limit: 9,
         query: searchQuery || undefined,
@@ -105,15 +118,9 @@ const CoursesReviewContent: React.FC = () => {
     }
   };
 
-  const handleTabChange = (value: string) => {
-    setActiveTab(value);
-    setCurrentPage(1);
-  };
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setCurrentPage(1);
-    fetchCourses();
+    handleSearchChange(searchQuery);
   };
 
   const handleReviewAction = (course: Course, action: ApprovalStatusEnum) => {
@@ -213,6 +220,7 @@ const CoursesReviewContent: React.FC = () => {
         pendingCount={counts.pending}
         approvedCount={counts.approved}
         rejectedCount={counts.rejected}
+        allCount={counts.all}
       >
         <div className="space-y-4">
           {isLoading ? (
@@ -234,41 +242,76 @@ const CoursesReviewContent: React.FC = () => {
               </p>
             </div>
           ) : (
-            <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4">
               {courses.map((course) => (
                 <div
                   key={course.id}
-                  className="bg-white border rounded-xl p-6 hover:shadow-lg transition-shadow"
+                  className="bg-white border rounded-xl overflow-hidden hover:shadow-lg transition-shadow group"
                 >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="bg-blue-50 text-blue-600 w-12 h-12 rounded-lg flex items-center justify-center border-2 border-blue-100">
-                      <GraduationCap size={24} />
+                  <div className="p-3 sm:p-4">
+                    <div className="flex items-start justify-between mb-3 gap-2">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-base sm:text-lg mb-1 line-clamp-1 group-hover:text-blue-600 transition-colors">
+                          {course.courseName}
+                        </h3>
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 bg-blue-100 rounded-full flex items-center justify-center">
+                            <GraduationCap
+                              size={10}
+                              className="text-blue-600"
+                            />
+                          </div>
+                          <p className="text-xs sm:text-sm text-gray-500 truncate">
+                            Course
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <Badge className="bg-blue-600 text-white text-xs flex-shrink-0">
+                          {course.courseCode}
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className={`text-xs flex-shrink-0 ${
+                            course.reviewStatus === ApprovalStatusEnum.APPROVED
+                              ? "bg-green-100 text-green-700 border-green-200"
+                              : course.reviewStatus === ApprovalStatusEnum.REJECTED
+                              ? "bg-red-100 text-red-700 border-red-200"
+                              : "bg-yellow-100 text-yellow-700 border-yellow-200"
+                          }`}
+                        >
+                          {course.reviewStatus}
+                        </Badge>
+                      </div>
                     </div>
-                  </div>
-                  <h3 className="font-semibold text-lg mb-2 line-clamp-1">
-                    {course.courseName}
-                  </h3>
-                  <div className="space-y-2 text-sm text-gray-600 mb-3">
-                    <p>
-                      <span className="font-medium">Code:</span>{" "}
-                      {course.courseCode}
-                    </p>
-                    {course.departments && course.departments.length > 0 && (
-                      <p>
-                        <span className="font-medium">Departments:</span>{" "}
-                        {course.departments.length}
+
+                    {course.description && (
+                      <p className="text-xs sm:text-sm text-gray-600 line-clamp-2 mb-3">
+                        {course.description}
                       </p>
                     )}
-                  </div>
-                  <p className="text-sm text-gray-600 line-clamp-2 mb-4">
-                    {course.description || "No description provided."}
-                  </p>
-                  <div className="flex flex-wrap gap-2 justify-end">
-                    {activeTab === ApprovalStatusEnum.PENDING && (
-                      <>
+
+                    <div className="flex items-center justify-between mb-3 gap-2">
+                      <div className="flex items-center gap-2 sm:gap-4 text-xs text-gray-500">
+                        {course.departments &&
+                          course.departments.length > 0 && (
+                            <>
+                              <span className="hidden xs:inline">
+                                Departments: {course.departments.length}
+                              </span>
+                              <span className="xs:hidden">
+                                {course.departments.length} depts
+                              </span>
+                            </>
+                          )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-1">
+                      <div className="flex items-center gap-1">
                         <Button
                           size="sm"
-                          className="bg-green-600 hover:bg-green-700 gap-1"
+                          className="bg-green-600 hover:bg-green-700 text-xs px-2 py-1 h-7"
                           onClick={() =>
                             handleReviewAction(
                               course,
@@ -276,12 +319,13 @@ const CoursesReviewContent: React.FC = () => {
                             )
                           }
                         >
-                          <CheckCircle size={14} /> Approve
+                          <CheckCircle size={12} className="mr-1" />
+                          <span className="hidden sm:inline">Approve</span>
                         </Button>
                         <Button
                           size="sm"
                           variant="destructive"
-                          className="gap-1"
+                          className="text-xs px-2 py-1 h-7"
                           onClick={() =>
                             handleReviewAction(
                               course,
@@ -289,20 +333,22 @@ const CoursesReviewContent: React.FC = () => {
                             )
                           }
                         >
-                          <XCircle size={14} /> Reject
+                          <XCircle size={12} className="mr-1" />
+                          <span className="hidden sm:inline">Reject</span>
                         </Button>
-                      </>
-                    )}
-                    {user.role === UserRole.ADMIN && (
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        className="gap-1"
-                        onClick={() => handleDeleteAction(course)}
-                      >
-                        <Trash2 size={14} /> Delete
-                      </Button>
-                    )}
+                      </div>
+                      {user.role === UserRole.ADMIN && (
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="text-xs p-1 h-7 w-7"
+                          onClick={() => handleDeleteAction(course)}
+                          title="Delete course"
+                        >
+                          <Trash2 size={12} />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -319,7 +365,7 @@ const CoursesReviewContent: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={() =>
-                    currentPage > 1 && setCurrentPage(currentPage - 1)
+                    currentPage > 1 && handlePageChange(currentPage - 1)
                   }
                   disabled={currentPage <= 1}
                 >
@@ -329,7 +375,7 @@ const CoursesReviewContent: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={() =>
-                    currentPage < totalPages && setCurrentPage(currentPage + 1)
+                    currentPage < totalPages && handlePageChange(currentPage + 1)
                   }
                   disabled={currentPage >= totalPages}
                 >

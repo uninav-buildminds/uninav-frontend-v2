@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useUrlState } from "@/hooks/useUrlState";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +11,6 @@ import ReviewTabs from "@/components/management/ReviewTabs";
 import ReviewActionDialog from "@/components/management/ReviewActionDialog";
 import DeleteConfirmationDialog from "@/components/management/DeleteConfirmationDialog";
 import MaterialReviewModal from "@/components/management/MaterialReviewModal";
-import ManagementLayout from "@/layouts/ManagementLayout";
 import {
   getMaterialReviews,
   reviewMaterial,
@@ -41,14 +41,21 @@ const MaterialsReviewContent: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<string>(
-    ApprovalStatusEnum.PENDING
-  );
+  
+  // Use URL state hook
+  const {
+    activeTab,
+    currentPage,
+    searchQuery,
+    handleTabChange,
+    handlePageChange,
+    handleSearchChange,
+    setSearchQuery,
+  } = useUrlState({ defaultTab: "ALL" });
+
   const [materials, setMaterials] = useState<Material[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(
     null
@@ -62,6 +69,7 @@ const MaterialsReviewContent: React.FC = () => {
     pending: 0,
     approved: 0,
     rejected: 0,
+    all: 0,
   });
 
   // Access Control
@@ -83,7 +91,11 @@ const MaterialsReviewContent: React.FC = () => {
     const fetchCounts = async () => {
       const response = await getMaterialReviewCounts();
       if (response && response.status === ResponseStatus.SUCCESS) {
-        setCounts(response.data);
+        const data = response.data;
+        setCounts({
+          ...data,
+          all: data.pending + data.approved + data.rejected,
+        });
       }
     };
     fetchCounts();
@@ -94,7 +106,7 @@ const MaterialsReviewContent: React.FC = () => {
     setError(null);
     try {
       const response = await getMaterialReviews({
-        status: activeTab,
+        status: activeTab === "ALL" ? undefined : activeTab,
         page: currentPage,
         limit: 12,
         query: searchQuery || undefined,
@@ -113,15 +125,9 @@ const MaterialsReviewContent: React.FC = () => {
     }
   };
 
-  const handleTabChange = (value: string) => {
-    setActiveTab(value);
-    setCurrentPage(1);
-  };
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setCurrentPage(1);
-    fetchMaterials();
+    handleSearchChange(searchQuery);
   };
 
   const handleReviewAction = (
@@ -259,6 +265,7 @@ const MaterialsReviewContent: React.FC = () => {
         pendingCount={counts.pending}
         approvedCount={counts.approved}
         rejectedCount={counts.rejected}
+        allCount={counts.all}
       >
         <div className="space-y-4">
           {isLoading ? (
@@ -312,9 +319,23 @@ const MaterialsReviewContent: React.FC = () => {
                           </p>
                         </div>
                       </div>
-                      <Badge className="bg-blue-600 text-white capitalize text-xs flex-shrink-0">
-                        {(material.type as any)?.toString().replace(/_/g, " ")}
-                      </Badge>
+                  <div className="flex flex-col gap-1">
+                    <Badge className="bg-blue-600 text-white capitalize text-xs flex-shrink-0">
+                      {(material.type as any)?.toString().replace(/_/g, " ")}
+                    </Badge>
+                    <Badge
+                      variant="outline"
+                      className={`text-xs flex-shrink-0 ${
+                        material.reviewStatus === ApprovalStatusEnum.APPROVED
+                          ? "bg-green-100 text-green-700 border-green-200"
+                          : material.reviewStatus === ApprovalStatusEnum.REJECTED
+                          ? "bg-red-100 text-red-700 border-red-200"
+                          : "bg-yellow-100 text-yellow-700 border-yellow-200"
+                      }`}
+                    >
+                      {material.reviewStatus}
+                    </Badge>
+                  </div>
                     </div>
                     {material.description && (
                       <p className="text-xs sm:text-sm text-gray-600 line-clamp-2 mb-3">
@@ -366,39 +387,35 @@ const MaterialsReviewContent: React.FC = () => {
                           )}
                         </div>
                       )}
-                    <div className="flex items-center justify-between gap-1">
-                      <div className="flex items-center gap-1">
-                        {activeTab === ApprovalStatusEnum.PENDING && (
-                          <>
-                            <Button
-                              size="sm"
-                              className="bg-green-600 hover:bg-green-700 text-xs px-2 py-1 h-7"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                approveMaterialNow(material);
-                              }}
-                            >
-                              <CheckCircle size={12} className="mr-1" />
-                              <span className="hidden sm:inline">Approve</span>
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              className="text-xs px-2 py-1 h-7"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleReviewAction(
-                                  material,
-                                  ApprovalStatusEnum.REJECTED
-                                );
-                              }}
-                            >
-                              <XCircle size={12} className="mr-1" />
-                              <span className="hidden sm:inline">Reject</span>
-                            </Button>
-                          </>
-                        )}
-                      </div>
+                <div className="flex items-center justify-between gap-1">
+                  <div className="flex items-center gap-1">
+                    <Button
+                      size="sm"
+                      className="bg-green-600 hover:bg-green-700 text-xs px-2 py-1 h-7"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        approveMaterialNow(material);
+                      }}
+                    >
+                      <CheckCircle size={12} className="mr-1" />
+                      <span className="hidden sm:inline">Approve</span>
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      className="text-xs px-2 py-1 h-7"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleReviewAction(
+                          material,
+                          ApprovalStatusEnum.REJECTED
+                        );
+                      }}
+                    >
+                      <XCircle size={12} className="mr-1" />
+                      <span className="hidden sm:inline">Reject</span>
+                    </Button>
+                  </div>
                       {user.role === UserRole.ADMIN && (
                         <Button
                           size="sm"
@@ -430,7 +447,7 @@ const MaterialsReviewContent: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={() =>
-                    currentPage > 1 && setCurrentPage(currentPage - 1)
+                    currentPage > 1 && handlePageChange(currentPage - 1)
                   }
                   disabled={currentPage <= 1}
                 >
@@ -440,7 +457,7 @@ const MaterialsReviewContent: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={() =>
-                    currentPage < totalPages && setCurrentPage(currentPage + 1)
+                    currentPage < totalPages && handlePageChange(currentPage + 1)
                   }
                   disabled={currentPage >= totalPages}
                 >
@@ -493,11 +510,7 @@ const MaterialsReviewContent: React.FC = () => {
 };
 
 const MaterialsReviewPage: React.FC = () => {
-  return (
-    <ManagementLayout>
-      <MaterialsReviewContent />
-    </ManagementLayout>
-  );
+  return <MaterialsReviewContent />;
 };
 
 export default MaterialsReviewPage;
