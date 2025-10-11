@@ -111,8 +111,15 @@ const ManagementSidebar: React.FC = () => {
       )}
     >
       {/* Header */}
-      <div className="p-6 border-b border-gray-200">
-        <div className="flex items-center justify-between mb-4">
+      <div
+        className={cn("border-b border-gray-200", isCollapsed ? "p-3" : "p-6")}
+      >
+        <div
+          className={cn(
+            "flex items-center",
+            isCollapsed ? "justify-center mb-3" : "justify-between mb-4"
+          )}
+        >
           <div
             className={cn(
               "flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity",
@@ -120,7 +127,11 @@ const ManagementSidebar: React.FC = () => {
             )}
             onClick={handleLogoClick}
           >
-            <img src="/assets/logo.svg" alt="UniNav Logo" className="w-8 h-8" />
+            <img
+              src="/assets/logo.svg"
+              alt="UniNav Logo"
+              className={cn("w-8 h-8", isCollapsed ? "w-10 h-10" : "")}
+            />
             {!isCollapsed && (
               <div>
                 <h2 className="font-bold text-lg text-gray-900">UniNav</h2>
@@ -128,18 +139,16 @@ const ManagementSidebar: React.FC = () => {
               </div>
             )}
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={toggleCollapse}
-            className="p-1 h-8 w-8"
-          >
-            {isCollapsed ? (
-              <ChevronRight size={16} />
-            ) : (
+          {!isCollapsed && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleCollapse}
+              className="p-1 h-8 w-8"
+            >
               <ChevronLeft size={16} />
-            )}
-          </Button>
+            </Button>
+          )}
         </div>
 
         {/* Navigation buttons */}
@@ -158,7 +167,7 @@ const ManagementSidebar: React.FC = () => {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1">
+      <nav className={cn("flex-1 space-y-1", isCollapsed ? "p-2" : "p-4")}>
         {!isCollapsed && (
           <div className="mb-4">
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
@@ -178,7 +187,7 @@ const ManagementSidebar: React.FC = () => {
                 isActive
                   ? "bg-blue-100 text-blue-700 border border-blue-200"
                   : "text-gray-700 hover:bg-gray-100 hover:text-gray-900",
-                isCollapsed ? "justify-center" : ""
+                isCollapsed ? "justify-center px-2 py-3" : ""
               )
             }
             title={isCollapsed ? item.title : undefined}
@@ -186,7 +195,7 @@ const ManagementSidebar: React.FC = () => {
             {({ isActive }) => (
               <>
                 <item.icon
-                  size={16}
+                  size={isCollapsed ? 20 : 16}
                   className={cn(
                     "transition-colors",
                     isActive
@@ -202,16 +211,29 @@ const ManagementSidebar: React.FC = () => {
       </nav>
 
       {/* Footer */}
-      {!isCollapsed && (
-        <div className="p-4 border-t border-gray-200">
-          <div className="text-xs text-gray-500">
-            <p className="font-medium">
-              {user?.firstName} {user?.lastName}
-            </p>
-            <p className="capitalize">{user?.role.toLowerCase()} Access</p>
+      <div className="border-t border-gray-200">
+        {isCollapsed ? (
+          <div className="p-2 flex justify-center">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleCollapse}
+              className="p-1 h-8 w-8"
+            >
+              <ChevronRight size={16} />
+            </Button>
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="p-4">
+            <div className="text-xs text-gray-500">
+              <p className="font-medium">
+                {user?.firstName} {user?.lastName}
+              </p>
+              <p className="capitalize">{user?.role.toLowerCase()} Access</p>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

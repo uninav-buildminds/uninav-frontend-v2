@@ -50,6 +50,7 @@ import {
   X,
 } from "lucide-react";
 import { ResponseStatus } from "@/lib/types/response.types";
+import { cn } from "@/lib/utils";
 
 interface MaterialReviewModalProps {
   material: Material | null;
@@ -361,82 +362,77 @@ const MaterialReviewModal: React.FC<MaterialReviewModalProps> = ({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-6 relative">
+          <div className="absolute top-[-10px] right-2">
+            <Badge className="bg-blue-600 text-white">
+              {displayMaterial.type.replace(/_/g, " ")}
+            </Badge>
+          </div>
           {/* Material Preview */}
-          <div className="relative w-full aspect-video bg-gray-100 rounded-lg overflow-hidden">
-            {displayMaterial.previewUrl ? (
+          {displayMaterial.previewUrl && (
+            <div className="relative w-full aspect-video bg-gray-100 rounded-lg overflow-hidden">
               <img
                 src={displayMaterial.previewUrl}
                 alt={displayMaterial.label}
                 className="w-full h-full object-cover"
               />
-            ) : (
-              <div className="flex items-center justify-center h-full">
-                <BookOpen className="h-16 w-16 text-gray-300" />
-              </div>
-            )}
-            <div className="absolute top-2 right-2">
-              <Badge className="bg-blue-600 text-white">
-                {displayMaterial.type.replace(/_/g, " ")}
-              </Badge>
-            </div>
 
-            {/* Preview Image Change Controls - Only show when editing */}
-            {isEditing && canEdit && (
-              <div className="absolute bottom-2 left-2 right-2">
-                <div className="bg-black/50 backdrop-blur-sm rounded-lg p-3">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handlePreviewFileChange}
-                      className="hidden"
-                      id="preview-file-input"
-                    />
-                    <label
-                      htmlFor="preview-file-input"
-                      className="flex items-center gap-2 px-3 py-1 bg-white/20 hover:bg-white/30 text-white text-sm rounded cursor-pointer transition-colors"
-                    >
-                      <FileText className="h-4 w-4" />
-                      {previewFile ? "Change Selected" : "Change Image"}
-                    </label>
+              {/* Preview Image Change Controls - Only show when editing */}
+              {isEditing && canEdit && (
+                <div className="absolute bottom-2 left-2 right-2">
+                  <div className="bg-black/50 backdrop-blur-sm rounded-lg p-3">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handlePreviewFileChange}
+                        className="hidden"
+                        id="preview-file-input"
+                      />
+                      <label
+                        htmlFor="preview-file-input"
+                        className="flex items-center gap-2 px-3 py-1 bg-white/20 hover:bg-white/30 text-white text-sm rounded cursor-pointer transition-colors"
+                      >
+                        <FileText className="h-4 w-4" />
+                        {previewFile ? "Change Selected" : "Change Image"}
+                      </label>
+
+                      {previewFile && (
+                        <Button
+                          onClick={handleUploadPreview}
+                          disabled={isUploadingPreview}
+                          size="sm"
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          {isUploadingPreview ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Save className="h-4 w-4" />
+                          )}
+                          Upload
+                        </Button>
+                      )}
+                    </div>
 
                     {previewFile && (
-                      <Button
-                        onClick={handleUploadPreview}
-                        disabled={isUploadingPreview}
-                        size="sm"
-                        className="bg-green-600 hover:bg-green-700 text-white"
-                      >
-                        {isUploadingPreview ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Save className="h-4 w-4" />
-                        )}
-                        Upload
-                      </Button>
+                      <div className="mt-2 space-y-2">
+                        <div className="text-xs text-white/80">
+                          Selected: {previewFile.name}
+                        </div>
+                        <div className="w-16 h-10 rounded overflow-hidden border border-white/20">
+                          <img
+                            src={URL.createObjectURL(previewFile)}
+                            alt="Preview"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      </div>
                     )}
                   </div>
-
-                  {previewFile && (
-                    <div className="mt-2 space-y-2">
-                      <div className="text-xs text-white/80">
-                        Selected: {previewFile.name}
-                      </div>
-                      <div className="w-16 h-10 rounded overflow-hidden border border-white/20">
-                        <img
-                          src={URL.createObjectURL(previewFile)}
-                          alt="Preview"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    </div>
-                  )}
                 </div>
-              </div>
-            )}
-          </div>
-
+              )}
+            </div>
+          )}
           {/* Action Buttons */}
           <div className="flex flex-wrap gap-2">
             <Button
@@ -482,14 +478,18 @@ const MaterialReviewModal: React.FC<MaterialReviewModalProps> = ({
             <div className="space-y-4">
               {/* Title */}
               <div>
-                <Label htmlFor="title">Title</Label>
                 {isEditing ? (
-                  <Input
-                    id="title"
-                    value={formData.label}
-                    onChange={(e) => handleInputChange("label", e.target.value)}
-                    className="mt-1"
-                  />
+                  <>
+                    <Label htmlFor="title">Title</Label>
+                    <Input
+                      id="title"
+                      value={formData.label}
+                      onChange={(e) =>
+                        handleInputChange("label", e.target.value)
+                      }
+                      className="mt-1"
+                    />
+                  </>
                 ) : (
                   <p className="text-lg font-semibold mt-1">
                     {displayMaterial.label}
@@ -519,35 +519,49 @@ const MaterialReviewModal: React.FC<MaterialReviewModalProps> = ({
 
               {/* Type */}
               <div>
-                <Label htmlFor="type">Type</Label>
                 {isEditing ? (
-                  <Select
-                    value={formData.type}
-                    onValueChange={(value) =>
-                      handleInputChange("type", value as MaterialTypeEnum)
-                    }
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.values(MaterialTypeEnum).map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {type.replace(/_/g, " ").toUpperCase()}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <>
+                    <Label htmlFor="type">Type</Label>
+                    <Select
+                      value={formData.type}
+                      onValueChange={(value) =>
+                        handleInputChange("type", value as MaterialTypeEnum)
+                      }
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.values(MaterialTypeEnum).map((type) => (
+                          <SelectItem key={type} value={type}>
+                            {type.replace(/_/g, " ").toUpperCase()}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </>
                 ) : (
-                  <p className="mt-1 capitalize">
+                  <span
+                    className={cn(
+                      "mt-1 inline-block rounded px-2 py-0.5 text-xs font-medium capitalize",
+                      displayMaterial.type === MaterialTypeEnum.EXCEL
+                        ? "bg-yellow-100 text-yellow-800"
+                        : displayMaterial.type === MaterialTypeEnum.PPT
+                        ? "bg-green-100 text-green-700"
+                        : displayMaterial.type === MaterialTypeEnum.DOCS
+                        ? "bg-purple-100 text-purple-700"
+                        : displayMaterial.type === MaterialTypeEnum.PDF
+                        ? "bg-blue-100 text-blue-700"
+                        : "bg-gray-100 text-gray-700"
+                    )}
+                  >
                     {displayMaterial.type.replace(/_/g, " ")}
-                  </p>
+                  </span>
                 )}
               </div>
 
               {/* Visibility */}
               <div>
-                <Label htmlFor="visibility">Visibility</Label>
                 {isEditing ? (
                   <Select
                     value={formData.visibility}
