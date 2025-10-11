@@ -125,6 +125,7 @@ const MaterialsReviewContent: React.FC = () => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     handleSearchChange(searchQuery);
+    fetchMaterials(); // Trigger the actual search
   };
 
   const getEmptyStateMessage = (activeTab: string) => {

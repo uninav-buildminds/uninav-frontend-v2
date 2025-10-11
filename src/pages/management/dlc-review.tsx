@@ -123,6 +123,7 @@ const DLCReviewContent: React.FC = () => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     handleSearchChange(searchQuery);
+    fetchDLCs(); // Trigger the actual search
   };
 
   const handleReviewAction = (dlc: DLC, action: ApprovalStatusEnum) => {

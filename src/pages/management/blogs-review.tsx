@@ -119,6 +119,7 @@ const BlogsReviewContent: React.FC = () => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     handleSearchChange(searchQuery);
+    fetchBlogs(); // Trigger the actual search
   };
 
   const handleReviewAction = (blog: Blog, action: ApprovalStatusEnum) => {

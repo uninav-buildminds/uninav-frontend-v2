@@ -117,6 +117,7 @@ const CoursesReviewContent: React.FC = () => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     handleSearchChange(searchQuery);
+    fetchCourses(); // Trigger the actual search
   };
 
   const handleReviewAction = (course: Course, action: ApprovalStatusEnum) => {
