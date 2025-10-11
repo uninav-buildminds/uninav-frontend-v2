@@ -28,7 +28,11 @@ import {
   Material,
 } from "@/lib/types/material.types";
 import { UserRole } from "@/lib/types/response.types";
-import { updateMaterial, getDownloadUrl } from "@/api/materials.api";
+import {
+  updateMaterial,
+  getDownloadUrl,
+  getMaterialById,
+} from "@/api/materials.api";
 import {
   BookOpen,
   ExternalLink,
@@ -64,6 +68,8 @@ const MaterialReviewModal: React.FC<MaterialReviewModalProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setSaving] = useState(false);
   const [isLoadingDownload, setIsLoadingDownload] = useState(false);
+  const [isLoadingMaterial, setIsLoadingMaterial] = useState(false);
+  const [fullMaterial, setFullMaterial] = useState<Material | null>(material);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -77,22 +83,51 @@ const MaterialReviewModal: React.FC<MaterialReviewModalProps> = ({
   });
   const [tagInput, setTagInput] = useState("");
 
-  // Initialize form data when material changes
+  // Fetch full material data when modal opens
   useEffect(() => {
-    if (material) {
+    const fetchFullMaterial = async () => {
+      if (material && isOpen) {
+        setIsLoadingMaterial(true);
+        try {
+          const response = await getMaterialById(material.id);
+          if (response.status === ResponseStatus.SUCCESS) {
+            setFullMaterial(response.data);
+          } else {
+            // Fallback to the passed material if fetch fails
+            setFullMaterial(material);
+          }
+        } catch (error) {
+          console.error("Error fetching full material:", error);
+          // Fallback to the passed material if fetch fails
+          setFullMaterial(material);
+        } finally {
+          setIsLoadingMaterial(false);
+        }
+      } else if (!isOpen) {
+        // Reset when modal closes
+        setFullMaterial(null);
+      }
+    };
+
+    fetchFullMaterial();
+  }, [material, isOpen]);
+
+  // Initialize form data when full material changes
+  useEffect(() => {
+    if (fullMaterial) {
       setFormData({
-        label: material.label || "",
-        description: material.description || "",
-        type: material.type || MaterialTypeEnum.OTHER,
-        tags: material.tags || [],
-        visibility: material.visibility || VisibilityEnum.PUBLIC,
-        restriction: material.restriction || RestrictionEnum.READONLY,
-        targetCourseId: material.targetCourseId || "",
+        label: fullMaterial.label || "",
+        description: fullMaterial.description || "",
+        type: fullMaterial.type || MaterialTypeEnum.OTHER,
+        tags: fullMaterial.tags || [],
+        visibility: fullMaterial.visibility || VisibilityEnum.PUBLIC,
+        restriction: fullMaterial.restriction || RestrictionEnum.READONLY,
+        targetCourseId: fullMaterial.targetCourseId || "",
       });
       setTagInput("");
       setIsEditing(false);
     }
-  }, [material]);
+  }, [fullMaterial]);
 
   const handleInputChange = (field: string, value: any) => {
     setFormData((prev) => ({
@@ -126,7 +161,7 @@ const MaterialReviewModal: React.FC<MaterialReviewModalProps> = ({
   };
 
   const handleSave = async () => {
-    if (!material) return;
+    if (!fullMaterial) return;
 
     setSaving(true);
     try {
@@ -140,7 +175,7 @@ const MaterialReviewModal: React.FC<MaterialReviewModalProps> = ({
         targetCourseId: formData.targetCourseId || undefined,
       };
 
-      const response = await updateMaterial(material.id, updateData);
+      const response = await updateMaterial(fullMaterial.id, updateData);
 
       if (response.status === ResponseStatus.SUCCESS) {
         toast({
@@ -168,12 +203,15 @@ const MaterialReviewModal: React.FC<MaterialReviewModalProps> = ({
   };
 
   const handleDownload = async () => {
-    if (!material?.resource || material.resource.resourceType !== "upload")
+    if (
+      !fullMaterial?.resource ||
+      fullMaterial.resource.resourceType !== "upload"
+    )
       return;
 
     setIsLoadingDownload(true);
     try {
-      const downloadUrl = await getDownloadUrl(material.id);
+      const downloadUrl = await getDownloadUrl(fullMaterial.id);
       window.open(downloadUrl, "_blank");
     } catch (error: any) {
       toast({
@@ -187,18 +225,41 @@ const MaterialReviewModal: React.FC<MaterialReviewModalProps> = ({
   };
 
   const handleVisitResource = () => {
-    if (material?.resource?.resourceAddress) {
-      window.open(material.resource.resourceAddress, "_blank");
+    if (fullMaterial?.resource?.resourceAddress) {
+      window.open(fullMaterial.resource.resourceAddress, "_blank");
     }
   };
 
   const handleViewInDashboard = () => {
-    if (material) {
-      window.open(`/dashboard/material/${material.id}`, "_blank");
+    if (fullMaterial) {
+      window.open(`/dashboard/material/${fullMaterial.id}`, "_blank");
     }
   };
 
   if (!material) return null;
+
+  // Show loading state while fetching full material data
+  if (isLoadingMaterial) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5" />
+              Material Review
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            <span className="ml-2">Loading material details...</span>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  // Use fullMaterial if available, otherwise fallback to material
+  const displayMaterial = fullMaterial || material;
 
   const isAdmin = user?.role === UserRole.ADMIN;
   const canEdit = isAdmin; // Only admins can edit in review modal
@@ -216,10 +277,10 @@ const MaterialReviewModal: React.FC<MaterialReviewModalProps> = ({
         <div className="space-y-6">
           {/* Material Preview */}
           <div className="relative w-full aspect-video bg-gray-100 rounded-lg overflow-hidden">
-            {material.previewUrl ? (
+            {displayMaterial.previewUrl ? (
               <img
-                src={material.previewUrl}
-                alt={material.label}
+                src={displayMaterial.previewUrl}
+                alt={displayMaterial.label}
                 className="w-full h-full object-cover"
               />
             ) : (
@@ -229,7 +290,7 @@ const MaterialReviewModal: React.FC<MaterialReviewModalProps> = ({
             )}
             <div className="absolute top-2 right-2">
               <Badge className="bg-blue-600 text-white">
-                {material.type.replace(/_/g, " ")}
+                {displayMaterial.type.replace(/_/g, " ")}
               </Badge>
             </div>
           </div>
@@ -245,7 +306,7 @@ const MaterialReviewModal: React.FC<MaterialReviewModalProps> = ({
               View in Dashboard
             </Button>
 
-            {material.resource?.resourceAddress && (
+            {displayMaterial.resource?.resourceAddress && (
               <Button
                 onClick={handleVisitResource}
                 className="gap-2"
@@ -256,7 +317,7 @@ const MaterialReviewModal: React.FC<MaterialReviewModalProps> = ({
               </Button>
             )}
 
-            {material.resource?.resourceType === "upload" && (
+            {displayMaterial.resource?.resourceType === "upload" && (
               <Button
                 onClick={handleDownload}
                 disabled={isLoadingDownload}
@@ -288,7 +349,9 @@ const MaterialReviewModal: React.FC<MaterialReviewModalProps> = ({
                     className="mt-1"
                   />
                 ) : (
-                  <p className="text-lg font-semibold mt-1">{material.label}</p>
+                  <p className="text-lg font-semibold mt-1">
+                    {displayMaterial.label}
+                  </p>
                 )}
               </div>
 
@@ -307,7 +370,7 @@ const MaterialReviewModal: React.FC<MaterialReviewModalProps> = ({
                   />
                 ) : (
                   <p className="text-gray-600 mt-1">
-                    {material.description || "No description provided"}
+                    {displayMaterial.description || "No description provided"}
                   </p>
                 )}
               </div>
@@ -335,7 +398,7 @@ const MaterialReviewModal: React.FC<MaterialReviewModalProps> = ({
                   </Select>
                 ) : (
                   <p className="mt-1 capitalize">
-                    {material.type.replace(/_/g, " ")}
+                    {displayMaterial.type.replace(/_/g, " ")}
                   </p>
                 )}
               </div>
@@ -370,12 +433,14 @@ const MaterialReviewModal: React.FC<MaterialReviewModalProps> = ({
                   </Select>
                 ) : (
                   <div className="flex items-center gap-2 mt-1">
-                    {material.visibility === VisibilityEnum.PUBLIC ? (
+                    {displayMaterial.visibility === VisibilityEnum.PUBLIC ? (
                       <Globe className="h-4 w-4" />
                     ) : (
                       <Lock className="h-4 w-4" />
                     )}
-                    <span className="capitalize">{material.visibility}</span>
+                    <span className="capitalize">
+                      {displayMaterial.visibility}
+                    </span>
                   </div>
                 )}
               </div>
@@ -404,7 +469,7 @@ const MaterialReviewModal: React.FC<MaterialReviewModalProps> = ({
                   </Select>
                 ) : (
                   <p className="mt-1 capitalize">
-                    {material.restriction.replace(/_/g, " ")}
+                    {displayMaterial.restriction.replace(/_/g, " ")}
                   </p>
                 )}
               </div>
@@ -418,20 +483,21 @@ const MaterialReviewModal: React.FC<MaterialReviewModalProps> = ({
                 <div className="flex items-center gap-3 mt-1">
                   <Avatar className="h-8 w-8">
                     <AvatarImage
-                      src={material.creator?.profilePicture || undefined}
-                      alt={`${material.creator?.firstName} ${material.creator?.lastName}`}
+                      src={displayMaterial.creator?.profilePicture || undefined}
+                      alt={`${displayMaterial.creator?.firstName} ${displayMaterial.creator?.lastName}`}
                     />
                     <AvatarFallback className="text-sm bg-brand/10 text-brand">
-                      {material.creator?.firstName?.[0]}
-                      {material.creator?.lastName?.[0]}
+                      {displayMaterial.creator?.firstName?.[0]}
+                      {displayMaterial.creator?.lastName?.[0]}
                     </AvatarFallback>
                   </Avatar>
                   <div>
                     <p className="font-medium">
-                      {material.creator?.firstName} {material.creator?.lastName}
+                      {displayMaterial.creator?.firstName}{" "}
+                      {displayMaterial.creator?.lastName}
                     </p>
                     <p className="text-sm text-gray-500">
-                      @{material.creator?.username}
+                      @{displayMaterial.creator?.username}
                     </p>
                   </div>
                 </div>
@@ -443,19 +509,19 @@ const MaterialReviewModal: React.FC<MaterialReviewModalProps> = ({
                 <div className="grid grid-cols-3 gap-4 mt-1">
                   <div className="text-center">
                     <p className="text-2xl font-bold text-blue-600">
-                      {material.views}
+                      {displayMaterial.views}
                     </p>
                     <p className="text-sm text-gray-500">Views</p>
                   </div>
                   <div className="text-center">
                     <p className="text-2xl font-bold text-green-600">
-                      {material.downloads}
+                      {displayMaterial.downloads}
                     </p>
                     <p className="text-sm text-gray-500">Downloads</p>
                   </div>
                   <div className="text-center">
                     <p className="text-2xl font-bold text-red-600">
-                      {material.likes}
+                      {displayMaterial.likes}
                     </p>
                     <p className="text-sm text-gray-500">Likes</p>
                   </div>
@@ -463,13 +529,13 @@ const MaterialReviewModal: React.FC<MaterialReviewModalProps> = ({
               </div>
 
               {/* Course */}
-              {material.targetCourse && (
+              {displayMaterial.targetCourse && (
                 <div>
                   <Label>Target Course</Label>
                   <div className="mt-1">
                     <Badge variant="outline" className="text-sm">
-                      {material.targetCourse.courseCode} -{" "}
-                      {material.targetCourse.courseName}
+                      {displayMaterial.targetCourse.courseCode} -{" "}
+                      {displayMaterial.targetCourse.courseName}
                     </Badge>
                   </div>
                 </div>
@@ -483,14 +549,14 @@ const MaterialReviewModal: React.FC<MaterialReviewModalProps> = ({
                     <Calendar className="h-4 w-4" />
                     <span>
                       Created:{" "}
-                      {new Date(material.createdAt).toLocaleDateString()}
+                      {new Date(displayMaterial.createdAt).toLocaleDateString()}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <Calendar className="h-4 w-4" />
                     <span>
                       Updated:{" "}
-                      {new Date(material.updatedAt).toLocaleDateString()}
+                      {new Date(displayMaterial.updatedAt).toLocaleDateString()}
                     </span>
                   </div>
                 </div>
@@ -502,14 +568,14 @@ const MaterialReviewModal: React.FC<MaterialReviewModalProps> = ({
                 <div className="mt-1">
                   <Badge
                     className={
-                      material.reviewStatus === "approved"
+                      displayMaterial.reviewStatus === "approved"
                         ? "bg-green-100 text-green-800"
-                        : material.reviewStatus === "rejected"
+                        : displayMaterial.reviewStatus === "rejected"
                         ? "bg-red-100 text-red-800"
                         : "bg-yellow-100 text-yellow-800"
                     }
                   >
-                    {material.reviewStatus}
+                    {displayMaterial.reviewStatus}
                   </Badge>
                 </div>
               </div>
@@ -554,8 +620,8 @@ const MaterialReviewModal: React.FC<MaterialReviewModalProps> = ({
               </div>
             ) : (
               <div className="flex flex-wrap gap-2 mt-1">
-                {material.tags && material.tags.length > 0 ? (
-                  material.tags.map((tag) => (
+                {displayMaterial.tags && displayMaterial.tags.length > 0 ? (
+                  displayMaterial.tags.map((tag) => (
                     <Badge key={tag} variant="outline">
                       <Tag className="h-3 w-3 mr-1" />
                       {tag}
