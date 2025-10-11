@@ -4,10 +4,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUrlState } from "@/hooks/useUrlState";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import SearchBar from "@/components/management/SearchBar";
 import ReviewTabs from "@/components/management/ReviewTabs";
+import ReviewPagination from "@/components/management/ReviewPagination";
 import ReviewActionDialog from "@/components/management/ReviewActionDialog";
 import DeleteConfirmationDialog from "@/components/management/DeleteConfirmationDialog";
 import MaterialReviewModal from "@/components/management/MaterialReviewModal";
@@ -25,14 +26,10 @@ import {
 } from "@/lib/types/response.types";
 import {
   BookOpen,
-  ChevronLeft,
-  ChevronRight,
   Loader2,
-  Search,
   Trash2,
   CheckCircle,
   XCircle,
-  ArrowLeft,
   Eye,
 } from "lucide-react";
 import { ReviewActionDTO } from "@/lib/types/review.types";
@@ -41,7 +38,7 @@ const MaterialsReviewContent: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
-  
+
   // Use URL state hook
   const {
     activeTab,
@@ -128,6 +125,15 @@ const MaterialsReviewContent: React.FC = () => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     handleSearchChange(searchQuery);
+  };
+
+  const getEmptyStateMessage = (activeTab: string) => {
+    if (activeTab === "ALL") return "There are no materials found.";
+    if (activeTab === ApprovalStatusEnum.PENDING)
+      return "There are no materials waiting for review.";
+    if (activeTab === ApprovalStatusEnum.APPROVED)
+      return "There are no approved materials.";
+    return "There are no rejected materials.";
   };
 
   const handleReviewAction = (
@@ -247,17 +253,12 @@ const MaterialsReviewContent: React.FC = () => {
         <h1 className="text-2xl font-bold">Materials Review</h1>
       </div>
 
-      <form onSubmit={handleSearch} className="flex flex-wrap gap-2 mb-4">
-        <Input
-          placeholder="Search materials..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="flex-1 min-w-[240px]"
-        />
-        <Button type="submit" className="gap-1">
-          <Search size={16} /> Search
-        </Button>
-      </form>
+      <SearchBar
+        searchQuery={searchQuery}
+        onSearchQueryChange={setSearchQuery}
+        onSubmit={handleSearch}
+        placeholder="Search materials..."
+      />
 
       <ReviewTabs
         activeTab={activeTab}
@@ -278,13 +279,7 @@ const MaterialsReviewContent: React.FC = () => {
             <div className="bg-gray-50 p-8 rounded-lg text-center">
               <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium mb-2">No materials found</h3>
-              <p className="text-gray-600">
-                {activeTab === ApprovalStatusEnum.PENDING
-                  ? "There are no materials waiting for review."
-                  : activeTab === ApprovalStatusEnum.APPROVED
-                  ? "There are no approved materials."
-                  : "There are no rejected materials."}
-              </p>
+              <p className="text-gray-600">{getEmptyStateMessage(activeTab)}</p>
             </div>
           ) : (
             <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4">
@@ -319,23 +314,27 @@ const MaterialsReviewContent: React.FC = () => {
                           </p>
                         </div>
                       </div>
-                  <div className="flex flex-col gap-1">
-                    <Badge className="bg-blue-600 text-white capitalize text-xs flex-shrink-0">
-                      {(material.type as any)?.toString().replace(/_/g, " ")}
-                    </Badge>
-                    <Badge
-                      variant="outline"
-                      className={`text-xs flex-shrink-0 ${
-                        material.reviewStatus === ApprovalStatusEnum.APPROVED
-                          ? "bg-green-100 text-green-700 border-green-200"
-                          : material.reviewStatus === ApprovalStatusEnum.REJECTED
-                          ? "bg-red-100 text-red-700 border-red-200"
-                          : "bg-yellow-100 text-yellow-700 border-yellow-200"
-                      }`}
-                    >
-                      {material.reviewStatus}
-                    </Badge>
-                  </div>
+                      <div className="flex flex-col gap-1">
+                        <Badge className="bg-blue-600 text-white capitalize text-xs flex-shrink-0">
+                          {(material.type as any)
+                            ?.toString()
+                            .replace(/_/g, " ")}
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className={`text-xs flex-shrink-0 ${
+                            material.reviewStatus ===
+                            ApprovalStatusEnum.APPROVED
+                              ? "bg-green-100 text-green-700 border-green-200"
+                              : material.reviewStatus ===
+                                ApprovalStatusEnum.REJECTED
+                              ? "bg-red-100 text-red-700 border-red-200"
+                              : "bg-yellow-100 text-yellow-700 border-yellow-200"
+                          }`}
+                        >
+                          {material.reviewStatus}
+                        </Badge>
+                      </div>
                     </div>
                     {material.description && (
                       <p className="text-xs sm:text-sm text-gray-600 line-clamp-2 mb-3">
@@ -387,35 +386,35 @@ const MaterialsReviewContent: React.FC = () => {
                           )}
                         </div>
                       )}
-                <div className="flex items-center justify-between gap-1">
-                  <div className="flex items-center gap-1">
-                    <Button
-                      size="sm"
-                      className="bg-green-600 hover:bg-green-700 text-xs px-2 py-1 h-7"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        approveMaterialNow(material);
-                      }}
-                    >
-                      <CheckCircle size={12} className="mr-1" />
-                      <span className="hidden sm:inline">Approve</span>
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      className="text-xs px-2 py-1 h-7"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleReviewAction(
-                          material,
-                          ApprovalStatusEnum.REJECTED
-                        );
-                      }}
-                    >
-                      <XCircle size={12} className="mr-1" />
-                      <span className="hidden sm:inline">Reject</span>
-                    </Button>
-                  </div>
+                    <div className="flex items-center justify-between gap-1">
+                      <div className="flex items-center gap-1">
+                        <Button
+                          size="sm"
+                          className="bg-green-600 hover:bg-green-700 text-xs px-2 py-1 h-7"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            approveMaterialNow(material);
+                          }}
+                        >
+                          <CheckCircle size={12} className="mr-1" />
+                          <span className="hidden sm:inline">Approve</span>
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="text-xs px-2 py-1 h-7"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleReviewAction(
+                              material,
+                              ApprovalStatusEnum.REJECTED
+                            );
+                          }}
+                        >
+                          <XCircle size={12} className="mr-1" />
+                          <span className="hidden sm:inline">Reject</span>
+                        </Button>
+                      </div>
                       {user.role === UserRole.ADMIN && (
                         <Button
                           size="sm"
@@ -437,35 +436,11 @@ const MaterialsReviewContent: React.FC = () => {
             </div>
           )}
 
-          {materials.length > 0 && (
-            <div className="flex items-center justify-between pt-6">
-              <p className="text-sm text-gray-600">
-                Page {currentPage} of {totalPages}
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    currentPage > 1 && handlePageChange(currentPage - 1)
-                  }
-                  disabled={currentPage <= 1}
-                >
-                  <ChevronLeft size={14} /> Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    currentPage < totalPages && handlePageChange(currentPage + 1)
-                  }
-                  disabled={currentPage >= totalPages}
-                >
-                  Next <ChevronRight size={14} />
-                </Button>
-              </div>
-            </div>
-          )}
+          <ReviewPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
         </div>
       </ReviewTabs>
 

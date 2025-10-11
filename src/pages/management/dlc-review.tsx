@@ -5,9 +5,10 @@ import { useUrlState } from "@/hooks/useUrlState";
 import { useToast } from "@/hooks/use-toast";
 import { useDepartments } from "@/hooks/useDepartments";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import SearchBar from "@/components/management/SearchBar";
 import ReviewTabs from "@/components/management/ReviewTabs";
+import ReviewPagination from "@/components/management/ReviewPagination";
 import ReviewActionDialog from "@/components/management/ReviewActionDialog";
 import DeleteConfirmationDialog from "@/components/management/DeleteConfirmationDialog";
 import DLCReviewModal from "@/components/management/DLCReviewModal";
@@ -25,14 +26,10 @@ import {
 } from "@/lib/types/response.types";
 import {
   Award,
-  ChevronLeft,
-  ChevronRight,
   Loader2,
-  Search,
   Trash2,
   CheckCircle,
   XCircle,
-  ArrowLeft,
   Building,
   GraduationCap,
 } from "lucide-react";
@@ -43,7 +40,7 @@ const DLCReviewContent: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { getDepartmentById } = useDepartments();
-  
+
   // Use URL state hook
   const {
     activeTab,
@@ -248,17 +245,12 @@ const DLCReviewContent: React.FC = () => {
         <h1 className="text-2xl font-bold">DLC Review</h1>
       </div>
 
-      <form onSubmit={handleSearch} className="flex flex-wrap gap-2 mb-4">
-        <Input
-          placeholder="Search DLCs..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="flex-1 min-w-[240px]"
-        />
-        <Button type="submit" className="gap-1">
-          <Search size={16} /> Search
-        </Button>
-      </form>
+      <SearchBar
+        searchQuery={searchQuery}
+        onSearchQueryChange={setSearchQuery}
+        onSubmit={handleSearch}
+        placeholder="Search DLCs..."
+      />
 
       <ReviewTabs
         activeTab={activeTab}
@@ -399,35 +391,11 @@ const DLCReviewContent: React.FC = () => {
             </div>
           )}
 
-          {dlcs.length > 0 && (
-            <div className="flex items-center justify-between pt-6">
-              <p className="text-sm text-gray-600">
-                Page {currentPage} of {totalPages}
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    currentPage > 1 && handlePageChange(currentPage - 1)
-                  }
-                  disabled={currentPage <= 1}
-                >
-                  <ChevronLeft size={14} /> Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    currentPage < totalPages && handlePageChange(currentPage + 1)
-                  }
-                  disabled={currentPage >= totalPages}
-                >
-                  Next <ChevronRight size={14} />
-                </Button>
-              </div>
-            </div>
-          )}
+          <ReviewPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
         </div>
       </ReviewTabs>
 
