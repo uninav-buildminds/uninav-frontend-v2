@@ -28,3 +28,4 @@ dist-ssr
 .env.*
 
 /temp
+package-lock.json
