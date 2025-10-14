@@ -20,7 +20,7 @@ import { Material } from "@/lib/types/material.types";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
-import { SearchSuggestion } from "@/lib/types/dashboard.types";
+import { SearchResult, SearchSuggestion } from "@/lib/types/search.types";
 
 const Overview: React.FC = () => {
   const navigate = useNavigate();
@@ -50,7 +50,7 @@ const Overview: React.FC = () => {
 
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<Material[]>([]);
+  const [searchResults, setSearchResults] = useState<SearchResult<Material> | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [searchSuggestions, setSearchSuggestions] = useState<SearchSuggestion[]>([]);
@@ -93,7 +93,7 @@ const Overview: React.FC = () => {
     // If query is empty, reset to default view
     if (!query.trim()) {
       setIsSearchActive(false);
-      setSearchResults([]);
+      setSearchResults(null);
       setSearchSuggestions([]);
       setSearchMetadata(null);
       setIsLoadingSuggestions(false);
@@ -161,7 +161,7 @@ const Overview: React.FC = () => {
     async (query: string) => {
       if (!query.trim()) {
         setIsSearchActive(false);
-        setSearchResults([]);
+        setSearchResults(null);
         setSearchMetadata(null);
         return;
       }
@@ -208,7 +208,7 @@ const Overview: React.FC = () => {
         }
 
         if (response.status === "success" && response.data?.items) {
-          setSearchResults(response.data.items);
+          setSearchResults(response.data);
           setSearchMetadata({
             total: response.data.pagination.total,
             page: response.data.pagination.page,
@@ -216,13 +216,13 @@ const Overview: React.FC = () => {
             usedAdvanced,
           });
         } else {
-          setSearchResults([]);
+          setSearchResults(null);
           setSearchMetadata(null);
         }
       } catch (error) {
         console.error("Error searching materials:", error);
         toast.error(error.message || "Search failed. Please try again.");
-        setSearchResults([]);
+        setSearchResults(null);
         setSearchMetadata(null);
       } finally {
         setIsSearching(false);
@@ -304,7 +304,7 @@ const Overview: React.FC = () => {
 			/>
 			<div className="p-4 sm:p-6">
 				{/* Show search results when searching, otherwise show default content */}
-				{isSearchActive ? (
+				{isSearchActive && searchResults != null ? (
 					<SearchResults
 						query={searchQuery}
 						results={searchResults}
@@ -317,7 +317,7 @@ const Overview: React.FC = () => {
 						onClearSearch={() => {
 							setSearchQuery("");
 							setIsSearchActive(false);
-							setSearchResults([]);
+							setSearchResults(null);
 							setSearchMetadata(null);
 						}}
 					/>

@@ -64,6 +64,7 @@ interface MaterialCardProps {
   onEdit?: (material: Material) => void; // For user uploads - edit material
   onDelete?: (id: string) => void; // For user uploads - delete material
   showEditDelete?: boolean; // Show edit/delete actions instead of bookmark
+  componentRef?: React.Ref<HTMLDivElement>; // Ref for the card container
 }
 
 const MaterialCard: React.FC<MaterialCardProps> = ({
@@ -73,11 +74,10 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
   lastViewedAt,
   onEdit,
   onDelete,
+  componentRef,
   showEditDelete = false,
 }) => {
   const { id, label, createdAt, downloads, tags, views, likes } = material;
-
-  console.log("Rendering MaterialCard for material:", material);
 
   const previewImage = material.previewUrl;
 
@@ -122,19 +122,13 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
 
   return (
     <TooltipProvider>
-      <div className="group relative cursor-pointer" onClick={() => onRead?.(id)}>
+      <div className="group relative cursor-pointer" onClick={() => onRead?.(id)} ref={componentRef}>
         {/* File Preview */}
         <div className="aspect-square overflow-hidden rounded-xl mb-3 relative border border-brand/20 shadow-sm">
           <img
             src={material.previewUrl || Placeholder}
             alt={label}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-            onLoad={() => {
-              console.log(
-                "Preview image loaded successfully:",
-                material.previewUrl
-              );
-            }}
             onError={(e) => {
               console.error("Preview image failed to load:", {
                 src: material.previewUrl,
