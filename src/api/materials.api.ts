@@ -1,4 +1,4 @@
-import { PaginatedResponse, Response } from "@/lib/types/response.types";
+import { PaginatedResponse, Response, ResponseSuccess } from "@/lib/types/response.types";
 import { httpClient } from "./api";
 import {
   Material,
@@ -171,21 +171,31 @@ export async function createMaterials(materialData: CreateMaterialForm) {
 }
 
 export async function getMaterialRecommendations(
-  params: MaterialRecommendation
-) {
-  try {
-    const response = await httpClient.get("/materials/recommendations", {
-      params,
-    });
-    return response.data;
-  } catch (error: any) {
-    throw {
-      statusCode: error.response?.status,
-      message:
-        error.response?.data?.message ||
-        "Fetching material recommendations failed. Please try again.",
-    };
-  }
+	params: MaterialRecommendation
+): Promise<
+	ResponseSuccess<{
+		items: Material[];
+		pagination: {
+			total: number;
+			page: number;
+			pageSize: number;
+			totalPages: number;
+		};
+	}>
+> {
+	try {
+		const response = await httpClient.get("/materials/recommendations", {
+			params,
+		});
+		return response.data;
+	} catch (error: any) {
+		throw {
+			statusCode: error.response?.status,
+			message:
+				error.response?.data?.message ||
+				"Fetching material recommendations failed. Please try again.",
+		};
+	}
 }
 
 // Recent materials are returned with lastViewedAt included in each material object
@@ -194,7 +204,7 @@ export interface RecentMaterial extends Material {
 }
 
 export async function getRecentMaterials(): Promise<
-  Response<{
+  ResponseSuccess<{
     items: RecentMaterial[];
     pagination: {
       total: number;

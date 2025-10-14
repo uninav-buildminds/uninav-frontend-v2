@@ -150,6 +150,7 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Hermes: Is this necessary?
   // If materials is a function (async fetch), call it and set state
   useEffect(() => {
     if (typeof materials === "function") {

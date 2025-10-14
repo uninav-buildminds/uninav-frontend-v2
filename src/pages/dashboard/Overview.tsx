@@ -2,9 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import MetricsSection from "@/components/dashboard/MetricsSection";
-import MaterialsSection, {
-  MaterialWithLastViewed,
-} from "@/components/dashboard/MaterialsSection";
+import MaterialsSection from "@/components/dashboard/MaterialsSection";
 import SearchResults from "@/components/dashboard/SearchResults";
 import {
   Award01Icon,
@@ -21,14 +19,30 @@ import { getUserPoints } from "@/api/points.api";
 import { Material } from "@/lib/types/material.types";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import { useQuery } from "@tanstack/react-query";
+import { SearchSuggestion } from "@/lib/types/dashboard.types";
 
 const Overview: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [recentMaterials, setRecentMaterials] = useState<
-    MaterialWithLastViewed[]
-  >([]);
-  const [isLoadingRecent, setIsLoadingRecent] = useState(true);
+  const { isLoading: isLoadingRecent, data: recentMaterials } = useQuery({
+    queryKey: ["recentMaterials"],
+    queryFn: async () => {
+      const response = await getRecentMaterials();
+      return response.data.items;
+    },
+    enabled: user !== undefined,
+  });
+  const { isLoading: isLoadingRecommended, data: recommendedMaterials } = useQuery({
+    queryKey: ["recommendedMaterials"],
+    queryFn: async () => {
+      const response = await getMaterialRecommendations({
+        limit: 10,
+        ignorePreference: true,
+      });
+      return response.data.items;
+    }
+  })
 
   // Metrics state
   const [pointsPercentage, setPointsPercentage] = useState<string>("0%");
@@ -39,7 +53,7 @@ const Overview: React.FC = () => {
   const [searchResults, setSearchResults] = useState<Material[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isSearchActive, setIsSearchActive] = useState(false);
-  const [searchSuggestions, setSearchSuggestions] = useState<any[]>([]);
+  const [searchSuggestions, setSearchSuggestions] = useState<SearchSuggestion[]>([]);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const [advancedSearchEnabled, setAdvancedSearchEnabled] = useState(false);
   const [searchMetadata, setSearchMetadata] = useState<{
@@ -115,7 +129,7 @@ const Overview: React.FC = () => {
             .map((material: Material) => ({
               id: material.id,
               title: material.label,
-              type: "material" as const,
+              type: "material" as SearchSuggestion["type"],
               subtitle:
                 material.targetCourse?.courseCode ||
                 material.description?.slice(0, 50),
@@ -205,7 +219,7 @@ const Overview: React.FC = () => {
           setSearchResults([]);
           setSearchMetadata(null);
         }
-      } catch (error: any) {
+      } catch (error) {
         console.error("Error searching materials:", error);
         toast.error(error.message || "Search failed. Please try again.");
         setSearchResults([]);
@@ -225,45 +239,6 @@ const Overview: React.FC = () => {
       setTimeout(() => handleSearch(searchQuery), 100);
     }
   }, [searchQuery, handleSearch]);
-
-  const fetchRecommendations = async () => {
-    try {
-      const data = await getMaterialRecommendations({
-        limit: 10,
-        ignorePreference: true,
-      });
-      console.log("Fetched recommendations:", data);
-      return data;
-    } catch (error) {
-      console.error("Error fetching recommendations:", error);
-    }
-  };
-
-  // Load recent materials on component mount
-  useEffect(() => {
-    const loadRecentMaterials = async () => {
-      try {
-        setIsLoadingRecent(true);
-        const response = await getRecentMaterials();
-        console.log("Fetched recent materials:", response);
-
-        // getRecentMaterials returns a paginated response with items already including lastViewedAt
-        if (response.status === "success" && response.data?.items) {
-          // Materials already have lastViewedAt included from backend
-          setRecentMaterials(response.data.items);
-        } else {
-          setRecentMaterials([]);
-        }
-      } catch (error) {
-        console.error("Error fetching recent materials:", error);
-        setRecentMaterials([]);
-      } finally {
-        setIsLoadingRecent(false);
-      }
-    };
-
-    loadRecentMaterials();
-  }, []);
 
   // Load metrics data on component mount
   useEffect(() => {
@@ -318,71 +293,78 @@ const Overview: React.FC = () => {
   ];
 
   return (
-    <>
-      <DashboardHeader
-        firstName={user?.firstName || "User"}
-        showSearch={true}
-        searchSuggestions={searchSuggestions}
-        isLoadingSuggestions={isLoadingSuggestions}
-        onSearch={handleSearch}
-        onSearchInput={handleSearchInput}
-      />
-      <div className="p-4 sm:p-6">
-        {/* Show search results when searching, otherwise show default content */}
-        {isSearchActive ? (
-          <SearchResults
-            query={searchQuery}
-            results={searchResults}
-            isSearching={isSearching}
-            metadata={searchMetadata}
-            advancedSearchEnabled={advancedSearchEnabled}
-            onToggleAdvancedSearch={toggleAdvancedSearch}
-            onShare={handleShare}
-            onRead={handleRead}
-            onClearSearch={() => {
-              setSearchQuery("");
-              setIsSearchActive(false);
-              setSearchResults([]);
-              setSearchMetadata(null);
-            }}
-          />
-        ) : (
-          <>
-            {/* Metrics */}
-            <MetricsSection metrics={metrics} />
+		<>
+			<DashboardHeader
+				firstName={user?.firstName || "User"}
+				showSearch={true}
+				searchSuggestions={searchSuggestions}
+				isLoadingSuggestions={isLoadingSuggestions}
+				onSearch={handleSearch}
+				onSearchInput={handleSearchInput}
+			/>
+			<div className="p-4 sm:p-6">
+				{/* Show search results when searching, otherwise show default content */}
+				{isSearchActive ? (
+					<SearchResults
+						query={searchQuery}
+						results={searchResults}
+						isSearching={isSearching}
+						metadata={searchMetadata}
+						advancedSearchEnabled={advancedSearchEnabled}
+						onToggleAdvancedSearch={toggleAdvancedSearch}
+						onShare={handleShare}
+						onRead={handleRead}
+						onClearSearch={() => {
+							setSearchQuery("");
+							setIsSearchActive(false);
+							setSearchResults([]);
+							setSearchMetadata(null);
+						}}
+					/>
+				) : (
+					<>
+						{/* Metrics */}
+						<MetricsSection metrics={metrics} />
 
-            {/* Content Sections */}
-            <div className="mt-8 space-y-8 pb-16 md:pb-0">
-              {/* Recent Materials - Only show if there are materials */}
-              {!isLoadingRecent && recentMaterials.length > 0 && (
-                <MaterialsSection
-                  title="Recent Materials"
-                  materials={recentMaterials}
-                  onViewAll={() => handleViewAll("recent materials")}
-                  onFilter={() => handleFilter("recent materials")}
-                  onShare={handleShare}
-                  onRead={handleRead}
-                  scrollStep={280}
-                  preserveOrder={true}
-                />
-              )}
+						{/* Content Sections */}
+						<div className="mt-8 space-y-8 pb-16 md:pb-0">
+							{/* ADD SKELETONS */}
+							{/* Recent Materials - Only show if there are materials */}
+							{!isLoadingRecent && recentMaterials.length > 0 && (
+								<MaterialsSection
+									title="Recent Materials"
+									materials={recentMaterials}
+									onViewAll={() =>
+										handleViewAll("recent materials")
+									}
+									onFilter={() =>
+										handleFilter("recent materials")
+									}
+									onShare={handleShare}
+									onRead={handleRead}
+									scrollStep={280}
+									preserveOrder={true}
+								/>
+							)}
 
-              {/* Recommendations - Grid layout with 2 rows */}
-              <MaterialsSection
-                title="Recommendations"
-                materials={fetchRecommendations}
-                onViewAll={() => handleViewAll("recommendations")}
-                onFilter={() => handleFilter("recommendations")}
-                onShare={handleShare}
-                onRead={handleRead}
-                scrollStep={280}
-                layout="grid"
-              />
-            </div>
-          </>
-        )}
-      </div>
-    </>
+							{/* Recommendations - Grid layout with 2 rows */}
+							<MaterialsSection
+								title="Recommendations"
+								materials={recommendedMaterials}
+								onViewAll={() =>
+									handleViewAll("recommendations")
+								}
+								onFilter={() => handleFilter("recommendations")}
+								onShare={handleShare}
+								onRead={handleRead}
+								scrollStep={280}
+								layout="grid"
+							/>
+						</div>
+					</>
+				)}
+			</div>
+		</>
   );
 };
 

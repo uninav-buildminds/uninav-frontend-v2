@@ -1,13 +1,6 @@
 import React from "react";
 import SearchBar from "../shared/SearchBar";
-
-interface SearchSuggestion {
-  id: string;
-  title: string;
-  type: "course" | "material";
-  subtitle?: string;
-  icon?: React.ReactNode;
-}
+import { SearchSuggestion } from "@/lib/types/dashboard.types";
 
 interface DashboardHeaderProps {
   firstName?: string;
