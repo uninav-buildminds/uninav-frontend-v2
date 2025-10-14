@@ -7,6 +7,7 @@ import {
   RestrictionEnum,
 } from "@/lib/types/material.types";
 import { ApprovalStatusEnum as ApprovalStatus } from "@/lib/types/response.types";
+import { SearchResult } from "@/lib/types/search.types";
 
 // Re-export types for convenience
 export type {
@@ -250,17 +251,7 @@ export async function getPopularMaterials(limit: number = 10): Promise<
 
 // Search materials with pagination and filtering
 export async function searchMaterials(params: MaterialSearchParams): Promise<
-  Response<{
-    items: Material[];
-    pagination: {
-      total: number;
-      page: number;
-      pageSize: number;
-      totalPages: number;
-      hasMore: boolean;
-      hasPrev: boolean;
-    };
-  }>
+  ResponseSuccess<SearchResult<Material>>
 > {
   // delete params.advancedSearch;
   try {
@@ -268,7 +259,7 @@ export async function searchMaterials(params: MaterialSearchParams): Promise<
       params,
     });
     return response.data;
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error searching materials:", error);
     throw {
       statusCode: error.response?.status,

@@ -1,6 +1,6 @@
 import React from "react";
 import SearchBar from "../shared/SearchBar";
-import { SearchSuggestion } from "@/lib/types/dashboard.types";
+import { SearchSuggestion } from "@/lib/types/search.types";
 
 interface DashboardHeaderProps {
   firstName?: string;

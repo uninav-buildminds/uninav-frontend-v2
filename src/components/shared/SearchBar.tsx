@@ -7,14 +7,7 @@ import {
   Cancel01Icon,
 } from "hugeicons-react";
 import { motion, AnimatePresence } from "framer-motion";
-
-interface SearchSuggestion {
-  id: string;
-  title: string;
-  type: "course" | "material";
-  subtitle?: string;
-  icon?: React.ReactNode;
-}
+import { SearchSuggestion } from "@/lib/types/search.types";
 
 interface SearchBarProps {
   placeholder?: string;
