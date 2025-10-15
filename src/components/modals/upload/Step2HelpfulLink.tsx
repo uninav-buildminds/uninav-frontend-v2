@@ -35,6 +35,7 @@ import {
   inferMaterialType,
   generateDefaultTitle,
 } from "@/lib/utils/inferMaterialType";
+import { MaterialTypeEnum } from "@/lib/types/material.types";
 import {
   CreateMaterialLinkForm,
   getGDriveThumbnail,
@@ -136,17 +137,40 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
   }, [isEditMode, editingMaterial, setValue]);
 
   // Handle URL input change to auto-populate title
-  const handleUrlChange = (url: string) => {
+  const handleUrlChange = async (raw: string) => {
+    // Normalize input: remove leading '@' and quotes, trim, add protocol if missing
+    let url = raw
+      .trim()
+      .replace(/^[@"']+/, "")
+      .replace(/["']+$/, "");
+    if (url && !/^https?:\/\//i.test(url)) {
+      url = `https://${url}`;
+    }
+
     setValue("url", url);
 
-    // Auto-populate title if current title is empty and URL is valid
-    if (!watchedValues.materialTitle && url.trim()) {
+    // Auto-populate title if empty
+    if (!watchedValues.materialTitle && url) {
       try {
-        new URL(url); // Validate URL
-        const defaultTitle = generateDefaultTitle(url);
-        setValue("materialTitle", defaultTitle);
+        // If YouTube, try oEmbed for accurate title
+        if (checkIsYouTubeUrl(url)) {
+          const oembed = await fetch(
+            `https://www.youtube.com/oembed?url=${encodeURIComponent(
+              url
+            )}&format=json`
+          ).then((r) => (r.ok ? r.json() : null));
+          if (oembed?.title) {
+            setValue("materialTitle", oembed.title);
+          } else {
+            const fallback = generateDefaultTitle(url);
+            setValue("materialTitle", fallback);
+          }
+        } else {
+          const defaultTitle = generateDefaultTitle(url);
+          setValue("materialTitle", defaultTitle);
+        }
       } catch {
-        // Invalid URL, don't auto-populate
+        // Silent fail; keep input responsive
       }
     }
   };
@@ -287,8 +311,10 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
   };
 
   const onSubmit = (data: UploadLinkInput) => {
-    // Infer material type from URL
-    const inferredType = inferMaterialType(data.url);
+    // Infer material type from URL and force YOUTUBE for YouTube links
+    const inferredType = checkIsYouTubeUrl(data.url)
+      ? MaterialTypeEnum.YOUTUBE
+      : inferMaterialType(data.url);
 
     // Generate preview URL if possible
     const previewUrl = generatePreviewUrl(data.url);

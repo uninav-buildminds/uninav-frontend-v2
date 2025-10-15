@@ -73,7 +73,7 @@ function getTypeFromUrl(url: URL): MaterialTypeEnum {
 
   // Check for specific platforms
   if (hostname.includes("youtube.com") || hostname.includes("youtu.be")) {
-    return MaterialTypeEnum.VIDEO;
+    return MaterialTypeEnum.YOUTUBE;
   }
 
   if (
