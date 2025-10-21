@@ -53,7 +53,7 @@ const CTASection: React.FC = () => {
           <motion.div className="flex-1 flex justify-center lg:justify-end" variants={imageVariants} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "0px 0px -15% 0px" }}>
             <div className="relative">
               <img 
-                src="/assets/cta-img.svg" 
+                src="/assets/cta.png" 
                 alt="UniNav mobile app mockups"
                 className="w-full max-w-sm sm:max-w-md lg:max-w-lg h-auto"
               />
