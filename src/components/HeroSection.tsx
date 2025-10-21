@@ -174,7 +174,7 @@ const HeroSection: React.FC = () => {
           <img
             src="/assets/demo-dash.svg"
             alt="Dashboard preview"
-            className="block w-[min(1200px,96%)] mx-auto"
+            className="block w-[min(1000px,96%)] mx-auto"
           />
         </motion.div>
 

@@ -1,4 +1,5 @@
 import React from "react";
+import { Phone, Mail, MessageCircle } from "lucide-react";
 
 const Footer: React.FC = () => {
   return (
@@ -14,6 +15,37 @@ const Footer: React.FC = () => {
             <p className="text-gray-600 text-xs sm:text-sm leading-relaxed max-w-xs">
               Empowering students with the knowledge and community they need to excel academically.
             </p>
+            {/* Contact Icons */}
+            <div className="flex items-center gap-3 mt-4">
+              <a
+                href="https://wa.me/2349155004456"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="WhatsApp"
+                className="text-green-600 hover:text-green-700 transition-colors text-lg"
+                title="WhatsApp: +234 915 500 4456"
+              >
+                <MessageCircle size={20} />
+              </a>
+              <a
+                href="mailto:uninav.buildminds@gmail.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Email"
+                className="text-blue-600 hover:text-blue-800 transition-colors text-lg"
+                title="uninav.buildminds@gmail.com"
+              >
+                <Mail size={20} />
+              </a>
+              <a
+                href="tel:+2349155004456"
+                aria-label="Phone"
+                className="text-gray-700 hover:text-gray-900 transition-colors text-lg"
+                title="Call: 09161285630 / +234 915 500 4456"
+              >
+                <Phone size={20} />
+              </a>
+            </div>
           </div>
 
           {/* Navigate Column */}
