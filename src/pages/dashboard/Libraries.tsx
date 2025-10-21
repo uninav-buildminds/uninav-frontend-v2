@@ -5,10 +5,8 @@ import MaterialsSection from "@/components/dashboard/MaterialsSection";
 import { UploadModal } from "@/components/modals";
 import { useAuth } from "@/hooks/useAuth";
 import { useBookmarks } from "@/context/bookmark/BookmarkContextProvider";
-import { getAllBookmarks } from "@/api/user.api";
 import { searchMaterials, deleteMaterial } from "@/api/materials.api";
 import { Material } from "@/lib/types/material.types";
-import { Bookmark } from "@/lib/types/bookmark.types";
 import { toast } from "sonner";
 import { ResponseStatus } from "@/lib/types/response.types";
 
@@ -152,9 +150,9 @@ const Libraries: React.FC = () => {
         onClick: async () => {
           try {
             await deleteMaterial(id);
+            // Optimistically remove the deleted material from the list
+            setUserUploads((prev) => prev.filter((m) => m.id !== id));
             toast.success("Material deleted successfully");
-            // Refresh uploads list
-            await fetchUserUploads();
           } catch (error: any) {
             toast.error(
               error.message || "Failed to delete material. Please try again."

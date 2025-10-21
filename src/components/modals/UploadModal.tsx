@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Cancel01Icon } from "hugeicons-react";
+import { Cancel01Icon, AlertCircleIcon } from "hugeicons-react";
 import Step1 from "./upload/Step1";
 import Step2FileUpload from "./upload/Step2FileUpload";
 import Step2HelpfulLink from "./upload/Step2HelpfulLink";
@@ -17,7 +17,11 @@ import { Material, ResourceTypeEnum } from "@/lib/types/material.types";
 import { dataURLtoFile } from "../Preview/urlToFile";
 
 export type MaterialType = "file" | "link";
-export type UploadStep = "type-selection" | "upload-details" | "success";
+export type UploadStep =
+  | "type-selection"
+  | "upload-details"
+  | "success"
+  | "error";
 
 interface UploadModalProps {
   isOpen: boolean;
@@ -47,6 +51,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
   const [uploadData, setUploadData] = useState<CreateMaterialForm | null>(null);
   const [submitting, setSubmitting] = useState(false); // Loader state
   const [tempPreviewUrl, setTempPreviewUrl] = useState<string | null>(null); // Track temp preview for cleanup
+  const [errorMessage, setErrorMessage] = useState<string | null>(null); // Error state for user feedback
 
   // Reset state when modal opens/closes or editing material changes
   useEffect(() => {
@@ -57,9 +62,11 @@ const UploadModal: React.FC<UploadModalProps> = ({
           ? "link"
           : "file"
       );
+      setErrorMessage(null); // Clear any previous errors
     } else if (isOpen && !editingMaterial) {
       setCurrentStep("type-selection");
       setMaterialType(null);
+      setErrorMessage(null); // Clear any previous errors
     }
   }, [isOpen, editingMaterial]);
 
@@ -71,37 +78,70 @@ const UploadModal: React.FC<UploadModalProps> = ({
   const handleUploadComplete = async (data: CreateMaterialForm) => {
     setUploadData(data);
     setSubmitting(true); // Start loader
+    setErrorMessage(null); // Clear any previous errors
+
     try {
       if (isEditMode && editingMaterial) {
         // Update existing material
         const result = await updateMaterial(editingMaterial.id, data);
         console.log("Update result:", result);
+
+        // Verify the update was successful
+        if (!result || result.status !== "success" || !result.data) {
+          throw new Error("Material update failed - no data returned");
+        }
+
         onEditComplete?.();
         handleClose();
       } else {
         // Create new material
         const result = await createMaterials(data);
 
-        if (result.data?.id && data.filePreview instanceof File) {
-          // Handle file-based previews (PDF/DOCX thumbnails) - upload separately
-          console.log("Uploading preview file...");
-          const uploadResponse = await uploadMaterialPreview(
-            result.data.id,
-            data.filePreview
-          );
-          // Store preview URL in result so frontend can render without refetch
-          result.data.previewUrl = uploadResponse.data?.previewUrl;
-          console.log(
-            "Final preview URL stored in material:",
-            result.data.previewUrl
-          );
+        // Verify the creation was successful
+        if (
+          !result ||
+          result.status !== "success" ||
+          !result.data ||
+          !result.data.id
+        ) {
+          throw new Error("Material creation failed - no data or ID returned");
+        }
+
+        // Handle preview upload for file-based materials
+        if (data.filePreview instanceof File) {
+          try {
+            console.log("Uploading preview file...");
+            const uploadResponse = await uploadMaterialPreview(
+              result.data.id,
+              data.filePreview
+            );
+
+            // Verify preview upload was successful
+            if (!uploadResponse || !uploadResponse.data?.previewUrl) {
+              console.warn(
+                "Preview upload failed, but material was created successfully"
+              );
+              // Don't throw error here as the main material was created successfully
+            } else {
+              result.data.previewUrl = uploadResponse.data.previewUrl;
+              console.log(
+                "Final preview URL stored in material:",
+                result.data.previewUrl
+              );
+            }
+          } catch (previewError) {
+            console.warn(
+              "Preview upload failed, but material was created successfully:",
+              previewError
+            );
+            // Don't throw error here as the main material was created successfully
+          }
         } else if (typeof data.filePreview === "string") {
           // String-based previews (YouTube/Google Drive URLs) are sent during creation
           console.log(
             "Preview URL was sent during material creation:",
             data.filePreview
           );
-          // The preview URL should already be set by the backend, but ensure it's available
           result.data.previewUrl = result.data.previewUrl || data.filePreview;
           console.log(
             "Final preview URL stored in material:",
@@ -113,8 +153,20 @@ const UploadModal: React.FC<UploadModalProps> = ({
 
         setCurrentStep("success");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(isEditMode ? "Update failed:" : "Upload failed:", error);
+
+      // Set user-friendly error message
+      const errorMsg =
+        error?.message ||
+        (isEditMode
+          ? "Failed to update material"
+          : "Failed to upload material");
+
+      setErrorMessage(
+        `Upload failed. The issue has been forwarded to our development team and will be resolved shortly. Please try again later.`
+      );
+      setCurrentStep("error");
     } finally {
       setSubmitting(false); // Stop loader
     }
@@ -142,11 +194,17 @@ const UploadModal: React.FC<UploadModalProps> = ({
     setMaterialType(null);
     setUploadData(null);
     setTempPreviewUrl(null);
+    setErrorMessage(null); // Clear error state
     onClose();
   };
 
   const handleSuccessComplete = () => {
     handleClose();
+  };
+
+  const handleRetry = () => {
+    setErrorMessage(null);
+    setCurrentStep("upload-details");
   };
 
   const renderStep = () => {
@@ -177,6 +235,35 @@ const UploadModal: React.FC<UploadModalProps> = ({
         return null;
       case "success":
         return <UploadSuccess onComplete={handleSuccessComplete} />;
+      case "error":
+        return (
+          <div className="flex flex-col items-center justify-center py-8 px-6 text-center">
+            <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-4">
+              <AlertCircleIcon size={32} className="text-red-500" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Upload Failed
+            </h3>
+            <p className="text-gray-600 mb-6 max-w-md">
+              {errorMessage ||
+                "Something went wrong during the upload process."}
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={handleRetry}
+                className="px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors"
+              >
+                Try Again
+              </button>
+              <button
+                onClick={handleClose}
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        );
       default:
         return null;
     }
