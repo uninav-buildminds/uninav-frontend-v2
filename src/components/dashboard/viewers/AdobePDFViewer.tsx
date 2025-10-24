@@ -14,6 +14,13 @@
  * - Page navigation
  * - Fullscreen support
  * - Clean, professional interface
+ *
+ * Performance Optimizations:
+ * - Proper viewer disposal and container clearing
+ * - Debounced initialization to prevent rapid re-renders
+ * - Hardware acceleration and smooth scrolling
+ * - Disabled unnecessary features (analytics, annotations)
+ * - Optimized embed configuration for better performance
  */
 
 import React, { useEffect, useRef, useState } from "react";
@@ -58,6 +65,7 @@ const AdobePDFViewer: React.FC<AdobePDFViewerProps> = ({
   const [adobeLoaded, setAdobeLoaded] = useState(false);
   const viewerRef = useRef<HTMLDivElement>(null);
   const adobeViewRef = useRef<any>(null);
+  const initTimeoutRef = useRef<NodeJS.Timeout>();
   const viewerId = useRef(
     `adobe-dc-view-${Math.random().toString(36).substr(2, 9)}`
   );
@@ -133,9 +141,19 @@ const AdobePDFViewer: React.FC<AdobePDFViewerProps> = ({
     loadAdobeScript();
   }, []);
 
-  // Initialize Adobe PDF viewer
+  // Initialize Adobe PDF viewer with debouncing
   useEffect(() => {
     if (!adobeLoaded || !viewerRef.current || !url) return;
+
+    // Clear any existing timeout
+    if (initTimeoutRef.current) {
+      clearTimeout(initTimeoutRef.current);
+    }
+
+    // Debounce initialization to prevent rapid re-initializations
+    initTimeoutRef.current = setTimeout(() => {
+      initializeViewer();
+    }, 100);
 
     const initializeViewer = async () => {
       try {
@@ -186,9 +204,23 @@ const AdobePDFViewer: React.FC<AdobePDFViewerProps> = ({
 
         console.log("Using client ID:", clientId.substring(0, 10) + "...");
 
-        // Clear any existing viewer
+        // Clear any existing viewer and container content
         if (adobeViewRef.current) {
-          adobeViewRef.current = null;
+          try {
+            // Properly dispose of the existing viewer
+            if (typeof adobeViewRef.current.dispose === "function") {
+              adobeViewRef.current.dispose();
+            }
+            adobeViewRef.current = null;
+          } catch (error) {
+            console.warn("Error disposing previous viewer:", error);
+          }
+        }
+
+        // Clear the container content to prevent conflicts
+        const container = document.getElementById(viewerId.current);
+        if (container) {
+          container.innerHTML = "";
         }
 
         // Initialize Adobe PDF viewer
@@ -199,7 +231,7 @@ const AdobePDFViewer: React.FC<AdobePDFViewerProps> = ({
 
         adobeViewRef.current = adobeDCView;
 
-        // Preview the PDF file
+        // Preview the PDF file with optimized settings
         await adobeDCView.previewFile(
           {
             content: {
@@ -223,6 +255,13 @@ const AdobePDFViewer: React.FC<AdobePDFViewerProps> = ({
             showZoomControl: true, // Show zoom controls
             showPageControls: true, // Show page navigation
             showBookmarks: false, // Hide bookmarks for cleaner interface
+            // Performance optimizations
+            enableLinearization: true, // Enable fast web view for better streaming
+            enablePDFAnalytics: false, // Disable analytics for better performance
+            includePDFAnnotations: false, // Disable annotations for better performance
+            // Scrolling optimizations
+            focusOnRenderedPage: true, // Focus on rendered page for better scrolling
+            enableSearchAPIs: false, // Disable search APIs if not needed for performance
           }
         );
 
@@ -234,13 +273,26 @@ const AdobePDFViewer: React.FC<AdobePDFViewerProps> = ({
       }
     };
 
-    initializeViewer();
-
     // Cleanup function
     return () => {
+      // Clear timeout
+      if (initTimeoutRef.current) {
+        clearTimeout(initTimeoutRef.current);
+      }
+
       if (adobeViewRef.current) {
         try {
+          // Properly dispose of the viewer
+          if (typeof adobeViewRef.current.dispose === "function") {
+            adobeViewRef.current.dispose();
+          }
           adobeViewRef.current = null;
+
+          // Clear the container content
+          const container = document.getElementById(viewerId.current);
+          if (container) {
+            container.innerHTML = "";
+          }
         } catch (error) {
           console.error("Error cleaning up Adobe viewer:", error);
         }
@@ -261,7 +313,7 @@ const AdobePDFViewer: React.FC<AdobePDFViewerProps> = ({
   }, [zoom]);
 
   return (
-    <div className="h-full w-full bg-[#525659] relative">
+    <div className="h-full w-full bg-[#525659] relative overflow-hidden">
       <div className="h-full w-full relative">
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center bg-[#525659] z-10">
@@ -290,8 +342,18 @@ const AdobePDFViewer: React.FC<AdobePDFViewerProps> = ({
           <div
             id={viewerId.current}
             ref={viewerRef}
-            className="w-full h-full"
-            style={{ minHeight: "100%" }}
+            className="w-full h-full overflow-auto"
+            style={{
+              minHeight: "100%",
+              // Optimize for smooth scrolling
+              WebkitOverflowScrolling: "touch",
+              scrollBehavior: "smooth",
+              // Prevent layout shifts
+              contain: "layout style paint",
+              // Hardware acceleration
+              transform: "translateZ(0)",
+              willChange: "scroll-position",
+            }}
           />
         )}
       </div>
