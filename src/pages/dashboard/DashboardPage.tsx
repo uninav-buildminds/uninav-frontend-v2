@@ -7,7 +7,6 @@ import MaterialPlaceholder from "@/components/dashboard/MaterialPlaceholder";
 import BatchPreviewUpdater from "@/components/dashboard/admin/BatchPreviewUpdater";
 
 const DashboardPage: React.FC = () => {
-  const { user } = useAuth();
   const {
     data: materialsData,
     isLoading,

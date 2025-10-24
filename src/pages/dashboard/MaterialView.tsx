@@ -1,27 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import {
-  ArrowLeft,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsRight,
-} from "lucide-react";
+import { ArrowLeft, ChevronRight, Maximize, Minimize } from "lucide-react";
 import {
   Download01Icon,
   Share08Icon,
   Bookmark01Icon,
-  Maximize01Icon,
-  Minimize01Icon,
-  Search01Icon,
   Triangle01Icon,
   File01Icon,
 } from "hugeicons-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useBookmarks } from "@/context/bookmark/BookmarkContextProvider";
+import { useFullscreen } from "@/context/FullscreenContext";
 import { toast } from "sonner";
 import { formatRelativeTime } from "@/lib/utils";
 import { Material, MaterialTypeEnum } from "@/lib/types/material.types";
@@ -45,6 +37,7 @@ const MaterialView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { isBookmarked, toggleBookmark } = useBookmarks();
+  const { isFullscreen, toggleFullscreen } = useFullscreen();
 
   // Mock data - replace with actual API call
   const [material, setMaterial] = useState<Material | null>(null);
@@ -78,6 +71,24 @@ const MaterialView: React.FC = () => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  // Handle keyboard shortcuts for fullscreen
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // F11 is handled by browser, but we can handle F key as alternative
+      if (e.key === "f" && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        // Only trigger if not typing in an input field
+        const target = e.target as HTMLElement;
+        if (target.tagName !== "INPUT" && target.tagName !== "TEXTAREA") {
+          e.preventDefault();
+          toggleFullscreen();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [toggleFullscreen]);
 
   // Fetch material data from API
   useEffect(() => {
@@ -529,8 +540,12 @@ const MaterialView: React.FC = () => {
 
         {/* Floating Action Buttons - Top Right */}
         <div
-          className={`fixed top-3 sm:top-4 z-30 flex items-center gap-1.5 sm:gap-2 transition-all duration-300 right-3 sm:right-4 ${
-            !sidebarCollapsed ? "md:right-[calc(288px+0.5rem)]" : ""
+          className={`fixed top-3 sm:top-4 z-30 flex items-center gap-1.5 sm:gap-2 transition-all duration-300 ${
+            isFullscreen
+              ? "right-3 sm:right-4"
+              : !sidebarCollapsed
+              ? "right-3 sm:right-4 md:right-[calc(288px+0.5rem)]"
+              : "right-3 sm:right-4"
           }`}
         >
           <Button
@@ -570,6 +585,22 @@ const MaterialView: React.FC = () => {
                 <Download01Icon size={15} className="sm:w-4 sm:h-4" />
               </Button>
             )}
+          {/* Fullscreen Toggle Button */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={toggleFullscreen}
+            className="bg-white/90 backdrop-blur hover:bg-white border border-gray-200 h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-full shadow-lg"
+            title={
+              isFullscreen ? "Exit fullscreen (ESC)" : "Enter fullscreen (F11)"
+            }
+          >
+            {isFullscreen ? (
+              <Minimize size={15} className="sm:w-4 sm:h-4" />
+            ) : (
+              <Maximize size={15} className="sm:w-4 sm:h-4" />
+            )}
+          </Button>
         </div>
 
         {/* Document Viewer - Full Width/Height */}
@@ -585,178 +616,157 @@ const MaterialView: React.FC = () => {
           </div>
         </div>
 
-        {/* Collapse Toggle Button - At Junction (Hidden on mobile) */}
-        <button
-          onClick={() => {
-            // Only allow toggling on desktop
-            if (window.innerWidth >= 768) {
-              setSidebarCollapsed(!sidebarCollapsed);
-            }
-          }}
-          className={`hidden md:block fixed ${
-            sidebarCollapsed
-              ? "right-4"
-              : "right-[calc(256px+0.75rem)] sm:right-[calc(288px+0.75rem)]"
-          } top-1/2 -translate-y-1/2 z-20 p-2 bg-brand/90 backdrop-blur hover:bg-brand border-2 border-white rounded-full shadow-lg transition-all duration-300`}
-          aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          <ChevronsRight
-            size={18}
-            className={`text-white transition-transform duration-300 ${
-              sidebarCollapsed ? "rotate-180" : ""
+        {/* Right Sidebar - Material Info & Related Materials (Hidden on mobile and in fullscreen) */}
+        {!isFullscreen && (
+          <div
+            className={`relative bg-white rounded-lg sm:rounded-xl border border-gray-200 flex-col transition-all duration-300 shadow-sm hidden md:flex ${
+              sidebarCollapsed ? "w-0 border-0 overflow-hidden" : "w-64 sm:w-72"
             }`}
-          />
-        </button>
+          >
+            {/* Material Information */}
+            <div className="p-3 border-b border-gray-200">
+              <h1 className="text-sm font-semibold text-gray-900 mb-1 line-clamp-2">
+                {material.label}
+              </h1>
+              {material.description && (
+                <p className="text-xs text-gray-600 mb-2 line-clamp-2">
+                  {material.description}
+                </p>
+              )}
 
-        {/* Right Sidebar - Material Info & Related Materials (Hidden on mobile) */}
-        <div
-          className={`relative bg-white rounded-lg sm:rounded-xl border border-gray-200 flex-col transition-all duration-300 shadow-sm hidden md:flex ${
-            sidebarCollapsed ? "w-0 border-0 overflow-hidden" : "w-64 sm:w-72"
-          }`}
-        >
-          {/* Material Information */}
-          <div className="p-3 border-b border-gray-200">
-            <h1 className="text-sm font-semibold text-gray-900 mb-1 line-clamp-2">
-              {material.label}
-            </h1>
-            {material.description && (
-              <p className="text-xs text-gray-600 mb-2 line-clamp-2">
-                {material.description}
-              </p>
-            )}
+              {/* Tags */}
+              {material.tags && material.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1 mb-2">
+                  {material.tags.slice(0, 3).map((tag, index) => (
+                    <Badge
+                      key={index}
+                      variant="secondary"
+                      className="text-xs py-0 px-1.5"
+                    >
+                      {tag}
+                    </Badge>
+                  ))}
+                  {material.tags.length > 3 && (
+                    <Badge variant="secondary" className="text-xs py-0 px-1.5">
+                      +{material.tags.length - 3}
+                    </Badge>
+                  )}
+                </div>
+              )}
 
-            {/* Tags */}
-            {material.tags && material.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1 mb-2">
-                {material.tags.slice(0, 3).map((tag, index) => (
-                  <Badge
-                    key={index}
-                    variant="secondary"
-                    className="text-xs py-0 px-1.5"
-                  >
-                    {tag}
-                  </Badge>
-                ))}
-                {material.tags.length > 3 && (
-                  <Badge variant="secondary" className="text-xs py-0 px-1.5">
-                    +{material.tags.length - 3}
-                  </Badge>
-                )}
-              </div>
-            )}
-
-            {/* Material Metadata */}
-            <div className="space-y-1 text-xs">
-              {material.targetCourse && (
-                <>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Course:</span>
-                    <span className="font-medium">
-                      {material.targetCourse.courseCode}
-                    </span>
-                  </div>
-                  {material.targetCourse.departments &&
-                    material.targetCourse.departments.length > 0 && (
-                      <>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Department:</span>
-                          <span className="font-medium">
-                            {
-                              material.targetCourse.departments[0].department
-                                .name
-                            }
-                          </span>
-                        </div>
-                        {material.targetCourse.departments[0].department
-                          .faculty && (
+              {/* Material Metadata */}
+              <div className="space-y-1 text-xs">
+                {material.targetCourse && (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Course:</span>
+                      <span className="font-medium">
+                        {material.targetCourse.courseCode}
+                      </span>
+                    </div>
+                    {material.targetCourse.departments &&
+                      material.targetCourse.departments.length > 0 && (
+                        <>
                           <div className="flex justify-between">
-                            <span className="text-gray-600">Faculty:</span>
+                            <span className="text-gray-600">Department:</span>
                             <span className="font-medium">
                               {
                                 material.targetCourse.departments[0].department
-                                  .faculty.name
+                                  .name
                               }
                             </span>
                           </div>
-                        )}
-                      </>
-                    )}
-                </>
-              )}
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-gray-600">Uploaded by:</span>
-                <div className="flex items-center gap-1.5">
-                  <Avatar className="h-5 w-5">
-                    <AvatarImage
-                      src={material.creator?.profilePicture || undefined}
-                      alt={`${material.creator?.firstName} ${material.creator?.lastName}`}
-                    />
-                    <AvatarFallback className="text-[10px] bg-brand/10 text-brand">
-                      {material.creator?.firstName?.[0]}
-                      {material.creator?.lastName?.[0]}
-                    </AvatarFallback>
-                  </Avatar>
+                          {material.targetCourse.departments[0].department
+                            .faculty && (
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Faculty:</span>
+                              <span className="font-medium">
+                                {
+                                  material.targetCourse.departments[0]
+                                    .department.faculty.name
+                                }
+                              </span>
+                            </div>
+                          )}
+                        </>
+                      )}
+                  </>
+                )}
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-gray-600">Uploaded by:</span>
+                  <div className="flex items-center gap-1.5">
+                    <Avatar className="h-5 w-5">
+                      <AvatarImage
+                        src={material.creator?.profilePicture || undefined}
+                        alt={`${material.creator?.firstName} ${material.creator?.lastName}`}
+                      />
+                      <AvatarFallback className="text-[10px] bg-brand/10 text-brand">
+                        {material.creator?.firstName?.[0]}
+                        {material.creator?.lastName?.[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="font-medium">
+                      {material.creator?.firstName} {material.creator?.lastName}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Date:</span>
                   <span className="font-medium">
-                    {material.creator?.firstName} {material.creator?.lastName}
+                    {formatRelativeTime(material.createdAt)}
                   </span>
                 </div>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Date:</span>
-                <span className="font-medium">
-                  {formatRelativeTime(material.createdAt)}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Type:</span>
-                <span className="font-medium uppercase">{material.type}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Views:</span>
-                <span className="font-medium">{material.views}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Downloads:</span>
-                <span className="font-medium">{material.downloads}</span>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Type:</span>
+                  <span className="font-medium uppercase">{material.type}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Views:</span>
+                  <span className="font-medium">{material.views}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Downloads:</span>
+                  <span className="font-medium">{material.downloads}</span>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Related Materials */}
-          <div className="flex-1 p-3 overflow-y-auto">
-            <h3 className="text-xs font-semibold text-gray-900 mb-2">
-              Related Materials
-            </h3>
-            {relatedMaterials.length === 0 ? (
-              <p className="text-xs text-gray-500 text-center py-6">
-                No related materials found
-              </p>
-            ) : (
-              <div className="space-y-2">
-                {relatedMaterials.map((relatedMaterial) => (
-                  <Card
-                    key={relatedMaterial.id}
-                    className="cursor-pointer hover:shadow-md transition-shadow"
-                    onClick={() =>
-                      navigate(`/dashboard/material/${relatedMaterial.id}`)
-                    }
-                  >
-                    <CardHeader className="pb-1.5 px-2.5 pt-2.5">
-                      <CardTitle className="text-xs font-medium text-gray-900 line-clamp-1">
-                        {relatedMaterial.label}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-0 px-2.5 pb-2.5">
-                      <p className="text-xs text-gray-600 line-clamp-2">
-                        {relatedMaterial.description}
-                      </p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
+            {/* Related Materials */}
+            <div className="flex-1 p-3 overflow-y-auto">
+              <h3 className="text-xs font-semibold text-gray-900 mb-2">
+                Related Materials
+              </h3>
+              {relatedMaterials.length === 0 ? (
+                <p className="text-xs text-gray-500 text-center py-6">
+                  No related materials found
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {relatedMaterials.map((relatedMaterial) => (
+                    <Card
+                      key={relatedMaterial.id}
+                      className="cursor-pointer hover:shadow-md transition-shadow"
+                      onClick={() =>
+                        navigate(`/dashboard/material/${relatedMaterial.id}`)
+                      }
+                    >
+                      <CardHeader className="pb-1.5 px-2.5 pt-2.5">
+                        <CardTitle className="text-xs font-medium text-gray-900 line-clamp-1">
+                          {relatedMaterial.label}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-0 px-2.5 pb-2.5">
+                        <p className="text-xs text-gray-600 line-clamp-2">
+                          {relatedMaterial.description}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </>
   );

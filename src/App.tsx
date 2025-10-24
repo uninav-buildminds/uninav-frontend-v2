@@ -38,6 +38,7 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import AuthContextProvider from "./context/authentication/AuthContextProvider";
 import { BookmarkProvider } from "./context/bookmark/BookmarkContextProvider";
 import { DepartmentProvider } from "./context/department/DepartmentContextProvider";
+import { FullscreenProvider } from "./context/FullscreenContext";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 const queryClient = new QueryClient();
 import { Analytics } from "@vercel/analytics/react";
@@ -55,156 +56,167 @@ const App = () => {
               <AuthContextProvider>
                 <DepartmentProvider>
                   <BookmarkProvider>
-                    <Routes>
-                      <Route path="/" element={<Index />} />
+                    <FullscreenProvider>
+                      <Routes>
+                        <Route path="/" element={<Index />} />
 
-                      <Route
-                        path="/dashboard-batch"
-                        element={<DashboardPage />}
-                      />
-                      {/* Dashboard Routes - Nested */}
-                      <Route
-                        path="/dashboard"
-                        element={
-                          <ProtectedRoute>
-                            <DashboardLayout />
-                          </ProtectedRoute>
-                        }
-                      >
-                        {/* Dashboard Index - Overview */}
-                        <Route index element={<Overview />} />
-
-                        {/* Dashboard Sub-routes */}
-                        <Route path="libraries" element={<Libraries />} />
-                        <Route path="recent" element={<RecentMaterials />} />
                         <Route
-                          path="recommendations"
-                          element={<Recommendations />}
+                          path="/dashboard-batch"
+                          element={<DashboardPage />}
+                        />
+                        {/* Dashboard Routes - Nested */}
+                        <Route
+                          path="/dashboard"
+                          element={
+                            <ProtectedRoute>
+                              <DashboardLayout />
+                            </ProtectedRoute>
+                          }
+                        >
+                          {/* Dashboard Index - Overview */}
+                          <Route index element={<Overview />} />
+
+                          {/* Dashboard Sub-routes */}
+                          <Route path="libraries" element={<Libraries />} />
+                          <Route path="recent" element={<RecentMaterials />} />
+                          <Route
+                            path="recommendations"
+                            element={<Recommendations />}
+                          />
+                          <Route
+                            path="notifications"
+                            element={<Notifications />}
+                          />
+                          <Route path="settings" element={<SettingsPage />} />
+
+                          {/* Material View */}
+                          <Route
+                            path="material/:id"
+                            element={<MaterialView />}
+                          />
+                        </Route>
+
+                        {/* Management Routes */}
+                        <Route
+                          path="/management"
+                          element={
+                            <ProtectedRoute>
+                              <ManagementLayout />
+                            </ProtectedRoute>
+                          }
+                        >
+                          {/* Management Dashboard - Default route */}
+                          <Route index element={<ManagementDashboard />} />
+
+                          {/* Management Sub-routes */}
+                          <Route
+                            path="courses"
+                            element={<CourseManagement />}
+                          />
+                          <Route
+                            path="courses-review"
+                            element={<CoursesReviewPage />}
+                          />
+                          <Route
+                            path="dlc-review"
+                            element={<DLCReviewPage />}
+                          />
+                          <Route
+                            path="blogs-review"
+                            element={<BlogsReviewPage />}
+                          />
+                          <Route
+                            path="materials-review"
+                            element={<MaterialsReviewPage />}
+                          />
+                          <Route
+                            path="user-management"
+                            element={<UserManagementPage />}
+                          />
+                          <Route
+                            path="error-reports"
+                            element={<ErrorReportsPage />}
+                          />
+                          {/* Future routes can be added here */}
+                          {/* <Route path="materials" element={<MaterialsManagement />} /> */}
+                          {/* <Route path="blogs" element={<BlogsManagement />} /> */}
+                          {/* <Route path="users" element={<UsersManagement />} /> */}
+                        </Route>
+
+                        {/* Auth - Signup */}
+                        <Route
+                          path="/auth/signup"
+                          element={
+                            <AuthRedirect>
+                              <SignupForm />
+                            </AuthRedirect>
+                          }
                         />
                         <Route
-                          path="notifications"
-                          element={<Notifications />}
-                        />
-                        <Route path="settings" element={<SettingsPage />} />
-
-                        {/* Material View */}
-                        <Route path="material/:id" element={<MaterialView />} />
-                      </Route>
-
-                      {/* Management Routes */}
-                      <Route
-                        path="/management"
-                        element={
-                          <ProtectedRoute>
-                            <ManagementLayout />
-                          </ProtectedRoute>
-                        }
-                      >
-                        {/* Management Dashboard - Default route */}
-                        <Route index element={<ManagementDashboard />} />
-
-                        {/* Management Sub-routes */}
-                        <Route path="courses" element={<CourseManagement />} />
-                        <Route
-                          path="courses-review"
-                          element={<CoursesReviewPage />}
-                        />
-                        <Route path="dlc-review" element={<DLCReviewPage />} />
-                        <Route
-                          path="blogs-review"
-                          element={<BlogsReviewPage />}
+                          path="/auth/signup/verify"
+                          element={
+                            <AuthRedirect>
+                              <RequestEmailVerification />
+                            </AuthRedirect>
+                          }
                         />
                         <Route
-                          path="materials-review"
-                          element={<MaterialsReviewPage />}
+                          path="/auth/signup/profile"
+                          element={
+                            <ProtectedRoute>
+                              <ProfileSetup />
+                            </ProtectedRoute>
+                          }
                         />
                         <Route
-                          path="user-management"
-                          element={<UserManagementPage />}
+                          path="/auth/signup/success"
+                          element={
+                            <ProtectedRoute>
+                              <SignupSuccess />
+                            </ProtectedRoute>
+                          }
+                        />
+
+                        {/* Auth - Signin */}
+                        <Route
+                          path="/auth/signin"
+                          element={
+                            <AuthRedirect>
+                              <SigninForm />
+                            </AuthRedirect>
+                          }
                         />
                         <Route
-                          path="error-reports"
-                          element={<ErrorReportsPage />}
+                          path="/auth/verify-email"
+                          element={
+                            <AuthRedirect>
+                              <ProcessEmailVerification />
+                            </AuthRedirect>
+                          }
                         />
-                        {/* Future routes can be added here */}
-                        {/* <Route path="materials" element={<MaterialsManagement />} /> */}
-                        {/* <Route path="blogs" element={<BlogsManagement />} /> */}
-                        {/* <Route path="users" element={<UsersManagement />} /> */}
-                      </Route>
 
-                      {/* Auth - Signup */}
-                      <Route
-                        path="/auth/signup"
-                        element={
-                          <AuthRedirect>
-                            <SignupForm />
-                          </AuthRedirect>
-                        }
-                      />
-                      <Route
-                        path="/auth/signup/verify"
-                        element={
-                          <AuthRedirect>
-                            <RequestEmailVerification />
-                          </AuthRedirect>
-                        }
-                      />
-                      <Route
-                        path="/auth/signup/profile"
-                        element={
-                          <ProtectedRoute>
-                            <ProfileSetup />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/auth/signup/success"
-                        element={
-                          <ProtectedRoute>
-                            <SignupSuccess />
-                          </ProtectedRoute>
-                        }
-                      />
+                        {/* Auth - Password Reset */}
+                        <Route
+                          path="/auth/password/forgot"
+                          element={<RequestReset />}
+                        />
+                        <Route
+                          path="/auth/password/check-inbox"
+                          element={<CheckInbox />}
+                        />
+                        <Route
+                          path="/auth/reset-password"
+                          element={<NewPassword />}
+                        />
+                        <Route
+                          path="/auth/password/success"
+                          element={<ResetSuccess />}
+                        />
 
-                      {/* Auth - Signin */}
-                      <Route
-                        path="/auth/signin"
-                        element={
-                          <AuthRedirect>
-                            <SigninForm />
-                          </AuthRedirect>
-                        }
-                      />
-                      <Route
-                        path="/auth/verify-email"
-                        element={
-                          <AuthRedirect>
-                            <ProcessEmailVerification />
-                          </AuthRedirect>
-                        }
-                      />
-
-                      {/* Auth - Password Reset */}
-                      <Route
-                        path="/auth/password/forgot"
-                        element={<RequestReset />}
-                      />
-                      <Route
-                        path="/auth/password/check-inbox"
-                        element={<CheckInbox />}
-                      />
-                      <Route
-                        path="/auth/reset-password"
-                        element={<NewPassword />}
-                      />
-                      <Route
-                        path="/auth/password/success"
-                        element={<ResetSuccess />}
-                      />
-
-                      {/* 404 - Catch all unmatched routes */}
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
+                        {/* 404 - Catch all unmatched routes */}
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </FullscreenProvider>
                   </BookmarkProvider>
                 </DepartmentProvider>
               </AuthContextProvider>
