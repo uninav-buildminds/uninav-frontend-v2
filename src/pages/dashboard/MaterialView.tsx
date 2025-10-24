@@ -30,6 +30,7 @@ import { allocateReadingPoints } from "@/api/points.api";
 import { ResponseStatus } from "@/lib/types/response.types";
 import { ResourceTypeEnum, RestrictionEnum } from "@/lib/types/material.types";
 import PDFViewer from "@/components/dashboard/viewers/PDFViewer";
+import AdobePDFViewer from "@/components/dashboard/viewers/AdobePDFViewer";
 import GDriveFolderBrowser from "@/components/dashboard/viewers/GDriveFolderBrowser";
 import GDriveFileViewer from "@/components/dashboard/viewers/GDriveFileViewer";
 import YouTubeViewer from "@/components/dashboard/viewers/YouTubeViewer";
@@ -59,11 +60,14 @@ const MaterialView: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(
     typeof window !== "undefined" && window.innerWidth < 768 // Hide sidebar on mobile by default
   );
+  const [isMobile, setIsMobile] = useState(false);
 
-  // Force sidebar to stay collapsed on mobile
+  // Force sidebar to stay collapsed on mobile and detect mobile devices
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 768) {
+      const isMobileDevice = window.innerWidth < 768;
+      setIsMobile(isMobileDevice);
+      if (isMobileDevice) {
         setSidebarCollapsed(true);
       }
     };
@@ -358,7 +362,10 @@ const MaterialView: React.FC = () => {
         return (
           <div className="h-full flex items-center justify-center text-gray-500">
             <div className="text-center">
-              <Triangle01Icon size={48} className="mx-auto mb-4 text-yellow-400" />
+              <Triangle01Icon
+                size={48}
+                className="mx-auto mb-4 text-yellow-400"
+              />
               <p>Invalid Google Drive link</p>
               <p className="text-sm text-gray-600 mt-2">
                 The provided link could not be processed.
@@ -417,6 +424,25 @@ const MaterialView: React.FC = () => {
       material.type === MaterialTypeEnum.PDF &&
       material.resource?.resourceAddress
     ) {
+      // Use Adobe PDF viewer on mobile for better compatibility
+      // if (isMobile) {
+      return (
+        <AdobePDFViewer
+          url={material.resource.resourceAddress}
+          title={material.label}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          zoom={zoom}
+          onPreviousPage={handlePreviousPage}
+          onNextPage={handleNextPage}
+          onZoomIn={handleZoomIn}
+          onZoomOut={handleZoomOut}
+          showControls={true}
+        />
+      );
+      // }
+
+      // Use iframe viewer on desktop
       return (
         <PDFViewer
           url={material.resource.resourceAddress}
