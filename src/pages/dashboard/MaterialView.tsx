@@ -53,14 +53,27 @@ const MaterialView: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(
     typeof window !== "undefined" && window.innerWidth < 768 // Hide sidebar on mobile by default
   );
-  const [isMobile, setIsMobile] = useState(false);
 
-  // Force sidebar to stay collapsed on mobile and detect mobile devices
+  // Detect if device is actually a mobile device (not just small screen)
+  const [isMobile] = useState(() => {
+    if (typeof window === "undefined") return false;
+
+    // Check for touch capability and mobile user agent
+    const isTouchDevice =
+      "ontouchstart" in window || navigator.maxTouchPoints > 0;
+    const isMobileUA =
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      );
+
+    return isTouchDevice && isMobileUA;
+  });
+
+  // Force sidebar to stay collapsed on mobile
   useEffect(() => {
     const handleResize = () => {
-      const isMobileDevice = window.innerWidth < 768;
-      setIsMobile(isMobileDevice);
-      if (isMobileDevice) {
+      const isSmallScreen = window.innerWidth < 768;
+      if (isSmallScreen) {
         setSidebarCollapsed(true);
       }
     };

@@ -387,6 +387,17 @@ const AdobePDFViewer: React.FC<AdobePDFViewerProps> = ({
         #${viewerId.current} * {
           z-index: auto !important;
         }
+        /* Hide Adobe's fullscreen button completely */
+        #${viewerId.current} button[aria-label*="fullscreen"],
+        #${viewerId.current} button[aria-label*="Fullscreen"],
+        #${viewerId.current} button[title*="fullscreen"],
+        #${viewerId.current} button[title*="Fullscreen"],
+        #${viewerId.current} .fullscreen-button,
+        #${viewerId.current} [data-testid*="fullscreen"] {
+          display: none !important;
+          visibility: hidden !important;
+          pointer-events: none !important;
+        }
       `}</style>
       <div
         className="h-full w-full bg-[#525659] relative"
