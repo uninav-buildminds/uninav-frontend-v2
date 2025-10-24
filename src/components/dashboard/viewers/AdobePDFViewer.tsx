@@ -66,6 +66,7 @@ const AdobePDFViewer: React.FC<AdobePDFViewerProps> = ({
   const viewerRef = useRef<HTMLDivElement>(null);
   const adobeViewRef = useRef<any>(null);
   const initTimeoutRef = useRef<NodeJS.Timeout>();
+  const loadingRef = useRef(true);
   const viewerId = useRef(
     `adobe-dc-view-${Math.random().toString(36).substr(2, 9)}`
   );
@@ -158,6 +159,7 @@ const AdobePDFViewer: React.FC<AdobePDFViewerProps> = ({
     const initializeViewer = async () => {
       try {
         setLoading(true);
+        loadingRef.current = true;
         setError(false);
 
         // Debug logging
@@ -231,6 +233,40 @@ const AdobePDFViewer: React.FC<AdobePDFViewerProps> = ({
 
         adobeViewRef.current = adobeDCView;
 
+        // Helper function to stop loading
+        const stopLoading = () => {
+          loadingRef.current = false;
+          setLoading(false);
+        };
+
+        // Add fallback timeout to prevent infinite loading
+        const loadingTimeout = setTimeout(() => {
+          console.log("Adobe PDF loading timeout - forcing loading to false");
+          stopLoading();
+        }, 10000); // 10 second timeout
+
+        // Add event listeners for better debugging
+        try {
+          adobeDCView.registerCallback(
+            window.AdobeDC.View.Enum.CallbackType.EVENT_LISTENER,
+            function (event) {
+              console.log("Adobe PDF Event:", event.type);
+              if (
+                event.type === "DOCUMENT_OPEN" ||
+                event.type === "PAGE_RENDER"
+              ) {
+                console.log("PDF document ready");
+                clearTimeout(loadingTimeout);
+                stopLoading();
+              }
+            },
+            { enablePDFAnalytics: false }
+          );
+        } catch (callbackError) {
+          console.warn("Could not register Adobe callback:", callbackError);
+          // If callback registration fails, use timeout only
+        }
+
         // Preview the PDF file with optimized settings
         await adobeDCView.previewFile(
           {
@@ -244,8 +280,9 @@ const AdobePDFViewer: React.FC<AdobePDFViewerProps> = ({
             },
           },
           {
-            embedMode: "IN_LINE", // Use 'FULL_WINDOW' for fullscreen experience
-            defaultViewMode: "FIT_WIDTH", // Better for mobile
+            // embedMode: "SIZED_CONTAINER",
+            embedMode: "IN_LINE",
+            defaultViewMode: "CONTINUOUS", // Use continuous scrolling to prevent blank pages
             showDownloadPDF: false, // Hide download button (we have our own)
             showPrintPDF: false, // Hide print button
             showAnnotationTools: false, // Hide annotation tools for cleaner interface
@@ -259,13 +296,37 @@ const AdobePDFViewer: React.FC<AdobePDFViewerProps> = ({
             enableLinearization: true, // Enable fast web view for better streaming
             enablePDFAnalytics: false, // Disable analytics for better performance
             includePDFAnnotations: false, // Disable annotations for better performance
-            // Scrolling optimizations
-            focusOnRenderedPage: true, // Focus on rendered page for better scrolling
+            // Fix blank pages issue - ensure proper rendering
             enableSearchAPIs: false, // Disable search APIs if not needed for performance
+            allowFullScreen: true,
+            exitPDFViewerType: "RETURN",
+            // Ensure pages are pre-rendered
+            preloadPageCount: 5, // Pre-load 5 pages ahead
           }
         );
 
-        setLoading(false);
+        // If previewFile completes successfully, also set loading to false as fallback
+        console.log("Adobe previewFile completed:", previewResult);
+
+        // Immediate fallback - if previewFile completed, assume it's ready
+        setTimeout(() => {
+          if (loadingRef.current) {
+            console.log("Adobe PDF immediate fallback - previewFile completed");
+            clearTimeout(loadingTimeout);
+            stopLoading();
+          }
+        }, 1000); // 1 second after previewFile completes
+
+        // Additional fallback - if no events fired within 3 seconds, assume it's loaded
+        setTimeout(() => {
+          if (loadingRef.current) {
+            console.log(
+              "Adobe PDF secondary fallback - assuming loaded after 3 seconds"
+            );
+            clearTimeout(loadingTimeout);
+            stopLoading();
+          }
+        }, 3000);
       } catch (error) {
         console.error("Error initializing Adobe PDF viewer:", error);
         setError(true);
@@ -313,7 +374,7 @@ const AdobePDFViewer: React.FC<AdobePDFViewerProps> = ({
   }, [zoom]);
 
   return (
-    <div className="h-full w-full bg-[#525659] relative overflow-hidden">
+    <div className="h-full w-full bg-[#525659] relative">
       <div className="h-full w-full relative">
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center bg-[#525659] z-10">
@@ -342,17 +403,16 @@ const AdobePDFViewer: React.FC<AdobePDFViewerProps> = ({
           <div
             id={viewerId.current}
             ref={viewerRef}
-            className="w-full h-full overflow-auto"
+            className="w-full h-full"
             style={{
               minHeight: "100%",
-              // Optimize for smooth scrolling
-              WebkitOverflowScrolling: "touch",
-              scrollBehavior: "smooth",
-              // Prevent layout shifts
-              contain: "layout style paint",
-              // Hardware acceleration
-              transform: "translateZ(0)",
-              willChange: "scroll-position",
+              // The parent container now handles scrolling
+              overflow: "visible",
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
             }}
           />
         )}
