@@ -17,6 +17,7 @@ import {
   LayoutDashboard,
   ChevronLeft,
   ChevronRight,
+  AlertTriangle,
 } from "lucide-react";
 import { UserRole } from "@/lib/types/response.types";
 // import LogoIcon from "/assets/logo.svg";
@@ -65,6 +66,12 @@ const navigationItems = [
     path: "/management/blogs-review",
     icon: FileText,
     description: "Review and manage blog submissions",
+  },
+  {
+    title: "Error Reports",
+    path: "/management/error-reports",
+    icon: AlertTriangle,
+    description: "View and manage error reports from users",
   },
   // {
   //   title: "Adverts Review",

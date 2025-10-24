@@ -13,6 +13,7 @@ import {
   uploadMaterialPreview,
   cleanupTempPreview,
 } from "@/api/materials.api";
+import { reportError } from "@/api/error-reports.api";
 import { Material, ResourceTypeEnum } from "@/lib/types/material.types";
 import { dataURLtoFile } from "../Preview/urlToFile";
 
@@ -155,6 +156,30 @@ const UploadModal: React.FC<UploadModalProps> = ({
       }
     } catch (error: any) {
       console.error(isEditMode ? "Update failed:" : "Upload failed:", error);
+
+      // Report the error to the development team
+      try {
+        await reportError(
+          isEditMode ? "Material Update Failed" : "Material Upload Failed",
+          error,
+          {
+            errorType: isEditMode
+              ? "material_update_failure"
+              : "material_upload_failure",
+            severity: "high",
+            additionalMetadata: {
+              materialType,
+              isEditMode,
+              materialTitle: data.materialTitle,
+              hasFile: "file" in data && !!data.file,
+              hasUrl: "url" in data && !!data.url,
+              hasPreview: !!data.filePreview,
+            },
+          }
+        );
+      } catch (reportingError) {
+        console.warn("Failed to report error:", reportingError);
+      }
 
       // Set user-friendly error message
       const errorMsg =

@@ -33,6 +33,7 @@ import DLCReviewPage from "./pages/management/dlc-review";
 import BlogsReviewPage from "./pages/management/blogs-review";
 import MaterialsReviewPage from "./pages/management/materials-review";
 import UserManagementPage from "./pages/management/user-management";
+import ErrorReportsPage from "./pages/management/error-reports";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import AuthContextProvider from "./context/authentication/AuthContextProvider";
 import { BookmarkProvider } from "./context/bookmark/BookmarkContextProvider";
@@ -120,6 +121,10 @@ const App = () => {
                         <Route
                           path="user-management"
                           element={<UserManagementPage />}
+                        />
+                        <Route
+                          path="error-reports"
+                          element={<ErrorReportsPage />}
                         />
                         {/* Future routes can be added here */}
                         {/* <Route path="materials" element={<MaterialsManagement />} /> */}
