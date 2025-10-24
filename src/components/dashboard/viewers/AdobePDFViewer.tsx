@@ -288,8 +288,8 @@ const AdobePDFViewer: React.FC<AdobePDFViewerProps> = ({
             showPrintPDF: false, // Hide print button
             showAnnotationTools: false, // Hide annotation tools for cleaner interface
             showLeftHandPanel: false, // Hide left panel for more space
-            showFullScreen: true, // Allow fullscreen
-            enableFormFilling: true, // Disable form filling
+            showFullScreen: false, // Allow fullscreen
+            enableFormFilling: false, // Disable form filling
             showZoomControl: true, // Show zoom controls
             showPageControls: true, // Show page navigation
             showBookmarks: false, // Hide bookmarks for cleaner interface

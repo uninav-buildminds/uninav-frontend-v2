@@ -88,18 +88,29 @@ export const FullscreenProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const toggleFullscreen = async () => {
+    const isMobile = window.innerWidth < 768;
+
     if (isFullscreen) {
-      await exitBrowserFullscreen();
+      // Exit fullscreen
+      if (!isMobile) {
+        await exitBrowserFullscreen();
+      }
       setIsFullscreen(false);
     } else {
-      await enterBrowserFullscreen();
+      // Enter fullscreen
+      if (!isMobile) {
+        await enterBrowserFullscreen();
+      }
       setIsFullscreen(true);
     }
   };
 
   const exitFullscreen = async () => {
     if (isFullscreen) {
-      await exitBrowserFullscreen();
+      const isMobile = window.innerWidth < 768;
+      if (!isMobile) {
+        await exitBrowserFullscreen();
+      }
       setIsFullscreen(false);
     }
   };

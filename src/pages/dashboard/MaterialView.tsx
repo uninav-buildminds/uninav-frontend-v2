@@ -532,7 +532,7 @@ const MaterialView: React.FC = () => {
         {/* Floating Back Button - Top Left */}
         <button
           onClick={handleBack}
-          className="fixed left-3 sm:left-4 top-3 sm:top-4 z-30 p-2 sm:p-2.5 bg-white/90 backdrop-blur hover:bg-white border border-gray-200 rounded-full shadow-lg transition-all duration-200 hover:scale-105 active:scale-95"
+          className="fixed left-3 sm:left-4 top-3 sm:top-4 z-50 p-2 sm:p-2.5 bg-white/90 backdrop-blur hover:bg-white border border-gray-200 rounded-full shadow-lg transition-all duration-200 hover:scale-105 active:scale-95"
           aria-label="Go back"
         >
           <ArrowLeft size={18} className="text-gray-700" />
@@ -540,7 +540,7 @@ const MaterialView: React.FC = () => {
 
         {/* Floating Action Buttons - Top Right */}
         <div
-          className={`fixed top-3 sm:top-4 z-30 flex items-center gap-1.5 sm:gap-2 transition-all duration-300 ${
+          className={`fixed top-3 sm:top-4 z-50 flex items-center gap-1.5 sm:gap-2 transition-all duration-300 ${
             isFullscreen
               ? "right-3 sm:right-4"
               : !sidebarCollapsed
