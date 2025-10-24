@@ -233,10 +233,11 @@ const AdobePDFViewer: React.FC<AdobePDFViewerProps> = ({
 
         adobeViewRef.current = adobeDCView;
 
-        // Helper function to stop loading
+        // Helper function to stop loading and clear any errors
         const stopLoading = () => {
           loadingRef.current = false;
           setLoading(false);
+          setError(false); // Clear any previous errors when PDF loads successfully
         };
 
         // Add fallback timeout to prevent infinite loading
@@ -280,15 +281,15 @@ const AdobePDFViewer: React.FC<AdobePDFViewerProps> = ({
             },
           },
           {
-            // embedMode: "SIZED_CONTAINER",
-            embedMode: "IN_LINE",
+            embedMode: "SIZED_CONTAINER",
+            // embedMode: "IN_LINE",
             defaultViewMode: "CONTINUOUS", // Use continuous scrolling to prevent blank pages
             showDownloadPDF: false, // Hide download button (we have our own)
             showPrintPDF: false, // Hide print button
             showAnnotationTools: false, // Hide annotation tools for cleaner interface
             showLeftHandPanel: false, // Hide left panel for more space
             showFullScreen: true, // Allow fullscreen
-            enableFormFilling: false, // Disable form filling
+            enableFormFilling: true, // Disable form filling
             showZoomControl: true, // Show zoom controls
             showPageControls: true, // Show page navigation
             showBookmarks: false, // Hide bookmarks for cleaner interface
@@ -296,17 +297,20 @@ const AdobePDFViewer: React.FC<AdobePDFViewerProps> = ({
             enableLinearization: true, // Enable fast web view for better streaming
             enablePDFAnalytics: false, // Disable analytics for better performance
             includePDFAnnotations: false, // Disable annotations for better performance
-            // Fix blank pages issue - ensure proper rendering
+            // Mobile optimizations
             enableSearchAPIs: false, // Disable search APIs if not needed for performance
             allowFullScreen: true,
             exitPDFViewerType: "RETURN",
             // Ensure pages are pre-rendered
-            preloadPageCount: 5, // Pre-load 5 pages ahead
+            preloadPageCount: 2, // Reduce preload for mobile performance
+            // Mobile-specific settings
+            fitMode: "actualSize", // Better for mobile viewing
+            showThumbnails: false, // Hide thumbnails on mobile for more space
           }
         );
 
         // If previewFile completes successfully, also set loading to false as fallback
-        console.log("Adobe previewFile completed:", previewResult);
+        console.log("Adobe previewFile completed successfully");
 
         // Immediate fallback - if previewFile completed, assume it's ready
         setTimeout(() => {
@@ -385,7 +389,7 @@ const AdobePDFViewer: React.FC<AdobePDFViewerProps> = ({
           </div>
         )}
 
-        {error ? (
+        {error && loading ? (
           <div className="h-full flex items-center justify-center text-white">
             <div className="text-center">
               <div className="text-4xl mb-4">⚠️</div>

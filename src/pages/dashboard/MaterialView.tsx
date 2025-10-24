@@ -426,22 +426,23 @@ const MaterialView: React.FC = () => {
     ) {
       // testing out Adobe PDF viewer for now so keep it this way
       // Use Adobe PDF viewer on mobile for better compatibility
-      // if (isMobile) {
-      return (
-        <AdobePDFViewer
-          url={material.resource.resourceAddress}
-          title={material.label}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          zoom={zoom}
-          onPreviousPage={handlePreviousPage}
-          onNextPage={handleNextPage}
-          onZoomIn={handleZoomIn}
-          onZoomOut={handleZoomOut}
-          showControls={true}
-        />
-      );
-      // }
+      if (isMobile) {
+        return (
+          <AdobePDFViewer
+            url={material.resource.resourceAddress}
+            title={material.label}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            zoom={zoom}
+            onPreviousPage={handlePreviousPage}
+            onNextPage={handleNextPage}
+            onZoomIn={handleZoomIn}
+            onZoomOut={handleZoomOut}
+            showControls={!isMobile} // Hide controls on mobile for more space
+          />
+        );
+      }
+      // Fallback to iframe viewer if needed (currently disabled)
 
       // Use iframe viewer on desktop
       return (
