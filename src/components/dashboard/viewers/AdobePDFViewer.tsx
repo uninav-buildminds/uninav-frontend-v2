@@ -288,7 +288,7 @@ const AdobePDFViewer: React.FC<AdobePDFViewerProps> = ({
             showPrintPDF: false, // Hide print button
             showAnnotationTools: false, // Hide annotation tools for cleaner interface
             showLeftHandPanel: false, // Hide left panel for more space
-            showFullScreen: false, // Allow fullscreen
+            showFullScreen: false, // Disable Adobe's fullscreen (we have our own)
             enableFormFilling: false, // Disable form filling
             showZoomControl: true, // Show zoom controls
             showPageControls: true, // Show page navigation
@@ -299,7 +299,7 @@ const AdobePDFViewer: React.FC<AdobePDFViewerProps> = ({
             includePDFAnnotations: false, // Disable annotations for better performance
             // Mobile optimizations
             enableSearchAPIs: false, // Disable search APIs if not needed for performance
-            allowFullScreen: true,
+            allowFullScreen: false, // Disable Adobe's fullscreen completely
             exitPDFViewerType: "RETURN",
             // Ensure pages are pre-rendered
             preloadPageCount: 2, // Reduce preload for mobile performance
@@ -378,50 +378,66 @@ const AdobePDFViewer: React.FC<AdobePDFViewerProps> = ({
   }, [zoom]);
 
   return (
-    <div className="h-full w-full bg-[#525659] relative">
-      <div className="h-full w-full relative">
-        {loading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-[#525659] z-10">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-10 w-10 border-3 border-white border-t-transparent mx-auto mb-3"></div>
-              <p className="text-sm text-white">Loading PDF...</p>
+    <>
+      <style>{`
+        /* Ensure Adobe viewer doesn't block our floating buttons */
+        #${viewerId.current} {
+          z-index: 1 !important;
+        }
+        #${viewerId.current} * {
+          z-index: auto !important;
+        }
+      `}</style>
+      <div
+        className="h-full w-full bg-[#525659] relative"
+        style={{ zIndex: 1 }}
+      >
+        <div className="h-full w-full relative" style={{ zIndex: 1 }}>
+          {loading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-[#525659] z-10">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-10 w-10 border-3 border-white border-t-transparent mx-auto mb-3"></div>
+                <p className="text-sm text-white">Loading PDF...</p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {error && loading ? (
-          <div className="h-full flex items-center justify-center text-white">
-            <div className="text-center">
-              <div className="text-4xl mb-4">⚠️</div>
-              <p className="text-lg font-medium mb-2">Failed to load PDF</p>
-              <p className="text-sm opacity-80">
-                The PDF could not be displayed. This may be due to missing Adobe
-                configuration or network issues.
-              </p>
-              <p className="text-xs opacity-60 mt-2">
-                Check console for setup instructions.
-              </p>
+          {error && loading ? (
+            <div className="h-full flex items-center justify-center text-white">
+              <div className="text-center">
+                <div className="text-4xl mb-4">⚠️</div>
+                <p className="text-lg font-medium mb-2">Failed to load PDF</p>
+                <p className="text-sm opacity-80">
+                  The PDF could not be displayed. This may be due to missing
+                  Adobe configuration or network issues.
+                </p>
+                <p className="text-xs opacity-60 mt-2">
+                  Check console for setup instructions.
+                </p>
+              </div>
             </div>
-          </div>
-        ) : (
-          <div
-            id={viewerId.current}
-            ref={viewerRef}
-            className="w-full h-full"
-            style={{
-              minHeight: "100%",
-              // The parent container now handles scrolling
-              overflow: "visible",
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-            }}
-          />
-        )}
+          ) : (
+            <div
+              id={viewerId.current}
+              ref={viewerRef}
+              className="w-full h-full"
+              style={{
+                minHeight: "100%",
+                // The parent container now handles scrolling
+                overflow: "visible",
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                // Ensure it doesn't block clicks on floating buttons
+                zIndex: 1,
+              }}
+            />
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
