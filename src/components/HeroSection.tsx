@@ -172,7 +172,7 @@ const HeroSection: React.FC = () => {
           viewport={{ once: true }}
         >
           <img
-            src="/assets/demo-dash.svg"
+            src="/assets/demo-dash.png"
             alt="Dashboard preview"
             className="block w-[min(1000px,96%)] mx-auto"
           />
