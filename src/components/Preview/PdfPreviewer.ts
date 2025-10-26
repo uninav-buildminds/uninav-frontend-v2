@@ -28,7 +28,7 @@ export async function generatePreviewAndUpload(file: File, materialId: string) {
   canvas.height = viewport.height;
 
   const ctx = canvas.getContext("2d")!;
-  await page.render({ canvasContext: ctx, viewport }).promise;
+  await page.render({ canvasContext: ctx, canvas, viewport }).promise;
 
   // 5. Convert to Blob once and send
   const blob = await new Promise<Blob | null>((resolve) =>
@@ -42,7 +42,7 @@ export async function generatePreviewAndUpload(file: File, materialId: string) {
     const res = await materialPreview(materialId, blob);
     return res.data;
   } catch (err) {
-    console.error("Error sending preview:", err);
+    console.error("Error generating preview:", err);
   }
 }
 
@@ -69,7 +69,7 @@ export async function generatePdfPreviewBlob(
       throw new Error("Could not get canvas context");
     }
 
-    await page.render({ canvasContext: ctx, viewport }).promise;
+    await page.render({ canvasContext: ctx, canvas, viewport }).promise;
 
     return await new Promise<Blob | null>((resolve) =>
       canvas.toBlob((b) => resolve(b), "image/jpeg", 0.8)
