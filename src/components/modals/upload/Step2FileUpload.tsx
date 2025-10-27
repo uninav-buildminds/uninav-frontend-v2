@@ -293,15 +293,7 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
                 </p>
               </div>
 
-              <button
-                onClick={() => {
-                  setSelectedFile(null);
-                  setFilePreview(null); // Clear both selected file and preview
-                }}
-                className="text-xs sm:text-sm text-red-600 hover:text-red-700"
-              >
-                Remove file
-              </button>
+            
             </div>
           ) : (
             <div className="space-y-3">
