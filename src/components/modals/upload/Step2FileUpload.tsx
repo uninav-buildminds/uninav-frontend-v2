@@ -4,10 +4,7 @@ import {
   UploadSquare01Icon,
   ArrowLeft01Icon,
   File01Icon,
-  Image01Icon,
-  Tag01Icon,
-  Download01Icon,
-  ArrowDown01Icon,
+
 } from "hugeicons-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
