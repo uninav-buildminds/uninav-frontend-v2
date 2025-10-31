@@ -328,29 +328,28 @@ const Overview: React.FC = () => {
 
 						{/* Content Sections */}
 						<div className="mt-8 space-y-8 pb-16 md:pb-0">
-							{/* ADD SKELETONS */}
-							{/* Recent Materials - Only show if there are materials */}
-							{!isLoadingRecent && recentMaterials.length > 0 && (
-								<MaterialsSection
-									title="Recent Materials"
-									materials={recentMaterials}
-									onViewAll={() =>
-										handleViewAll("recent materials")
-									}
-									onFilter={() =>
-										handleFilter("recent materials")
-									}
-									onShare={handleShare}
-									onRead={handleRead}
-									scrollStep={280}
-									preserveOrder={true}
-								/>
-							)}
+							{/* Recent Materials */}
+							<MaterialsSection
+								title="Recent Materials"
+								materials={isLoadingRecent ? [] : (recentMaterials || [])}
+								onViewAll={() =>
+									handleViewAll("recent materials")
+								}
+								onFilter={() =>
+									handleFilter("recent materials")
+								}
+								onShare={handleShare}
+								onRead={handleRead}
+								scrollStep={280}
+								preserveOrder={true}
+								isLoading={isLoadingRecent}
+								emptyStateType="recent"
+							/>
 
 							{/* Recommendations - Grid layout with 2 rows */}
 							<MaterialsSection
 								title="Recommendations"
-								materials={recommendedMaterials}
+								materials={isLoadingRecommended ? [] : (recommendedMaterials || [])}
 								onViewAll={() =>
 									handleViewAll("recommendations")
 								}
@@ -359,6 +358,7 @@ const Overview: React.FC = () => {
 								onRead={handleRead}
 								scrollStep={280}
 								layout="grid"
+								isLoading={isLoadingRecommended}
 							/>
 						</div>
 					</>

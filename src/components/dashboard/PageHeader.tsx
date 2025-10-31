@@ -29,7 +29,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
 
             {/* Search */}
             {showSearch && (
-              <div className="mt-6 flex justify-center">
+              <div className="mt-6 flex justify-center relative z-10">
                 <SimpleSearchBar 
                   className="w-full max-w-xl"
                   placeholder={searchPlaceholder}

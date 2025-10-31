@@ -4,6 +4,7 @@ import { MaterialWithLastViewed } from "./MaterialsSection";
 import React, { useEffect, useState, useMemo } from "react";
 import { ArrowRight01Icon, SortingAZ02Icon } from "hugeicons-react";
 import MaterialCard from "./MaterialCard";
+import MaterialCardSkeleton from "./MaterialCardSkeleton";
 import EmptyState from "./EmptyState";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -201,14 +202,42 @@ const GridMaterialsSection: React.FC<GridMaterialsSectionProps> = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showSortOptions]);
 
-  if (loading) {
-    return (
-      <div className="py-8 text-center text-gray-500">Loading materials...</div>
-    );
-  }
+  // Combine loading states
+  const isActuallyLoading = loading || isLoading;
+  
   if (error) {
     return <div className="py-8 text-center text-red-500">{error}</div>;
   }
+  
+  // Show skeletons when loading
+  if (isActuallyLoading) {
+    return (
+      <section className="space-y-4">
+        {/* Header */}
+        {title && (
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+            {showViewAll && (
+              <button
+                onClick={onViewAll}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+              >
+                View All
+                <ArrowRight01Icon size={16} className="text-gray-500" />
+              </button>
+            )}
+          </div>
+        )}
+        
+        {/* Skeleton Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+          <MaterialCardSkeleton count={8} />
+        </div>
+      </section>
+    );
+  }
+  
+  // Only show empty state when NOT loading AND no materials
   if (!sortedMaterials || sortedMaterials.length === 0) {
     // Don't show empty state for recommendations
     if (!emptyStateType) {
