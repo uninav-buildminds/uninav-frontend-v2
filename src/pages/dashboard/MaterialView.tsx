@@ -450,32 +450,32 @@ const MaterialView: React.FC = () => {
       material.resource?.resourceAddress
     ) {
       // Use React-PDF viewer on mobile for better compatibility and performance
-      // if (isMobile) {
-      // testing in desktop mode as well
+      if (isMobile) {
+        // testing in desktop mode as well
+        return (
+          <ReactPdfViewer
+            url={material.resource.resourceAddress}
+            title={material.label}
+            showControls={true}
+          />
+        );
+      }
+
+      // Use iframe viewer on desktop
       return (
-        <ReactPdfViewer
+        <PDFViewer
           url={material.resource.resourceAddress}
           title={material.label}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          zoom={zoom}
+          onPreviousPage={handlePreviousPage}
+          onNextPage={handleNextPage}
+          onZoomIn={handleZoomIn}
+          onZoomOut={handleZoomOut}
           showControls={true}
         />
       );
-      // }
-
-      // Use iframe viewer on desktop
-      // return (
-      //   <PDFViewer
-      //     url={material.resource.resourceAddress}
-      //     title={material.label}
-      //     currentPage={currentPage}
-      //     totalPages={totalPages}
-      //     zoom={zoom}
-      //     onPreviousPage={handlePreviousPage}
-      //     onNextPage={handleNextPage}
-      //     onZoomIn={handleZoomIn}
-      //     onZoomOut={handleZoomOut}
-      //     showControls={true}
-      //   />
-      // );
     }
 
     // Handle PowerPoint (ppt/pptx) using Office Online Viewer
