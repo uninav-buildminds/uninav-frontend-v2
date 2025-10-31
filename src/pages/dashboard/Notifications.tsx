@@ -199,7 +199,7 @@ const Notifications: React.FC = () => {
       {/* Header */}
       <div className="relative z-sticky">
         <div className="bg-gradient-to-br from-[theme(colors.dashboard.gradientFrom)] to-[theme(colors.dashboard.gradientTo)]">
-          <div className="px-2 sm:px-4 pt-8 sm:pt-12 pb-4 sm:pb-6">
+          <div className="px-2 sm:px-4 pt-16 sm:pt-20 pb-4 sm:pb-6">
             <div className="max-w-6xl mx-auto flex items-center gap-3">
               <button
                 onClick={() => navigate("/dashboard")}
@@ -208,6 +208,11 @@ const Notifications: React.FC = () => {
                 <ArrowLeft01Icon size={18} />
                 Back to Dashboard
               </button>
+
+              {/* Mobile/Tablet Title inline with actions */}
+              <h2 className="text-xl sm:text-2xl font-semibold text-foreground sm:hidden ml-0">
+                Notifications
+              </h2>
 
               <div className="flex items-center gap-2 sm:gap-3 ml-auto">
                 <button
@@ -227,7 +232,7 @@ const Notifications: React.FC = () => {
             </div>
 
             <div className="max-w-6xl mx-auto mt-4 sm:mt-6">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-foreground">
+              <h2 className="hidden sm:block text-2xl sm:text-3xl md:text-4xl font-semibold text-foreground">
                 Notifications
               </h2>
               <p className="text-xs sm:text-sm text-muted-foreground mt-1">

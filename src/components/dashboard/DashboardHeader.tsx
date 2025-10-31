@@ -36,7 +36,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     <section className="relative overflow-visible z-sticky">
       {/* Gradient background */}
       <div className="bg-gradient-to-br from-[theme(colors.dashboard.gradientFrom)] to-[theme(colors.dashboard.gradientTo)]">
-        <div className="px-2 sm:px-4 pt-10 sm:pt-14 pb-6 sm:pb-8">
+        <div className="px-2 sm:px-4 pt-16 sm:pt-20 pb-6 sm:pb-8">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-foreground">
               {headerTitle}

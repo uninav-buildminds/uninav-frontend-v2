@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import MobileBottomNav from "./MobileBottomNav";
 import MobileMenuButton from "./MobileMenuButton";
@@ -10,6 +10,10 @@ const DashboardShell: React.FC = () => {
   const [isMobilePanelOpen, setIsMobilePanelOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const { isFullscreen } = useFullscreen();
+  const location = useLocation();
+  
+  // Hide mobile menu and bottom nav on MaterialView page
+  const isMaterialView = location.pathname.includes("/dashboard/material/");
 
   const handleMobilePanelToggle = () => {
     setIsMobilePanelOpen(!isMobilePanelOpen);
@@ -39,8 +43,8 @@ const DashboardShell: React.FC = () => {
         {/* Hide sidebar when in fullscreen mode */}
         {!isFullscreen && <Sidebar />}
         <main className="flex-1 min-h-screen overflow-x-hidden">
-          {/* Mobile Menu Button - hide in fullscreen */}
-          {!isFullscreen && (
+          {/* Mobile Menu Button - hide in fullscreen and on MaterialView */}
+          {!isFullscreen && !isMaterialView && (
             <MobileMenuButton
               isOpen={isMobilePanelOpen}
               onClick={handleMobilePanelToggle}
@@ -54,6 +58,8 @@ const DashboardShell: React.FC = () => {
             className={`h-screen ${
               isFullscreen
                 ? "pt-2 sm:pt-3 px-2 sm:px-3 pb-2"
+                : isMaterialView
+                ? "pt-2 sm:pt-3 px-2 sm:px-3 pb-2"
                 : "pt-2 sm:pt-3 px-2 sm:px-3 pb-24 md:pb-2"
             }`}
           >
@@ -61,6 +67,8 @@ const DashboardShell: React.FC = () => {
               className={`${
                 isFullscreen
                   ? "h-[calc(100vh-0.5rem)] sm:h-[calc(100vh-0.75rem)] rounded-t-3xl safari-rounded-top safari-accelerated"
+                  : isMaterialView
+                  ? "h-[calc(100vh-0.5rem)] sm:h-[calc(100vh-0.75rem)] md:h-[calc(100vh-0.5rem)] lg:h-[calc(100vh-0.75rem)] rounded-t-3xl safari-rounded-top safari-accelerated"
                   : "h-[calc(100vh-0.5rem)] sm:h-[calc(100vh-0.75rem)] md:h-[calc(100vh-0.5rem)] lg:h-[calc(100vh-0.75rem)] rounded-t-3xl safari-rounded-top safari-accelerated"
               } bg-white border shadow-sm overflow-y-auto scroll-surface`}
             >
@@ -70,11 +78,11 @@ const DashboardShell: React.FC = () => {
         </main>
       </div>
 
-      {/* Mobile Bottom Navigation - hide in fullscreen */}
-      {!isFullscreen && <MobileBottomNav />}
+      {/* Mobile Bottom Navigation - hide in fullscreen and on MaterialView */}
+      {!isFullscreen && !isMaterialView && <MobileBottomNav />}
 
-      {/* Mobile Panel - hide in fullscreen */}
-      {!isFullscreen && (
+      {/* Mobile Panel - hide in fullscreen and on MaterialView */}
+      {!isFullscreen && !isMaterialView && (
         <MobilePanel
           isOpen={isMobilePanelOpen}
           onClose={handleMobilePanelClose}

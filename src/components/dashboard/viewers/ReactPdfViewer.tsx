@@ -129,7 +129,7 @@ const ReactPdfViewer: React.FC<ReactPdfViewerProps> = ({
       {numPages && (
         <form
           onSubmit={handlePageInputSubmit}
-          className="fixed bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 z-50 bg-black/80 backdrop-blur text-white px-3 py-1.5 rounded-full flex items-center gap-2"
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-black/80 backdrop-blur text-white px-3 py-1.5 rounded-full flex items-center gap-2"
         >
           <input
             type="number"
@@ -147,7 +147,7 @@ const ReactPdfViewer: React.FC<ReactPdfViewerProps> = ({
 
       {/* Floating Zoom Controls - Bottom Right */}
       {showControls && numPages && (
-        <div className="fixed bottom-20 md:bottom-6 right-4 z-50 flex items-center gap-2 bg-black/80 backdrop-blur rounded-full px-2 py-1">
+        <div className="fixed bottom-6 right-4 z-50 flex items-center gap-2 bg-black/80 backdrop-blur rounded-full px-2 py-1">
           <Button
             variant="ghost"
             size="sm"

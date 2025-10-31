@@ -283,7 +283,7 @@ const GDriveFileViewer: React.FC<GDriveFileViewerProps> = ({
         )}
 
         {/* Zoom Controls - Bottom Center */}
-        <div className="absolute bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-gray-800/95 backdrop-blur-sm rounded-full px-3 py-2 border border-gray-700 shadow-xl">
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-gray-800/95 backdrop-blur-sm rounded-full px-3 py-2 border border-gray-700 shadow-xl">
           <button
             onClick={handleImageZoomOut}
             disabled={imageZoom <= 25}

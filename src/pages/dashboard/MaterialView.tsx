@@ -1,13 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, ChevronRight, Maximize, Minimize } from "lucide-react";
-import {
-  Download01Icon,
-  Share08Icon,
-  Bookmark01Icon,
-  Triangle01Icon,
-  File01Icon,
-} from "hugeicons-react";
+import { ArrowLeft, ChevronRight } from "lucide-react";
+import { Download01Icon, Share08Icon, Bookmark01Icon, Triangle01Icon, File01Icon, MaximizeScreenIcon, MinimizeScreenIcon, ArrowRight01Icon, ArrowLeftDoubleIcon, ArrowRightDoubleIcon } from "hugeicons-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -54,6 +48,7 @@ const MaterialView: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(
     typeof window !== "undefined" && window.innerWidth < 768 // Hide sidebar on mobile by default
   );
+  const [iconsExpanded, setIconsExpanded] = useState(false);
 
   // Detect if device is actually a mobile device (not just small screen)
   const [isMobile] = useState(() => {
@@ -534,7 +529,7 @@ const MaterialView: React.FC = () => {
   return (
     <>
       {/* Main Content - Full Height with Floating Controls */}
-      <div className="flex gap-2 sm:gap-3 h-full px-2 sm:px-3 py-2 relative pb-16 md:pb-2">
+      <div className="flex gap-2 sm:gap-3 h-full px-2 sm:px-3 py-2 relative">
         {/* Floating Back Button - Top Left */}
         <button
           onClick={handleBack}
@@ -554,59 +549,91 @@ const MaterialView: React.FC = () => {
               : "right-3 sm:right-4"
           }`}
         >
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleBookmark}
-            className={`bg-white/90 backdrop-blur hover:bg-white border border-gray-200 h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-full shadow-lg ${
-              isBookmarkedMaterial ? "text-brand" : ""
+          {/* Collapsible Icons Container - Slides out to the right when expanded */}
+          <div
+            className={`flex items-center gap-1.5 sm:gap-2 transition-all duration-500 ease-in-out ${
+              iconsExpanded
+                ? "translate-x-0 opacity-100"
+                : "translate-x-full opacity-0 pointer-events-none"
             }`}
           >
-            <Bookmark01Icon
-              size={15}
-              className={`sm:w-4 sm:h-4 ${
-                isBookmarkedMaterial ? "fill-current" : ""
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleBookmark}
+              className={`bg-white/90 backdrop-blur hover:bg-white border border-gray-200 h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-full shadow-lg flex-shrink-0 ${
+                isBookmarkedMaterial ? "text-brand" : ""
+              }`}
+            >
+              <Bookmark01Icon
+                size={15}
+                className={`sm:w-4 sm:h-4 ${
+                  isBookmarkedMaterial ? "fill-current" : ""
+                }`}
+              />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleShare}
+              className="bg-white/90 backdrop-blur hover:bg-white border border-gray-200 h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-full shadow-lg flex-shrink-0"
+            >
+              <Share08Icon size={15} className="sm:w-4 sm:h-4" />
+            </Button>
+            {/* Show download button only if not read-only, not YouTube, and is either an uploaded file or GDrive material */}
+            {material &&
+              material.restriction !== RestrictionEnum.READONLY &&
+              material.type !== MaterialTypeEnum.YOUTUBE &&
+              (material.resource?.resourceType === ResourceTypeEnum.UPLOAD ||
+                material.type === MaterialTypeEnum.GDRIVE) && (
+                <Button
+                  onClick={handleDownload}
+                  size="sm"
+                  className="bg-brand/90 backdrop-blur text-white hover:bg-brand border-2 border-white h-8 sm:h-9 px-3 sm:px-4 rounded-full shadow-lg flex-shrink-0"
+                >
+                  <Download01Icon size={15} className="sm:w-4 sm:h-4" />
+                </Button>
+              )}
+          </div>
+
+          {/* Combined Maximize & Chevron Button - Rightmost */}
+          <div className="flex items-center gap-0 rounded-full bg-white/90 backdrop-blur border border-gray-200 shadow-lg overflow-hidden h-8 sm:h-9">
+            {/* Maximize Icon Section */}
+            <button
+              onClick={toggleFullscreen}
+              className="flex items-center justify-center h-8 w-8 sm:h-9 sm:w-9 p-0 hover:bg-gray-50 transition-colors flex-shrink-0"
+              title={
+                isFullscreen ? "Exit fullscreen (ESC)" : "Enter fullscreen (F11)"
+              }
+            >
+              {isFullscreen ? (
+                <MinimizeScreenIcon size={15} className="sm:w-4 sm:h-4" />
+              ) : (
+                <MaximizeScreenIcon size={15} className="sm:w-4 sm:h-4" />
+              )}
+            </button>
+            
+            {/* Separator Line - Only visible when expanded */}
+            <div
+              className={`h-6 w-[1px] bg-gray-300 transition-all duration-500 ease-in-out ${
+                iconsExpanded ? "opacity-100" : "opacity-0"
               }`}
             />
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleShare}
-            className="bg-white/90 backdrop-blur hover:bg-white border border-gray-200 h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-full shadow-lg"
-          >
-            <Share08Icon size={15} className="sm:w-4 sm:h-4" />
-          </Button>
-          {/* Show download button only if not read-only, not YouTube, and is either an uploaded file or GDrive material */}
-          {material &&
-            material.restriction !== RestrictionEnum.READONLY &&
-            material.type !== MaterialTypeEnum.YOUTUBE &&
-            (material.resource?.resourceType === ResourceTypeEnum.UPLOAD ||
-              material.type === MaterialTypeEnum.GDRIVE) && (
-              <Button
-                onClick={handleDownload}
-                size="sm"
-                className="bg-brand/90 backdrop-blur text-white hover:bg-brand border-2 border-white h-8 sm:h-9 px-3 sm:px-4 rounded-full shadow-lg"
-              >
-                <Download01Icon size={15} className="sm:w-4 sm:h-4" />
-              </Button>
-            )}
-          {/* Fullscreen Toggle Button */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={toggleFullscreen}
-            className="bg-white/90 backdrop-blur hover:bg-white border border-gray-200 h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-full shadow-lg"
-            title={
-              isFullscreen ? "Exit fullscreen (ESC)" : "Enter fullscreen (F11)"
-            }
-          >
-            {isFullscreen ? (
-              <Minimize size={15} className="sm:w-4 sm:h-4" />
-            ) : (
-              <Maximize size={15} className="sm:w-4 sm:h-4" />
-            )}
-          </Button>
+            
+            {/* Chevron Section - Always visible, expands button width when icons are expanded */}
+            <button
+              onClick={() => setIconsExpanded(!iconsExpanded)}
+              className="flex items-center justify-center h-8 w-8 sm:h-9 sm:w-9 p-0 hover:bg-gray-50 transition-colors flex-shrink-0"
+              aria-label={iconsExpanded ? "Collapse icons" : "Expand icons"}
+            >
+              <ArrowRight01Icon
+                size={15}
+                className={`sm:w-4 sm:h-4 transition-transform duration-300 ${
+                  iconsExpanded ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+          </div>
         </div>
 
         {/* Document Viewer - Full Width/Height */}
@@ -626,6 +653,16 @@ const MaterialView: React.FC = () => {
               sidebarCollapsed ? "w-0 border-0 overflow-hidden" : "w-64 sm:w-72"
             }`}
           >
+            {/* Collapse handle - centered on left border */}
+            {!sidebarCollapsed && (
+              <button
+                onClick={() => setSidebarCollapsed(true)}
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 z-10 p-2 rounded-full bg-brand text-white shadow-md hover:opacity-90"
+                aria-label="Collapse side panel"
+              >
+                <ArrowRightDoubleIcon size={18} />
+              </button>
+            )}
             {/* Material Information */}
             <div className="p-3 border-b border-gray-200">
               <h1 className="text-sm font-semibold text-gray-900 mb-1 line-clamp-2">
@@ -769,6 +806,17 @@ const MaterialView: React.FC = () => {
               )}
             </div>
           </div>
+        )}
+
+        {/* Expand handle - when collapsed, fixed on right edge (md+) */}
+        {!isFullscreen && sidebarCollapsed && (
+          <button
+            onClick={() => setSidebarCollapsed(false)}
+            className="hidden md:flex fixed right-1 sm:right-2 top-1/2 -translate-y-1/2 z-50 p-2 rounded-full bg-brand text-white shadow-md hover:opacity-90"
+            aria-label="Expand side panel"
+          >
+            <ArrowLeftDoubleIcon size={18} />
+          </button>
         )}
       </div>
     </>
