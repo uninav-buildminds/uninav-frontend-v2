@@ -23,6 +23,7 @@ import { ResponseStatus } from "@/lib/types/response.types";
 import { ResourceTypeEnum, RestrictionEnum } from "@/lib/types/material.types";
 import PDFViewer from "@/components/dashboard/viewers/PDFViewer";
 import AdobePDFViewer from "@/components/dashboard/viewers/AdobePDFViewer";
+import ReactPdfViewer from "@/components/dashboard/viewers/ReactPdfViewer";
 import GDriveFolderBrowser from "@/components/dashboard/viewers/GDriveFolderBrowser";
 import GDriveFileViewer from "@/components/dashboard/viewers/GDriveFileViewer";
 import YouTubeViewer from "@/components/dashboard/viewers/YouTubeViewer";
@@ -159,8 +160,8 @@ const MaterialView: React.FC = () => {
     // Allocate points immediately on mount
     allocatePoints();
 
-    // Then every 5 minutes
-    const interval = setInterval(allocatePoints, 5 * 60 * 1000);
+    // Then every 10 minutes
+    const interval = setInterval(allocatePoints, 10 * 60 * 1000);
 
     return () => clearInterval(interval);
   }, [material?.id]);
@@ -448,41 +449,33 @@ const MaterialView: React.FC = () => {
       material.type === MaterialTypeEnum.PDF &&
       material.resource?.resourceAddress
     ) {
-      // testing out Adobe PDF viewer for now so keep it this way
-      // Use Adobe PDF viewer on mobile for better compatibility
-      if (isMobile) {
-        return (
-          <AdobePDFViewer
-            url={material.resource.resourceAddress}
-            title={material.label}
-            currentPage={currentPage}
-            totalPages={totalPages}
-            zoom={zoom}
-            onPreviousPage={handlePreviousPage}
-            onNextPage={handleNextPage}
-            onZoomIn={handleZoomIn}
-            onZoomOut={handleZoomOut}
-            showControls={!isMobile} // Hide controls on mobile for more space
-          />
-        );
-      }
-      // Fallback to iframe viewer if needed (currently disabled)
-
-      // Use iframe viewer on desktop
+      // Use React-PDF viewer on mobile for better compatibility and performance
+      // if (isMobile) {
+      // testing in desktop mode as well
       return (
-        <PDFViewer
+        <ReactPdfViewer
           url={material.resource.resourceAddress}
           title={material.label}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          zoom={zoom}
-          onPreviousPage={handlePreviousPage}
-          onNextPage={handleNextPage}
-          onZoomIn={handleZoomIn}
-          onZoomOut={handleZoomOut}
           showControls={true}
         />
       );
+      // }
+
+      // Use iframe viewer on desktop
+      // return (
+      //   <PDFViewer
+      //     url={material.resource.resourceAddress}
+      //     title={material.label}
+      //     currentPage={currentPage}
+      //     totalPages={totalPages}
+      //     zoom={zoom}
+      //     onPreviousPage={handlePreviousPage}
+      //     onNextPage={handleNextPage}
+      //     onZoomIn={handleZoomIn}
+      //     onZoomOut={handleZoomOut}
+      //     showControls={true}
+      //   />
+      // );
     }
 
     // Handle PowerPoint (ppt/pptx) using Office Online Viewer
@@ -618,13 +611,10 @@ const MaterialView: React.FC = () => {
 
         {/* Document Viewer - Full Width/Height */}
         <div className="flex-1 flex flex-col min-w-0 h-full">
-          {/* 
-            This container is the key to fixing the scrolling issue.
-            By creating a new stacking context with 'position: relative' and 'overflow: auto',
-            we can contain the PDF viewer's scrolling without affecting the fixed elements
-            on the rest of the page.
-          */}
-          <div className="relative flex-1 bg-gray-50 rounded-lg sm:rounded-xl shadow-sm h-full overflow-auto">
+          <div
+            className="relative flex-1 bg-gray-50 rounded-lg sm:rounded-xl shadow-sm h-full overflow-auto"
+            style={{ isolation: "isolate" }}
+          >
             {renderViewer()}
           </div>
         </div>
