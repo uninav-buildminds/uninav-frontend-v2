@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { FAQBadge } from "./badges";
 import { Plus, Minus } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import type { Variants } from "framer-motion";
 
 const containerVariants: Variants = {
@@ -77,24 +77,38 @@ const FAQSection: React.FC = () => {
                 <h3 className="text-base sm:text-lg font-medium text-foreground text-left pr-4">
                   {faq.question}
                 </h3>
-                <div className="flex-shrink-0">
+                <motion.div
+                  className="flex-shrink-0"
+                  animate={{ rotate: openIndex === index ? 180 : 0 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                >
                   {openIndex === index ? (
                     <Minus size={18} className="text-foreground sm:w-5 sm:h-5" />
                   ) : (
                     <Plus size={18} className="text-foreground sm:w-5 sm:h-5" />
                   )}
-                </div>
+                </motion.div>
               </div>
               
-              {openIndex === index && (
-                <div className="px-4 sm:px-6 pb-4 sm:pb-6">
-                  <div className="border-t border-gray-200 pt-3 sm:pt-4">
-                    <p className="text-sm sm:text-base text-muted-foreground text-left leading-relaxed">
-                      {faq.answer}
-                    </p>
-                  </div>
-                </div>
-              )}
+              <AnimatePresence>
+                {openIndex === index && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 sm:px-6 pb-4 sm:pb-6">
+                      <div className="border-t border-gray-200 pt-3 sm:pt-4">
+                        <p className="text-sm sm:text-base text-muted-foreground text-left leading-relaxed">
+                          {faq.answer}
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
           ))}
         </div>

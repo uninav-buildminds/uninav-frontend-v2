@@ -40,6 +40,8 @@ import { BookmarkProvider } from "./context/bookmark/BookmarkContextProvider";
 import { DepartmentProvider } from "./context/department/DepartmentContextProvider";
 import { FullscreenProvider } from "./context/FullscreenContext";
 import DashboardPage from "./pages/dashboard/DashboardPage";
+import Help from "./pages/dashboard/Help";
+import ScrollToTop from "./components/ScrollToTop";
 const queryClient = new QueryClient();
 import { Analytics } from "@vercel/analytics/react";
 
@@ -52,6 +54,7 @@ const App = () => {
           <Sonner />
 
           <BrowserRouter>
+            <ScrollToTop />
             <GoogleOAuthProvider clientId={ENV.GOOGLE_CLIENT_ID}>
               <AuthContextProvider>
                 <DepartmentProvider>
@@ -88,6 +91,7 @@ const App = () => {
                             element={<Notifications />}
                           />
                           <Route path="settings" element={<SettingsPage />} />
+                          <Route path="help" element={<Help />} />
 
                           {/* Material View */}
                           <Route
