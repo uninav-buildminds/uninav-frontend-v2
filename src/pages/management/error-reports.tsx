@@ -437,9 +437,9 @@ const ErrorReportsContent: React.FC = () => {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand"></div>
             </div>
           ) : errorReports.length === 0 ? (
-            <div className="text-center py-8">
-              <AlertTriangle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">No error reports found</p>
+            <div className="text-center py-4 sm:py-6 md:py-8 px-4">
+              <AlertTriangle className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-gray-400 mx-auto mb-2 sm:mb-3 md:mb-4" />
+              <p className="text-sm sm:text-base text-gray-600">No error reports found</p>
             </div>
           ) : (
             <>

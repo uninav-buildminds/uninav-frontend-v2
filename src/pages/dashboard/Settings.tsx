@@ -17,6 +17,7 @@ import type { SettingsSectionKey } from "@/components/settings/types";
 const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
   const [active, setActive] = useState<SettingsSectionKey>("account");
+  const [mobileView, setMobileView] = useState<"list" | "detail">("list");
   const sections = useMemo(
     () => [
       { key: "account" as const, label: "Account", icon: Settings01Icon },
@@ -40,6 +41,19 @@ const SettingsPage: React.FC = () => {
     []
   );
 
+  const handleSectionClick = (key: SettingsSectionKey) => {
+    setActive(key);
+    setMobileView("detail");
+  };
+
+  const handleBackToList = () => {
+    setMobileView("list");
+  };
+
+  const getSectionLabel = () => {
+    return sections.find(s => s.key === active)?.label || "Settings";
+  };
+
   return (
     <>
       <div className="relative z-sticky">
@@ -57,15 +71,36 @@ const SettingsPage: React.FC = () => {
               </div>
 
               <div className="max-w-6xl mx-auto w-full">
+                {/* Mobile: Show back button when in detail view */}
+                {mobileView === "detail" ? (
+                  <div className="md:hidden flex items-center gap-3 mb-2">
+                    <button
+                      onClick={handleBackToList}
+                      className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+                    >
+                      <ArrowLeft01Icon size={18} />
+                      Back
+                    </button>
+                  </div>
+                ) : null}
+                
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-foreground">
-                  Settings
+                  {mobileView === "detail" ? (
+                    <span className="md:hidden block text-lg mb-1">
+                      {getSectionLabel()}
+                    </span>
+                  ) : (
+                    <span>Settings</span>
+                  )}
                 </h2>
-                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                  Manage your account, privacy and preferences
-                </p>
+                {mobileView === "list" && (
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                    Manage your account, privacy and preferences
+                  </p>
+                )}
               </div>
 
-              <div className="max-w-6xl mx-auto w-full">
+              <div className="max-w-6xl mx-auto w-full relative z-10">
                 <div className="flex items-center gap-2 bg-white rounded-full border border-gray-200 px-3 py-2">
                   <Search01Icon size={16} className="text-gray-400" />
                   <input
@@ -76,17 +111,25 @@ const SettingsPage: React.FC = () => {
                       if (e.key === "Enter") {
                         const q = input.value.toLowerCase();
                         // simple client-side locate: switch to section if query matches
-                        if (q.includes("account")) setActive("account");
-                        else if (q.includes("academic") || q.includes("study"))
+                        if (q.includes("account")) {
+                          setActive("account");
+                          setMobileView("detail");
+                        } else if (q.includes("academic") || q.includes("study")) {
                           setActive("academic");
-                        else if (
+                          setMobileView("detail");
+                        } else if (
                           q.includes("privacy") ||
                           q.includes("security")
-                        )
+                        ) {
                           setActive("privacy");
-                        else if (q.includes("notification"))
+                          setMobileView("detail");
+                        } else if (q.includes("notification")) {
                           setActive("notifications");
-                        else if (q.includes("data")) setActive("data");
+                          setMobileView("detail");
+                        } else if (q.includes("data")) {
+                          setActive("data");
+                          setMobileView("detail");
+                        }
                       }
                     }}
                   />
@@ -105,7 +148,39 @@ const SettingsPage: React.FC = () => {
       </div>
 
       <div className="max-w-6xl mx-auto px-2 sm:px-4 py-8 pb-28">
-        <div className="grid grid-cols-12 gap-6">
+        {/* Mobile: List view or Detail view */}
+        <div className="md:hidden">
+          {mobileView === "list" ? (
+            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+              {sections.map(({ key, label, icon: Icon }, index) => (
+                <React.Fragment key={key}>
+                  <button
+                    onClick={() => handleSectionClick(key)}
+                    className="w-full flex items-center gap-3 px-4 py-4 hover:bg-gray-50 transition-colors"
+                  >
+                    <Icon 
+                      size={20} 
+                      className={active === key ? "text-brand" : "text-gray-600"} 
+                    />
+                    <span className={`flex-1 text-left text-sm font-medium ${
+                      active === key ? "text-brand" : "text-gray-900"
+                    }`}>
+                      {label}
+                    </span>
+                  </button>
+                  {index < sections.length - 1 && (
+                    <div className="h-px bg-gray-200 mx-4" />
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
+          ) : (
+            <SettingsPanel section={active} />
+          )}
+        </div>
+
+        {/* Desktop: Keep tab layout */}
+        <div className="hidden md:grid grid-cols-12 gap-6">
           <div className="col-span-12 md:col-span-4 lg:col-span-3">
             <SettingsNav
               sections={sections}

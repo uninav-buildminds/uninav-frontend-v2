@@ -13,7 +13,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({ type, onAction, isLoading = fal
     switch (type) {
       case 'recent':
         return {
-          icon: <Home01Icon size={48} className="text-gray-400" />,
+          Icon: Home01Icon,
           title: "No Recent Materials",
           description: "You haven't viewed any materials recently. Start exploring to see your recent activity here.",
           actionText: "Browse Materials",
@@ -21,7 +21,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({ type, onAction, isLoading = fal
         };
       case 'saved':
         return {
-          icon: <Bookmark01Icon size={48} className="text-gray-400" />,
+          Icon: Bookmark01Icon,
           title: "No Saved Materials",
           description: "You haven't saved any materials yet. Start exploring and save materials you find useful.",
           actionText: "Browse Materials",
@@ -29,7 +29,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({ type, onAction, isLoading = fal
         };
       case 'uploads':
         return {
-          icon: <UploadSquare01Icon size={48} className="text-gray-400" />,
+          Icon: UploadSquare01Icon,
           title: "No Uploads Yet",
           description: "You haven't uploaded any materials yet. Share your knowledge with the community.",
           actionText: "Upload Material",
@@ -37,7 +37,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({ type, onAction, isLoading = fal
         };
       case 'libraries':
         return {
-          icon: <Folder01Icon size={48} className="text-gray-400" />,
+          Icon: Folder01Icon,
           title: "Your Library is Empty",
           description: "Start building your personal library by saving materials and uploading your own content.",
           actionText: "Upload Material",
@@ -45,7 +45,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({ type, onAction, isLoading = fal
         };
       default:
         return {
-          icon: <Search01Icon size={48} className="text-gray-400" />,
+          Icon: Search01Icon,
           title: "No Results Found",
           description: "Try adjusting your search or filters to find what you're looking for.",
           actionText: "Clear Filters",
@@ -61,16 +61,16 @@ const EmptyState: React.FC<EmptyStateProps> = ({ type, onAction, isLoading = fal
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="flex flex-col items-center justify-center py-16 px-4 text-center"
+      className="flex flex-col items-center justify-center py-8 sm:py-12 md:py-16 px-4 text-center"
     >
       {/* Icon */}
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 0.2, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-        className="mb-6 p-4 bg-gray-50 rounded-full"
+        className="mb-3 sm:mb-4 md:mb-6 p-2 sm:p-3 md:p-4 bg-gray-50 rounded-full"
       >
-        {content.icon}
+        <content.Icon className="w-6 h-6 sm:w-8 sm:h-8 md:w-12 md:h-12 text-gray-400" />
       </motion.div>
 
       {/* Title */}
@@ -78,7 +78,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({ type, onAction, isLoading = fal
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-        className="text-xl font-semibold text-gray-900 mb-2"
+        className="text-base sm:text-lg md:text-xl font-semibold text-gray-900 mb-1 sm:mb-2"
       >
         {content.title}
       </motion.h3>
@@ -88,7 +88,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({ type, onAction, isLoading = fal
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-        className="text-gray-600 mb-8 max-w-md leading-relaxed"
+        className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6 md:mb-8 max-w-md leading-relaxed px-2"
       >
         {content.description}
       </motion.p>
@@ -103,7 +103,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({ type, onAction, isLoading = fal
           whileTap={{ scale: isLoading ? 1 : 0.98 }}
           onClick={onAction}
           disabled={isLoading}
-          className={`inline-flex items-center gap-2 px-6 py-3 rounded-lg transition-colors duration-200 font-medium ${
+          className={`inline-flex items-center gap-1.5 sm:gap-2 px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-lg transition-colors duration-200 text-sm sm:text-base font-medium ${
             isLoading 
               ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
               : 'bg-brand text-white hover:bg-brand/90'
@@ -111,13 +111,13 @@ const EmptyState: React.FC<EmptyStateProps> = ({ type, onAction, isLoading = fal
         >
           {isLoading ? (
             <>
-              <div className="w-4 h-4 border-2 border-gray-500 border-t-transparent rounded-full animate-spin" />
-              Loading...
+              <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-gray-500 border-t-transparent rounded-full animate-spin" />
+              <span className="text-xs sm:text-sm">Loading...</span>
             </>
           ) : (
             <>
-              {content.actionIcon}
-              {content.actionText}
+              <span className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0">{content.actionIcon}</span>
+              <span>{content.actionText}</span>
             </>
           )}
         </motion.button>

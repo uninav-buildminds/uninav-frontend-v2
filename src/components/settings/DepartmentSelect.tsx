@@ -90,13 +90,15 @@ export const DepartmentSelect: React.FC<DepartmentSelectProps> = ({
               variant="outline"
               role="combobox"
               aria-expanded={open}
-              className="justify-between w-full"
+              className="justify-between w-full min-w-0"
               disabled={loading || disabled}
             >
-              {selectedDepartment
-                ? `${selectedDepartment.name} (${selectedDepartment.facultyName})`
-                : "Select department..."}
-              <ChevronsUpDown className="opacity-50 ml-2 w-4 h-4 shrink-0" />
+              <span className="truncate flex-1 text-left mr-2">
+                {selectedDepartment
+                  ? `${selectedDepartment.name} (${selectedDepartment.facultyName})`
+                  : "Select department..."}
+              </span>
+              <ChevronsUpDown className="opacity-50 w-4 h-4 shrink-0 flex-shrink-0" />
             </Button>
           </PopoverTrigger>
           <PopoverContent

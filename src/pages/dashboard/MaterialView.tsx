@@ -777,7 +777,7 @@ const MaterialView: React.FC = () => {
                 Related Materials
               </h3>
               {relatedMaterials.length === 0 ? (
-                <p className="text-xs text-gray-500 text-center py-6">
+                <p className="text-xs text-gray-500 text-center py-3 sm:py-4 md:py-6 px-2">
                   No related materials found
                 </p>
               ) : (

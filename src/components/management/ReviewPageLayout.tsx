@@ -94,12 +94,12 @@ const ReviewPageLayout: React.FC<ReviewPageLayoutProps> = ({
             <>
               {/* Check if children is empty (no items) */}
               {React.Children.count(children) === 0 ? (
-                <div className="bg-gray-50 p-8 rounded-lg text-center">
-                  <EmptyIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium mb-2">
+                <div className="bg-gray-50 p-4 sm:p-6 md:p-8 rounded-lg text-center">
+                  <EmptyIcon className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 text-gray-400 mx-auto mb-2 sm:mb-3 md:mb-4" />
+                  <h3 className="text-base sm:text-lg font-medium mb-1 sm:mb-2">
                     {emptyStateTitle}
                   </h3>
-                  <p className="text-gray-600">
+                  <p className="text-sm sm:text-base text-gray-600 px-2">
                     {getEmptyStateMessage(activeTab)}
                   </p>
                 </div>

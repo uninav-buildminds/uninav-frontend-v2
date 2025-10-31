@@ -241,7 +241,7 @@ const Notifications: React.FC = () => {
               </p>
 
               {/* Search + Actions Row */}
-              <div className="mt-4 flex items-center gap-2">
+              <div className="mt-4 flex items-center gap-2 relative z-10">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 bg-white rounded-full border border-gray-200 px-3 py-2">
                     <Search01Icon size={16} className="text-gray-400" />

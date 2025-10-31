@@ -150,15 +150,15 @@ const SearchResults: React.FC<SearchResultsProps> = ({
 
 			{/* Loading State */}
 			{isSearching && (
-				<div className="flex items-center justify-center py-20">
+				<div className="flex items-center justify-center py-8 sm:py-12 md:py-20">
 					<div className="text-center">
-						<div className="inline-flex items-center justify-center w-16 h-16 mb-4">
-							<div className="w-16 h-16 border-4 border-brand/20 border-t-brand rounded-full animate-spin" />
+						<div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 mb-3 sm:mb-4">
+							<div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 border-3 sm:border-4 border-brand/20 border-t-brand rounded-full animate-spin" />
 						</div>
-						<p className="text-gray-600 font-medium">
+						<p className="text-sm sm:text-base text-gray-600 font-medium">
 							Searching materials...
 						</p>
-						<p className="text-sm text-gray-500 mt-1">
+						<p className="text-xs sm:text-sm text-gray-500 mt-1">
 							{advancedSearchEnabled
 								? "Running advanced search"
 								: "This won't take long"}
@@ -172,15 +172,15 @@ const SearchResults: React.FC<SearchResultsProps> = ({
 				<motion.div
 					initial={{ opacity: 0, scale: 0.95 }}
 					animate={{ opacity: 1, scale: 1 }}
-					className="flex items-center justify-center py-20">
-					<div className="text-center max-w-md">
-						<div className="inline-flex items-center justify-center w-20 h-20 mb-6 bg-gray-100 rounded-full">
-							<Search01Icon size={32} className="text-gray-400" />
+					className="flex items-center justify-center py-8 sm:py-12 md:py-20">
+					<div className="text-center max-w-md px-4">
+						<div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 mb-3 sm:mb-4 md:mb-6 bg-gray-100 rounded-full">
+							<Search01Icon size={20} className="sm:w-6 sm:h-6 md:w-8 md:h-8 text-gray-400" />
 						</div>
-						<h3 className="text-xl font-semibold text-gray-900 mb-2">
+						<h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-1 sm:mb-2">
 							No materials found
 						</h3>
-						<p className="text-gray-600 mb-6">
+						<p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">
 							We couldn't find any materials matching "{query}".
 							{!advancedSearchEnabled && (
 								<>
@@ -195,9 +195,9 @@ const SearchResults: React.FC<SearchResultsProps> = ({
 								</>
 							)}
 						</p>
-						<div className="space-y-2 text-sm text-gray-500 text-left">
+						<div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-500 text-left max-w-sm mx-auto">
 							<p className="font-medium text-gray-700">Try:</p>
-							<ul className="list-disc list-inside space-y-1 ml-2">
+							<ul className="list-disc list-inside space-y-0.5 sm:space-y-1 ml-2">
 								<li>Using different keywords</li>
 								<li>Checking your spelling</li>
 								<li>Using course codes (e.g., "CSC 204")</li>
