@@ -17,6 +17,7 @@ import {
   Alert02Icon,
   Comment01Icon,
   NewsIcon,
+  Notification01Icon,
 } from "hugeicons-react";
 import { useNavigate, Link } from "react-router-dom";
 import {
@@ -295,26 +296,86 @@ const Notifications: React.FC = () => {
             <div className="col-span-2">Status</div>
           </div>
 
-          {/* Groups */}
+          {/* Loading State - Skeleton with shimmer */}
           {isLoading && (
-            <div className="p-4 space-y-4">
+            <div className="p-4 sm:p-6 space-y-3 sm:space-y-4">
               {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="animate-pulse grid grid-cols-12 gap-2">
+                <div key={i} className="grid grid-cols-12 gap-3 sm:gap-4 py-3 sm:py-4 border-b border-gray-100 last:border-0">
+                  {/* Icon skeleton */}
                   <div className="col-span-12 sm:col-span-7 flex items-start gap-3">
-                    <div className="w-5 h-5 rounded-full bg-gray-200" />
-                    <div className="flex-1 space-y-2">
-                      <div className="h-3 w-40 bg-gray-200 rounded" />
-                      <div className="h-3 w-64 bg-gray-200 rounded" />
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-200 relative overflow-hidden flex-shrink-0">
+                      <div className="absolute inset-0 shimmer-sweep" />
+                    </div>
+                    <div className="flex-1 space-y-2 min-w-0">
+                      {/* Title skeleton */}
+                      <div className="h-4 sm:h-5 bg-gray-200 rounded w-3/4 sm:w-2/3 relative overflow-hidden">
+                        <div className="absolute inset-0 shimmer-sweep" />
+                      </div>
+                      {/* Description skeleton */}
+                      <div className="space-y-1.5">
+                        <div className="h-3 sm:h-4 bg-gray-200 rounded w-full relative overflow-hidden">
+                          <div className="absolute inset-0 shimmer-sweep" />
+                        </div>
+                        <div className="h-3 sm:h-4 bg-gray-200 rounded w-5/6 relative overflow-hidden">
+                          <div className="absolute inset-0 shimmer-sweep" />
+                        </div>
+                      </div>
+                      {/* Mobile time skeleton */}
+                      <div className="sm:hidden h-3 bg-gray-200 rounded w-24 relative overflow-hidden mt-2">
+                        <div className="absolute inset-0 shimmer-sweep" />
+                      </div>
                     </div>
                   </div>
-                  <div className="col-span-6 sm:col-span-3 h-3 bg-gray-200 rounded" />
-                  <div className="col-span-6 sm:col-span-2 h-6 bg-gray-200 rounded-full" />
+                  {/* Desktop time skeleton */}
+                  <div className="hidden sm:block col-span-3">
+                    <div className="h-4 bg-gray-200 rounded w-28 relative overflow-hidden">
+                      <div className="absolute inset-0 shimmer-sweep" />
+                    </div>
+                  </div>
+                  {/* Status skeleton */}
+                  <div className="col-span-12 sm:col-span-2 flex items-center sm:justify-start">
+                    <div className="h-6 sm:h-7 bg-gray-200 rounded-full w-16 sm:w-20 relative overflow-hidden">
+                      <div className="absolute inset-0 shimmer-sweep" />
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
           )}
 
+          {/* Empty State */}
+          {!isLoading && grouped.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-8 sm:py-12 md:py-16 px-4 text-center">
+              <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-gray-50 rounded-full">
+                <Notification01Icon className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-gray-400" />
+              </div>
+              <h3 className="text-base sm:text-lg md:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">
+                No Notifications
+              </h3>
+              <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6 max-w-md leading-relaxed px-2">
+                {query.trim() || filterStatus !== "all" || filterTime !== "all"
+                  ? "No notifications match your search or filters. Try adjusting your criteria."
+                  : "You're all caught up! When you have new notifications, they'll appear here."}
+              </p>
+              {(query.trim() || filterStatus !== "all" || filterTime !== "all") && (
+                <button
+                  onClick={() => {
+                    setQuery("");
+                    setFilterStatus("all");
+                    setFilterTime("all");
+                  }}
+                  className="inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg bg-brand text-white hover:bg-brand/90 transition-colors duration-200 text-sm sm:text-base font-medium"
+                >
+                  <Search01Icon size={16} className="sm:w-4 sm:h-4" />
+                  Clear Filters
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Notifications List */}
           {!isLoading &&
+            grouped.length > 0 &&
             grouped.map(([group, list]) => (
               <div
                 key={group}

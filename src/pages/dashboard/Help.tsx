@@ -287,15 +287,29 @@ const Help: React.FC = () => {
               <ul className="space-y-2 text-sm text-gray-600">
                 <li className="flex items-start gap-2">
                   <span className="text-gray-400 mt-1">•</span>
-                  <span>Reset password</span>
+                  <a
+                    href="http://localhost:3000/auth/password/forgot"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-brand hover:underline cursor-pointer"
+                  >
+                    Reset password
+                  </a>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-gray-400 mt-1">•</span>
-                  <span>Change email</span>
+                  <span className="text-gray-400 cursor-not-allowed">
+                    Change email <span className="text-xs text-gray-500">(Not available)</span>
+                  </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-gray-400 mt-1">•</span>
-                  <span>Update academic profile</span>
+                  <button
+                    onClick={() => navigate("/dashboard/settings?tab=academic")}
+                    className="text-brand hover:underline cursor-pointer text-left"
+                  >
+                    Update academic profile
+                  </button>
                 </li>
               </ul>
             </div>
@@ -379,15 +393,29 @@ const Help: React.FC = () => {
                   <ul className="space-y-2 text-sm text-gray-600">
                     <li className="flex items-start gap-2">
                       <span className="text-gray-400 mt-1">•</span>
-                      <span>Reset password</span>
+                      <a
+                        href="http://localhost:3000/auth/password/forgot"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-brand hover:underline cursor-pointer"
+                      >
+                        Reset password
+                      </a>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-gray-400 mt-1">•</span>
-                      <span>Change email</span>
+                      <span className="text-gray-400 cursor-not-allowed">
+                        Change email <span className="text-xs text-gray-500">(Not available)</span>
+                      </span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-gray-400 mt-1">•</span>
-                      <span>Update academic profile</span>
+                      <button
+                        onClick={() => navigate("/dashboard/settings?tab=academic")}
+                        className="text-brand hover:underline cursor-pointer text-left"
+                      >
+                        Update academic profile
+                      </button>
                     </li>
                   </ul>
                 </div>
@@ -424,7 +452,12 @@ const Help: React.FC = () => {
           {/* Desktop Grid */}
           <div className="hidden md:grid grid-cols-2 gap-4 sm:gap-6">
             {/* WhatsApp Support Card */}
-            <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+            <a
+              href="https://wa.me/2349155004456"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow block cursor-pointer"
+            >
               <div className="flex items-start gap-3 mb-4">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border border-gray-200 flex items-center justify-center bg-green-50 text-green-600 flex-shrink-0">
                   <WhatsAppIconSVG />
@@ -447,10 +480,15 @@ const Help: React.FC = () => {
                   <span>Available 9AM-9PM</span>
                 </li>
               </ul>
-            </div>
+            </a>
 
             {/* Email Support Card */}
-            <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+            <a
+              href="mailto:uninav.buildminds@gmail.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow block cursor-pointer"
+            >
               <div className="flex items-start gap-3 mb-4">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border border-gray-200 flex items-center justify-center bg-blue-50 flex-shrink-0">
                   <Mail01Icon size={20} className="sm:w-6 sm:h-6 text-blue-600" />
@@ -470,10 +508,10 @@ const Help: React.FC = () => {
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-gray-400 mt-1">•</span>
-                  <span>support@uninav.com</span>
+                  <span>uninav.buildminds@gmail.com</span>
                 </li>
               </ul>
-            </div>
+            </a>
           </div>
 
           {/* Mobile/Tablet Horizontal Scroll */}
@@ -486,7 +524,12 @@ const Help: React.FC = () => {
             >
               {/* WhatsApp Support Card */}
               <div className="flex-shrink-0 w-full snap-center" style={{ scrollSnapAlign: 'center' }}>
-                <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+                <a
+                  href="https://wa.me/2349155004456"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow block cursor-pointer"
+                >
                   <div className="flex items-start gap-3 mb-4">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border border-gray-200 flex items-center justify-center bg-green-50 text-green-600 flex-shrink-0">
                       <WhatsAppIconSVG />
@@ -509,12 +552,17 @@ const Help: React.FC = () => {
                       <span>Available 9AM-9PM</span>
                     </li>
                   </ul>
-                </div>
+                </a>
               </div>
 
               {/* Email Support Card */}
               <div className="flex-shrink-0 w-full snap-center" style={{ scrollSnapAlign: 'center' }}>
-                <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+                <a
+                  href="mailto:uninav.buildminds@gmail.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow block cursor-pointer"
+                >
                   <div className="flex items-start gap-3 mb-4">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border border-gray-200 flex items-center justify-center bg-blue-50 flex-shrink-0">
                       <Mail01Icon size={20} className="sm:w-6 sm:h-6 text-blue-600" />
@@ -534,10 +582,10 @@ const Help: React.FC = () => {
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-gray-400 mt-1">•</span>
-                      <span>support@uninav.com</span>
+                      <span>uninav.buildminds@gmail.com</span>
                     </li>
                   </ul>
-                </div>
+                </a>
               </div>
             </div>
 

@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useMemo, useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft01Icon,
   Settings01Icon,
@@ -16,8 +16,18 @@ import type { SettingsSectionKey } from "@/components/settings/types";
 
 const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [active, setActive] = useState<SettingsSectionKey>("account");
   const [mobileView, setMobileView] = useState<"list" | "detail">("list");
+
+  // Read tab from URL params on mount
+  useEffect(() => {
+    const tabParam = searchParams.get("tab");
+    if (tabParam && ["account", "academic", "privacy", "notifications", "data"].includes(tabParam)) {
+      setActive(tabParam as SettingsSectionKey);
+      setMobileView("detail");
+    }
+  }, [searchParams]);
   const sections = useMemo(
     () => [
       { key: "account" as const, label: "Account", icon: Settings01Icon },
@@ -59,31 +69,21 @@ const SettingsPage: React.FC = () => {
       <div className="relative z-sticky">
         <div className="bg-gradient-to-br from-[theme(colors.dashboard.gradientFrom)] to-[theme(colors.dashboard.gradientTo)]">
           <div className="px-2 sm:px-4 pt-16 sm:pt-20 pb-4 sm:pb-6">
-            <div className="max-w-6xl mx-auto flex flex-col sm:flex-col gap-3">
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => navigate("/dashboard")}
-                  className="hidden sm:inline-flex items-center gap-2 text-xs sm:text-sm text-muted-foreground hover:text-foreground"
-                >
-                  <ArrowLeft01Icon size={18} />
-                  Back to Dashboard
-                </button>
-              </div>
-
-              <div className="max-w-6xl mx-auto w-full">
-                {/* Mobile: Show back button when in detail view */}
-                {mobileView === "detail" ? (
-                  <div className="md:hidden flex items-center gap-3 mb-2">
-                    <button
-                      onClick={handleBackToList}
-                      className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-                    >
-                      <ArrowLeft01Icon size={18} />
-                      Back
-                    </button>
-                  </div>
-                ) : null}
-                
+            <div className="max-w-6xl mx-auto">
+              {/* Mobile: Show back button when in detail view */}
+              {mobileView === "detail" ? (
+                <div className="md:hidden flex items-center gap-3 mb-4">
+                  <button
+                    onClick={handleBackToList}
+                    className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+                  >
+                    <ArrowLeft01Icon size={18} />
+                    Back
+                  </button>
+                </div>
+              ) : null}
+              
+              <div className="text-center">
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-foreground">
                   {mobileView === "detail" ? (
                     <span className="md:hidden block text-lg mb-1">
@@ -100,8 +100,8 @@ const SettingsPage: React.FC = () => {
                 )}
               </div>
 
-              <div className="max-w-6xl mx-auto w-full relative z-10">
-                <div className="flex items-center gap-2 bg-white rounded-full border border-gray-200 px-3 py-2">
+              <div className="max-w-6xl mx-auto w-full relative z-10 mt-6 flex justify-center">
+                <div className="flex items-center gap-2 bg-white rounded-full border border-gray-200 px-3 py-2 w-full max-w-xl">
                   <Search01Icon size={16} className="text-gray-400" />
                   <input
                     placeholder="Search settings..."
