@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft01Icon,
@@ -35,6 +35,23 @@ const Help: React.FC = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedFAQs, setExpandedFAQs] = useState<Set<number>>(new Set());
+  
+  // Quick Help scroll state
+  const quickHelpScrollRef = useRef<HTMLDivElement>(null);
+  const [quickHelpIndex, setQuickHelpIndex] = useState(0);
+  
+  // Contact Support scroll state
+  const contactSupportScrollRef = useRef<HTMLDivElement>(null);
+  const [contactSupportIndex, setContactSupportIndex] = useState(0);
+  
+  // Contact Form state
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    subject: "",
+    message: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const faqs: FAQItem[] = [
     {
@@ -74,6 +91,78 @@ const Help: React.FC = () => {
   const handleSearch = (query: string) => {
     // Search functionality - can be expanded later
     console.log("Searching help articles:", query);
+  };
+
+  // Quick Help scroll handlers
+  const scrollQuickHelpToIndex = (index: number) => {
+    const container = quickHelpScrollRef.current;
+    if (!container) return;
+
+    const isTablet = window.innerWidth >= 768; // md breakpoint
+    const cardWidth = isTablet ? container.clientWidth / 3 : container.clientWidth;
+    const scrollPosition = index * cardWidth;
+    
+    container.scrollTo({
+      left: scrollPosition,
+      behavior: 'smooth'
+    });
+  };
+
+  const handleQuickHelpScroll = () => {
+    const container = quickHelpScrollRef.current;
+    if (!container) return;
+
+    const scrollLeft = container.scrollLeft;
+    const isTablet = window.innerWidth >= 768; // md breakpoint
+    const cardWidth = isTablet ? container.clientWidth / 3 : container.clientWidth;
+    const newIndex = Math.round(scrollLeft / cardWidth);
+    
+    if (newIndex !== quickHelpIndex) {
+      setQuickHelpIndex(newIndex);
+    }
+  };
+
+  // Contact Support scroll handlers
+  const scrollContactSupportToIndex = (index: number) => {
+    const container = contactSupportScrollRef.current;
+    if (!container) return;
+
+    const isTablet = window.innerWidth >= 768; // md breakpoint
+    const cardWidth = isTablet ? container.clientWidth / 2 : container.clientWidth;
+    const scrollPosition = index * cardWidth;
+    
+    container.scrollTo({
+      left: scrollPosition,
+      behavior: 'smooth'
+    });
+  };
+
+  const handleContactSupportScroll = () => {
+    const container = contactSupportScrollRef.current;
+    if (!container) return;
+
+    const scrollLeft = container.scrollLeft;
+    const isTablet = window.innerWidth >= 768; // md breakpoint
+    const cardWidth = isTablet ? container.clientWidth / 2 : container.clientWidth;
+    const newIndex = Math.round(scrollLeft / cardWidth);
+    
+    if (newIndex !== contactSupportIndex) {
+      setContactSupportIndex(newIndex);
+    }
+  };
+
+  // Contact form handler
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    // Simulate form submission
+    setTimeout(() => {
+      console.log("Form submitted:", formData);
+      setIsSubmitting(false);
+      setFormData({ name: "", email: "", subject: "", message: "" });
+      // You can add toast notification here
+    }, 1000);
   };
 
   return (
@@ -130,7 +219,9 @@ const Help: React.FC = () => {
           <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-6">
             Quick Help
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+          
+          {/* Desktop Grid */}
+          <div className="hidden md:grid grid-cols-3 gap-4 sm:gap-6">
             {/* Getting Started Card */}
             <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-start gap-3 mb-4">
@@ -209,6 +300,119 @@ const Help: React.FC = () => {
               </ul>
             </div>
           </div>
+
+          {/* Mobile/Tablet Horizontal Scroll */}
+          <div className="md:hidden">
+            <div
+              ref={quickHelpScrollRef}
+              onScroll={handleQuickHelpScroll}
+              className="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory"
+              style={{ scrollSnapType: 'x mandatory' }}
+            >
+              {/* Getting Started Card */}
+              <div className="flex-shrink-0 w-full snap-center" style={{ scrollSnapAlign: 'center' }}>
+                <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-start gap-3 mb-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border border-gray-200 flex items-center justify-center bg-brand/10 flex-shrink-0">
+                      <Rocket01Icon size={20} className="sm:w-6 sm:h-6 text-brand" />
+                    </div>
+                    <h4 className="text-base sm:text-lg font-semibold text-gray-900 pt-1">
+                      Getting Started
+                    </h4>
+                  </div>
+                  <ul className="space-y-2 text-sm text-gray-600">
+                    <li className="flex items-start gap-2">
+                      <span className="text-gray-400 mt-1">•</span>
+                      <span>How to search for materials</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-gray-400 mt-1">•</span>
+                      <span>How to upload notes</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-gray-400 mt-1">•</span>
+                      <span>How points work</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Uploading Materials Card */}
+              <div className="flex-shrink-0 w-full snap-center" style={{ scrollSnapAlign: 'center' }}>
+                <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-start gap-3 mb-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border border-gray-200 flex items-center justify-center bg-brand/10 flex-shrink-0">
+                      <UploadSquare01Icon size={20} className="sm:w-6 sm:h-6 text-brand" />
+                    </div>
+                    <h4 className="text-base sm:text-lg font-semibold text-gray-900 pt-1">
+                      Uploading Materials
+                    </h4>
+                  </div>
+                  <ul className="space-y-2 text-sm text-gray-600">
+                    <li className="flex items-start gap-2">
+                      <span className="text-gray-400 mt-1">•</span>
+                      <span>What files are allowed</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-gray-400 mt-1">•</span>
+                      <span>Why uploads get rejected</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-gray-400 mt-1">•</span>
+                      <span>How to edit your uploads</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Account Help Card */}
+              <div className="flex-shrink-0 w-full snap-center" style={{ scrollSnapAlign: 'center' }}>
+                <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-start gap-3 mb-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border border-gray-200 flex items-center justify-center bg-brand/10 flex-shrink-0">
+                      <InformationCircleIcon size={20} className="sm:w-6 sm:h-6 text-brand" />
+                    </div>
+                    <h4 className="text-base sm:text-lg font-semibold text-gray-900 pt-1">
+                      Account Help
+                    </h4>
+                  </div>
+                  <ul className="space-y-2 text-sm text-gray-600">
+                    <li className="flex items-start gap-2">
+                      <span className="text-gray-400 mt-1">•</span>
+                      <span>Reset password</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-gray-400 mt-1">•</span>
+                      <span>Change email</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-gray-400 mt-1">•</span>
+                      <span>Update academic profile</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Swiper Dots */}
+            <div className="flex justify-center gap-2 mt-4">
+              {Array.from({ length: 3 }, (_, index) => (
+                <button
+                  key={index}
+                  onClick={() => {
+                    setQuickHelpIndex(index);
+                    scrollQuickHelpToIndex(index);
+                  }}
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                    index === quickHelpIndex
+                      ? 'bg-brand w-6'
+                      : 'bg-gray-300 hover:bg-gray-400'
+                  }`}
+                  aria-label={`Go to card ${index + 1}`}
+                />
+              ))}
+            </div>
+          </div>
         </section>
 
         {/* Contact Support Section */}
@@ -216,7 +420,9 @@ const Help: React.FC = () => {
           <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-6">
             Contact Support
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+          
+          {/* Desktop Grid */}
+          <div className="hidden md:grid grid-cols-2 gap-4 sm:gap-6">
             {/* WhatsApp Support Card */}
             <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-start gap-3 mb-4">
@@ -269,64 +475,301 @@ const Help: React.FC = () => {
               </ul>
             </div>
           </div>
-        </section>
 
-        {/* FAQs Section */}
-        <section>
-          <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-6">
-            FAQs
-          </h3>
-          <div className="space-y-2">
-            {faqs.map((faq, index) => (
-              <div
-                key={index}
-                className="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden"
-              >
-                <button
-                  onClick={() => toggleFAQ(index)}
-                  className="w-full flex items-center justify-between p-4 sm:p-5 text-left hover:bg-gray-100 transition-colors"
-                >
-                  <span className="text-sm sm:text-base font-medium text-gray-900 pr-4">
-                    {faq.question}
-                  </span>
-                  <motion.div
-                    animate={{ rotate: expandedFAQs.has(index) ? 180 : 0 }}
-                    transition={{ duration: 0.3, ease: "easeInOut" }}
-                  >
-                    {expandedFAQs.has(index) ? (
-                      <MinusSignIcon
-                        size={20}
-                        className="text-gray-600 flex-shrink-0"
-                      />
-                    ) : (
-                      <PlusSignIcon
-                        size={20}
-                        className="text-gray-600 flex-shrink-0"
-                      />
-                    )}
-                  </motion.div>
-                </button>
-                <AnimatePresence>
-                  {expandedFAQs.has(index) && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.3, ease: "easeInOut" }}
-                      className="overflow-hidden"
-                    >
-                      <div className="px-4 sm:px-5 pb-4 sm:pb-5">
-                        <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
-                          {faq.answer}
-                        </p>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+          {/* Mobile/Tablet Horizontal Scroll */}
+          <div className="md:hidden">
+            <div
+              ref={contactSupportScrollRef}
+              onScroll={handleContactSupportScroll}
+              className="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory"
+              style={{ scrollSnapType: 'x mandatory' }}
+            >
+              {/* WhatsApp Support Card */}
+              <div className="flex-shrink-0 w-full snap-center" style={{ scrollSnapAlign: 'center' }}>
+                <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-start gap-3 mb-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border border-gray-200 flex items-center justify-center bg-green-50 text-green-600 flex-shrink-0">
+                      <WhatsAppIconSVG />
+                    </div>
+                    <h4 className="text-base sm:text-lg font-semibold text-gray-900 pt-1">
+                      WhatsApp Support
+                    </h4>
+                  </div>
+                  <ul className="space-y-2 text-sm text-gray-600">
+                    <li className="flex items-start gap-2">
+                      <span className="text-gray-400 mt-1">•</span>
+                      <span>Fastest response</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-gray-400 mt-1">•</span>
+                      <span>Send photos/screenshots</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-gray-400 mt-1">•</span>
+                      <span>Available 9AM-9PM</span>
+                    </li>
+                  </ul>
+                </div>
               </div>
-            ))}
+
+              {/* Email Support Card */}
+              <div className="flex-shrink-0 w-full snap-center" style={{ scrollSnapAlign: 'center' }}>
+                <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-start gap-3 mb-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border border-gray-200 flex items-center justify-center bg-blue-50 flex-shrink-0">
+                      <Mail01Icon size={20} className="sm:w-6 sm:h-6 text-blue-600" />
+                    </div>
+                    <h4 className="text-base sm:text-lg font-semibold text-gray-900 pt-1">
+                      Email Support
+                    </h4>
+                  </div>
+                  <ul className="space-y-2 text-sm text-gray-600">
+                    <li className="flex items-start gap-2">
+                      <span className="text-gray-400 mt-1">•</span>
+                      <span>For complex issues</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-gray-400 mt-1">•</span>
+                      <span>24-hour response time</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-gray-400 mt-1">•</span>
+                      <span>support@uninav.com</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Swiper Dots */}
+            <div className="flex justify-center gap-2 mt-4">
+              {Array.from({ length: 2 }, (_, index) => (
+                <button
+                  key={index}
+                  onClick={() => {
+                    setContactSupportIndex(index);
+                    scrollContactSupportToIndex(index);
+                  }}
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                    index === contactSupportIndex
+                      ? 'bg-brand w-6'
+                      : 'bg-gray-300 hover:bg-gray-400'
+                  }`}
+                  aria-label={`Go to card ${index + 1}`}
+                />
+              ))}
+            </div>
           </div>
         </section>
+
+        {/* Contact Form & FAQs Section */}
+        <div className="md:grid md:grid-cols-2 md:gap-6 flex flex-col md:flex-row">
+          {/* Contact Form - Mobile/Tablet: comes before FAQ, Desktop: beside FAQ */}
+          <section className="mb-12 md:mb-12 order-1">
+            <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-6">
+              Send us a Message
+            </h3>
+            
+            {/* Desktop Form */}
+            <form onSubmit={handleSubmit} className="hidden md:block">
+              <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                <div className="space-y-4">
+                  <div>
+                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                      Name
+                    </label>
+                    <input
+                      type="text"
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      required
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all"
+                      placeholder="Your name"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      required
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all"
+                      placeholder="your.email@example.com"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
+                      Subject
+                    </label>
+                    <input
+                      type="text"
+                      id="subject"
+                      value={formData.subject}
+                      onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                      required
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all"
+                      placeholder="What's this about?"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
+                      Message
+                    </label>
+                    <textarea
+                      id="message"
+                      value={formData.message}
+                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                      required
+                      rows={5}
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all resize-none"
+                      placeholder="Tell us more..."
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full px-6 py-3 bg-brand text-white rounded-lg font-medium hover:bg-brand/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? "Sending..." : "Send Message"}
+                  </button>
+                </div>
+              </div>
+            </form>
+
+            {/* Mobile/Tablet Form */}
+            <form onSubmit={handleSubmit} className="md:hidden">
+              <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                <div className="space-y-4">
+                  <div>
+                    <label htmlFor="name-mobile" className="block text-sm font-medium text-gray-700 mb-2">
+                      Name
+                    </label>
+                    <input
+                      type="text"
+                      id="name-mobile"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      required
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all"
+                      placeholder="Your name"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="email-mobile" className="block text-sm font-medium text-gray-700 mb-2">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      id="email-mobile"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      required
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all"
+                      placeholder="your.email@example.com"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="subject-mobile" className="block text-sm font-medium text-gray-700 mb-2">
+                      Subject
+                    </label>
+                    <input
+                      type="text"
+                      id="subject-mobile"
+                      value={formData.subject}
+                      onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                      required
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all"
+                      placeholder="What's this about?"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="message-mobile" className="block text-sm font-medium text-gray-700 mb-2">
+                      Message
+                    </label>
+                    <textarea
+                      id="message-mobile"
+                      value={formData.message}
+                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                      required
+                      rows={5}
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all resize-none"
+                      placeholder="Tell us more..."
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full px-6 py-3 bg-brand text-white rounded-lg font-medium hover:bg-brand/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? "Sending..." : "Send Message"}
+                  </button>
+                </div>
+              </div>
+            </form>
+          </section>
+
+          {/* FAQs Section - Desktop: beside form, Mobile: after form */}
+          <section className="mb-12 md:mb-12 order-2">
+            <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-6">
+              FAQs
+            </h3>
+            <div className="space-y-2">
+              {faqs.map((faq, index) => (
+                <div
+                  key={index}
+                  className="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden"
+                >
+                  <button
+                    onClick={() => toggleFAQ(index)}
+                    className="w-full flex items-center justify-between p-4 sm:p-5 text-left hover:bg-gray-100 transition-colors"
+                  >
+                    <span className="text-sm sm:text-base font-medium text-gray-900 pr-4">
+                      {faq.question}
+                    </span>
+                    <motion.div
+                      animate={{ rotate: expandedFAQs.has(index) ? 180 : 0 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                    >
+                      {expandedFAQs.has(index) ? (
+                        <MinusSignIcon
+                          size={20}
+                          className="text-gray-600 flex-shrink-0"
+                        />
+                      ) : (
+                        <PlusSignIcon
+                          size={20}
+                          className="text-gray-600 flex-shrink-0"
+                        />
+                      )}
+                    </motion.div>
+                  </button>
+                  <AnimatePresence>
+                    {expandedFAQs.has(index) && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                        className="overflow-hidden"
+                      >
+                        <div className="px-4 sm:px-5 pb-4 sm:pb-5">
+                          <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                            {faq.answer}
+                          </p>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
       </div>
     </>
   );
