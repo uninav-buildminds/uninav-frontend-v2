@@ -14,11 +14,16 @@ import React, { useState, useCallback, useEffect, useRef } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import { Button } from "@/components/ui/button";
 import { ZoomIn, ZoomOut } from "lucide-react";
+import { Alert02Icon } from "hugeicons-react";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
 // Configure PDF.js worker for async rendering
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
+// Use local worker to avoid version mismatches
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  "pdfjs-dist/build/pdf.worker.min.mjs",
+  import.meta.url
+).toString();
 
 interface ReactPdfViewerProps {
   url: string;
@@ -192,7 +197,9 @@ const ReactPdfViewer: React.FC<ReactPdfViewerProps> = ({
           error={
             <div className="flex items-center justify-center h-full text-white">
               <div className="text-center max-w-md px-4">
-                <div className="text-4xl mb-4">⚠️</div>
+                <div className="mb-4 flex justify-center">
+                  <Alert02Icon size={48} className="text-white" />
+                </div>
                 <p className="text-lg font-medium mb-2">Failed to load PDF</p>
                 <p className="text-sm opacity-80">
                   Could not display the PDF. Please try again.
