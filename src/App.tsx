@@ -41,6 +41,7 @@ import { DepartmentProvider } from "./context/department/DepartmentContextProvid
 import { FullscreenProvider } from "./context/FullscreenContext";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import Help from "./pages/dashboard/Help";
+import Profile from "./pages/dashboard/Profile";
 import ScrollToTop from "./components/ScrollToTop";
 const queryClient = new QueryClient();
 import { Analytics } from "@vercel/analytics/react";
@@ -92,6 +93,12 @@ const App = () => {
                           />
                           <Route path="settings" element={<SettingsPage />} />
                           <Route path="help" element={<Help />} />
+                          
+                          {/* Profile View */}
+                          <Route
+                            path="profile/:userId"
+                            element={<Profile />}
+                          />
 
                           {/* Material View */}
                           <Route

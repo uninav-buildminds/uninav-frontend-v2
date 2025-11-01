@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, ChevronRight } from "lucide-react";
-import { Download01Icon, Share08Icon, Bookmark01Icon, Triangle01Icon, File01Icon, MaximizeScreenIcon, MinimizeScreenIcon, ArrowRight01Icon, ArrowLeftDoubleIcon, ArrowRightDoubleIcon } from "hugeicons-react";
+import { Download01Icon, Share08Icon, Bookmark01Icon, Triangle01Icon, File01Icon, MaximizeScreenIcon, MinimizeScreenIcon, ArrowRight01Icon, ArrowLeftDoubleIcon, ArrowRightDoubleIcon, InformationCircleIcon } from "hugeicons-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +27,12 @@ import {
   downloadGDriveFile,
   downloadAllFilesFromFolder,
 } from "@/api/gdrive.api";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 
 const MaterialView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -49,6 +55,7 @@ const MaterialView: React.FC = () => {
     typeof window !== "undefined" && window.innerWidth < 768 // Hide sidebar on mobile by default
   );
   const [iconsExpanded, setIconsExpanded] = useState(false);
+  const [infoSheetOpen, setInfoSheetOpen] = useState(false);
 
   // Detect if device is actually a mobile device (not just small screen)
   const [isMobile] = useState(() => {
@@ -596,6 +603,16 @@ const MaterialView: React.FC = () => {
               )}
           </div>
 
+          {/* Information Icon - Separate button, brand bg with white border */}
+          <button
+            onClick={() => setInfoSheetOpen(true)}
+            className="flex items-center justify-center h-8 sm:h-9 w-8 sm:w-9 rounded-full bg-brand border border-white shadow-lg hover:bg-brand/90 transition-colors flex-shrink-0"
+            aria-label="View material information"
+            title="Material Information"
+          >
+            <InformationCircleIcon size={16} className="sm:w-4 sm:h-4 text-white" />
+          </button>
+
           {/* Combined Maximize & Chevron Button - Rightmost */}
           <div className="flex items-center gap-0 rounded-full bg-white/90 backdrop-blur border border-gray-200 shadow-lg overflow-hidden h-8 sm:h-9">
             {/* Maximize Icon Section */}
@@ -734,7 +751,16 @@ const MaterialView: React.FC = () => {
                 )}
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-gray-600">Uploaded by:</span>
-                  <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => {
+                      if (material.creator?.id) {
+                        navigate(`/dashboard/profile/${material.creator.id}`);
+                      } else {
+                        console.error("Creator ID is missing");
+                      }
+                    }}
+                    className="flex items-center gap-1.5 hover:opacity-80 transition-opacity cursor-pointer"
+                  >
                     <Avatar className="h-5 w-5">
                       <AvatarImage
                         src={material.creator?.profilePicture || undefined}
@@ -745,10 +771,10 @@ const MaterialView: React.FC = () => {
                         {material.creator?.lastName?.[0]}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="font-medium">
+                    <span className="font-medium text-brand hover:text-brand/80 transition-colors">
                       {material.creator?.firstName} {material.creator?.lastName}
                     </span>
-                  </div>
+                  </button>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Date:</span>
@@ -819,6 +845,167 @@ const MaterialView: React.FC = () => {
           </button>
         )}
       </div>
+
+      {/* Bottom Sheet Modal - Mobile Material Information */}
+      <Sheet open={infoSheetOpen} onOpenChange={setInfoSheetOpen}>
+        <SheetContent side="bottom" className="h-[85vh] overflow-y-auto rounded-t-2xl">
+          <SheetHeader>
+            <SheetTitle>Material Information</SheetTitle>
+          </SheetHeader>
+          {material && (
+            <div className="mt-6 space-y-6">
+              {/* Material Information */}
+              <div className="pb-4 border-b border-gray-200">
+                <h1 className="text-base font-semibold text-gray-900 mb-2">
+                  {material.label}
+                </h1>
+                {material.description && (
+                  <p className="text-sm text-gray-600 mb-3">
+                    {material.description}
+                  </p>
+                )}
+
+                {/* Tags */}
+                {material.tags && material.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {material.tags.map((tag, index) => (
+                      <Badge
+                        key={index}
+                        variant="secondary"
+                        className="text-xs py-1 px-2"
+                      >
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+
+                {/* Material Metadata */}
+                <div className="space-y-2 text-sm">
+                  {material.targetCourse && (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Course:</span>
+                        <span className="font-medium">
+                          {material.targetCourse.courseCode}
+                        </span>
+                      </div>
+                      {material.targetCourse.departments &&
+                        material.targetCourse.departments.length > 0 && (
+                          <>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Department:</span>
+                              <span className="font-medium">
+                                {
+                                  material.targetCourse.departments[0].department
+                                    .name
+                                }
+                              </span>
+                            </div>
+                            {material.targetCourse.departments[0].department
+                              .faculty && (
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">Faculty:</span>
+                                <span className="font-medium">
+                                  {
+                                    material.targetCourse.departments[0]
+                                      .department.faculty.name
+                                  }
+                                </span>
+                              </div>
+                            )}
+                          </>
+                        )}
+                    </>
+                  )}
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-gray-600">Uploaded by:</span>
+                    <button
+                      onClick={() => {
+                        if (material.creator?.id) {
+                          navigate(`/dashboard/profile/${material.creator.id}`);
+                          setInfoSheetOpen(false);
+                        } else {
+                          console.error("Creator ID is missing");
+                        }
+                      }}
+                      className="flex items-center gap-1.5 hover:opacity-80 transition-opacity cursor-pointer"
+                    >
+                      <Avatar className="h-6 w-6">
+                        <AvatarImage
+                          src={material.creator?.profilePicture || undefined}
+                          alt={`${material.creator?.firstName} ${material.creator?.lastName}`}
+                        />
+                        <AvatarFallback className="text-xs bg-brand/10 text-brand">
+                          {material.creator?.firstName?.[0]}
+                          {material.creator?.lastName?.[0]}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="font-medium text-brand hover:text-brand/80 transition-colors text-sm">
+                        {material.creator?.firstName} {material.creator?.lastName}
+                      </span>
+                    </button>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Date:</span>
+                    <span className="font-medium">
+                      {formatRelativeTime(material.createdAt)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Type:</span>
+                    <span className="font-medium uppercase">{material.type}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Views:</span>
+                    <span className="font-medium">{material.views}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Downloads:</span>
+                    <span className="font-medium">{material.downloads}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Related Materials */}
+              <div className="pt-4">
+                <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                  Related Materials
+                </h3>
+                {relatedMaterials.length === 0 ? (
+                  <p className="text-sm text-gray-500 text-center py-4">
+                    No related materials found
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {relatedMaterials.map((relatedMaterial) => (
+                      <Card
+                        key={relatedMaterial.id}
+                        className="cursor-pointer hover:shadow-md transition-shadow"
+                        onClick={() => {
+                          navigate(`/dashboard/material/${relatedMaterial.id}`);
+                          setInfoSheetOpen(false);
+                        }}
+                      >
+                        <CardHeader className="pb-2 px-4 pt-4">
+                          <CardTitle className="text-sm font-medium text-gray-900 line-clamp-1">
+                            {relatedMaterial.label}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-0 px-4 pb-4">
+                          <p className="text-sm text-gray-600 line-clamp-2">
+                            {relatedMaterial.description}
+                          </p>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
     </>
   );
 };
