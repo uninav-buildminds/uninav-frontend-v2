@@ -47,7 +47,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
 
             {/* Search */}
             {showSearch && (
-              <div className="mt-6 flex justify-center">
+              <div className="mt-6 flex justify-center relative z-[1030]">
                 <SearchBar
                   className="w-full max-w-xl"
                   placeholder={searchPlaceholder}

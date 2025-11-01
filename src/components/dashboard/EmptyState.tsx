@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Search01Icon, UploadSquare01Icon, Bookmark01Icon, Folder01Icon, Home01Icon, ArrowRight01Icon } from 'hugeicons-react';
+import { Search01Icon, UploadSquare01Icon, Bookmark01Icon, Folder01Icon, Home01Icon, ArrowRight01Icon, UserCircleIcon } from 'hugeicons-react';
+import { useNavigate } from 'react-router-dom';
 
 interface EmptyStateProps {
   type: 'recent' | 'recommendations' | 'libraries' | 'saved' | 'uploads';
@@ -8,8 +9,18 @@ interface EmptyStateProps {
   isLoading?: boolean;
 }
 
+type EmptyStateContent = {
+  Icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  description: string;
+  actionText: string;
+  actionIcon: React.ReactNode;
+};
+
 const EmptyState: React.FC<EmptyStateProps> = ({ type, onAction, isLoading = false }) => {
-  const getContent = () => {
+  const navigate = useNavigate();
+
+  const getContent = (): EmptyStateContent => {
     switch (type) {
       case 'recent':
         return {
@@ -17,6 +28,14 @@ const EmptyState: React.FC<EmptyStateProps> = ({ type, onAction, isLoading = fal
           title: "No Recent Materials",
           description: "You haven't viewed any materials recently. Start exploring to see your recent activity here.",
           actionText: "Browse Materials",
+          actionIcon: <ArrowRight01Icon size={16} />
+        };
+      case 'recommendations':
+        return {
+          Icon: UserCircleIcon,
+          title: "No Recommendations Available",
+          description: "Complete your profile by adding your department, level, and courses to get personalized material recommendations tailored to your studies.",
+          actionText: "Complete Profile",
           actionIcon: <ArrowRight01Icon size={16} />
         };
       case 'saved':
@@ -51,6 +70,14 @@ const EmptyState: React.FC<EmptyStateProps> = ({ type, onAction, isLoading = fal
           actionText: "Clear Filters",
           actionIcon: <Search01Icon size={16} />
         };
+    }
+  };
+
+  const handleAction = () => {
+    if (type === 'recommendations') {
+      navigate('/dashboard/settings');
+    } else if (onAction) {
+      onAction();
     }
   };
 
@@ -94,14 +121,14 @@ const EmptyState: React.FC<EmptyStateProps> = ({ type, onAction, isLoading = fal
       </motion.p>
 
       {/* Action Button */}
-      {onAction && (
+      {(onAction || type === 'recommendations') && (
         <motion.button
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
           whileHover={{ scale: isLoading ? 1 : 1.02 }}
           whileTap={{ scale: isLoading ? 1 : 0.98 }}
-          onClick={onAction}
+          onClick={handleAction}
           disabled={isLoading}
           className={`inline-flex items-center gap-1.5 sm:gap-2 px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-lg transition-colors duration-200 text-sm sm:text-base font-medium ${
             isLoading 

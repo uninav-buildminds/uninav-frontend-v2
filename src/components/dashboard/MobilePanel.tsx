@@ -1,10 +1,11 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Logout01Icon, Cancel01Icon } from "hugeicons-react";
+import { Logout01Icon, Cancel01Icon, ArrowRight02Icon, UserCircleIcon } from "hugeicons-react";
 import { LogoutModal } from "@/components/modals";
 import { panelData } from "@/data/panel";
 import { useAuth } from "@/hooks/useAuth";
+import { isProfileIncomplete } from "@/utils/profile.utils";
 import RecentsList from "./RecentsList";
 
 interface MobilePanelProps {
@@ -26,6 +27,9 @@ const MobilePanel: React.FC<MobilePanelProps> = ({
 }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const profileIncomplete = isProfileIncomplete(user);
+  const [showProfileBanner, setShowProfileBanner] = useState(false);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
 
   // Close panel when logout modal opens
   useEffect(() => {
@@ -33,6 +37,49 @@ const MobilePanel: React.FC<MobilePanelProps> = ({
       onClose();
     }
   }, [showLogoutModal, isOpen, onClose]);
+
+  // Show profile banner at intervals when profile is incomplete
+  useEffect(() => {
+    if (!isOpen || !profileIncomplete || bannerDismissed) return;
+
+    // Show banner after 2 seconds when panel opens
+    const initialTimer = setTimeout(() => {
+      setShowProfileBanner(true);
+    }, 2000);
+
+    // Auto-dismiss after 8 seconds
+    const dismissTimer = setTimeout(() => {
+      setShowProfileBanner(false);
+    }, 10000);
+
+    return () => {
+      clearTimeout(initialTimer);
+      clearTimeout(dismissTimer);
+    };
+  }, [isOpen, profileIncomplete, bannerDismissed]);
+
+  // Reset banner when panel closes
+  useEffect(() => {
+    if (!isOpen) {
+      setShowProfileBanner(false);
+      // Reset dismissed state after 30 seconds (so it can show again)
+      const resetTimer = setTimeout(() => {
+        setBannerDismissed(false);
+      }, 30000);
+      return () => clearTimeout(resetTimer);
+    }
+  }, [isOpen]);
+
+  const handleBannerClick = () => {
+    navigate("/dashboard/settings");
+    onClose();
+  };
+
+  const handleDismissBanner = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowProfileBanner(false);
+    setBannerDismissed(true);
+  };
   return (
     <>
       {/* Backdrop */}
@@ -76,6 +123,45 @@ const MobilePanel: React.FC<MobilePanelProps> = ({
 
               {/* Content */}
               <div className="flex-1 overflow-y-auto p-6">
+                {/* Profile Incomplete Banner */}
+                <AnimatePresence>
+                  {showProfileBanner && profileIncomplete && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.3 }}
+                      onClick={handleBannerClick}
+                      className="mb-4 relative overflow-hidden rounded-xl bg-gradient-to-r from-brand via-brand/90 to-brand/80 p-4 cursor-pointer shadow-lg hover:shadow-xl transition-shadow"
+                    >
+                      <button
+                        onClick={handleDismissBanner}
+                        className="absolute top-2 right-2 p-1 rounded-full hover:bg-white/20 transition-colors"
+                        aria-label="Dismiss"
+                      >
+                        <Cancel01Icon size={14} className="text-white" />
+                      </button>
+                      <div className="flex items-start gap-3 pr-6">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                          <UserCircleIcon size={18} className="text-white" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-sm font-semibold text-white mb-1">
+                            Complete Your Profile
+                          </h4>
+                          <p className="text-xs text-white/90 leading-relaxed">
+                            Add your department, level, and courses to get personalized recommendations
+                          </p>
+                          <div className="flex items-center gap-1 mt-2">
+                            <span className="text-xs text-white/90 font-medium">Complete now</span>
+                            <ArrowRight02Icon size={12} className="text-white" />
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 {/* Announcement */}
                 <div className="mb-6">
                   <h4 className="text-sm font-semibold mb-2">
@@ -108,12 +194,18 @@ const MobilePanel: React.FC<MobilePanelProps> = ({
 
               {/* User Info - Fixed at Bottom */}
               <div className="border-t pt-4 px-6 pb-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <img
-                    src={user?.profilePicture || panelData.user.avatar}
-                    className="w-10 h-10 rounded-full object-cover"
-                    alt="User"
-                  />
+                <div className="flex items-center gap-3 mb-4 relative">
+                  <div className="relative">
+                    <img
+                      src={user?.profilePicture || panelData.user.avatar}
+                      className="w-10 h-10 rounded-full object-cover"
+                      alt="User"
+                    />
+                    {/* Profile Incomplete Badge */}
+                    {profileIncomplete && (
+                      <div className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-red-500 border-2 border-white shadow-md" />
+                    )}
+                  </div>
                   <div>
                     <p className="text-sm font-semibold">
                       {user

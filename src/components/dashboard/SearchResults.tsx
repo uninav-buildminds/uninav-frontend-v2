@@ -6,12 +6,14 @@ import {
   Search01Icon,
   Cancel01Icon,
   SparklesIcon,
-  InformationCircleIcon,
+  UploadSquare01Icon,
+  ArrowRight01Icon,
 } from "hugeicons-react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { searchMaterials } from "@/api/materials.api";
 import { SearchResult } from "@/lib/types/search.types";
 import { useInView } from "react-intersection-observer";
+import { toast } from "sonner";
 
 interface SearchResultsProps {
   query: string;
@@ -28,6 +30,7 @@ interface SearchResultsProps {
   onShare?: (id: string) => void;
   onRead?: (id: string) => void;
   onClearSearch: () => void;
+  onUpload?: () => void;
 }
 
 const SearchResults: React.FC<SearchResultsProps> = ({
@@ -40,6 +43,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
   onShare,
   onRead,
   onClearSearch,
+  onUpload,
 }) => {
   async function handleInfiniteQuery({ pageParam = 1}) {
     const response = await searchMaterials({
@@ -77,6 +81,15 @@ const SearchResults: React.FC<SearchResultsProps> = ({
 
     return () => clearTimeout(timeoutId);
   }, [entry?.isIntersecting, hasNextPage, fetchNextPage]);
+
+  // Show toast when advanced search is enabled
+  useEffect(() => {
+    if (advancedSearchEnabled) {
+      toast.info("Searching more thoroughly for better results", {
+        duration: 4000,
+      });
+    }
+  }, [advancedSearchEnabled]);
 
   return (
 		<div className="min-h-[60vh]">
@@ -125,27 +138,6 @@ const SearchResults: React.FC<SearchResultsProps> = ({
 						</button>
 					</div>
 				</div>
-
-				{/* Advanced Search Info Banner */}
-				{advancedSearchEnabled && (
-					<motion.div
-						initial={{ opacity: 0, y: -10 }}
-						animate={{ opacity: 1, y: 0 }}
-						className="mt-4 p-3 bg-purple-50 border border-purple-200 rounded-lg flex items-start gap-3">
-						<InformationCircleIcon
-							size={20}
-							className="text-purple-600 mt-0.5"
-						/>
-						<div className="flex-1 text-sm text-purple-900">
-							<span className="font-medium">
-								Advanced Search Enabled:
-							</span>{" "}
-							Searching deeper into course descriptions, metadata,
-							and related materials for more comprehensive
-							results.
-						</div>
-					</motion.div>
-				)}
 			</div>
 
 			{/* Loading State */}
@@ -172,38 +164,43 @@ const SearchResults: React.FC<SearchResultsProps> = ({
 				<motion.div
 					initial={{ opacity: 0, scale: 0.95 }}
 					animate={{ opacity: 1, scale: 1 }}
-					className="flex items-center justify-center py-8 sm:py-12 md:py-20">
-					<div className="text-center max-w-md px-4">
+					className="flex items-center justify-center py-6 sm:py-8 md:py-12 px-4">
+					<div className="text-center max-w-lg w-full">
 						<div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 mb-3 sm:mb-4 md:mb-6 bg-gray-100 rounded-full">
-							<Search01Icon size={20} className="sm:w-6 sm:h-6 md:w-8 md:h-8 text-gray-400" />
+							<Search01Icon size={24} className="sm:w-8 sm:h-8 md:w-10 md:h-10 text-gray-400" />
 						</div>
-						<h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-1 sm:mb-2">
-							No materials found
+						<h3 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 mb-2 sm:mb-3">
+							No materials found for "{query}"
 						</h3>
-						<p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">
-							We couldn't find any materials matching "{query}".
-							{!advancedSearchEnabled && (
-								<>
-									{" "}
-									Try enabling{" "}
-									<button
-										onClick={onToggleAdvancedSearch}
-										className="text-brand font-medium hover:underline">
-										Advanced Search
-									</button>{" "}
-									for more comprehensive results.
-								</>
-							)}
+						<p className="text-xs sm:text-sm md:text-base text-gray-600 mb-4 sm:mb-6 md:mb-8 max-w-md mx-auto leading-relaxed px-2">
+							We couldn't find any materials matching your search. It might be added soon, or you can help by uploading it if you have it.
 						</p>
-						<div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-500 text-left max-w-sm mx-auto">
-							<p className="font-medium text-gray-700">Try:</p>
-							<ul className="list-disc list-inside space-y-0.5 sm:space-y-1 ml-2">
-								<li>Using different keywords</li>
-								<li>Checking your spelling</li>
-								<li>Using course codes (e.g., "CSC 204")</li>
-								<li>Searching for broader terms</li>
-							</ul>
+						
+						<div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2 sm:gap-3 w-full max-w-md mx-auto">
+							{onUpload && (
+								<button
+									onClick={onUpload}
+									className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-brand text-white rounded-lg font-medium hover:bg-brand/90 transition-colors duration-200 text-sm sm:text-base shadow-sm hover:shadow-md">
+									<UploadSquare01Icon size={16} className="sm:w-[18px] sm:h-[18px]" />
+									<span>Upload Material</span>
+								</button>
+							)}
+							<div className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-gray-100 text-gray-700 rounded-lg font-medium text-sm sm:text-base">
+								<span>It'll be here soon</span>
+							</div>
 						</div>
+
+						{!advancedSearchEnabled && (
+							<p className="mt-4 sm:mt-6 text-xs sm:text-sm text-gray-500 px-2">
+								Or try{" "}
+								<button
+									onClick={onToggleAdvancedSearch}
+									className="text-brand font-medium hover:underline">
+									Advanced Search
+								</button>{" "}
+								for more comprehensive results.
+							</p>
+						)}
 					</div>
 				</motion.div>
 			)}

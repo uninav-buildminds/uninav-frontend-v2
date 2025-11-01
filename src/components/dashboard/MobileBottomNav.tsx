@@ -8,9 +8,13 @@ import {
   Add01Icon
 } from "hugeicons-react";
 import { UploadModal } from "@/components/modals";
+import { useAuth } from "@/hooks/useAuth";
+import { isProfileIncomplete } from "@/utils/profile.utils";
 
 const MobileBottomNav: React.FC = () => {
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const { user } = useAuth();
+  const profileIncomplete = isProfileIncomplete(user);
   
   const navItems = [
     { to: "/dashboard", label: "Home", icon: Home01Icon },
@@ -86,14 +90,20 @@ const MobileBottomNav: React.FC = () => {
         <NavLink 
           to="/dashboard/settings" 
           className={({ isActive }) => 
-            `flex flex-col items-center gap-1 py-2 px-3 rounded-lg transition-colors ${
+            `flex flex-col items-center gap-1 py-2 px-3 rounded-lg transition-colors relative ${
               isActive ? 'text-brand' : 'text-gray-600'
             }`
           }
         >
           {({ isActive }) => (
             <>
-              <Settings01Icon size={20} className={isActive ? 'fill-current' : ''} />
+              <div className="relative">
+                <Settings01Icon size={20} className={isActive ? 'fill-current' : ''} />
+                {/* Profile Incomplete Badge */}
+                {profileIncomplete && (
+                  <div className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-red-500 border-2 border-white shadow-md" />
+                )}
+              </div>
               <span className="text-xs font-medium">Settings</span>
             </>
           )}

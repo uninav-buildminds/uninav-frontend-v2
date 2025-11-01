@@ -4,6 +4,7 @@ import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import MetricsSection from "@/components/dashboard/MetricsSection";
 import MaterialsSection from "@/components/dashboard/MaterialsSection";
 import SearchResults from "@/components/dashboard/SearchResults";
+import { UploadModal } from "@/components/modals";
 import {
   Award01Icon,
   UploadSquare01Icon,
@@ -43,6 +44,9 @@ const Overview: React.FC = () => {
       return response.data.items;
     }
   })
+
+  // Upload modal state
+  const [showUploadModal, setShowUploadModal] = useState(false);
 
   // Metrics state
   const [pointsPercentage, setPointsPercentage] = useState<string>("0%");
@@ -305,22 +309,29 @@ const Overview: React.FC = () => {
 			<div className="p-4 sm:p-6">
 				{/* Show search results when searching, otherwise show default content */}
 				{isSearchActive && searchResults != null ? (
-					<SearchResults
-						query={searchQuery}
-						results={searchResults}
-						isSearching={isSearching}
-						metadata={searchMetadata}
-						advancedSearchEnabled={advancedSearchEnabled}
-						onToggleAdvancedSearch={toggleAdvancedSearch}
-						onShare={handleShare}
-						onRead={handleRead}
-						onClearSearch={() => {
-							setSearchQuery("");
-							setIsSearchActive(false);
-							setSearchResults(null);
-							setSearchMetadata(null);
-						}}
-					/>
+					<>
+						<SearchResults
+							query={searchQuery}
+							results={searchResults}
+							isSearching={isSearching}
+							metadata={searchMetadata}
+							advancedSearchEnabled={advancedSearchEnabled}
+							onToggleAdvancedSearch={toggleAdvancedSearch}
+							onShare={handleShare}
+							onRead={handleRead}
+							onClearSearch={() => {
+								setSearchQuery("");
+								setIsSearchActive(false);
+								setSearchResults(null);
+								setSearchMetadata(null);
+							}}
+							onUpload={() => setShowUploadModal(true)}
+						/>
+						<UploadModal
+							isOpen={showUploadModal}
+							onClose={() => setShowUploadModal(false)}
+						/>
+					</>
 				) : (
 					<>
 						{/* Metrics */}
@@ -359,6 +370,7 @@ const Overview: React.FC = () => {
 								scrollStep={280}
 								layout="grid"
 								isLoading={isLoadingRecommended}
+								emptyStateType="recommendations"
 							/>
 						</div>
 					</>
