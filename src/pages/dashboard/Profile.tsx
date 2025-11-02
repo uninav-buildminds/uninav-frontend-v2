@@ -2,17 +2,29 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft01Icon,
-  StarIcon,
   Folder01Icon,
+  Folder03Icon,
   UserCircleIcon,
   UserAdd01Icon,
   CrownIcon,
   EyeIcon,
   Download01Icon,
   LinkSquare02Icon,
+  StarIcon,
+  Activity01Icon,
+  UserEdit01Icon,
+  HonourStarIcon,
+  Medal02Icon,
+  Award02Icon,
 } from "hugeicons-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import { getUserById } from "@/api/user.api";
 import { searchMaterials } from "@/api/materials.api";
@@ -56,7 +68,12 @@ const Profile: React.FC = () => {
         id: "pioneer",
         name: "Pioneer",
         description: "Joined in the first month",
-        icon: <StarIcon size={16} className="text-amber-500" />,
+        icon: (
+          <div className="relative w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 flex items-center justify-center shadow-lg overflow-hidden">
+            <div className="absolute inset-0 shimmer-sweep" />
+            <HonourStarIcon size={18} className="text-white relative z-10" />
+          </div>
+        ),
       });
     }
 
@@ -65,7 +82,12 @@ const Profile: React.FC = () => {
         id: "helper",
         name: "Helper",
         description: "Helped 50+ students",
-        icon: <StarIcon size={16} className="text-blue-500" />,
+        icon: (
+          <div className="relative w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 flex items-center justify-center shadow-lg overflow-hidden">
+            <div className="absolute inset-0 shimmer-sweep" />
+            <Medal02Icon size={18} className="text-white relative z-10" />
+          </div>
+        ),
       });
     }
 
@@ -75,7 +97,12 @@ const Profile: React.FC = () => {
         id: "star-contributor",
         name: "Star Contributor",
         description: "Had 3 uploads featured by admins",
-        icon: <StarIcon size={16} className="text-yellow-500" />,
+        icon: (
+          <div className="relative w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 flex items-center justify-center shadow-lg overflow-hidden">
+            <div className="absolute inset-0 shimmer-sweep" />
+            <Award02Icon size={18} className="text-white relative z-10" />
+          </div>
+        ),
       });
     }
 
@@ -158,7 +185,12 @@ const Profile: React.FC = () => {
         <div className="text-center">
           <UserCircleIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-600 mb-4">Profile not found</p>
-          <Button onClick={() => navigate("/dashboard")}>Back to Dashboard</Button>
+          <button
+            onClick={() => navigate("/dashboard")}
+            className="px-6 py-3 bg-brand text-white rounded-xl text-sm font-medium hover:bg-brand/90 transition-colors duration-200 shadow-lg hover:shadow-xl"
+          >
+            Back to Dashboard
+          </button>
         </div>
       </div>
     );
@@ -217,19 +249,35 @@ const Profile: React.FC = () => {
               </h3>
               <p className="text-sm text-gray-600 mb-3">@{profileUser.username}</p>
               
-              {/* Contributor Status */}
-              <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 mb-4">
-                <CrownIcon size={16} className="text-amber-500" />
-                <span className="text-xs sm:text-sm font-medium text-brand">
-                  Top Contributor
-                </span>
-              </div>
+              {/* Contributor Status - Only show if user has 5+ materials and combined views of 30+ */}
+              {userMaterials.length >= 5 && userMaterials.reduce((sum, m) => sum + (m.views || 0), 0) >= 30 && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 mb-4 cursor-help">
+                        <CrownIcon size={16} className="text-amber-500" />
+                        <span className="text-xs sm:text-sm font-medium text-brand">
+                          Top Contributor
+                        </span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Earned by having 5+ materials with 30+ combined views</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+
+              {/* Spacer to push button to bottom when no Top Contributor badge */}
+              {!(userMaterials.length >= 5 && userMaterials.reduce((sum, m) => sum + (m.views || 0), 0) >= 30) && (
+                <div className="flex-1" />
+              )}
 
               {/* Follow Button (only for non-owners) */}
               {!isOwner && (
                 <button
                   onClick={handleFollow}
-                  className={`w-full px-6 py-3 rounded-xl text-sm font-medium transition-colors duration-200 flex items-center justify-center gap-2 ${
+                  className={`w-full px-6 py-3 rounded-xl text-sm font-medium transition-colors duration-200 flex items-center justify-center gap-2 mt-auto ${
                     isFollowing
                       ? "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
                       : "bg-brand text-white hover:bg-brand/90 shadow-lg hover:shadow-xl"
@@ -245,6 +293,17 @@ const Profile: React.FC = () => {
                       <span>Follow</span>
                     </>
                   )}
+                </button>
+              )}
+
+              {/* Edit Profile Button (only for owners) */}
+              {isOwner && (
+                <button
+                  onClick={() => navigate("/dashboard/settings?tab=account")}
+                  className="w-full px-6 py-3 rounded-xl text-sm font-medium transition-colors duration-200 flex items-center justify-center gap-2 bg-brand text-white hover:bg-brand/90 shadow-lg hover:shadow-xl mt-auto"
+                >
+                  <UserEdit01Icon size={18} />
+                  <span>Edit Profile</span>
                 </button>
               )}
             </div>
@@ -325,7 +384,7 @@ const Profile: React.FC = () => {
                         {badges.map((badge) => (
                           <div
                             key={badge.id}
-                            className="flex items-start gap-2"
+                            className="flex items-center gap-3"
                           >
                             {badge.icon}
                             <div className="flex-1 min-w-0">
@@ -340,9 +399,11 @@ const Profile: React.FC = () => {
                         ))}
                       </div>
                     ) : (
-                      <div className="flex items-center gap-2 text-gray-400">
-                        <StarIcon size={16} />
-                        <span className="text-xs sm:text-sm italic">No badges yet</span>
+                      <div className="py-4">
+                        <div className="flex items-center gap-2 text-gray-400">
+                          <StarIcon size={16} />
+                          <span className="text-xs sm:text-sm italic">No badges yet</span>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -379,7 +440,9 @@ const Profile: React.FC = () => {
           </h3>
           {userMaterials.length === 0 ? (
             <div className="text-center py-8">
-              <Folder01Icon className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+              <div className="mb-4 p-3 sm:p-4 bg-gray-50 rounded-full inline-block">
+                <Folder03Icon className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-gray-400" />
+              </div>
               <p className="text-sm text-gray-600">No uploads yet</p>
             </div>
           ) : (
@@ -583,7 +646,9 @@ const Profile: React.FC = () => {
               </div>
             ) : (
               <div className="text-center py-8">
-                <Folder01Icon className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                <div className="mb-4 p-3 sm:p-4 bg-gray-50 rounded-full inline-block">
+                  <Activity01Icon className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-gray-400" />
+                </div>
                 <p className="text-sm text-gray-600">No activity yet</p>
               </div>
             )}

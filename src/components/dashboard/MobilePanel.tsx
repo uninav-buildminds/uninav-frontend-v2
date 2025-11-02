@@ -47,10 +47,10 @@ const MobilePanel: React.FC<MobilePanelProps> = ({
       setShowProfileBanner(true);
     }, 2000);
 
-    // Auto-dismiss after 8 seconds
+    // Auto-dismiss after 7 seconds (banner stays visible for 7 seconds)
     const dismissTimer = setTimeout(() => {
       setShowProfileBanner(false);
-    }, 10000);
+    }, 9000);
 
     return () => {
       clearTimeout(initialTimer);
@@ -71,7 +71,7 @@ const MobilePanel: React.FC<MobilePanelProps> = ({
   }, [isOpen]);
 
   const handleBannerClick = () => {
-    navigate("/dashboard/settings");
+    navigate("/dashboard/settings?tab=academic");
     onClose();
   };
 
@@ -194,7 +194,15 @@ const MobilePanel: React.FC<MobilePanelProps> = ({
 
               {/* User Info - Fixed at Bottom */}
               <div className="border-t pt-4 px-6 pb-6">
-                <div className="flex items-center gap-3 mb-4 relative">
+                <button
+                  onClick={() => {
+                    if (user?.id) {
+                      navigate(`/dashboard/profile/${user.id}`);
+                      onClose();
+                    }
+                  }}
+                  className="w-full flex items-center gap-3 mb-4 relative hover:opacity-80 transition-opacity"
+                >
                   <div className="relative">
                     <img
                       src={user?.profilePicture || panelData.user.avatar}
@@ -206,7 +214,7 @@ const MobilePanel: React.FC<MobilePanelProps> = ({
                       <div className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-red-500 border-2 border-white shadow-md" />
                     )}
                   </div>
-                  <div>
+                  <div className="flex-1 text-left">
                     <p className="text-sm font-semibold">
                       {user
                         ? `${user.firstName} ${user.lastName}`
@@ -216,7 +224,7 @@ const MobilePanel: React.FC<MobilePanelProps> = ({
                       {user?.email || panelData.user.email}
                     </p>
                   </div>
-                </div>
+                </button>
 
                 <button
                   onClick={onLogout}

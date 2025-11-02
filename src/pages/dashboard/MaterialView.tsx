@@ -603,10 +603,10 @@ const MaterialView: React.FC = () => {
               )}
           </div>
 
-          {/* Information Icon - Separate button, brand bg with white border */}
+          {/* Information Icon - Only visible on mobile/tablet (not desktop where sidebar exists) */}
           <button
             onClick={() => setInfoSheetOpen(true)}
-            className="flex items-center justify-center h-8 sm:h-9 w-8 sm:w-9 rounded-full bg-brand border border-white shadow-lg hover:bg-brand/90 transition-colors flex-shrink-0"
+            className="md:hidden flex items-center justify-center h-8 sm:h-9 w-8 sm:w-9 rounded-full bg-brand border border-white shadow-lg hover:bg-brand/90 transition-colors flex-shrink-0"
             aria-label="View material information"
             title="Material Information"
           >
