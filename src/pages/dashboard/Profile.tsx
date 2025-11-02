@@ -69,7 +69,7 @@ const Profile: React.FC = () => {
         name: "Pioneer",
         description: "Joined in the first month",
         icon: (
-          <div className="relative w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 flex items-center justify-center shadow-lg overflow-hidden">
+          <div className="relative w-8 h-8 rounded-full bg-gradient-to-br from-amber-700 via-amber-800 to-amber-900 flex items-center justify-center shadow-lg overflow-hidden">
             <div className="absolute inset-0 shimmer-sweep" />
             <HonourStarIcon size={18} className="text-white relative z-10" />
           </div>
@@ -77,13 +77,13 @@ const Profile: React.FC = () => {
       });
     }
 
-    if (user.uploadCount && user.uploadCount >= 50) {
+    if (user.uploadCount && user.uploadCount >= 30) {
       badges.push({
         id: "helper",
         name: "Helper",
-        description: "Helped 50+ students",
+        description: "Helped 30+ students",
         icon: (
-          <div className="relative w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 flex items-center justify-center shadow-lg overflow-hidden">
+          <div className="relative w-8 h-8 rounded-full bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 flex items-center justify-center shadow-lg overflow-hidden">
             <div className="absolute inset-0 shimmer-sweep" />
             <Medal02Icon size={18} className="text-white relative z-10" />
           </div>
@@ -92,13 +92,13 @@ const Profile: React.FC = () => {
     }
 
     // Star Contributor badge - check if user has materials with high ratings/views
-    if (userMaterials.some((m) => m.views > 1000)) {
+    if (userMaterials.some((m) => m.views > 25)) {
       badges.push({
         id: "star-contributor",
         name: "Star Contributor",
-        description: "Had 3 uploads featured by admins",
+        description: "3 uploads featured by admins",
         icon: (
-          <div className="relative w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 flex items-center justify-center shadow-lg overflow-hidden">
+          <div className="relative w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 via-yellow-500 to-amber-500 flex items-center justify-center shadow-lg overflow-hidden">
             <div className="absolute inset-0 shimmer-sweep" />
             <Award02Icon size={18} className="text-white relative z-10" />
           </div>
@@ -154,18 +154,9 @@ const Profile: React.FC = () => {
   }, [userId, navigate]);
 
   const handleFollow = async () => {
-    try {
-      // TODO: Implement follow/unfollow API call
-      setIsFollowing(!isFollowing);
-      // Update followers count optimistically
-      if (followersCount !== null) {
-        setFollowersCount((prev) => (prev! + (isFollowing ? -1 : 1)));
-      }
-      toast.success(isFollowing ? "Unfollowed" : "Following");
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to update follow status. Please try again.";
-      toast.error(errorMessage);
-    }
+    toast.info("Coming soon", {
+      description: "Follow feature will be available soon",
+    });
   };
 
   if (isLoading) {
@@ -380,24 +371,47 @@ const Profile: React.FC = () => {
                   <div>
                     <p className="text-xs sm:text-sm text-gray-600 mb-3">Badges</p>
                     {badges.length > 0 ? (
-                      <div className="space-y-2">
-                        {badges.map((badge) => (
-                          <div
-                            key={badge.id}
-                            className="flex items-center gap-3"
-                          >
-                            {badge.icon}
-                            <div className="flex-1 min-w-0">
-                              <p className="text-xs sm:text-sm font-medium text-gray-900">
-                                {badge.name}
-                              </p>
-                              <p className="text-xs text-brand leading-relaxed">
-                                {badge.description}
-                              </p>
+                      <>
+                        {/* Desktop: Vertical layout with description */}
+                        <div className="hidden md:block space-y-2">
+                          {badges.map((badge) => (
+                            <div
+                              key={badge.id}
+                              className="flex items-center gap-3"
+                            >
+                              {badge.icon}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs sm:text-sm font-medium text-gray-900">
+                                  {badge.name}
+                                </p>
+                                <p className="text-xs text-brand leading-relaxed">
+                                  {badge.description}
+                                </p>
+                              </div>
                             </div>
-                          </div>
-                        ))}
-                      </div>
+                          ))}
+                        </div>
+                        {/* Mobile: Horizontal layout with tooltip */}
+                        <div className="md:hidden flex flex-wrap gap-3">
+                          {badges.map((badge) => (
+                            <TooltipProvider key={badge.id}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="flex items-center gap-2 cursor-help">
+                                    {badge.icon}
+                                    <span className="text-xs font-medium text-gray-900">
+                                      {badge.name}
+                                    </span>
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>{badge.description}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          ))}
+                        </div>
+                      </>
                     ) : (
                       <div className="py-4">
                         <div className="flex items-center gap-2 text-gray-400">
