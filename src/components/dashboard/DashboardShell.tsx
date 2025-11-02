@@ -33,10 +33,10 @@ const DashboardShell: React.FC = () => {
       setShowDesktopBanner(true);
     }, 3000);
 
-    // Auto-dismiss after 4 seconds
+    // Auto-dismiss after 7 seconds (banner stays visible for 7 seconds)
     const dismissTimer = setTimeout(() => {
       setShowDesktopBanner(false);
-    }, 7000);
+    }, 10000);
 
     return () => {
       clearTimeout(initialTimer);
@@ -54,7 +54,7 @@ const DashboardShell: React.FC = () => {
   }, [location.pathname]);
 
   const handleBannerClick = () => {
-    navigate("/dashboard/settings");
+    navigate("/dashboard/settings?tab=academic");
     setShowDesktopBanner(false);
   };
 
@@ -113,8 +113,11 @@ const DashboardShell: React.FC = () => {
                   <UserCircleIcon size={14} className="text-brand" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs text-gray-700">
-                    Complete your profile for personalized recommendations
+                  <p className="text-xs font-medium text-gray-900 mb-1">
+                    Complete Your Profile
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    Add your department, level, and courses to get personalized recommendations
                   </p>
                 </div>
                   <ArrowRight02Icon size={14} className="text-brand flex-shrink-0" />

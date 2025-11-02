@@ -26,6 +26,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from "lucide-react";
+import { Alert02Icon } from "hugeicons-react";
 
 interface AdobePDFViewerProps {
   url: string;
@@ -416,7 +417,9 @@ const AdobePDFViewer: React.FC<AdobePDFViewerProps> = ({
           {error && loading ? (
             <div className="h-full flex items-center justify-center text-white">
               <div className="text-center">
-                <div className="text-4xl mb-4">⚠️</div>
+                <div className="mb-4 flex justify-center">
+                  <Alert02Icon size={48} className="text-white" />
+                </div>
                 <p className="text-lg font-medium mb-2">Failed to load PDF</p>
                 <p className="text-sm opacity-80">
                   The PDF could not be displayed. This may be due to missing

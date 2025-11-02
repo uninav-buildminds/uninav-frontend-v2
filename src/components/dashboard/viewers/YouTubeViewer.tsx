@@ -4,6 +4,7 @@
  */
 
 import React, { useState } from "react";
+import { Alert02Icon } from "hugeicons-react";
 
 interface YouTubeViewerProps {
   url: string;
@@ -72,7 +73,9 @@ const YouTubeViewer: React.FC<YouTubeViewerProps> = ({
     return (
       <div className="h-full flex items-center justify-center text-gray-500 bg-white rounded-lg">
         <div className="text-center max-w-md px-4">
-          <div className="text-4xl mb-4">⚠️</div>
+          <div className="mb-4 flex justify-center">
+            <Alert02Icon size={48} className="text-gray-500" />
+          </div>
           <p className="text-lg font-medium mb-2">Invalid YouTube URL</p>
           <p className="text-sm text-gray-600">
             The provided YouTube link could not be processed. Please check the
@@ -100,7 +103,9 @@ const YouTubeViewer: React.FC<YouTubeViewerProps> = ({
       {error ? (
         <div className="h-full flex items-center justify-center text-white">
           <div className="text-center max-w-md px-4">
-            <div className="text-4xl mb-4">⚠️</div>
+            <div className="mb-4 flex justify-center">
+              <Alert02Icon size={48} className="text-white" />
+            </div>
             <p className="text-lg font-medium mb-2">Failed to load video</p>
             <p className="text-sm opacity-80 mb-4">
               The video could not be displayed. It may be private, deleted, or

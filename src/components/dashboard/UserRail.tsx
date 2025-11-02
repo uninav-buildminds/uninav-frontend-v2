@@ -14,7 +14,9 @@ const UserRail: React.FC<Props> = ({ avatarUrl, userName = "User" }) => {
   const profileIncomplete = isProfileIncomplete(user);
 
   const handleProfileClick = () => {
-    navigate("/dashboard/settings");
+    if (user?.id) {
+      navigate(`/dashboard/profile/${user.id}`);
+    }
   };
 
   const getInitials = (name: string) => {
@@ -32,7 +34,7 @@ const UserRail: React.FC<Props> = ({ avatarUrl, userName = "User" }) => {
         <div
           className="h-10 w-10 rounded-full overflow-hidden ring-2 ring-white/50 focus:outline-none focus:ring-brand/50 transition-shadow cursor-pointer hover:ring-brand/70"
           onClick={handleProfileClick}
-          title={profileIncomplete ? "Complete your profile for recommendations" : "Go to Settings"}
+          title={profileIncomplete ? "Complete your profile for recommendations" : "View Profile"}
         >
           {avatarUrl ? (
             <img

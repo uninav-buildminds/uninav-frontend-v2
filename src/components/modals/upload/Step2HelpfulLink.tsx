@@ -6,6 +6,7 @@ import {
   Tag01Icon,
   Download01Icon,
   ArrowDown01Icon,
+  Alert02Icon,
 } from "hugeicons-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -391,7 +392,9 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
             {!isValidUrl(watchedValues.url) ? (
               <div className="flex items-center justify-center p-6 bg-yellow-50 rounded-lg border-2 border-dashed border-yellow-300">
                 <div className="text-center">
-                  <div className="text-yellow-600 mb-2">⚠️</div>
+                  <div className="mb-2 flex justify-center">
+                    <Alert02Icon size={32} className="text-yellow-600" />
+                  </div>
                   <p className="text-sm text-yellow-700 font-medium">
                     Invalid URL format
                   </p>

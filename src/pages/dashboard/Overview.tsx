@@ -269,30 +269,34 @@ const Overview: React.FC = () => {
       title: "Your Points",
       value: pointsPercentage,
       description:
-        "You're doing great! Upload 3 more materials to unlock Ad‑Free Week",
+        "Earned from reading and uploading materials. Upload 3 more materials to unlock Ad‑Free Week",
     },
     {
       icon: <DownloadSquare01Icon size={20} />,
       title: "Total Downloads",
       value: user?.downloadCount?.toString() || "0",
       description:
-        "You have downloaded helpful materials. You're on track to complete academic goals",
+        (user?.downloadCount || 0) === 0
+          ? "Start downloading materials to access helpful study resources"
+          : "You have downloaded helpful materials. You're on track to complete academic goals",
     },
     {
       icon: <UploadSquare01Icon size={20} />,
       title: "Total Uploads",
       value: user?.uploadCount?.toString() || "0",
       description:
-        "You have helped a lot of students. You're making a real difference",
+        (user?.uploadCount || 0) === 0
+          ? "Share your first material to help fellow students and earn points"
+          : "You have helped a lot of students. You're making a real difference",
     },
     {
       icon: <Bookmark01Icon size={20} />,
       title: "Saved Materials",
       value: user?.bookmarkCount?.toString() || "0",
       description:
-        "Your materials were downloaded " +
-        (user?.downloadCount?.toString() || "0") +
-        " times. You're making a difference!",
+        (user?.bookmarkCount || 0) === 0
+          ? "Bookmark materials you want to access later"
+          : `You have saved ${user?.bookmarkCount || 0} ${(user?.bookmarkCount || 0) === 1 ? "material" : "materials"}. Access them anytime from your bookmarks`,
     },
   ];
 
