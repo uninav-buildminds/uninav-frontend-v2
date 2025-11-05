@@ -7,6 +7,15 @@ import { createCourse } from "@/api/course.api";
 import { getDepartments } from "@/api/department.api";
 import { Department } from "@/lib/types/department.types";
 import { Course } from "@/lib/types/course.types";
+import {
+  Combobox,
+  ComboboxInput,
+  ComboboxButton,
+  ComboboxOptions,
+  ComboboxOption,
+} from "@headlessui/react";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface CreateCourseModalProps {
   isOpen: boolean;
@@ -30,6 +39,7 @@ const CreateCourseModal: React.FC<CreateCourseModalProps> = ({
   const [isLoadingDepartments, setIsLoadingDepartments] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [departmentQuery, setDepartmentQuery] = useState("");
 
   // Fetch departments when modal opens
   useEffect(() => {
@@ -132,8 +142,20 @@ const CreateCourseModal: React.FC<CreateCourseModalProps> = ({
       level: 100,
     });
     setErrors({});
+    setDepartmentQuery("");
     onClose();
   };
+
+  const selectedDepartment = departments.find(
+    (dept) => dept.id === formData.departmentId
+  );
+
+  const filteredDepartments =
+    departmentQuery === ""
+      ? departments
+      : departments.filter((dept) =>
+          dept.name.toLowerCase().includes(departmentQuery.toLowerCase())
+        );
 
   if (!isOpen) return null;
 
@@ -267,27 +289,89 @@ const CreateCourseModal: React.FC<CreateCourseModalProps> = ({
               >
                 Department <span className="text-red-500">*</span>
               </label>
-              <select
-                id="departmentId"
-                name="departmentId"
+              <Combobox
                 value={formData.departmentId}
-                onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
-                  errors.departmentId
-                    ? "border-red-300 focus:ring-red-200"
-                    : "border-gray-300 focus:ring-brand/30 focus:border-brand"
-                }`}
+                onChange={(value) => {
+                  setFormData((prev) => ({ ...prev, departmentId: value || "" }));
+                  if (errors.departmentId) {
+                    setErrors((prev) => ({ ...prev, departmentId: "" }));
+                  }
+                }}
+                onClose={() => setDepartmentQuery("")}
                 disabled={isSubmitting || isLoadingDepartments}
               >
-                <option value="">
-                  {isLoadingDepartments ? "Loading departments..." : "Select department"}
-                </option>
-                {departments.map((dept) => (
-                  <option key={dept.id} value={dept.id}>
-                    {dept.name}
-                  </option>
-                ))}
-              </select>
+                <div className="relative w-full">
+                  <div className="flex items-center w-full">
+                    <ComboboxInput
+                      className={`w-full py-2 pl-3 pr-10 text-sm leading-5 bg-white border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                        errors.departmentId
+                          ? "border-red-300 focus:ring-red-200"
+                          : "border-gray-300 focus:ring-brand/30 focus:border-brand"
+                      }`}
+                      displayValue={() => {
+                        if (isLoadingDepartments) return "Loading departments...";
+                        if (selectedDepartment) return selectedDepartment.name;
+                        return "";
+                      }}
+                      onChange={(event) => setDepartmentQuery(event.target.value)}
+                      disabled={isSubmitting || isLoadingDepartments}
+                      placeholder="Select department..."
+                    />
+                    <ComboboxButton className="right-0 absolute inset-y-0 flex items-center pr-2">
+                      <ChevronsUpDown className="opacity-50 w-4 h-4 shrink-0" />
+                    </ComboboxButton>
+                  </div>
+                  <ComboboxOptions className="z-[10002] absolute bg-white ring-opacity-5 shadow-lg mt-1 py-1 border border-gray-300 rounded-md focus:outline-none ring-1 ring-black w-full max-h-60 overflow-auto sm:text-sm text-base">
+                    {isLoadingDepartments ? (
+                      <div className="relative px-4 py-2 text-gray-700 cursor-default select-none">
+                        Loading departments...
+                      </div>
+                    ) : filteredDepartments.length === 0 && departmentQuery !== "" ? (
+                      <div className="relative px-4 py-2 text-gray-700 cursor-default select-none">
+                        No department found.
+                      </div>
+                    ) : (
+                      filteredDepartments.map((dept) => (
+                        <ComboboxOption
+                          key={dept.id}
+                          value={dept.id}
+                          className={({ active }) =>
+                            cn(
+                              "relative cursor-default select-none py-2 pl-10 pr-4",
+                              active
+                                ? "bg-brand text-white"
+                                : "text-gray-900 hover:bg-gray-100"
+                            )
+                          }
+                        >
+                          {({ selected, active }) => (
+                            <>
+                              <span
+                                className={cn(
+                                  "block truncate",
+                                  selected ? "font-medium" : "font-normal"
+                                )}
+                              >
+                                {dept.name}
+                              </span>
+                              {selected ? (
+                                <span
+                                  className={cn(
+                                    "absolute inset-y-0 left-0 flex items-center pl-3",
+                                    active ? "text-white" : "text-brand"
+                                  )}
+                                >
+                                  <Check className="w-4 h-4" aria-hidden="true" />
+                                </span>
+                              ) : null}
+                            </>
+                          )}
+                        </ComboboxOption>
+                      ))
+                    )}
+                  </ComboboxOptions>
+                </div>
+              </Combobox>
               {errors.departmentId && (
                 <p className="mt-1 text-sm text-red-600">{errors.departmentId}</p>
               )}
