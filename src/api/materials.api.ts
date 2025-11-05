@@ -28,6 +28,7 @@ export interface CreateMaterialFileForm {
   tags?: string[];
   targetCourseId?: string;
   metaData?: string[];
+  pageCount?: number; // Page count for PDF/DOCX/PPT files
   file: File;
   image?: File; // Optional preview image
   filePreview?: File; // Base64 or blob URL for preview
@@ -44,6 +45,7 @@ export interface CreateMaterialLinkForm {
   tags?: string[];
   targetCourseId?: string;
   metaData?: string[];
+  fileCount?: number; // File count for Google Drive folders
   url: string;
   image?: File; // Optional preview image
   previewUrl?: string; // direct url for preview useful for links (YouTube, Google Drive, etc.)
@@ -134,10 +136,26 @@ export async function createMaterials(materialData: CreateMaterialForm) {
   if (materialData.targetCourseId) {
     formData.append("targetCourseId", materialData.targetCourseId);
   }
+  
+  // Build metaData array with pageCount or fileCount
+  const metaDataArray: string[] = [];
+  
+  if ("pageCount" in materialData && materialData.pageCount !== undefined && materialData.pageCount > 0) {
+    metaDataArray.push(JSON.stringify({ pageCount: materialData.pageCount }));
+  }
+  
+  if ("fileCount" in materialData && materialData.fileCount !== undefined && materialData.fileCount > 0) {
+    metaDataArray.push(JSON.stringify({ fileCount: materialData.fileCount }));
+  }
+  
+  // Add any existing metaData
   if (materialData.metaData) {
-    materialData.metaData.forEach((meta: string) =>
-      formData.append("metaData", meta)
-    );
+    materialData.metaData.forEach((meta: string) => metaDataArray.push(meta));
+  }
+  
+  // Append metaData to form
+  if (metaDataArray.length > 0) {
+    metaDataArray.forEach((meta: string) => formData.append("metaData", meta));
   }
 
   // Ensure visibility matches backend enum values

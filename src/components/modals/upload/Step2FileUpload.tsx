@@ -27,6 +27,7 @@ import {
   Material,
 } from "@/lib/types/material.types";
 import { SelectCourse } from "./shared/SelectCourse";
+import { countFilePages } from "@/lib/utils/pageCounter";
 
 interface Step2FileUploadProps {
   onComplete: (data: CreateMaterialFileForm) => void;
@@ -50,6 +51,8 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
   const [targetCourseId, setTargetCourseId] = useState<string>("");
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [filePreview, setFilePreview] = useState<File | null>(null);
+  const [pageCount, setPageCount] = useState<number | undefined>(undefined);
+  const [isCountingPages, setIsCountingPages] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -124,6 +127,23 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
       const defaultTitle = generateDefaultTitle(file);
       setValue("materialTitle", defaultTitle);
     }
+
+    // Non-blocking page count calculation
+    setIsCountingPages(true);
+    countFilePages(file)
+      .then((count) => {
+        if (count > 0) {
+          setPageCount(count);
+          console.log(`Counted ${count} pages in file: ${file.name}`);
+        }
+      })
+      .catch((error) => {
+        console.error("Error counting pages:", error);
+        // Silent fail - page count is optional
+      })
+      .finally(() => {
+        setIsCountingPages(false);
+      });
   };
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -185,6 +205,7 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
       filePreviewType: typeof filePreview,
       filePreviewConstructor: filePreview?.constructor?.name,
       filePreviewInstanceofFile: filePreview instanceof File,
+      pageCount: pageCount,
     });
 
     const formData: CreateMaterialFileForm = {
@@ -196,6 +217,7 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
       accessRestrictions: data.accessRestrictions,
       tags: data.tags || [],
       targetCourseId: targetCourseId || undefined,
+      pageCount: pageCount, // Include page count
       ...(selectedFile && { file: selectedFile }),
       ...(selectedImage && { image: selectedImage }),
       ...(filePreview && { filePreview: filePreview }), // Include file preview
@@ -205,6 +227,7 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
       hasFilePreview: !!formData.filePreview,
       filePreviewInFormData: formData.filePreview,
       filePreviewType: typeof formData.filePreview,
+      pageCount: formData.pageCount,
     });
 
     onComplete(formData);
@@ -288,6 +311,16 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
                 <p className="text-xs sm:text-sm text-gray-600">
                   {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
                 </p>
+                {/* Show page count when available */}
+                {isCountingPages ? (
+                  <p className="text-xs text-gray-500 mt-1 animate-pulse">
+                    Counting pages...
+                  </p>
+                ) : pageCount !== undefined && pageCount > 0 ? (
+                  <p className="text-xs text-brand font-medium mt-1">
+                    {pageCount} {pageCount === 1 ? "page" : "pages"}
+                  </p>
+                ) : null}
               </div>
 
             

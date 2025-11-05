@@ -40,6 +40,13 @@ export interface Resource {
   metaData?: string[];
   fileKey?: string;
 }
+
+export interface MaterialMetadata {
+  pageCount?: number; // For PDF/DOCX/PPT files
+  fileCount?: number; // For Google Drive folders
+  [key: string]: any; // Allow additional metadata
+}
+
 export interface Material {
   id: string;
   label: string;
@@ -55,6 +62,7 @@ export interface Material {
   downloads: number;
   views: number;
   reviewStatus: ApprovalStatusEnum;
+  metaData?: MaterialMetadata; // Structured metadata object
   creator: Pick<
     UserProfile,
     "id" | "firstName" | "lastName" | "username" | "profilePicture"

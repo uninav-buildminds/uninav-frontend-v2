@@ -77,12 +77,31 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
   componentRef,
   showEditDelete = false,
 }) => {
-  const { id, label, createdAt, downloads, tags, views, likes } = material;
+  const { id, label, createdAt, downloads, tags, views, likes, metaData } = material;
 
   const previewImage = material.previewUrl;
 
   const { isBookmarked, toggleBookmark } = useBookmarks();
   const saved = isBookmarked(id);
+
+  // Extract page count or file count from metaData
+  const getMetaInfo = (): string | null => {
+    if (!metaData) return null;
+    
+    // metaData can be a JSON object with pageCount or fileCount
+    if (typeof metaData === 'object') {
+      if ('pageCount' in metaData && metaData.pageCount) {
+        return `${metaData.pageCount} ${metaData.pageCount === 1 ? 'page' : 'pages'}`;
+      }
+      if ('fileCount' in metaData && metaData.fileCount) {
+        return `${metaData.fileCount} ${metaData.fileCount === 1 ? 'file' : 'files'}`;
+      }
+    }
+    
+    return null;
+  };
+
+  const metaInfo = getMetaInfo();
 
   const handleSave = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -199,6 +218,15 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
                 +{tags.length - 2}
               </span>
             )}
+          </div>
+        )}
+
+        {/* Page/File Count - Bottom Right */}
+        {metaInfo && (
+          <div className="absolute bottom-2 right-2">
+            <span className="inline-block px-2 py-1 text-xs bg-white/90 backdrop-blur-sm text-gray-700 rounded-md font-medium shadow-sm border border-gray-200">
+              {metaInfo}
+            </span>
           </div>
         )}
       </div>

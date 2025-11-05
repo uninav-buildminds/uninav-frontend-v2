@@ -47,6 +47,7 @@ import {
   Material,
 } from "@/lib/types/material.types";
 import { SelectCourse } from "./shared/SelectCourse";
+import { countGDriveUrlFiles } from "@/lib/utils/pageCounter";
 
 interface Step2HelpfulLinkProps {
   onComplete: (data: CreateMaterialLinkForm) => void;
@@ -73,6 +74,8 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
   );
   const [resolvingGDrivePreview, setResolvingGDrivePreview] =
     useState<boolean>(false);
+  const [fileCount, setFileCount] = useState<number | undefined>(undefined);
+  const [isCountingFiles, setIsCountingFiles] = useState(false);
 
   // Helper function to safely get hostname from URL
   const getUrlHostname = (url: string): string => {
@@ -181,13 +184,19 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
     const url = watchedValues.url || "";
     // reset when url changes
     setDerivedPreviewUrl(null);
+    setFileCount(undefined);
+    setIsCountingFiles(false);
     // Clear temp preview tracking when URL changes
     onTempPreviewChange?.(null);
 
     if (!url || !checkIsGoogleDriveUrl(url)) return;
 
     // Only attempt special handling for folders
-    if (!isGDriveFolder(url)) return;
+    if (!isGDriveFolder(url)) {
+      // For single GDrive files, set file count to 1
+      setFileCount(1);
+      return;
+    }
 
     const identifier = extractGDriveId(url);
     if (!identifier || identifier.type !== "folder") return;
@@ -196,6 +205,8 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
     const resolvePreview = async () => {
       try {
         setResolvingGDrivePreview(true);
+        setIsCountingFiles(true);
+        
         const contents = await listFolderFiles(identifier.id);
         if (cancelled) return;
 
@@ -205,7 +216,10 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
             (f) => f.mimeType !== "application/vnd.google-apps.folder"
           ) || contents.files[0];
 
-        if (!firstFile) return; // empty folder => no preview
+        if (!firstFile) {
+          setFileCount(0);
+          return; // empty folder => no preview
+        }
 
         // Generate preview and upload to Cloudinary
         const cloudinaryUrl = await generateAndUploadPreview(
@@ -217,9 +231,27 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
           // Notify parent component about temp preview
           onTempPreviewChange?.(cloudinaryUrl);
         }
+        
+        // Count files in the background (non-blocking)
+        countGDriveUrlFiles(url)
+          .then((count) => {
+            if (!cancelled) {
+              setFileCount(count);
+              console.log(`Counted ${count} files in Google Drive folder`);
+            }
+          })
+          .catch((error) => {
+            console.error("Error counting Google Drive files:", error);
+            // Silent fail - file count is optional
+          })
+          .finally(() => {
+            setIsCountingFiles(false);
+          });
+        
       } catch (err) {
         // Silent fail; user can still submit without preview
         setDerivedPreviewUrl(null);
+        setIsCountingFiles(false);
       } finally {
         setResolvingGDrivePreview(false);
       }
@@ -332,6 +364,7 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
       url: data.url,
       image: selectedImage,
       filePreview: previewUrl || undefined, // Add the preview URL (supports GDrive folders)
+      fileCount: fileCount, // Include file count for GDrive materials
     };
 
     onComplete(formData);
@@ -418,7 +451,7 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
                   </div>
                 ) : checkIsGoogleDriveUrl(watchedValues.url) ? (
                   isGDriveFolder(watchedValues.url) ? (
-                    <div className="flex justify-center">
+                    <div className="flex flex-col items-center space-y-2">
                       <div
                         className="rounded-lg overflow-hidden shadow-sm bg-white border border-gray-200 w-[200px] h-[120px] flex items-center justify-center"
                         title="Google Drive folder preview"
@@ -440,15 +473,31 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
                           </div>
                         )}
                       </div>
+                      {/* Show file count when available */}
+                      {isCountingFiles ? (
+                        <p className="text-xs text-gray-500 animate-pulse">
+                          Counting files...
+                        </p>
+                      ) : fileCount !== undefined && fileCount > 0 ? (
+                        <p className="text-xs text-brand font-medium">
+                          {fileCount} {fileCount === 1 ? "file" : "files"}
+                        </p>
+                      ) : null}
                     </div>
                   ) : (
-                    <div className="flex justify-center">
+                    <div className="flex flex-col items-center space-y-2">
                       <GDrivePreview
                         url={watchedValues.url}
                         width={280}
                         height={157}
                         className="shadow-sm"
                       />
+                      {/* Show "1 file" for single files */}
+                      {fileCount === 1 && (
+                        <p className="text-xs text-brand font-medium">
+                          1 file
+                        </p>
+                      )}
                     </div>
                   )
                 ) : (
