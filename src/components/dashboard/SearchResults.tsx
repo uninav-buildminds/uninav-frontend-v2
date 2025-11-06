@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { motion } from "framer-motion";
 import MaterialCard from "./MaterialCard";
+import MaterialCardSkeleton from "./MaterialCardSkeleton";
 import { Material } from "@/lib/types/material.types";
 import {
   Search01Icon,
@@ -105,57 +106,31 @@ const SearchResults: React.FC<SearchResultsProps> = ({
 							<p className="text-sm text-gray-600 mt-1">
 								Found {metadata.total} result
 								{metadata.total !== 1 ? "s" : ""} for "{query}"
-								{metadata.usedAdvanced && (
-									<span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 text-xs bg-purple-100 text-purple-700 rounded-md">
-										<SparklesIcon size={12} />
-										Advanced Search
-									</span>
-								)}
 							</p>
 						)}
 					</div>
 
 					<div className="flex items-center gap-3">
-						{/* Advanced Search Toggle */}
+						{/* Advanced Search Toggle - Reduced size */}
 						<button
 							onClick={onToggleAdvancedSearch}
-							className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+							className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 ${
 								advancedSearchEnabled
 									? "bg-brand text-white hover:bg-brand/90"
 									: "bg-gray-100 text-gray-700 hover:bg-gray-200"
 							}`}
 							title="Advanced search looks deeper into course descriptions, tags, and related materials">
-							<SparklesIcon size={16} />
+							<SparklesIcon size={14} />
 							Advanced
-						</button>
-
-						{/* Clear Search */}
-						<button
-							onClick={onClearSearch}
-							className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200">
-							<Cancel01Icon size={16} />
-							Clear
 						</button>
 					</div>
 				</div>
 			</div>
 
-			{/* Loading State */}
+			{/* Loading State - Show skeleton cards */}
 			{isSearching && (
-				<div className="flex items-center justify-center py-8 sm:py-12 md:py-20">
-					<div className="text-center">
-						<div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 mb-3 sm:mb-4">
-							<div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 border-3 sm:border-4 border-brand/20 border-t-brand rounded-full animate-spin" />
-						</div>
-						<p className="text-sm sm:text-base text-gray-600 font-medium">
-							Searching materials...
-						</p>
-						<p className="text-xs sm:text-sm text-gray-500 mt-1">
-							{advancedSearchEnabled
-								? "Running advanced search"
-								: "This won't take long"}
-						</p>
-					</div>
+				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-16 md:pb-0">
+					<MaterialCardSkeleton count={8} />
 				</div>
 			)}
 

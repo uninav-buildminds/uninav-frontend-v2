@@ -29,16 +29,20 @@ interface ReactPdfViewerProps {
   url: string;
   title?: string;
   showControls?: boolean;
+  onPageChange?: (currentPage: number, totalPages: number) => void;
+  initialPage?: number; // Page to scroll to on load
 }
 
 const ReactPdfViewer: React.FC<ReactPdfViewerProps> = ({
   url,
   title = "PDF Document",
   showControls = true,
+  onPageChange,
+  initialPage,
 }) => {
   const [numPages, setNumPages] = useState<number | null>(null);
   const [scale, setScale] = useState<number>(1.0);
-  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [currentPage, setCurrentPage] = useState<number>(initialPage || 1);
   const [pageInput, setPageInput] = useState<string>("1");
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState<number>(0);
@@ -66,6 +70,22 @@ const ReactPdfViewer: React.FC<ReactPdfViewerProps> = ({
     []
   );
 
+  // Scroll to initial page after document loads and pages render
+  useEffect(() => {
+    if (!numPages || !initialPage || initialPage === 1) return;
+
+    // Wait for pages to render, then scroll to initial page
+    const timer = setTimeout(() => {
+      const pageElement = pageRefs.current.get(initialPage);
+      if (pageElement) {
+        pageElement.scrollIntoView({ behavior: 'auto', block: 'start' });
+        console.log(`Scrolled to page ${initialPage}`);
+      }
+    }, 500); // Give pages time to render
+
+    return () => clearTimeout(timer);
+  }, [numPages, initialPage]);
+
   // Track current page based on scroll position
   useEffect(() => {
     if (!containerRef.current || !numPages) return;
@@ -91,8 +111,15 @@ const ReactPdfViewer: React.FC<ReactPdfViewerProps> = ({
         }
       });
 
-      setCurrentPage(closestPage);
-      setPageInput(closestPage.toString());
+      if (closestPage !== currentPage) {
+        setCurrentPage(closestPage);
+        setPageInput(closestPage.toString());
+        
+        // Notify parent component of page change
+        if (onPageChange && numPages) {
+          onPageChange(closestPage, numPages);
+        }
+      }
     };
 
     const container = containerRef.current;

@@ -479,3 +479,128 @@ export async function getDownloadUrl(materialId: string) {
     };
   }
 }
+
+// ============= READING PROGRESS API =============
+
+export interface ReadingProgressData {
+  currentPage?: number;
+  totalPages?: number;
+  currentFilePath?: string;
+  currentFileId?: string;
+  scrollPosition?: number;
+  progressPercentage?: number;
+  totalReadingTime?: number;
+  isCompleted?: boolean;
+}
+
+export interface ReadingProgress extends ReadingProgressData {
+  id: string;
+  userId: string;
+  materialId: string;
+  completedAt?: string;
+  lastProgressUpdate: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MaterialWithProgress extends Material {
+  readingProgress?: ReadingProgress;
+}
+
+export async function saveReadingProgress(
+  materialId: string,
+  progressData: ReadingProgressData
+): Promise<Response<ReadingProgress>> {
+  try {
+    const response = await httpClient.post(
+      `/materials/${materialId}/progress`,
+      progressData
+    );
+    return response.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status || 500,
+      message:
+        error.response?.data?.message || "Failed to save reading progress",
+    };
+  }
+}
+
+export async function getReadingProgress(
+  materialId: string
+): Promise<Response<ReadingProgress | null>> {
+  try {
+    const response = await httpClient.get(`/materials/${materialId}/progress`);
+    return response.data;
+  } catch (error: any) {
+    // Return null if not found (404) instead of throwing
+    if (error.response?.status === 404) {
+      return {
+        statusCode: 200,
+        message: "No progress found",
+        data: null,
+      };
+    }
+    throw {
+      statusCode: error.response?.status || 500,
+      message:
+        error.response?.data?.message || "Failed to get reading progress",
+    };
+  }
+}
+
+export async function deleteReadingProgress(
+  materialId: string
+): Promise<Response<ReadingProgress>> {
+  try {
+    const response = await httpClient.delete(
+      `/materials/${materialId}/progress`
+    );
+    return response.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status || 500,
+      message:
+        error.response?.data?.message || "Failed to reset reading progress",
+    };
+  }
+}
+
+export async function getContinueReadingMaterials(
+  limit: number = 10,
+  offset: number = 0
+): Promise<Response<MaterialWithProgress[]>> {
+  try {
+    const response = await httpClient.get("/materials/continue/reading", {
+      params: { limit, offset },
+    });
+    return response.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status || 500,
+      message:
+        error.response?.data?.message ||
+        "Failed to get continue reading materials",
+    };
+  }
+}
+
+export async function getReadingStats(): Promise<
+  Response<{
+    totalMaterialsInProgress: number;
+    totalCompletedMaterials: number;
+    totalReadingTime: number;
+    averageProgress: number;
+  }>
+> {
+  try {
+    const response = await httpClient.get("/materials/stats/reading");
+    return response.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status || 500,
+      message:
+        error.response?.data?.message || "Failed to get reading stats",
+    };
+  }
+}

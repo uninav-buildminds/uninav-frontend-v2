@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import { Download01Icon, Share08Icon, Bookmark01Icon, Triangle01Icon, File01Icon, MaximizeScreenIcon, MinimizeScreenIcon, ArrowRight01Icon, ArrowLeftDoubleIcon, ArrowRightDoubleIcon, InformationCircleIcon } from "hugeicons-react";
@@ -16,7 +16,6 @@ import { allocateReadingPoints } from "@/api/points.api";
 import { ResponseStatus } from "@/lib/types/response.types";
 import { ResourceTypeEnum, RestrictionEnum } from "@/lib/types/material.types";
 import PDFViewer from "@/components/dashboard/viewers/PDFViewer";
-import AdobePDFViewer from "@/components/dashboard/viewers/AdobePDFViewer";
 import ReactPdfViewer from "@/components/dashboard/viewers/ReactPdfViewer";
 import GDriveFolderBrowser from "@/components/dashboard/viewers/GDriveFolderBrowser";
 import GDriveFileViewer from "@/components/dashboard/viewers/GDriveFileViewer";
@@ -33,6 +32,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { useReadingProgress } from "@/hooks/useReadingProgress";
 
 const MaterialView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -56,6 +56,24 @@ const MaterialView: React.FC = () => {
   );
   const [iconsExpanded, setIconsExpanded] = useState(false);
   const [infoSheetOpen, setInfoSheetOpen] = useState(false);
+  const readingTimeRef = useRef<number>(0);
+  const readingTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Initialize reading progress hook
+  const {
+    progress,
+    saveProgress,
+    saveImmediately,
+    resetProgress,
+    isSaving,
+  } = useReadingProgress({
+    materialId: id || "",
+    enabled: !!id && !!material,
+    autoSaveInterval: 15000, // Save every 15 seconds
+    onSaveError: (error) => {
+      console.error("Failed to auto-save reading progress:", error);
+    },
+  });
 
   // Detect if device is actually a mobile device (not just small screen)
   const [isMobile] = useState(() => {
@@ -120,7 +138,17 @@ const MaterialView: React.FC = () => {
 
         if (response.status === ResponseStatus.SUCCESS) {
           setMaterial(response.data);
-          setTotalPages(8); // TODO: Extract from PDF metadata if available
+          
+          // Extract total pages from metadata if available
+          const metaData = response.data.metaData as any;
+          if (metaData?.pageCount) {
+            setTotalPages(metaData.pageCount);
+          } else if (metaData?.fileCount) {
+            // For GDrive folders, fileCount represents total items
+            setTotalPages(metaData.fileCount);
+          } else {
+            setTotalPages(8); // Fallback
+          }
 
           // TODO: Fetch related materials based on tags or course
           setRelatedMaterials([]);
@@ -147,7 +175,20 @@ const MaterialView: React.FC = () => {
     }
   }, [id, navigate]);
 
-  // Allocate reading points every 5 minutes
+  // Restore reading progress when material and progress are loaded
+  useEffect(() => {
+    if (!material || !progress) return;
+
+    // Silently restore progress - no banner needed
+    if (progress.currentPage && progress.currentPage > 1) {
+      setCurrentPage(progress.currentPage);
+      if (progress.totalPages) {
+        setTotalPages(progress.totalPages);
+      }
+    }
+  }, [material, progress]);
+
+  // Allocate reading points every 10 minutes
   useEffect(() => {
     if (!material?.id) return;
 
@@ -167,6 +208,65 @@ const MaterialView: React.FC = () => {
 
     return () => clearInterval(interval);
   }, [material?.id]);
+
+  // Track reading time
+  useEffect(() => {
+    if (!material?.id) return;
+
+    // Start tracking time
+    readingTimerRef.current = setInterval(() => {
+      readingTimeRef.current += 1; // Increment by 1 second
+    }, 1000);
+
+    return () => {
+      if (readingTimerRef.current) {
+        clearInterval(readingTimerRef.current);
+      }
+    };
+  }, [material?.id]);
+
+  // Handle page change from ReactPdfViewer
+  const handlePageChange = (page: number, total: number) => {
+    if (!material?.id) return;
+
+    setCurrentPage(page);
+    setTotalPages(total);
+
+    // Calculate progress percentage
+    const progressPercentage = total > 0 ? page / total : 0;
+    const isCompleted = page >= total;
+
+    // Save progress with debouncing (non-blocking)
+    saveProgress({
+      currentPage: page,
+      totalPages: total,
+      progressPercentage,
+      totalReadingTime: (progress?.totalReadingTime || 0) + readingTimeRef.current,
+      isCompleted,
+    });
+
+    // Reset reading time after saving
+    readingTimeRef.current = 0;
+  };
+
+  // Save progress immediately before unmounting
+  useEffect(() => {
+    return () => {
+      if (material?.id && progress && currentPage > 1) {
+        const progressPercentage = totalPages > 0 
+          ? Math.round((currentPage / totalPages) * 100) / 100 
+          : 0;
+        
+        saveImmediately({
+          currentPage,
+          totalPages,
+          progressPercentage,
+          totalReadingTime: (progress.totalReadingTime || 0) + readingTimeRef.current,
+          isCompleted: currentPage >= totalPages,
+        });
+      }
+    };
+  }, [material?.id, progress, currentPage, totalPages, saveImmediately]);
 
   const handleBack = () => {
     // If viewing a GDrive file within a folder, go back to folder
@@ -452,16 +552,18 @@ const MaterialView: React.FC = () => {
       material.resource?.resourceAddress
     ) {
       // Use React-PDF viewer on mobile for better compatibility and performance
-      if (isMobile) {
+      // if (isMobile) {
         // testing in desktop mode as well
         return (
           <ReactPdfViewer
             url={material.resource.resourceAddress}
             title={material.label}
             showControls={true}
+            onPageChange={handlePageChange}
+            initialPage={currentPage > 1 ? currentPage : undefined}
           />
         );
-      }
+      // }
 
       // Use iframe viewer on desktop
       return (

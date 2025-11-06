@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import MetricsSection from "@/components/dashboard/MetricsSection";
 import MaterialsSection from "@/components/dashboard/MaterialsSection";
@@ -25,6 +25,7 @@ import { SearchResult, SearchSuggestion } from "@/lib/types/search.types";
 
 const Overview: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
   const { isLoading: isLoadingRecent, data: recentMaterials } = useQuery({
     queryKey: ["recentMaterials"],
@@ -52,8 +53,8 @@ const Overview: React.FC = () => {
   const [pointsPercentage, setPointsPercentage] = useState<string>("0%");
   const [isLoadingMetrics, setIsLoadingMetrics] = useState(true);
 
-  // Search state
-  const [searchQuery, setSearchQuery] = useState("");
+  // Search state - initialize from URL params
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [searchResults, setSearchResults] = useState<SearchResult<Material> | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [isSearchActive, setIsSearchActive] = useState(false);
@@ -90,6 +91,15 @@ const Overview: React.FC = () => {
   // Debounce timer ref
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Restore search from URL on mount
+  useEffect(() => {
+    const queryFromUrl = searchParams.get("q");
+    if (queryFromUrl && queryFromUrl.trim()) {
+      setSearchQuery(queryFromUrl);
+      handleSearch(queryFromUrl);
+    }
+  }, []); // Run only once on mount
+
   // Autocomplete search (lightweight - no advancedSearch, no ignorePreference)
   const handleSearchInput = useCallback((query: string) => {
     setSearchQuery(query);
@@ -101,6 +111,8 @@ const Overview: React.FC = () => {
       setSearchSuggestions([]);
       setSearchMetadata(null);
       setIsLoadingSuggestions(false);
+      // Clear URL params
+      setSearchParams({});
 
       // Clear any pending debounce
       if (debounceTimerRef.current) {
@@ -173,6 +185,8 @@ const Overview: React.FC = () => {
       setIsSearching(true);
       setIsSearchActive(true);
       setSearchQuery(query);
+      // Update URL params
+      setSearchParams({ q: query.trim() });
 
       try {
         // Try normal search first (or advanced if manually enabled)
@@ -237,12 +251,13 @@ const Overview: React.FC = () => {
 
   // Toggle advanced search
   const toggleAdvancedSearch = useCallback(() => {
-    setAdvancedSearchEnabled((prev) => !prev);
+    const newValue = !advancedSearchEnabled;
+    setAdvancedSearchEnabled(newValue);
     // If there's an active search, re-run it with the new setting
     if (searchQuery.trim()) {
       setTimeout(() => handleSearch(searchQuery), 100);
     }
-  }, [searchQuery, handleSearch]);
+  }, [advancedSearchEnabled, searchQuery, handleSearch]);
 
   // Load metrics data on component mount
   useEffect(() => {
@@ -328,6 +343,8 @@ const Overview: React.FC = () => {
 								setIsSearchActive(false);
 								setSearchResults(null);
 								setSearchMetadata(null);
+								// Clear URL params
+								setSearchParams({});
 							}}
 							onUpload={() => setShowUploadModal(true)}
 						/>
