@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { updateUserProfile } from "@/api/user.api";
 import { useToast } from "@/hooks/use-toast";
 import { DepartmentSelect } from "../DepartmentSelect";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Field: React.FC<{
   label: string;
@@ -43,9 +44,11 @@ const Field: React.FC<{
 const AcademicSection: React.FC = () => {
   const { user, setUser } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const [selectedDepartmentId, setSelectedDepartmentId] = useState<string>("");
   const [level, setLevel] = useState<string>("");
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -57,13 +60,18 @@ const AcademicSection: React.FC = () => {
   }, [user]);
 
   const handleSaveChanges = async () => {
-    if (!user) return;
+    if (!user || isSaving) return;
+    setIsSaving(true);
     try {
       const updatedUser = await updateUserProfile({
         departmentId: selectedDepartmentId,
         level: parseInt(level, 10),
       });
       setUser(updatedUser);
+      
+      // Invalidate recommendations query to refresh recommendations
+      queryClient.invalidateQueries({ queryKey: ["recommendedMaterials"] });
+      
       toast({
         title: "Success",
         description: "Academic details updated successfully!",
@@ -74,6 +82,8 @@ const AcademicSection: React.FC = () => {
         description: error.message || "Failed to update academic details.",
         variant: "destructive",
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -115,10 +125,17 @@ const AcademicSection: React.FC = () => {
       <div className="mt-6 flex justify-end">
         <button
           onClick={handleSaveChanges}
-          className="px-4 py-2 bg-brand text-white rounded-lg text-sm hover:bg-brand/90"
-          disabled={!selectedDepartmentId || !level}
+          className="px-4 py-2 bg-brand text-white rounded-lg text-sm hover:bg-brand/90 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:hover:bg-gray-300 flex items-center gap-2"
+          disabled={!selectedDepartmentId || !level || isSaving}
         >
-          Save Changes
+          {isSaving ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <span>Saving...</span>
+            </>
+          ) : (
+            "Save Changes"
+          )}
         </button>
       </div>
     </div>

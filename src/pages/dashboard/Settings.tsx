@@ -73,16 +73,16 @@ const SettingsPage: React.FC = () => {
               {/* Mobile: Show back button when in detail view */}
               {mobileView === "detail" ? (
                 <div className="md:hidden flex items-center gap-3 mb-4">
-                  <button
+                <button
                     onClick={handleBackToList}
                     className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-                  >
-                    <ArrowLeft01Icon size={18} />
+                >
+                  <ArrowLeft01Icon size={18} />
                     Back
-                  </button>
-                </div>
+                </button>
+              </div>
               ) : null}
-              
+
               <div className="text-center">
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-foreground">
                   {mobileView === "detail" ? (
@@ -94,9 +94,9 @@ const SettingsPage: React.FC = () => {
                   )}
                 </h2>
                 {mobileView === "list" && (
-                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                    Manage your account, privacy and preferences
-                  </p>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                  Manage your account, privacy and preferences
+                </p>
                 )}
               </div>
 

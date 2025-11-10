@@ -65,6 +65,8 @@ interface MaterialCardProps {
   onDelete?: (id: string) => void; // For user uploads - delete material
   showEditDelete?: boolean; // Show edit/delete actions instead of bookmark
   componentRef?: React.Ref<HTMLDivElement>; // Ref for the card container
+  draggable?: boolean; // Enable drag functionality
+  onDragStart?: (material: Material) => void; // Drag start handler
 }
 
 const MaterialCard: React.FC<MaterialCardProps> = ({
@@ -76,6 +78,8 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
   onDelete,
   componentRef,
   showEditDelete = false,
+  draggable = false,
+  onDragStart,
 }) => {
   const { id, label, createdAt, downloads, tags, views, likes, metaData } = material;
 
@@ -139,9 +143,35 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
     onShare?.(id);
   };
 
+  const handleDragStartEvent = (e: React.DragEvent) => {
+    if (draggable && onDragStart) {
+      onDragStart(material);
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", material.id); // Set data for drag
+      // Make the dragged element semi-transparent
+      if (e.currentTarget instanceof HTMLElement) {
+        e.currentTarget.style.opacity = "0.5";
+      }
+    }
+  };
+
+  const handleDragEnd = (e: React.DragEvent) => {
+    // Reset opacity after drag ends
+    if (e.currentTarget instanceof HTMLElement) {
+      e.currentTarget.style.opacity = "1";
+    }
+  };
+
   return (
     <TooltipProvider>
-      <div className="group relative cursor-pointer" onClick={() => onRead?.(id)} ref={componentRef}>
+      <div
+        className="group relative cursor-pointer"
+        onClick={() => onRead?.(id)}
+        ref={componentRef}
+        draggable={draggable}
+        onDragStart={handleDragStartEvent}
+        onDragEnd={handleDragEnd}
+      >
         {/* File Preview */}
         <div className="aspect-square overflow-hidden rounded-xl mb-3 relative border border-brand/20 shadow-sm">
           <img

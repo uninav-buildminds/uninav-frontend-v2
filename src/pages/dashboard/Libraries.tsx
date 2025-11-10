@@ -110,6 +110,14 @@ const Libraries: React.FC = () => {
     }
   };
 
+  const handleViewAll = (section: string) => {
+    if (section === "saved materials") {
+      navigate("/dashboard/saved");
+    } else if (section === "my uploads") {
+      navigate("/dashboard/uploads");
+    }
+  };
+
   const handleFilter = (section: string) => {
     console.log(`Filter ${section}`);
   };
@@ -237,12 +245,12 @@ const Libraries: React.FC = () => {
           <MaterialsSection
             title="Saved Materials"
             materials={filteredSavedMaterials}
-            onViewAll={() => {}} // No view all on this page
+            onViewAll={() => handleViewAll("saved materials")}
             onFilter={() => handleFilter("saved materials")}
             onShare={handleShare}
             onRead={handleRead}
             scrollStep={280}
-            showViewAll={false}
+            showViewAll={true}
             emptyStateType="saved"
             onEmptyStateAction={handleSavedEmptyStateAction}
             isLoading={bookmarksLoading}
@@ -252,12 +260,12 @@ const Libraries: React.FC = () => {
           <MaterialsSection
             title="My Uploads"
             materials={filteredUploads}
-            onViewAll={() => {}} // No view all on this page
+            onViewAll={() => handleViewAll("my uploads")}
             onFilter={() => handleFilter("my uploads")}
             onShare={handleShare}
             onRead={handleRead}
             scrollStep={280}
-            showViewAll={false}
+            showViewAll={true}
             emptyStateType="uploads"
             onEmptyStateAction={handleUploadsEmptyStateAction}
             isLoading={isLoadingUploads}
