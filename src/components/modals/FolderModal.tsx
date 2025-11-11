@@ -15,6 +15,7 @@ interface FolderModalProps {
   onShare?: (folderId: string) => void;
   onDelete?: (folderId: string) => void;
   onRead?: (materialId: string) => void;
+  onRemoveMaterial?: (folderId: string, materialId: string) => void;
 }
 
 const FolderModal: React.FC<FolderModalProps> = ({
@@ -24,6 +25,7 @@ const FolderModal: React.FC<FolderModalProps> = ({
   onShare,
   onDelete,
   onRead,
+  onRemoveMaterial,
 }) => {
   const [folderData, setFolderData] = useState<Collection | null>(folder);
   const [isLoading, setIsLoading] = useState(false);
@@ -160,7 +162,8 @@ const FolderModal: React.FC<FolderModalProps> = ({
                   <div className="mb-4 p-3 sm:p-4 bg-gray-50 rounded-full inline-block">
                     <Folder03Icon className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-gray-400" />
                   </div>
-                  <p className="text-gray-500">This folder is empty</p>
+                  <p className="text-gray-500 mb-2">This folder is empty</p>
+                  <p className="text-sm text-gray-400">Drag and drop materials into the Folder to add them</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
@@ -170,6 +173,8 @@ const FolderModal: React.FC<FolderModalProps> = ({
                       material={material}
                       onRead={onRead}
                       onShare={onShare}
+                      onDelete={onRemoveMaterial && folder?.id ? () => onRemoveMaterial(folder.id, material.id) : undefined}
+                      showEditDelete={!!onRemoveMaterial}
                     />
                   ))}
                 </div>

@@ -5,11 +5,12 @@ import MaterialsLayout from "@/components/dashboard/MaterialsLayout";
 import FolderCard from "@/components/dashboard/FolderCard";
 import FolderModal from "@/components/modals/FolderModal";
 import CreateFolderModal from "@/components/modals/CreateFolderModal";
+import { DeleteFolderModal } from "@/components/modals/DeleteFolderModal";
 import MaterialCard from "@/components/dashboard/MaterialCard";
 import { useBookmarks } from "@/context/bookmark/BookmarkContextProvider";
 import { Material } from "@/lib/types/material.types";
 import { Collection } from "@/lib/types/collection.types";
-import { getMyCollections, addMaterialToCollection, updateCollection, deleteCollection } from "@/api/collection.api";
+import { getMyCollections, addMaterialToCollection, updateCollection, deleteCollection, removeMaterialFromCollection } from "@/api/collection.api";
 import { toast } from "sonner";
 
 const SavedMaterials: React.FC = () => {
@@ -25,6 +26,9 @@ const SavedMaterials: React.FC = () => {
   const [selectedFolder, setSelectedFolder] = useState<Collection | null>(null);
   const [showFolderModal, setShowFolderModal] = useState(false);
   const [draggedMaterial, setDraggedMaterial] = useState<Material | null>(null);
+  const [folderToDelete, setFolderToDelete] = useState<Collection | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [renamingFolderId, setRenamingFolderId] = useState<string | null>(null);
 
   // Extract materials from bookmarks
   useEffect(() => {
@@ -54,6 +58,13 @@ const SavedMaterials: React.FC = () => {
       const response = await getMyCollections(1, 100);
       if (response?.data?.data) {
         setFolders(response.data.data);
+        // Update selected folder if it's open to refresh material count
+        if (selectedFolder) {
+          const updatedFolder = response.data.data.find((f: Collection) => f.id === selectedFolder.id);
+          if (updatedFolder) {
+            setSelectedFolder(updatedFolder);
+          }
+        }
       }
     } catch (error: any) {
       console.error("Error loading folders:", error);
@@ -127,52 +138,62 @@ const SavedMaterials: React.FC = () => {
     toast.success("Folder link copied to clipboard!");
   };
 
-  const handleEditFolder = (folder: Collection) => {
-    // TODO: Open edit modal or inline edit
-    const newName = prompt("Enter new folder name:", folder.label);
-    if (newName && newName.trim() && newName !== folder.label) {
-      updateCollection(folder.id, { label: newName.trim() })
-        .then((response) => {
-          if (response && response.status === "success" && response.data) {
-            setFolders((prev) =>
-              prev.map((f) => (f.id === folder.id ? response.data : f))
-            );
-            toast.success("Folder renamed successfully!");
-          }
-        })
-        .catch((error: any) => {
-          toast.error(error.message || "Failed to rename folder");
-        });
+  const handleEditFolder = (folderId: string, newName: string) => {
+    if (!newName.trim()) {
+      toast.error("Folder name cannot be empty");
+      return;
     }
+
+    // Set renaming state immediately
+    setRenamingFolderId(folderId);
+    
+    updateCollection(folderId, { label: newName.trim() })
+      .then((response) => {
+        if (response && response.status === "success" && response.data) {
+          setFolders((prev) =>
+            prev.map((f) => (f.id === folderId ? response.data : f))
+          );
+          // Update selected folder if it's the one being edited
+          if (selectedFolder?.id === folderId) {
+            setSelectedFolder(response.data);
+          }
+          toast.success("Folder renamed successfully!");
+        }
+      })
+      .catch((error: any) => {
+        toast.error(error.message || "Failed to rename folder");
+      })
+      .finally(() => {
+        // Clear renaming state after a small delay to ensure spinner is visible
+        setTimeout(() => {
+          setRenamingFolderId(null);
+        }, 300);
+      });
   };
 
   const handleDeleteFolder = (folderId: string) => {
     const folder = folders.find((f) => f.id === folderId);
     if (!folder) return;
+    setFolderToDelete(folder);
+    setShowDeleteModal(true);
+  };
 
-    toast.warning("Are you sure you want to delete this folder?", {
-      description: "This action cannot be undone.",
-      action: {
-        label: "Delete",
-        onClick: async () => {
-          try {
-            await deleteCollection(folderId);
-            setFolders((prev) => prev.filter((f) => f.id !== folderId));
-            if (selectedFolder?.id === folderId) {
-              setShowFolderModal(false);
-              setSelectedFolder(null);
-            }
-            toast.success("Folder deleted successfully");
-          } catch (error: any) {
-            toast.error(error.message || "Failed to delete folder");
-          }
-        },
-      },
-      cancel: {
-        label: "Cancel",
-        onClick: () => toast.dismiss(),
-      },
-    });
+  const confirmDeleteFolder = async () => {
+    if (!folderToDelete) return;
+
+    try {
+      await deleteCollection(folderToDelete.id);
+      setFolders((prev) => prev.filter((f) => f.id !== folderToDelete.id));
+      if (selectedFolder?.id === folderToDelete.id) {
+        setShowFolderModal(false);
+        setSelectedFolder(null);
+      }
+      setShowDeleteModal(false);
+      setFolderToDelete(null);
+      toast.success("Folder deleted successfully");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to delete folder");
+    }
   };
 
   // Drag and drop handlers
@@ -216,8 +237,14 @@ const SavedMaterials: React.FC = () => {
     try {
       await addMaterialToCollection(folder.id, draggedMaterial.id);
       toast.success(`Added to ${folder.label}`);
+      
+      // Remove material from the main materials list
+      setAllMaterials((prev) => prev.filter((m) => m.id !== draggedMaterial.id));
+      setFilteredMaterials((prev) => prev.filter((m) => m.id !== draggedMaterial.id));
+      
       // Reload folders to update material counts
       loadFolders();
+      
       // Reload folder modal if it's open
       if (selectedFolder?.id === folder.id) {
         setShowFolderModal(false);
@@ -234,6 +261,35 @@ const SavedMaterials: React.FC = () => {
 
   const getFolderMaterialCount = (folder: Collection): number => {
     return folder.content?.filter((item) => item.material).length || 0;
+  };
+
+  const handleRemoveMaterialFromFolder = async (folderId: string, materialId: string) => {
+    try {
+      await removeMaterialFromCollection(folderId, materialId);
+      toast.success("Material removed from folder");
+      
+      // Reload folders to update material counts
+      loadFolders();
+      
+      // Reload folder modal if it's open
+      if (selectedFolder?.id === folderId) {
+        setShowFolderModal(false);
+        setTimeout(() => {
+          setShowFolderModal(true);
+        }, 100);
+      }
+      
+      // Add material back to the main materials list
+      const material = allMaterials.find((m) => m.id === materialId) || 
+        folders.find((f) => f.id === folderId)?.content?.find((item) => item.material?.id === materialId)?.material;
+      
+      if (material && !allMaterials.find((m) => m.id === materialId)) {
+        setAllMaterials((prev) => [...prev, material]);
+        setFilteredMaterials((prev) => [...prev, material]);
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to remove material from folder");
+    }
   };
 
   const hasContent = folders.length > 0 || filteredMaterials.length > 0;
@@ -275,59 +331,49 @@ const SavedMaterials: React.FC = () => {
             </div>
           </div>
 
-          {/* Folders Section */}
-          {folders.length > 0 && (
-            <div>
-              <h4 className="text-sm font-medium text-gray-700 mb-4">Folders</h4>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
-                {folders.map((folder) => (
-                  <div
-                    key={folder.id}
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleDragOver(e, folder);
-                    }}
-                    onDragLeave={handleDragLeave}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleDrop(e, folder);
-                    }}
-                    className="transition-opacity"
-                  >
-                    <FolderCard
-                      folder={folder}
-                      onClick={() => handleFolderClick(folder)}
-                      onShare={() => handleShareFolder(folder.id)}
-                      onEdit={handleEditFolder}
-                      onDelete={handleDeleteFolder}
-                      materialCount={getFolderMaterialCount(folder)}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Materials Section */}
+          {/* Combined Folders & Materials Grid */}
           {hasContent && (
-            <div>
-              {folders.length > 0 && (
-                <h4 className="text-sm font-medium text-gray-700 mb-4">Materials</h4>
-              )}
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
-                {filteredMaterials.map((material) => (
-                  <MaterialCard
-                    key={material.id}
-                    material={material}
-                    onShare={handleShare}
-                    onRead={handleRead}
-                    draggable={true}
-                    onDragStart={handleDragStart}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
+              {/* Folders */}
+              {folders.map((folder) => (
+                <div
+                  key={folder.id}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleDragOver(e, folder);
+                  }}
+                  onDragLeave={handleDragLeave}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleDrop(e, folder);
+                  }}
+                  className="transition-opacity"
+                >
+                  <FolderCard
+                    folder={folder}
+                    onClick={() => handleFolderClick(folder)}
+                    onShare={() => handleShareFolder(folder.id)}
+                    onEdit={handleEditFolder}
+                    onDelete={handleDeleteFolder}
+                    materialCount={getFolderMaterialCount(folder)}
+                    isRenaming={renamingFolderId === folder.id}
                   />
-                ))}
-              </div>
+                </div>
+              ))}
+              
+              {/* Materials */}
+              {filteredMaterials.map((material) => (
+                <MaterialCard
+                  key={material.id}
+                  material={material}
+                  onShare={handleShare}
+                  onRead={handleRead}
+                  draggable={true}
+                  onDragStart={handleDragStart}
+                />
+              ))}
             </div>
           )}
 
@@ -364,6 +410,17 @@ const SavedMaterials: React.FC = () => {
         onShare={handleShareFolder}
         onDelete={handleDeleteFolder}
         onRead={handleRead}
+        onRemoveMaterial={handleRemoveMaterialFromFolder}
+      />
+
+      <DeleteFolderModal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setFolderToDelete(null);
+        }}
+        onConfirm={confirmDeleteFolder}
+        folderName={folderToDelete?.label}
       />
     </>
   );
