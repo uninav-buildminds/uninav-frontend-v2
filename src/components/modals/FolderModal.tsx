@@ -148,8 +148,19 @@ const FolderModal: React.FC<FolderModalProps> = ({
                   {folderData?.label || folder.label}
                 </h2>
                 {folderData?.description && (
-                  <p className="text-sm text-gray-600">{folderData.description}</p>
+                  <p className="text-sm text-gray-600 mb-3">{folderData.description}</p>
                 )}
+                {/* Breadcrumb Navigation */}
+                <nav className="flex items-center gap-2 text-sm">
+                  <button
+                    onClick={onClose}
+                    className="text-gray-600 hover:text-brand transition-colors"
+                  >
+                    Libraries
+                  </button>
+                  <span className="text-gray-400">/</span>
+                  <span className="text-gray-900 font-medium">{folderData?.label || folder.label}</span>
+                </nav>
               </div>
 
               {/* Materials Grid */}
@@ -168,14 +179,25 @@ const FolderModal: React.FC<FolderModalProps> = ({
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
                   {materials.map((material) => (
-                    <MaterialCard
-                      key={material.id}
-                      material={material}
-                      onRead={onRead}
-                      onShare={onShare}
-                      onDelete={onRemoveMaterial && folder?.id ? () => onRemoveMaterial(folder.id, material.id) : undefined}
-                      showEditDelete={!!onRemoveMaterial}
-                    />
+                    <div key={material.id} className="relative group">
+                      <MaterialCard
+                        material={material}
+                        onRead={onRead}
+                        onShare={onShare}
+                      />
+                      {onRemoveMaterial && folder?.id && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onRemoveMaterial(folder.id, material.id);
+                          }}
+                          className="absolute top-2 right-2 p-1.5 bg-white/90 backdrop-blur-sm text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors duration-200 shadow-sm opacity-0 group-hover:opacity-100 z-10"
+                          aria-label="Remove from folder"
+                        >
+                          <Cancel01Icon size={16} />
+                        </button>
+                      )}
+                    </div>
                   ))}
                 </div>
               )}

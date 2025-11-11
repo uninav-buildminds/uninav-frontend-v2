@@ -42,8 +42,6 @@ import { FullscreenProvider } from "./context/FullscreenContext";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import Help from "./pages/dashboard/Help";
 import Profile from "./pages/dashboard/Profile";
-import SavedMaterials from "./pages/dashboard/SavedMaterials";
-import MyUploads from "./pages/dashboard/MyUploads";
 import ScrollToTop from "./components/ScrollToTop";
 const queryClient = new QueryClient();
 import { Analytics } from "@vercel/analytics/react";
@@ -89,8 +87,6 @@ const App = () => {
                             path="recommendations"
                             element={<Recommendations />}
                           />
-                          <Route path="saved" element={<SavedMaterials />} />
-                          <Route path="uploads" element={<MyUploads />} />
                           <Route
                             path="notifications"
                             element={<Notifications />}
