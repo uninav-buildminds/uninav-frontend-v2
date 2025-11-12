@@ -94,9 +94,9 @@ export const DepartmentSelect: React.FC<DepartmentSelectProps> = ({
               disabled={loading || disabled}
             >
               <span className="truncate flex-1 text-left mr-2">
-                {selectedDepartment
-                  ? `${selectedDepartment.name} (${selectedDepartment.facultyName})`
-                  : "Select department..."}
+              {selectedDepartment
+                ? `${selectedDepartment.name} (${selectedDepartment.facultyName})`
+                : "Select department..."}
               </span>
               <ChevronsUpDown className="opacity-50 w-4 h-4 shrink-0 flex-shrink-0" />
             </Button>

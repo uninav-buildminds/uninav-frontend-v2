@@ -38,24 +38,16 @@ const MobilePanel: React.FC<MobilePanelProps> = ({
     }
   }, [showLogoutModal, isOpen, onClose]);
 
-  // Show profile banner at intervals when profile is incomplete
+  // Show profile banner when profile is incomplete (keep code but remove auto-dismiss)
+  // Banner stays visible until profile is complete
   useEffect(() => {
-    if (!isOpen || !profileIncomplete || bannerDismissed) return;
-
-    // Show banner after 2 seconds when panel opens
-    const initialTimer = setTimeout(() => {
-      setShowProfileBanner(true);
-    }, 2000);
-
-    // Auto-dismiss after 7 seconds (banner stays visible for 7 seconds)
-    const dismissTimer = setTimeout(() => {
+    if (!isOpen || !profileIncomplete || bannerDismissed) {
       setShowProfileBanner(false);
-    }, 9000);
+      return;
+    }
 
-    return () => {
-      clearTimeout(initialTimer);
-      clearTimeout(dismissTimer);
-    };
+    // Show banner when panel opens (no delay, stays visible)
+    setShowProfileBanner(true);
   }, [isOpen, profileIncomplete, bannerDismissed]);
 
   // Reset banner when panel closes
@@ -150,7 +142,7 @@ const MobilePanel: React.FC<MobilePanelProps> = ({
                             Complete Your Profile
                           </h4>
                           <p className="text-xs text-white/90 leading-relaxed">
-                            Add your department, level, and courses to get personalized recommendations
+                            Add your department and level to get personalized recommendations
                           </p>
                           <div className="flex items-center gap-1 mt-2">
                             <span className="text-xs text-white/90 font-medium">Complete now</span>

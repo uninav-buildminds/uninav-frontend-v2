@@ -216,21 +216,21 @@ const Notifications: React.FC = () => {
               </h2>
 
               <div className="flex items-center gap-2 sm:gap-3 ml-auto">
-                <button
-                  onClick={markAllAsRead}
-                  className="px-3 sm:px-4 py-2 bg-brand text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-brand/90"
-                >
-                  Mark All as Read
-                </button>
-                <Link
-                  to="/dashboard/settings"
-                  className="px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50 flex items-center justify-center"
-                  aria-label="Settings"
-                >
-                  <Settings01Icon size={18} />
-                </Link>
+                  <button
+                    onClick={markAllAsRead}
+                    className="px-3 sm:px-4 py-2 bg-brand text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-brand/90"
+                  >
+                    Mark All as Read
+                  </button>
+                  <Link
+                    to="/dashboard/settings"
+                    className="px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50 flex items-center justify-center"
+                    aria-label="Settings"
+                  >
+                    <Settings01Icon size={18} />
+                  </Link>
+                </div>
               </div>
-            </div>
 
             <div className="max-w-6xl mx-auto mt-4 sm:mt-6">
               <h2 className="hidden sm:block text-2xl sm:text-3xl md:text-4xl font-semibold text-foreground">

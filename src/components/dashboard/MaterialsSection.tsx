@@ -187,8 +187,10 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
     const el = scrollContainerRef.current;
     if (!el) return;
     const { scrollLeft, scrollWidth, clientWidth } = el;
-    setCanScrollLeft(scrollLeft > 0);
-    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 1);
+    // Use a threshold of 5px to account for rounding errors and sub-pixel rendering
+    const threshold = 5;
+    setCanScrollLeft(scrollLeft > threshold);
+    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - threshold);
   };
 
   // Memoize displayMaterials to avoid recalculating on every render
@@ -226,11 +228,21 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
   }, [displayMaterials, sortBy, preserveOrder]);
 
   useEffect(() => {
+    // Initial check and on resize
     updateScrollButtons();
     const onResize = () => updateScrollButtons();
     window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
+    
+    // Re-check when materials change (with small delay to ensure DOM has updated)
+    const timer = setTimeout(() => {
+      updateScrollButtons();
+    }, 100);
+    
+    return () => {
+      window.removeEventListener("resize", onResize);
+      clearTimeout(timer);
+    };
+  }, [sortedMaterials]); // Re-check when materials change
 
   const scrollByAmount = (amount: number) => {
     const el = scrollContainerRef.current;
@@ -501,7 +513,7 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
         </div>
       ) : (
         // Rail layout - horizontal scroll
-        <div className="relative">
+        <div className="relative w-full overflow-visible">
           {/* Soft gradient edges (only when scrolling is possible) */}
           {canScrollLeft && (
             <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-white/95 via-white/70 to-transparent z-sticky" />
@@ -514,7 +526,7 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
           {canScrollLeft && (
             <button
               onClick={() => scrollByAmount(-scrollStep)}
-              className="absolute -left-1 top-1/2 -translate-y-1/2 z-modal p-2 bg-white/90 backdrop-blur rounded-full shadow-md border border-gray-200 hover:bg-white"
+              className="absolute -left-3 sm:-left-4 top-1/2 -translate-y-1/2 z-modal p-2 bg-white/90 backdrop-blur rounded-full shadow-md border border-gray-200 hover:bg-white transition-opacity"
               aria-label="Scroll left"
             >
               <ArrowLeft01Icon size={16} className="text-brand" />
@@ -525,7 +537,7 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
           {canScrollRight && (
             <button
               onClick={() => scrollByAmount(scrollStep)}
-              className="absolute -right-1 top-1/2 -translate-y-1/2 z-modal p-2 bg-white/90 backdrop-blur rounded-full shadow-md border border-gray-200 hover:bg-white"
+              className="absolute -right-3 sm:-right-4 top-1/2 -translate-y-1/2 z-modal p-2 bg-white/90 backdrop-blur rounded-full shadow-md border border-gray-200 hover:bg-white transition-opacity"
               aria-label="Scroll right"
             >
               <ArrowRight01Icon size={16} className="text-brand" />

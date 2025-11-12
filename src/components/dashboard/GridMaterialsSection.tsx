@@ -106,6 +106,9 @@ type GridMaterialsSectionProps = {
     | "uploads";
   onEmptyStateAction?: () => void;
   isLoading?: boolean;
+  onEdit?: (material: Material) => void; // For user uploads - edit material
+  onDelete?: (id: string) => void; // For user uploads - delete material
+  showEditDelete?: boolean; // Show edit/delete actions on cards
 };
 
 const GridMaterialsSection: React.FC<GridMaterialsSectionProps> = ({
@@ -119,6 +122,9 @@ const GridMaterialsSection: React.FC<GridMaterialsSectionProps> = ({
   emptyStateType,
   onEmptyStateAction,
   isLoading = false,
+  onEdit,
+  onDelete,
+  showEditDelete = false,
 }) => {
   const [showSortOptions, setShowSortOptions] = useState(false);
   const [sortBy, setSortBy] = useState<"name" | "date" | "downloads">("date");
@@ -432,6 +438,10 @@ const GridMaterialsSection: React.FC<GridMaterialsSectionProps> = ({
             onShare={onShare}
             onRead={onRead}
             lastViewedAt={material.lastViewedAt}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          showEditDelete={showEditDelete}
+          draggable={false}
           />
         ))}
       </div>

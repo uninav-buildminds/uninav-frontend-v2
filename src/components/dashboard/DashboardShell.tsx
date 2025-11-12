@@ -18,49 +18,24 @@ const DashboardShell: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const profileIncomplete = isProfileIncomplete(user);
-  const [showDesktopBanner, setShowDesktopBanner] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
   
   // Hide mobile menu and bottom nav on MaterialView page
   const isMaterialView = location.pathname.includes("/dashboard/material/");
 
-  // Show desktop banner at intervals when profile is incomplete
+  // Reset dismissed state when profile becomes complete
   useEffect(() => {
-    if (isFullscreen || isMaterialView || !profileIncomplete || bannerDismissed) return;
-
-    // Show banner after 3 seconds
-    const initialTimer = setTimeout(() => {
-      setShowDesktopBanner(true);
-    }, 3000);
-
-    // Auto-dismiss after 7 seconds (banner stays visible for 7 seconds)
-    const dismissTimer = setTimeout(() => {
-      setShowDesktopBanner(false);
-    }, 10000);
-
-    return () => {
-      clearTimeout(initialTimer);
-      clearTimeout(dismissTimer);
-    };
-  }, [isFullscreen, isMaterialView, profileIncomplete, bannerDismissed, location.pathname]);
-
-  // Reset banner when navigating
-  useEffect(() => {
-    setShowDesktopBanner(false);
-    const resetTimer = setTimeout(() => {
+    if (!profileIncomplete) {
       setBannerDismissed(false);
-    }, 30000);
-    return () => clearTimeout(resetTimer);
-  }, [location.pathname]);
+    }
+  }, [profileIncomplete]);
 
   const handleBannerClick = () => {
     navigate("/dashboard/settings?tab=academic");
-    setShowDesktopBanner(false);
   };
 
   const handleDismissBanner = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setShowDesktopBanner(false);
     setBannerDismissed(true);
   };
 
@@ -88,18 +63,18 @@ const DashboardShell: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 overflow-x-hidden">
-      {/* Desktop Profile Banner - Toast from top */}
+      {/* Profile Banner - Responsive, visible until profile is complete */}
       <AnimatePresence>
-        {showDesktopBanner && profileIncomplete && (
+        {profileIncomplete && !isFullscreen && !isMaterialView && !bannerDismissed && (
           <motion.div
             initial={{ opacity: 0, y: -100 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -100 }}
             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
             onClick={handleBannerClick}
-            className="hidden md:block fixed top-4 right-4 z-toast w-full max-w-md cursor-pointer"
+            className="fixed top-4 z-toast w-full max-w-md cursor-pointer left-1/2 -translate-x-1/2 md:right-4 md:left-auto md:translate-x-0"
           >
-            <div className="relative">
+            <div className="px-4 md:px-0 relative">
               <button
                 onClick={handleDismissBanner}
                 className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-white border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors flex items-center justify-center z-10"
@@ -117,7 +92,7 @@ const DashboardShell: React.FC = () => {
                     Complete Your Profile
                   </p>
                   <p className="text-xs text-gray-600">
-                    Add your department, level, and courses to get personalized recommendations
+                    Add your department & level to get personalized recommendations
                   </p>
                 </div>
                   <ArrowRight02Icon size={14} className="text-brand flex-shrink-0" />

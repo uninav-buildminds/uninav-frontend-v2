@@ -75,7 +75,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({ type, onAction, isLoading = fal
 
   const handleAction = () => {
     if (type === 'recommendations') {
-      navigate('/dashboard/settings');
+      navigate('/dashboard/settings?tab=academic');
     } else if (onAction) {
       onAction();
     }
