@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import { Download01Icon, Share08Icon, Bookmark01Icon, Triangle01Icon, File01Icon, MaximizeScreenIcon, MinimizeScreenIcon, ArrowRight01Icon, ArrowLeftDoubleIcon, ArrowRightDoubleIcon, InformationCircleIcon } from "hugeicons-react";
@@ -58,6 +58,8 @@ const MaterialView: React.FC = () => {
   const [infoSheetOpen, setInfoSheetOpen] = useState(false);
   const readingTimeRef = useRef<number>(0);
   const readingTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const hasRestoredProgressRef = useRef<boolean>(false);
+  const saveProgressRef = useRef<((data: any) => void) | null>(null);
 
   // Initialize reading progress hook
   const {
@@ -74,6 +76,16 @@ const MaterialView: React.FC = () => {
       console.error("Failed to auto-save reading progress:", error);
     },
   });
+
+  // Keep saveProgress ref updated
+  useEffect(() => {
+    saveProgressRef.current = saveProgress;
+  }, [saveProgress]);
+
+  // Reset restoration flag when navigating to a new material
+  useEffect(() => {
+    hasRestoredProgressRef.current = false;
+  }, [id]);
 
   // Detect if device is actually a mobile device (not just small screen)
   const [isMobile] = useState(() => {
@@ -178,13 +190,17 @@ const MaterialView: React.FC = () => {
   // Restore reading progress when material and progress are loaded
   useEffect(() => {
     if (!material || !progress) return;
+    if (hasRestoredProgressRef.current) return;
 
-    // Silently restore progress - no banner needed
-    if (progress.currentPage && progress.currentPage > 1) {
-      setCurrentPage(progress.currentPage);
+    const targetPage = progress.currentPage ?? 1;
+    if (targetPage > 1) {
+      setCurrentPage((prev) => (prev === targetPage ? prev : targetPage));
       if (progress.totalPages) {
-        setTotalPages(progress.totalPages);
+        setTotalPages((prev) =>
+          prev === progress.totalPages ? prev : progress.totalPages,
+        );
       }
+      hasRestoredProgressRef.current = true;
     }
   }, [material, progress]);
 
@@ -226,28 +242,32 @@ const MaterialView: React.FC = () => {
   }, [material?.id]);
 
   // Handle page change from ReactPdfViewer
-  const handlePageChange = (page: number, total: number) => {
-    if (!material?.id) return;
+  const handlePageChange = useCallback((page: number, total: number) => {
+    if (!id) return;
 
-    setCurrentPage(page);
-    setTotalPages(total);
+    // Only update if page actually changed to prevent infinite loops
+    setCurrentPage(prevPage => {
+      if (prevPage === page) return prevPage;
+      
+      // Save progress with debouncing (non-blocking)
+      if (saveProgressRef.current) {
+        saveProgressRef.current({
+          currentPage: page,
+          totalPages: total,
+          progressPercentage: total > 0 ? page / total : 0,
+          totalReadingTime: (progress?.totalReadingTime || 0) + readingTimeRef.current,
+          isCompleted: page >= total,
+        });
+      }
 
-    // Calculate progress percentage
-    const progressPercentage = total > 0 ? page / total : 0;
-    const isCompleted = page >= total;
-
-    // Save progress with debouncing (non-blocking)
-    saveProgress({
-      currentPage: page,
-      totalPages: total,
-      progressPercentage,
-      totalReadingTime: (progress?.totalReadingTime || 0) + readingTimeRef.current,
-      isCompleted,
+      // Reset reading time after saving
+      readingTimeRef.current = 0;
+      
+      return page;
     });
 
-    // Reset reading time after saving
-    readingTimeRef.current = 0;
-  };
+    setTotalPages(prevTotal => prevTotal === total ? prevTotal : total);
+  }, [id]);
 
   // Save progress immediately before unmounting
   useEffect(() => {

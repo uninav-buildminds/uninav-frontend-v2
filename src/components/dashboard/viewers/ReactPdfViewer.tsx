@@ -47,6 +47,12 @@ const ReactPdfViewer: React.FC<ReactPdfViewerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState<number>(0);
   const pageRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+  const onPageChangeRef = useRef(onPageChange);
+
+  // Keep the ref updated with the latest callback
+  useEffect(() => {
+    onPageChangeRef.current = onPageChange;
+  }, [onPageChange]);
 
   // Calculate responsive width
   useEffect(() => {
@@ -94,7 +100,6 @@ const ReactPdfViewer: React.FC<ReactPdfViewerProps> = ({
       const container = containerRef.current;
       if (!container) return;
 
-      const scrollTop = container.scrollTop;
       const containerTop = container.getBoundingClientRect().top;
 
       // Find the page closest to the top of viewport
@@ -116,8 +121,8 @@ const ReactPdfViewer: React.FC<ReactPdfViewerProps> = ({
         setPageInput(closestPage.toString());
         
         // Notify parent component of page change
-        if (onPageChange && numPages) {
-          onPageChange(closestPage, numPages);
+        if (onPageChangeRef.current && numPages) {
+          onPageChangeRef.current(closestPage, numPages);
         }
       }
     };
@@ -125,7 +130,7 @@ const ReactPdfViewer: React.FC<ReactPdfViewerProps> = ({
     const container = containerRef.current;
     container.addEventListener("scroll", handleScroll);
     return () => container.removeEventListener("scroll", handleScroll);
-  }, [numPages]);
+  }, [numPages, currentPage]);
 
   // Go to specific page
   const goToPage = (page: number) => {
