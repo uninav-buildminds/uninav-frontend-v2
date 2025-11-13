@@ -107,7 +107,7 @@ const SignupForm: React.FC = () => {
               <div className="w-full border-t" />
             </div>
             <div className="relative flex justify-center">
-              <span className="bg-transparent px-2 text-[11px] sm:text-xs text-muted-foreground">or sign up with</span>
+              <span className="bg-white px-2 text-[11px] sm:text-xs text-muted-foreground">or sign up with</span>
             </div>
           </div>
 

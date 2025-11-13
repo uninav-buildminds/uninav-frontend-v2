@@ -92,10 +92,12 @@ const FolderCard: React.FC<FolderCardProps> = ({
 
   return (
     <section className="relative group flex flex-col w-full cursor-pointer">
-      <div
-        className="file relative w-full aspect-square cursor-pointer origin-bottom [perspective:1500px] z-50 mb-3"
-        onClick={onClick}
-      >
+      {/* Folder Icon Container - Aligned with MaterialCard image */}
+      <div className="relative w-full aspect-square mb-3 flex items-end justify-center">
+        <div
+          className="file relative w-[95%] aspect-[4/3] cursor-pointer origin-bottom [perspective:1500px] z-50"
+          onClick={onClick}
+        >
         <div className="work-5 bg-brand w-full h-full origin-top rounded-2xl rounded-tl-none group-hover:shadow-[0_20px_40px_rgba(0,0,0,.2)] transition-all ease duration-300 relative after:absolute after:content-[''] after:bottom-[99%] after:left-0 after:w-20 after:h-4 after:bg-brand after:rounded-t-2xl before:absolute before:content-[''] before:-top-[15px] before:left-[75.5px] before:w-4 before:h-4 before:bg-brand before:[clip-path:polygon(0_35%,0%_100%,50%_100%);]" />
 
         <div className="work-4 absolute inset-1 bg-[#7480FB] rounded-2xl transition-all ease duration-300 origin-bottom select-none group-hover:[transform:rotateX(-20deg)]" />
@@ -104,7 +106,8 @@ const FolderCard: React.FC<FolderCardProps> = ({
 
         <div className="work-2 absolute inset-1 bg-[#DCDFFE] rounded-2xl transition-all ease duration-300 origin-bottom group-hover:[transform:rotateX(-38deg)]" />
 
-        <div className="work-1 absolute bottom-0 bg-gradient-to-t from-brand via-brand/80 to-brand/70 w-full h-full rounded-2xl before:[clip-path:polygon(100%_14%,50%_100%,100%_100%);] transition-all ease duration-300 origin-bottom flex items-end group-hover:shadow-[inset_0_20px_40px_rgba(59,130,246,0.3),_inset_0_-20px_40px_rgba(37,99,235,0.3)] group-hover:[transform:rotateX(-46deg)_translateY(1px)]" />
+        <div className="work-1 absolute bottom-0 bg-gradient-to-t from-brand via-[#0619EF] to-[#2436F9] w-full h-full rounded-2xl before:[clip-path:polygon(100%_14%,50%_100%,100%_100%);] transition-all ease duration-300 origin-bottom flex items-end group-hover:shadow-[inset_0_20px_40px_rgba(59,130,246,0.3),_inset_0_-20px_40px_rgba(37,99,235,0.3)] group-hover:[transform:rotateX(-46deg)_translateY(1px)]" />
+        </div>
       </div>
 
       {/* Folder Info - Matching MaterialCard styling */}

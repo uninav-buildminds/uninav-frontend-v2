@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Add01Icon, SortingAZ02Icon } from "hugeicons-react";
+import { FolderAddIcon, PreferenceHorizontalIcon } from "hugeicons-react";
 import PageHeader from "@/components/dashboard/PageHeader";
 import FolderCard from "@/components/dashboard/FolderCard";
 import FolderModal from "@/components/modals/FolderModal";
@@ -545,7 +545,7 @@ const Libraries: React.FC = () => {
               className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
               aria-label="Filter"
             >
-              <SortingAZ02Icon size={18} className="text-gray-600" />
+              <PreferenceHorizontalIcon size={18} className="text-gray-600" />
             </button>
             {showFolders && (
               <button
@@ -553,7 +553,7 @@ const Libraries: React.FC = () => {
                 className="p-3 rounded-full bg-brand text-white hover:bg-brand/90 transition-colors shadow-lg hover:shadow-xl"
                 aria-label="Create folder"
               >
-                <Add01Icon size={20} />
+                <FolderAddIcon size={18} />
               </button>
             )}
           </div>
@@ -571,7 +571,7 @@ const Libraries: React.FC = () => {
             {activeTab !== "all" && (
               <>
                 <span className="text-gray-400">/</span>
-                <span className="text-gray-900 font-medium capitalize">{activeTab}</span>
+                <span className="text-brand font-medium capitalize">{activeTab}</span>
               </>
             )}
           </nav>
@@ -642,7 +642,7 @@ const Libraries: React.FC = () => {
                 onClick={handleCreateFolder}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand/90"
               >
-                <Add01Icon size={18} />
+                <FolderAddIcon size={18} />
                 Create Your First Folder
               </button>
             )}
