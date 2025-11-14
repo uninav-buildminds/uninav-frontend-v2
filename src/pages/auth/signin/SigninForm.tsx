@@ -33,8 +33,9 @@ const SigninForm: React.FC = () => {
     }
 
     try {
-      await logIn(data.email, data.password);
-      navigate("/dashboard");
+      const res = await logIn(data.email, data.password);
+      console.log(res);
+      // navigate("/dashboard");
     } catch (error) {
       if (error.statusCode === 400) {
         // Email not verified, Backend has sent a verification link, notify the user
@@ -94,7 +95,11 @@ const SigninForm: React.FC = () => {
             </Link>
           </div>
 
-          <LoadingButton isLoading={isSubmitting} disabled={isSubmitting} loadingText="Signing in...">
+          <LoadingButton
+            isLoading={isSubmitting}
+            disabled={isSubmitting}
+            loadingText="Signing in..."
+          >
             Sign in
           </LoadingButton>
 

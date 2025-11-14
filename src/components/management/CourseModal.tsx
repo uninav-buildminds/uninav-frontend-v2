@@ -30,6 +30,10 @@ import {
 import { Plus, Loader2, Trash2, Edit2, X, Save } from "lucide-react";
 import { LinkCourseForm } from "@/components/management/CourseForm";
 import { useToast } from "@/hooks/use-toast";
+import {
+  useDeleteCourse,
+  useUnlinkDLC,
+} from "@/hooks/mutations/useCourseOperations";
 
 interface CourseModalProps {
   courseId: string | null;
@@ -48,7 +52,6 @@ const CourseModal: React.FC<CourseModalProps> = ({
   const [showLinkForm, setShowLinkForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showUnlinkDialog, setShowUnlinkDialog] = useState<{
@@ -65,6 +68,10 @@ const CourseModal: React.FC<CourseModalProps> = ({
   });
 
   const { toast } = useToast();
+
+  // React Query mutations with optimistic updates
+  const deleteCourseMutation = useDeleteCourse();
+  const unlinkDLCMutation = useUnlinkDLC();
 
   useEffect(() => {
     if (courseId && isOpen) {
@@ -161,45 +168,30 @@ const CourseModal: React.FC<CourseModalProps> = ({
 
   const handleDeleteCourse = async () => {
     if (!course) return;
-    try {
-      setIsDeleting(true);
-      await deleteCourse(course.id);
-      toast({
-        title: "Success",
-        description: "Course deleted successfully",
-      });
-      onCourseDeleted?.();
-      onClose();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete course",
-        variant: "destructive",
-      });
-    } finally {
-      setIsDeleting(false);
-      setShowDeleteDialog(false);
-    }
+
+    // Use optimistic mutation - deletes instantly in UI
+    deleteCourseMutation.mutate(course.id, {
+      onSuccess: () => {
+        onCourseDeleted?.();
+        onClose();
+        setShowDeleteDialog(false);
+      },
+    });
   };
 
   const handleUnlinkDepartment = async (departmentId: string) => {
     if (!course) return;
-    try {
-      await unlinkCourseToDepartment(departmentId, course.id);
-      await fetchCourseDetails();
-      toast({
-        title: "Success",
-        description: "Course unlinked from department successfully",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to unlink course from department",
-        variant: "destructive",
-      });
-    } finally {
-      setShowUnlinkDialog({ departmentId: "", show: false });
-    }
+
+    // Use optimistic mutation - unlinks instantly in UI
+    unlinkDLCMutation.mutate(
+      { departmentId, courseId: course.id },
+      {
+        onSuccess: () => {
+          fetchCourseDetails(); // Refresh course details to show updated departments
+          setShowUnlinkDialog({ departmentId: "", show: false });
+        },
+      }
+    );
   };
 
   const handleUnlinkClick = (departmentId: string) => {
@@ -513,10 +505,12 @@ const CourseModal: React.FC<CourseModalProps> = ({
                         variant="outline"
                         className="justify-start hover:bg-red-50 w-full text-red-600 hover:text-red-700 border-red-200 gap-2"
                         onClick={() => setShowDeleteDialog(true)}
-                        disabled={isDeleting}
+                        disabled={deleteCourseMutation.isPending}
                       >
                         <Trash2 size={16} />
-                        {isDeleting ? "Deleting..." : "Delete Course"}
+                        {deleteCourseMutation.isPending
+                          ? "Deleting..."
+                          : "Delete Course"}
                       </Button>
                     </div>
                   </div>

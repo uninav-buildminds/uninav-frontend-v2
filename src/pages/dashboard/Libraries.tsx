@@ -5,15 +5,19 @@ import MaterialsSection from "@/components/dashboard/MaterialsSection";
 import { UploadModal } from "@/components/modals";
 import { useAuth } from "@/hooks/useAuth";
 import { useBookmarks } from "@/context/bookmark/BookmarkContextProvider";
-import { searchMaterials, deleteMaterial } from "@/api/materials.api";
+import { searchMaterials } from "@/api/materials.api";
 import { Material } from "@/lib/types/material.types";
 import { toast } from "sonner";
 import { ResponseStatus } from "@/lib/types/response.types";
+import { useDeleteMaterial } from "@/hooks/mutations/useMaterialOperations";
 
 const Libraries: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { bookmarks, isLoading: bookmarksLoading } = useBookmarks();
+
+  // React Query mutation with optimistic update
+  const deleteMaterialMutation = useDeleteMaterial();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [savedMaterials, setSavedMaterials] = useState<Material[]>([]);
@@ -147,17 +151,14 @@ const Libraries: React.FC = () => {
       description: "This action cannot be undone.",
       action: {
         label: "Delete",
-        onClick: async () => {
-          try {
-            await deleteMaterial(id);
-            // Optimistically remove the deleted material from the list
-            setUserUploads((prev) => prev.filter((m) => m.id !== id));
-            toast.success("Material deleted successfully");
-          } catch (error: any) {
-            toast.error(
-              error.message || "Failed to delete material. Please try again."
-            );
-          }
+        onClick: () => {
+          // Use optimistic mutation - deletes instantly in UI
+          deleteMaterialMutation.mutate(id, {
+            onSuccess: () => {
+              // Optimistically remove from local state too
+              setUserUploads((prev) => prev.filter((m) => m.id !== id));
+            },
+          });
         },
       },
       cancel: {

@@ -43,8 +43,23 @@ import DashboardPage from "./pages/dashboard/DashboardPage";
 import Help from "./pages/dashboard/Help";
 import Profile from "./pages/dashboard/Profile";
 import ScrollToTop from "./components/ScrollToTop";
-const queryClient = new QueryClient();
 import { Analytics } from "@vercel/analytics/react";
+
+// Configure React Query client with optimized defaults
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // Data is fresh for 5 minutes
+      gcTime: 1000 * 60 * 10, // Keep unused data in cache for 10 minutes (formerly cacheTime)
+      refetchOnWindowFocus: false, // Don't refetch on window focus
+      refetchOnMount: true, // Refetch on component mount if stale
+      retry: 1, // Retry failed queries once
+    },
+    mutations: {
+      retry: 0, // Don't retry mutations
+    },
+  },
+});
 
 const App = () => {
   return (
@@ -93,12 +108,9 @@ const App = () => {
                           />
                           <Route path="settings" element={<SettingsPage />} />
                           <Route path="help" element={<Help />} />
-                          
+
                           {/* Profile View */}
-                          <Route
-                            path="profile/:userId"
-                            element={<Profile />}
-                          />
+                          <Route path="profile/:userId" element={<Profile />} />
 
                           {/* Material View */}
                           <Route

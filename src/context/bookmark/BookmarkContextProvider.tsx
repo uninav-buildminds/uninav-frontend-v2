@@ -5,14 +5,13 @@ import React, {
   useState,
   ReactNode,
 } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bookmark } from "@/lib/types/bookmark.types";
 import { BookmarkContextType } from "./BookmarkContext";
-import {
-  getAllBookmarks,
-  createBookmark,
-  deleteBookmark,
-} from "@/api/user.api";
+import { getAllBookmarks } from "@/api/user.api";
 import { useAuth } from "@/hooks/useAuth";
+import { useToggleBookmark } from "@/hooks/mutations/useBookmarkOperations";
+import { queryKeys } from "@/hooks/queries/queryKeys";
 
 const BookmarkContext = createContext<BookmarkContextType | undefined>(
   undefined
@@ -25,93 +24,59 @@ interface BookmarkProviderProps {
 export const BookmarkProvider: React.FC<BookmarkProviderProps> = ({
   children,
 }) => {
-  const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const toggleBookmarkMutation = useToggleBookmark();
 
-  // Fetch all bookmarks when user is authenticated
-  const fetchBookmarks = async () => {
-    if (!user) {
-      setBookmarks([]);
-      return;
+  // Use React Query to fetch and cache bookmarks
+  const {
+    data: bookmarks = [],
+    isLoading,
+    error: queryError,
+    refetch,
+  } = useQuery({
+    queryKey: queryKeys.bookmarks.list(),
+    queryFn: async () => {
+      if (!user) return [];
+      const data = await getAllBookmarks();
+      return data || [];
+    },
+    enabled: !!user, // Only fetch when user is authenticated
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+  });
+
+  const [error, setError] = useState<string | null>(null);
+
+  // Update error state from query error
+  useEffect(() => {
+    if (queryError) {
+      setError((queryError as any).message || "Failed to fetch bookmarks");
+    } else {
+      setError(null);
     }
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const bookmarksData = await getAllBookmarks();
-      setBookmarks(bookmarksData || []);
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch bookmarks");
-      console.error("Error fetching bookmarks:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [queryError]);
 
   // Check if a material is bookmarked
   const isBookmarked = (materialId: string): boolean => {
     return bookmarks.some((bookmark) => bookmark.materialId === materialId);
   };
 
-  // Toggle bookmark with optimistic update
+  // Toggle bookmark using React Query mutation (with optimistic updates)
   const toggleBookmark = async (materialId: string) => {
     if (!user) return;
 
-    const isCurrentlyBookmarked = isBookmarked(materialId);
+    const currentBookmark = bookmarks.find((b) => b.materialId === materialId);
 
-    // Optimistic update
-    if (isCurrentlyBookmarked) {
-      // Remove bookmark optimistically
-      setBookmarks((prev) =>
-        prev.filter((bookmark) => bookmark.materialId !== materialId)
-      );
-    } else {
-      // Add bookmark optimistically
-      const tempBookmark: Bookmark = {
-        id: `temp-${Date.now()}`, // Temporary ID
-        materialId,
-        userId: user.id,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      setBookmarks((prev) => [...prev, tempBookmark]);
-    }
-
-    try {
-      if (isCurrentlyBookmarked) {
-        // Find and delete the actual bookmark
-        const bookmarkToDelete = bookmarks.find(
-          (bookmark) => bookmark.materialId === materialId
-        );
-        if (bookmarkToDelete) {
-          await deleteBookmark(bookmarkToDelete.id);
-        }
-      } else {
-        // Create new bookmark
-        await createBookmark({ materialId });
-      }
-
-      // Refresh bookmarks to get the actual data from server
-      await fetchBookmarks();
-    } catch (err: any) {
-      // Revert optimistic update on error
-      await fetchBookmarks();
-      console.error("Error toggling bookmark:", err);
-    }
+    toggleBookmarkMutation.mutate({
+      materialId,
+      bookmarkId: currentBookmark?.id,
+    });
   };
 
   // Refresh bookmarks manually
   const refreshBookmarks = async () => {
-    await fetchBookmarks();
+    await refetch();
   };
-
-  // Fetch bookmarks when user changes
-  useEffect(() => {
-    fetchBookmarks();
-  }, [user]);
 
   const value: BookmarkContextType = {
     bookmarks,

@@ -90,6 +90,7 @@ export default function AuthContextProvider({
   const logIn = useCallback(
     async (emailOrMatricNo: string, password: string) => {
       const userProfile = await apiLogin({ emailOrMatricNo, password });
+      console.log(userProfile)
       mutate(userProfile); // Update the user data without revalidating
       setLoggedIn(true);
     },
