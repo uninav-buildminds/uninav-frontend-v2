@@ -10,9 +10,17 @@ import MaterialCard from "@/components/dashboard/MaterialCard";
 import { useAuth } from "@/hooks/useAuth";
 import { useBookmarks } from "@/context/bookmark/BookmarkContextProvider";
 import { searchMaterials, deleteMaterial } from "@/api/materials.api";
-import { getMyCollections, addMaterialToCollection, updateCollection, deleteCollection, removeMaterialFromCollection } from "@/api/collection.api";
+import {
+  getMyFolders,
+  addMaterialToFolder,
+  updateFolder,
+  deleteFolder,
+  removeMaterialFromFolder,
+  getFolder,
+  type Folder,
+} from "@/api/folder.api";
 import { Material } from "@/lib/types/material.types";
-import { Collection } from "@/lib/types/collection.types";
+import { getRecentMaterials, type RecentMaterial } from "@/api/materials.api";
 import { toast } from "sonner";
 import { ResponseStatus } from "@/lib/types/response.types";
 import { UploadModal } from "@/components/modals";
@@ -26,24 +34,31 @@ const Libraries: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<TabType>("all");
   const [searchQuery, setSearchQuery] = useState("");
-  
+
   // Materials
   const [savedMaterials, setSavedMaterials] = useState<Material[]>([]);
   const [userUploads, setUserUploads] = useState<Material[]>([]);
-  const [filteredSavedMaterials, setFilteredSavedMaterials] = useState<Material[]>([]);
+  const [filteredSavedMaterials, setFilteredSavedMaterials] = useState<
+    Material[]
+  >([]);
   const [filteredUploads, setFilteredUploads] = useState<Material[]>([]);
-  
+
   // Folders
-  const [folders, setFolders] = useState<Collection[]>([]);
+  const [folders, setFolders] = useState<Folder[]>([]);
   const [isLoadingFolders, setIsLoadingFolders] = useState(false);
   const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
-  const [selectedFolder, setSelectedFolder] = useState<Collection | null>(null);
+  const [selectedFolder, setSelectedFolder] = useState<Folder | null>(null);
   const [showFolderModal, setShowFolderModal] = useState(false);
   const [draggedMaterial, setDraggedMaterial] = useState<Material | null>(null);
-  const [folderToDelete, setFolderToDelete] = useState<Collection | null>(null);
+  const [folderToDelete, setFolderToDelete] = useState<Folder | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [renamingFolderId, setRenamingFolderId] = useState<string | null>(null);
-  
+
+  // Materials with lastViewedAt
+  const [recentMaterialsMap, setRecentMaterialsMap] = useState<
+    Map<string, string>
+  >(new Map());
+
   // Uploads
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [isLoadingUploads, setIsLoadingUploads] = useState(false);
@@ -83,14 +98,16 @@ const Libraries: React.FC = () => {
         limit: 100,
       });
 
-      const uploads = response.status === ResponseStatus.SUCCESS
-        ? response.data.items || []
-        : [];
-      
+      const uploads =
+        response.status === ResponseStatus.SUCCESS
+          ? response.data.items || []
+          : [];
+
       setUserUploads(uploads);
       setFilteredUploads(uploads);
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to fetch user uploads";
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to fetch user uploads";
       setError(errorMessage);
       console.error("Error fetching user uploads:", errorMessage);
     } finally {
@@ -102,21 +119,44 @@ const Libraries: React.FC = () => {
   const loadFolders = async () => {
     setIsLoadingFolders(true);
     try {
-      const response = await getMyCollections(1, 100);
-      if (response && response.status === "success" && response.data?.data) {
-        setFolders(response.data.data);
+      const response = await getMyFolders();
+      if (response && response.status === "success" && response.data) {
+        // Response.data is already an array for folders
+        const foldersData = Array.isArray(response.data) ? response.data : [];
+        setFolders(foldersData);
         if (selectedFolder) {
-          const updatedFolder = response.data.data.find((f: Collection) => f.id === selectedFolder.id);
+          const updatedFolder = foldersData.find(
+            (f: Folder) => f.id === selectedFolder.id
+          );
           if (updatedFolder) {
             setSelectedFolder(updatedFolder);
           }
         }
       }
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to load folders";
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to load folders";
       console.error("Error loading folders:", errorMessage);
     } finally {
       setIsLoadingFolders(false);
+    }
+  };
+
+  // Load recent materials to get lastViewedAt
+  const loadRecentMaterials = async () => {
+    try {
+      const response = await getRecentMaterials();
+      if (response.status === "success" && response.data?.items) {
+        const map = new Map<string, string>();
+        response.data.items.forEach((item: RecentMaterial) => {
+          if (item.lastViewedAt) {
+            map.set(item.id, item.lastViewedAt);
+          }
+        });
+        setRecentMaterialsMap(map);
+      }
+    } catch (error) {
+      console.error("Error loading recent materials:", error);
     }
   };
 
@@ -160,12 +200,18 @@ const Libraries: React.FC = () => {
     setShowCreateFolderModal(true);
   };
 
-  const handleFolderCreated = (folder: Collection) => {
+  const handleFolderCreated = (folder: Folder) => {
     setFolders((prev) => [folder, ...prev]);
     setShowCreateFolderModal(false);
   };
 
-  const handleFolderClick = (folder: Collection) => {
+  const handleFolderClick = async (folder: Folder) => {
+    // Track folder view in non-blocking fashion
+    getFolder(folder.id).catch((error) => {
+      console.error("Failed to track folder view:", error);
+      // Silently fail - don't block the UI
+    });
+
     setSelectedFolder(folder);
     setShowFolderModal(true);
   };
@@ -183,7 +229,7 @@ const Libraries: React.FC = () => {
     }
 
     setRenamingFolderId(folderId);
-    updateCollection(folderId, { label: newName.trim() })
+    updateFolder(folderId, { label: newName.trim() })
       .then((response) => {
         if (response && response.status === "success" && response.data) {
           setFolders((prev) =>
@@ -196,7 +242,8 @@ const Libraries: React.FC = () => {
         }
       })
       .catch((error: unknown) => {
-        const errorMessage = error instanceof Error ? error.message : "Failed to rename folder";
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to rename folder";
         toast.error(errorMessage);
       })
       .finally(() => {
@@ -217,7 +264,7 @@ const Libraries: React.FC = () => {
     if (!folderToDelete) return;
 
     try {
-      await deleteCollection(folderToDelete.id);
+      await deleteFolder(folderToDelete.id);
       setFolders((prev) => prev.filter((f) => f.id !== folderToDelete.id));
       if (selectedFolder?.id === folderToDelete.id) {
         setShowFolderModal(false);
@@ -227,7 +274,8 @@ const Libraries: React.FC = () => {
       setFolderToDelete(null);
       toast.success("Folder deleted successfully");
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to delete folder";
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to delete folder";
       toast.error(errorMessage);
     }
   };
@@ -237,7 +285,7 @@ const Libraries: React.FC = () => {
     setDraggedMaterial(material);
   };
 
-  const handleDragOver = (e: React.DragEvent, folder: Collection) => {
+  const handleDragOver = (e: React.DragEvent, folder: Folder) => {
     e.preventDefault();
     e.stopPropagation();
     e.dataTransfer.dropEffect = "move";
@@ -258,10 +306,10 @@ const Libraries: React.FC = () => {
     }
   };
 
-  const handleDrop = async (e: React.DragEvent, folder: Collection) => {
+  const handleDrop = async (e: React.DragEvent, folder: Folder) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     const target = e.currentTarget as HTMLElement;
     if (target) {
       target.style.opacity = "1";
@@ -271,15 +319,19 @@ const Libraries: React.FC = () => {
     if (!draggedMaterial) return;
 
     try {
-      await addMaterialToCollection(folder.id, draggedMaterial.id);
+      await addMaterialToFolder(folder.id, draggedMaterial.id);
       toast.success(`Added to ${folder.label}`);
-      
+
       // Remove material from the main materials list
-      setSavedMaterials((prev) => prev.filter((m) => m.id !== draggedMaterial.id));
-      setFilteredSavedMaterials((prev) => prev.filter((m) => m.id !== draggedMaterial.id));
-      
+      setSavedMaterials((prev) =>
+        prev.filter((m) => m.id !== draggedMaterial.id)
+      );
+      setFilteredSavedMaterials((prev) =>
+        prev.filter((m) => m.id !== draggedMaterial.id)
+      );
+
       loadFolders();
-      
+
       if (selectedFolder?.id === folder.id) {
         setShowFolderModal(false);
         setTimeout(() => {
@@ -287,7 +339,10 @@ const Libraries: React.FC = () => {
         }, 100);
       }
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to add material to folder";
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to add material to folder";
       toast.error(errorMessage);
     } finally {
       setDraggedMaterial(null);
@@ -297,7 +352,7 @@ const Libraries: React.FC = () => {
   // Mobile touch handlers for drag and drop
   const [touchTarget, setTouchTarget] = useState<HTMLElement | null>(null);
 
-  const handleTouchStartOnFolder = (e: React.TouchEvent, folder: Collection) => {
+  const handleTouchStartOnFolder = (e: React.TouchEvent, folder: Folder) => {
     if (!draggedMaterial) return;
     e.preventDefault();
     const target = e.currentTarget as HTMLElement;
@@ -306,23 +361,30 @@ const Libraries: React.FC = () => {
     target.style.transform = "scale(1.02)";
   };
 
-  const handleTouchEndOnFolder = async (e: React.TouchEvent, folder: Collection) => {
+  const handleTouchEndOnFolder = async (
+    e: React.TouchEvent,
+    folder: Folder
+  ) => {
     if (!draggedMaterial) return;
-    
+
     const target = e.currentTarget as HTMLElement;
     target.style.opacity = "1";
     target.style.transform = "scale(1)";
     setTouchTarget(null);
 
     try {
-      await addMaterialToCollection(folder.id, draggedMaterial.id);
+      await addMaterialToFolder(folder.id, draggedMaterial.id);
       toast.success(`Added to ${folder.label}`);
-      
-      setSavedMaterials((prev) => prev.filter((m) => m.id !== draggedMaterial.id));
-      setFilteredSavedMaterials((prev) => prev.filter((m) => m.id !== draggedMaterial.id));
-      
+
+      setSavedMaterials((prev) =>
+        prev.filter((m) => m.id !== draggedMaterial.id)
+      );
+      setFilteredSavedMaterials((prev) =>
+        prev.filter((m) => m.id !== draggedMaterial.id)
+      );
+
       loadFolders();
-      
+
       if (selectedFolder?.id === folder.id) {
         setShowFolderModal(false);
         setTimeout(() => {
@@ -330,7 +392,10 @@ const Libraries: React.FC = () => {
         }, 100);
       }
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to add material to folder";
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to add material to folder";
       toast.error(errorMessage);
     } finally {
       setDraggedMaterial(null);
@@ -344,34 +409,43 @@ const Libraries: React.FC = () => {
     setTouchTarget(null);
   };
 
-  const handleRemoveMaterialFromFolder = async (folderId: string, materialId: string) => {
+  const handleRemoveMaterialFromFolder = async (
+    folderId: string,
+    materialId: string
+  ) => {
     try {
-      await removeMaterialFromCollection(folderId, materialId);
+      await removeMaterialFromFolder(folderId, materialId);
       toast.success("Material removed from folder");
-      
+
       loadFolders();
-      
+
       if (selectedFolder?.id === folderId) {
         setShowFolderModal(false);
         setTimeout(() => {
           setShowFolderModal(true);
         }, 100);
       }
-      
-      const material = savedMaterials.find((m) => m.id === materialId) || 
-        folders.find((f) => f.id === folderId)?.content?.find((item) => item.material?.id === materialId)?.material;
-      
+
+      const material =
+        savedMaterials.find((m) => m.id === materialId) ||
+        folders
+          .find((f) => f.id === folderId)
+          ?.content?.find((item) => item.material?.id === materialId)?.material;
+
       if (material && !savedMaterials.find((m) => m.id === materialId)) {
         setSavedMaterials((prev) => [...prev, material]);
         setFilteredSavedMaterials((prev) => [...prev, material]);
       }
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to remove material from folder";
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to remove material from folder";
       toast.error(errorMessage);
     }
   };
 
-  const getFolderMaterialCount = (folder: Collection): number => {
+  const getFolderMaterialCount = (folder: Folder): number => {
     return folder.content?.filter((item) => item.material).length || 0;
   };
 
@@ -403,7 +477,10 @@ const Libraries: React.FC = () => {
             setFilteredUploads((prev) => prev.filter((m) => m.id !== id));
             toast.success("Material deleted successfully");
           } catch (error: unknown) {
-            const errorMessage = error instanceof Error ? error.message : "Failed to delete material. Please try again.";
+            const errorMessage =
+              error instanceof Error
+                ? error.message
+                : "Failed to delete material. Please try again.";
             toast.error(errorMessage);
           }
         },
@@ -426,22 +503,65 @@ const Libraries: React.FC = () => {
     setEditingMaterial(null);
   };
 
-  // Get current materials based on active tab
+  // Sort materials by lastViewedAt (most recent first), then by createdAt
+  const sortMaterialsByLastViewed = (materials: Material[]): Material[] => {
+    return [...materials].sort((a, b) => {
+      const aLastViewed = recentMaterialsMap.get(a.id);
+      const bLastViewed = recentMaterialsMap.get(b.id);
+
+      // If both have lastViewedAt, sort by it (most recent first)
+      if (aLastViewed && bLastViewed) {
+        return (
+          new Date(bLastViewed).getTime() - new Date(aLastViewed).getTime()
+        );
+      }
+      // If only one has lastViewedAt, prioritize it
+      if (aLastViewed && !bLastViewed) return -1;
+      if (!aLastViewed && bLastViewed) return 1;
+      // If neither has lastViewedAt, sort by createdAt (most recent first)
+      const aCreated = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const bCreated = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return bCreated - aCreated;
+    });
+  };
+
+  // Get current materials based on active tab, sorted by lastViewedAt
   const getCurrentMaterials = (): Material[] => {
+    let materials: Material[] = [];
     switch (activeTab) {
       case "saved":
-        return filteredSavedMaterials;
+        materials = filteredSavedMaterials;
+        break;
       case "uploads":
-        return filteredUploads;
+        materials = filteredUploads;
+        break;
       case "all":
       default:
-        return [...filteredSavedMaterials, ...filteredUploads];
+        materials = [...filteredSavedMaterials, ...filteredUploads];
+        break;
     }
+    return sortMaterialsByLastViewed(materials);
   };
+
+  // Sort folders by lastViewedAt (already sorted by backend, but ensure consistency)
+  const sortedFolders = [...folders].sort((a, b) => {
+    if (a.lastViewedAt && b.lastViewedAt) {
+      return (
+        new Date(b.lastViewedAt).getTime() - new Date(a.lastViewedAt).getTime()
+      );
+    }
+    if (a.lastViewedAt && !b.lastViewedAt) return -1;
+    if (!a.lastViewedAt && b.lastViewedAt) return 1;
+    // Fallback to createdAt
+    const aCreated = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const bCreated = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+    return bCreated - aCreated;
+  });
 
   const currentMaterials = getCurrentMaterials();
   const hasContent = folders.length > 0 || currentMaterials.length > 0;
-  const showFolders = activeTab === "all" || activeTab === "saved" || activeTab === "uploads";
+  const showFolders =
+    activeTab === "all" || activeTab === "saved" || activeTab === "uploads";
 
   // Effects
   useEffect(() => {
@@ -460,6 +580,7 @@ const Libraries: React.FC = () => {
 
   useEffect(() => {
     loadFolders();
+    loadRecentMaterials();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -581,53 +702,58 @@ const Libraries: React.FC = () => {
         {hasContent && (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
             {/* Folders */}
-            {showFolders && folders.map((folder) => (
-              <div
-                key={folder.id}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleDragOver(e, folder);
-                }}
-                onDragLeave={handleDragLeave}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleDrop(e, folder);
-                }}
-                onTouchStart={(e) => handleTouchStartOnFolder(e, folder)}
-                onTouchEnd={(e) => handleTouchEndOnFolder(e, folder)}
-                onTouchCancel={handleTouchCancelOnFolder}
-                className="transition-opacity"
-              >
-                <FolderCard
-                  folder={folder}
-                  onClick={() => handleFolderClick(folder)}
-                  onShare={() => handleShareFolder(folder.id)}
-                  onEdit={handleEditFolder}
-                  onDelete={handleDeleteFolder}
-                  materialCount={getFolderMaterialCount(folder)}
-                  isRenaming={renamingFolderId === folder.id}
-                />
-              </div>
+            {showFolders &&
+              sortedFolders.map((folder) => (
+                <div
+                  key={folder.id}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleDragOver(e as React.DragEvent, folder);
+                  }}
+                  onDragLeave={handleDragLeave}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleDrop(e, folder);
+                  }}
+                  onTouchStart={(e) => handleTouchStartOnFolder(e, folder)}
+                  onTouchEnd={(e) => handleTouchEndOnFolder(e, folder)}
+                  onTouchCancel={handleTouchCancelOnFolder}
+                  className="transition-opacity"
+                >
+                  <FolderCard
+                    folder={folder}
+                    onClick={() => handleFolderClick(folder)}
+                    onShare={() => handleShareFolder(folder.id)}
+                    onEdit={handleEditFolder}
+                    onDelete={handleDeleteFolder}
+                    materialCount={getFolderMaterialCount(folder)}
+                    isRenaming={renamingFolderId === folder.id}
+                  />
+                </div>
+              ))}
+
+            {/* Materials */}
+            {currentMaterials.map((material) => (
+              <MaterialCard
+                key={material.id}
+                material={material}
+                onShare={handleShare}
+                onRead={handleRead}
+                draggable={activeTab === "saved" || activeTab === "all"}
+                onDragStart={handleDragStart}
+                onEdit={
+                  activeTab === "uploads" ? handleEditMaterial : undefined
+                }
+                onDelete={
+                  activeTab === "uploads" ? handleDeleteMaterial : undefined
+                }
+                showEditDelete={activeTab === "uploads"}
+              />
             ))}
-            
-          {/* Materials */}
-          {currentMaterials.map((material) => (
-            <MaterialCard
-              key={material.id}
-              material={material}
-              onShare={handleShare}
-              onRead={handleRead}
-              draggable={activeTab === "saved" || activeTab === "all"}
-              onDragStart={handleDragStart}
-              onEdit={activeTab === "uploads" ? handleEditMaterial : undefined}
-              onDelete={activeTab === "uploads" ? handleDeleteMaterial : undefined}
-              showEditDelete={activeTab === "uploads"}
-            />
-          ))}
-        </div>
-      )}
+          </div>
+        )}
 
         {/* Empty State */}
         {!hasContent && !bookmarksLoading && !isLoadingUploads && !isLoadingFolders && (

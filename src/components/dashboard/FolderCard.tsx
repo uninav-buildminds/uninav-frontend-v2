@@ -1,6 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
-import { MoreVerticalIcon, Share08Icon, PencilEdit02Icon, Delete02Icon } from "hugeicons-react";
-import { Collection } from "@/lib/types/collection.types";
+import {
+  MoreVerticalIcon,
+  Share08Icon,
+  PencilEdit02Icon,
+  Delete02Icon,
+} from "hugeicons-react";
+import { Folder } from "@/api/folder.api";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 interface FolderCardProps {
-  folder: Collection;
+  folder: Folder;
   onClick: () => void;
   onShare?: () => void;
   onEdit?: (folderId: string, newName: string) => void;
@@ -58,7 +63,7 @@ const FolderCard: React.FC<FolderCardProps> = ({
   const handleNameBlur = () => {
     // Don't blur if we're renaming (spinner is showing)
     if (isRenaming) return;
-    
+
     if (editedName.trim() && editedName.trim() !== folder.label) {
       onEdit?.(folder.id, editedName.trim());
     } else {
@@ -70,7 +75,11 @@ const FolderCard: React.FC<FolderCardProps> = ({
   const handleNameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      if (editedName.trim() && editedName.trim() !== folder.label && !isRenaming) {
+      if (
+        editedName.trim() &&
+        editedName.trim() !== folder.label &&
+        !isRenaming
+      ) {
         onEdit?.(folder.id, editedName.trim());
         // Keep editing state true to show spinner - don't blur
       }
@@ -205,4 +214,3 @@ const FolderCard: React.FC<FolderCardProps> = ({
 };
 
 export default FolderCard;
-

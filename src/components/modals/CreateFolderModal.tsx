@@ -2,14 +2,17 @@ import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Cancel01Icon } from "hugeicons-react";
-import { createCollection } from "@/api/collection.api";
-import { Collection, CreateCollectionDto } from "@/lib/types/collection.types";
+import {
+  createFolder,
+  type Folder,
+  type CreateFolderDto,
+} from "@/api/folder.api";
 import { toast } from "sonner";
 
 interface CreateFolderModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onFolderCreated: (folder: Collection) => void;
+  onFolderCreated: (folder: Folder) => void;
 }
 
 const CreateFolderModal: React.FC<CreateFolderModalProps> = ({
@@ -31,13 +34,13 @@ const CreateFolderModal: React.FC<CreateFolderModalProps> = ({
 
     setIsCreating(true);
     try {
-      const folderData: CreateCollectionDto = {
+      const folderData: CreateFolderDto = {
         label: folderName.trim(),
         description: description.trim() || undefined,
         visibility: "private", // Default to private for saved materials folders
       };
 
-      const response = await createCollection(folderData);
+      const response = await createFolder(folderData);
       if (response && response.status === "success" && response.data) {
         toast.success("Folder created successfully!");
         onFolderCreated(response.data);
@@ -46,7 +49,8 @@ const CreateFolderModal: React.FC<CreateFolderModalProps> = ({
         throw new Error("Failed to create folder");
       }
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to create folder";
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to create folder";
       toast.error(errorMessage);
     } finally {
       setIsCreating(false);
@@ -165,4 +169,3 @@ const CreateFolderModal: React.FC<CreateFolderModalProps> = ({
 };
 
 export default CreateFolderModal;
-
