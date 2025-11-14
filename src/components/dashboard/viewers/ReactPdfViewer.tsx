@@ -18,12 +18,11 @@ import { Alert02Icon } from "hugeicons-react";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
+// Import worker as static asset - Vite will handle it correctly in both dev and prod
+import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+
 // Configure PDF.js worker for async rendering
-// Use local worker to avoid version mismatches
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  "pdfjs-dist/build/pdf.worker.min.mjs",
-  import.meta.url
-).toString();
+pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
 
 interface ReactPdfViewerProps {
   url: string;
@@ -84,7 +83,7 @@ const ReactPdfViewer: React.FC<ReactPdfViewerProps> = ({
     const timer = setTimeout(() => {
       const pageElement = pageRefs.current.get(initialPage);
       if (pageElement) {
-        pageElement.scrollIntoView({ behavior: 'auto', block: 'start' });
+        pageElement.scrollIntoView({ behavior: "auto", block: "start" });
         console.log(`Scrolled to page ${initialPage}`);
       }
     }, 500); // Give pages time to render
@@ -119,7 +118,7 @@ const ReactPdfViewer: React.FC<ReactPdfViewerProps> = ({
       if (closestPage !== currentPage) {
         setCurrentPage(closestPage);
         setPageInput(closestPage.toString());
-        
+
         // Notify parent component of page change
         if (onPageChangeRef.current && numPages) {
           onPageChangeRef.current(closestPage, numPages);

@@ -1,15 +1,11 @@
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  "pdfjs-dist/build/pdf.worker.min.js",
-  import.meta.url
-).toString();
-
 import { materialPreview } from "@/api/materials.api";
 import { pdfjs } from "react-pdf";
 
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  "pdfjs-dist/build/pdf.worker.min.mjs",
-  import.meta.url
-).toString();
+// Import worker as static asset - Vite will handle it correctly in both dev and prod
+import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+
+// Configure PDF.js worker
+pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
 
 export async function generatePreviewAndUpload(file: File, materialId: string) {
   // 1. Read file as arrayBuffer

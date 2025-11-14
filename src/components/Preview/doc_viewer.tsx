@@ -8,10 +8,11 @@ import "react-pdf/dist/Page/TextLayer.css";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "./docx.css";
 
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  "pdfjs-dist/build/pdf.worker.min.mjs",
-  import.meta.url
-).toString();
+// Import worker as static asset - Vite will handle it correctly in both dev and prod
+import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+
+// Configure PDF.js worker
+pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
 
 export const Previewer = ({
   file,
