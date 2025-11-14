@@ -35,16 +35,17 @@ const Overview: React.FC = () => {
     },
     enabled: user !== undefined,
   });
-  const { isLoading: isLoadingRecommended, data: recommendedMaterials } = useQuery({
-    queryKey: ["recommendedMaterials"],
-    queryFn: async () => {
-      const response = await getMaterialRecommendations({
-        limit: 10,
-        ignorePreference: true,
-      });
-      return response.data.items;
-    }
-  })
+  const { isLoading: isLoadingRecommended, data: recommendedMaterials } =
+    useQuery({
+      queryKey: ["recommendedMaterials"],
+      queryFn: async () => {
+        const response = await getMaterialRecommendations({
+          limit: 10,
+          ignorePreference: true,
+        });
+        return response.data.items;
+      },
+    });
 
   // Upload modal state
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -55,10 +56,13 @@ const Overview: React.FC = () => {
 
   // Search state - initialize from URL params
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
-  const [searchResults, setSearchResults] = useState<SearchResult<Material> | null>(null);
+  const [searchResults, setSearchResults] =
+    useState<SearchResult<Material> | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [isSearchActive, setIsSearchActive] = useState(false);
-  const [searchSuggestions, setSearchSuggestions] = useState<SearchSuggestion[]>([]);
+  const [searchSuggestions, setSearchSuggestions] = useState<
+    SearchSuggestion[]
+  >([]);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const [advancedSearchEnabled, setAdvancedSearchEnabled] = useState(false);
   const [searchMetadata, setSearchMetadata] = useState<{
@@ -172,7 +176,7 @@ const Overview: React.FC = () => {
     };
   }, []);
 
-  // Full search with automatic fallback to advanced search
+  // Full search - backend handles automatic fallback to advanced search
   const handleSearch = useCallback(
     async (query: string) => {
       if (!query.trim()) {
@@ -189,55 +193,35 @@ const Overview: React.FC = () => {
       setSearchParams({ q: query.trim() });
 
       try {
-        // Try normal search first (or advanced if manually enabled)
-        let response = await searchMaterials({
+        // Backend automatically falls back to advanced search if normal search returns no results
+        const response = await searchMaterials({
           query: query.trim(),
           limit: 10,
           page: 1,
-          advancedSearch: advancedSearchEnabled,
+          advancedSearch: advancedSearchEnabled, // Only use if user explicitly toggled it
         });
-
-        // If no results and advanced search is not manually enabled, try advanced search
-        let usedAdvanced = advancedSearchEnabled;
-        if (
-          !advancedSearchEnabled &&
-          (response.status !== "success" ||
-            !response.data?.items ||
-            response.data.items.length === 0)
-        ) {
-          console.log(
-            "No results with normal search, trying advanced search..."
-          );
-          response = await searchMaterials({
-            query: query.trim(),
-            limit: 10,
-            page: 1,
-            advancedSearch: true,
-          });
-          usedAdvanced = true;
-
-          if (
-            response.status === "success" &&
-            response.data?.items &&
-            response.data.items.length > 0
-          ) {
-            toast.info("Using advanced search to find more results");
-          }
-        }
 
         if (response.status === "success" && response.data?.items) {
           setSearchResults(response.data);
+          // Get usedAdvanced from response (backend may have auto-fallback)
+          const usedAdvanced =
+            (response.data as any).usedAdvanced || advancedSearchEnabled;
           setSearchMetadata({
             total: response.data.pagination.total,
             page: response.data.pagination.page,
             totalPages: response.data.pagination.totalPages,
             usedAdvanced,
           });
+
+          // Show info if backend auto-used advanced search
+          if (usedAdvanced && !advancedSearchEnabled) {
+            toast.info("Using advanced search to find more results");
+          }
         } else {
           setSearchResults(null);
           setSearchMetadata(null);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error searching materials:", error);
         toast.error(error.message || "Search failed. Please try again.");
         setSearchResults(null);
@@ -249,15 +233,15 @@ const Overview: React.FC = () => {
     [advancedSearchEnabled]
   );
 
-  // Toggle advanced search
+  // Toggle advanced search - re-run search with new setting
   const toggleAdvancedSearch = useCallback(() => {
     const newValue = !advancedSearchEnabled;
     setAdvancedSearchEnabled(newValue);
     // If there's an active search, re-run it with the new setting
-    if (searchQuery.trim()) {
-      setTimeout(() => handleSearch(searchQuery), 100);
+    if (searchQuery.trim() && isSearchActive) {
+      handleSearch(searchQuery);
     }
-  }, [advancedSearchEnabled, searchQuery, handleSearch]);
+  }, [advancedSearchEnabled, searchQuery, isSearchActive, handleSearch]);
 
   // Load metrics data on component mount
   useEffect(() => {
@@ -311,93 +295,91 @@ const Overview: React.FC = () => {
       description:
         (user?.bookmarkCount || 0) === 0
           ? "Bookmark materials you want to access later"
-          : `You have saved ${user?.bookmarkCount || 0} ${(user?.bookmarkCount || 0) === 1 ? "material" : "materials"}. Access them anytime from your bookmarks`,
+          : `You have saved ${user?.bookmarkCount || 0} ${
+              (user?.bookmarkCount || 0) === 1 ? "material" : "materials"
+            }. Access them anytime from your bookmarks`,
     },
   ];
 
   return (
-		<>
-			<DashboardHeader
-				firstName={user?.firstName || "User"}
-				showSearch={true}
-				searchSuggestions={searchSuggestions}
-				isLoadingSuggestions={isLoadingSuggestions}
-				onSearch={handleSearch}
-				onSearchInput={handleSearchInput}
-			/>
-			<div className="p-4 sm:p-6">
-				{/* Show search results when searching, otherwise show default content */}
-				{isSearchActive && searchResults != null ? (
-					<>
-						<SearchResults
-							query={searchQuery}
-							results={searchResults}
-							isSearching={isSearching}
-							metadata={searchMetadata}
-							advancedSearchEnabled={advancedSearchEnabled}
-							onToggleAdvancedSearch={toggleAdvancedSearch}
-							onShare={handleShare}
-							onRead={handleRead}
-							onClearSearch={() => {
-								setSearchQuery("");
-								setIsSearchActive(false);
-								setSearchResults(null);
-								setSearchMetadata(null);
-								// Clear URL params
-								setSearchParams({});
-							}}
-							onUpload={() => setShowUploadModal(true)}
-						/>
-						<UploadModal
-							isOpen={showUploadModal}
-							onClose={() => setShowUploadModal(false)}
-						/>
-					</>
-				) : (
-					<>
-						{/* Metrics */}
-						<MetricsSection metrics={metrics} />
+    <>
+      <DashboardHeader
+        firstName={user?.firstName || "User"}
+        showSearch={true}
+        searchSuggestions={searchSuggestions}
+        isLoadingSuggestions={isLoadingSuggestions}
+        onSearch={handleSearch}
+        onSearchInput={handleSearchInput}
+      />
+      <div className="p-4 sm:p-6">
+        {/* Show search results when searching, otherwise show default content */}
+        {isSearchActive && searchResults != null ? (
+          <>
+            <SearchResults
+              query={searchQuery}
+              results={searchResults}
+              isSearching={isSearching}
+              metadata={searchMetadata}
+              advancedSearchEnabled={advancedSearchEnabled}
+              onToggleAdvancedSearch={toggleAdvancedSearch}
+              onShare={handleShare}
+              onRead={handleRead}
+              onClearSearch={() => {
+                setSearchQuery("");
+                setIsSearchActive(false);
+                setSearchResults(null);
+                setSearchMetadata(null);
+                // Clear URL params
+                setSearchParams({});
+              }}
+              onUpload={() => setShowUploadModal(true)}
+            />
+            <UploadModal
+              isOpen={showUploadModal}
+              onClose={() => setShowUploadModal(false)}
+            />
+          </>
+        ) : (
+          <>
+            {/* Metrics */}
+            <MetricsSection metrics={metrics} />
 
-						{/* Content Sections */}
-						<div className="mt-8 space-y-8 pb-16 md:pb-0">
-							{/* Recent Materials */}
-							<MaterialsSection
-								title="Recent Materials"
-								materials={isLoadingRecent ? [] : (recentMaterials || [])}
-								onViewAll={() =>
-									handleViewAll("recent materials")
-								}
-								onFilter={() =>
-									handleFilter("recent materials")
-								}
-								onShare={handleShare}
-								onRead={handleRead}
-								scrollStep={280}
-								preserveOrder={true}
-								isLoading={isLoadingRecent}
-								emptyStateType="recent"
-							/>
+            {/* Content Sections */}
+            <div className="mt-8 space-y-8 pb-16 md:pb-0">
+              {/* Recent Materials */}
+              <MaterialsSection
+                title="Recent Materials"
+                materials={isLoadingRecent ? [] : recentMaterials || []}
+                onViewAll={() => handleViewAll("recent materials")}
+                onFilter={() => handleFilter("recent materials")}
+                onShare={handleShare}
+                onRead={handleRead}
+                scrollStep={280}
+                preserveOrder={true}
+                isLoading={isLoadingRecent}
+                emptyStateType="recent"
+              />
 
-							{/* Recommendations - Grid layout with 2 rows */}
-							<MaterialsSection
-								title="Recommendations"
-								materials={isLoadingRecommended ? [] : (recommendedMaterials || [])}
-								onViewAll={() =>
-									handleViewAll("recommendations")
-								}
-								onFilter={() => handleFilter("recommendations")}
-								onShare={handleShare}
-								onRead={handleRead}
-								scrollStep={280}
-								layout="grid"
-								isLoading={isLoadingRecommended}
-								emptyStateType="recommendations"
-							/>
-						</div>
-					</>
-				)}
-			</div>
-		</>
+              {/* Recommendations - Grid layout with 2 rows */}
+              <MaterialsSection
+                title="Recommendations"
+                materials={
+                  isLoadingRecommended ? [] : recommendedMaterials || []
+                }
+                onViewAll={() => handleViewAll("recommendations")}
+                onFilter={() => handleFilter("recommendations")}
+                onShare={handleShare}
+                onRead={handleRead}
+                scrollStep={280}
+                layout="grid"
+                isLoading={isLoadingRecommended}
+                emptyStateType="recommendations"
+              />
+            </div>
+          </>
+        )}
+      </div>
+    </>
   );
 };
 
