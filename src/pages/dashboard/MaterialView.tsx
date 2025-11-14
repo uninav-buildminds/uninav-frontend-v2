@@ -1,7 +1,19 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, ChevronRight } from "lucide-react";
-import { Download01Icon, Share08Icon, Bookmark01Icon, Triangle01Icon, File01Icon, MaximizeScreenIcon, MinimizeScreenIcon, ArrowRight01Icon, ArrowLeftDoubleIcon, ArrowRightDoubleIcon, InformationCircleIcon } from "hugeicons-react";
+import {
+  Download01Icon,
+  Share08Icon,
+  Bookmark01Icon,
+  Triangle01Icon,
+  File01Icon,
+  MaximizeScreenIcon,
+  MinimizeScreenIcon,
+  ArrowRight01Icon,
+  ArrowLeftDoubleIcon,
+  ArrowRightDoubleIcon,
+  InformationCircleIcon,
+} from "hugeicons-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,7 +44,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { useReadingProgress } from "@/hooks/useReadingProgress";
 
 const MaterialView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -56,36 +67,6 @@ const MaterialView: React.FC = () => {
   );
   const [iconsExpanded, setIconsExpanded] = useState(false);
   const [infoSheetOpen, setInfoSheetOpen] = useState(false);
-  const readingTimeRef = useRef<number>(0);
-  const readingTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const hasRestoredProgressRef = useRef<boolean>(false);
-  const saveProgressRef = useRef<((data: any) => void) | null>(null);
-
-  // Initialize reading progress hook
-  const {
-    progress,
-    saveProgress,
-    saveImmediately,
-    resetProgress,
-    isSaving,
-  } = useReadingProgress({
-    materialId: id || "",
-    enabled: !!id && !!material,
-    autoSaveInterval: 15000, // Save every 15 seconds
-    onSaveError: (error) => {
-      console.error("Failed to auto-save reading progress:", error);
-    },
-  });
-
-  // Keep saveProgress ref updated
-  useEffect(() => {
-    saveProgressRef.current = saveProgress;
-  }, [saveProgress]);
-
-  // Reset restoration flag when navigating to a new material
-  useEffect(() => {
-    hasRestoredProgressRef.current = false;
-  }, [id]);
 
   // Detect if device is actually a mobile device (not just small screen)
   const [isMobile] = useState(() => {
@@ -150,7 +131,7 @@ const MaterialView: React.FC = () => {
 
         if (response.status === ResponseStatus.SUCCESS) {
           setMaterial(response.data);
-          
+
           // Extract total pages from metadata if available
           const metaData = response.data.metaData as any;
           if (metaData?.pageCount) {
@@ -187,23 +168,6 @@ const MaterialView: React.FC = () => {
     }
   }, [id, navigate]);
 
-  // Restore reading progress when material and progress are loaded
-  useEffect(() => {
-    if (!material || !progress) return;
-    if (hasRestoredProgressRef.current) return;
-
-    const targetPage = progress.currentPage ?? 1;
-    if (targetPage > 1) {
-      setCurrentPage((prev) => (prev === targetPage ? prev : targetPage));
-      if (progress.totalPages) {
-        setTotalPages((prev) =>
-          prev === progress.totalPages ? prev : progress.totalPages,
-        );
-      }
-      hasRestoredProgressRef.current = true;
-    }
-  }, [material, progress]);
-
   // Allocate reading points every 10 minutes
   useEffect(() => {
     if (!material?.id) return;
@@ -225,68 +189,11 @@ const MaterialView: React.FC = () => {
     return () => clearInterval(interval);
   }, [material?.id]);
 
-  // Track reading time
-  useEffect(() => {
-    if (!material?.id) return;
-
-    // Start tracking time
-    readingTimerRef.current = setInterval(() => {
-      readingTimeRef.current += 1; // Increment by 1 second
-    }, 1000);
-
-    return () => {
-      if (readingTimerRef.current) {
-        clearInterval(readingTimerRef.current);
-      }
-    };
-  }, [material?.id]);
-
   // Handle page change from ReactPdfViewer
   const handlePageChange = useCallback((page: number, total: number) => {
-    if (!id) return;
-
-    // Only update if page actually changed to prevent infinite loops
-    setCurrentPage(prevPage => {
-      if (prevPage === page) return prevPage;
-      
-      // Save progress with debouncing (non-blocking)
-      if (saveProgressRef.current) {
-        saveProgressRef.current({
-          currentPage: page,
-          totalPages: total,
-          progressPercentage: total > 0 ? page / total : 0,
-          totalReadingTime: (progress?.totalReadingTime || 0) + readingTimeRef.current,
-          isCompleted: page >= total,
-        });
-      }
-
-      // Reset reading time after saving
-      readingTimeRef.current = 0;
-      
-      return page;
-    });
-
-    setTotalPages(prevTotal => prevTotal === total ? prevTotal : total);
-  }, [id]);
-
-  // Save progress immediately before unmounting
-  useEffect(() => {
-    return () => {
-      if (material?.id && progress && currentPage > 1) {
-        const progressPercentage = totalPages > 0 
-          ? Math.round((currentPage / totalPages) * 100) / 100 
-          : 0;
-        
-        saveImmediately({
-          currentPage,
-          totalPages,
-          progressPercentage,
-          totalReadingTime: (progress.totalReadingTime || 0) + readingTimeRef.current,
-          isCompleted: currentPage >= totalPages,
-        });
-      }
-    };
-  }, [material?.id, progress, currentPage, totalPages, saveImmediately]);
+    setCurrentPage(page);
+    setTotalPages(total);
+  }, []);
 
   const handleBack = () => {
     // If viewing a GDrive file within a folder, go back to folder
@@ -573,16 +480,15 @@ const MaterialView: React.FC = () => {
     ) {
       // Use React-PDF viewer on mobile for better compatibility and performance
       // if (isMobile) {
-        // testing in desktop mode as well
-        return (
-          <ReactPdfViewer
-            url={material.resource.resourceAddress}
-            title={material.label}
-            showControls={true}
-            onPageChange={handlePageChange}
-            initialPage={currentPage > 1 ? currentPage : undefined}
-          />
-        );
+      // testing in desktop mode as well
+      return (
+        <ReactPdfViewer
+          url={material.resource.resourceAddress}
+          title={material.label}
+          showControls={true}
+          onPageChange={handlePageChange}
+        />
+      );
       // }
 
       // Use iframe viewer on desktop
@@ -732,7 +638,10 @@ const MaterialView: React.FC = () => {
             aria-label="View material information"
             title="Material Information"
           >
-            <InformationCircleIcon size={16} className="sm:w-4 sm:h-4 text-white" />
+            <InformationCircleIcon
+              size={16}
+              className="sm:w-4 sm:h-4 text-white"
+            />
           </button>
 
           {/* Combined Maximize & Chevron Button - Rightmost */}
@@ -742,7 +651,9 @@ const MaterialView: React.FC = () => {
               onClick={toggleFullscreen}
               className="flex items-center justify-center h-8 w-8 sm:h-9 sm:w-9 p-0 hover:bg-gray-50 transition-colors flex-shrink-0"
               title={
-                isFullscreen ? "Exit fullscreen (ESC)" : "Enter fullscreen (F11)"
+                isFullscreen
+                  ? "Exit fullscreen (ESC)"
+                  : "Enter fullscreen (F11)"
               }
             >
               {isFullscreen ? (
@@ -751,14 +662,14 @@ const MaterialView: React.FC = () => {
                 <MaximizeScreenIcon size={15} className="sm:w-4 sm:h-4" />
               )}
             </button>
-            
+
             {/* Separator Line - Only visible when expanded */}
             <div
               className={`h-6 w-[1px] bg-gray-300 transition-all duration-500 ease-in-out ${
                 iconsExpanded ? "opacity-100" : "opacity-0"
               }`}
             />
-            
+
             {/* Chevron Section - Always visible, expands button width when icons are expanded */}
             <button
               onClick={() => setIconsExpanded(!iconsExpanded)}
@@ -970,7 +881,10 @@ const MaterialView: React.FC = () => {
 
       {/* Bottom Sheet Modal - Mobile Material Information */}
       <Sheet open={infoSheetOpen} onOpenChange={setInfoSheetOpen}>
-        <SheetContent side="bottom" className="h-[85vh] overflow-y-auto rounded-t-2xl">
+        <SheetContent
+          side="bottom"
+          className="h-[85vh] overflow-y-auto rounded-t-2xl"
+        >
           <SheetHeader>
             <SheetTitle>Material Information</SheetTitle>
           </SheetHeader>
@@ -1019,8 +933,8 @@ const MaterialView: React.FC = () => {
                               <span className="text-gray-600">Department:</span>
                               <span className="font-medium">
                                 {
-                                  material.targetCourse.departments[0].department
-                                    .name
+                                  material.targetCourse.departments[0]
+                                    .department.name
                                 }
                               </span>
                             </div>
@@ -1064,7 +978,8 @@ const MaterialView: React.FC = () => {
                         </AvatarFallback>
                       </Avatar>
                       <span className="font-medium text-brand hover:text-brand/80 transition-colors text-sm">
-                        {material.creator?.firstName} {material.creator?.lastName}
+                        {material.creator?.firstName}{" "}
+                        {material.creator?.lastName}
                       </span>
                     </button>
                   </div>
@@ -1076,7 +991,9 @@ const MaterialView: React.FC = () => {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Type:</span>
-                    <span className="font-medium uppercase">{material.type}</span>
+                    <span className="font-medium uppercase">
+                      {material.type}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Views:</span>
