@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Cancel01Icon, Share08Icon, Delete02Icon, Folder03Icon } from "hugeicons-react";
-import { Collection } from "@/lib/types/collection.types";
+import {
+  Cancel01Icon,
+  Share08Icon,
+  Delete02Icon,
+  Folder03Icon,
+} from "hugeicons-react";
+import { Folder, getFolder } from "@/api/folder.api";
 import { Material } from "@/lib/types/material.types";
-import { getCollection } from "@/api/collection.api";
 import MaterialCard from "@/components/dashboard/MaterialCard";
 import { toast } from "sonner";
 
 interface FolderModalProps {
   isOpen: boolean;
   onClose: () => void;
-  folder: Collection | null;
+  folder: Folder | null;
   onShare?: (folderId: string) => void;
   onDelete?: (folderId: string) => void;
   onRead?: (materialId: string) => void;
@@ -27,7 +31,7 @@ const FolderModal: React.FC<FolderModalProps> = ({
   onRead,
   onRemoveMaterial,
 }) => {
-  const [folderData, setFolderData] = useState<Collection | null>(folder);
+  const [folderData, setFolderData] = useState<Folder | null>(folder);
   const [isLoading, setIsLoading] = useState(false);
   const [materials, setMaterials] = useState<Material[]>([]);
 
@@ -47,7 +51,7 @@ const FolderModal: React.FC<FolderModalProps> = ({
 
     setIsLoading(true);
     try {
-      const response = await getCollection(folder.id);
+      const response = await getFolder(folder.id);
       if (response && response.status === "success" && response.data) {
         setFolderData(response.data);
         // Extract materials from folder content
@@ -58,7 +62,10 @@ const FolderModal: React.FC<FolderModalProps> = ({
         setMaterials(folderMaterials);
       }
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to load folder contents";
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to load folder contents";
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -148,7 +155,9 @@ const FolderModal: React.FC<FolderModalProps> = ({
                   {folderData?.label || folder.label}
                 </h2>
                 {folderData?.description && (
-                  <p className="text-sm text-gray-600 mb-3">{folderData.description}</p>
+                  <p className="text-sm text-gray-600 mb-3">
+                    {folderData.description}
+                  </p>
                 )}
                 {/* Breadcrumb Navigation */}
                 <nav className="flex items-center gap-2 text-sm">
@@ -159,7 +168,9 @@ const FolderModal: React.FC<FolderModalProps> = ({
                     Libraries
                   </button>
                   <span className="text-gray-400">/</span>
-                  <span className="text-gray-900 font-medium">{folderData?.label || folder.label}</span>
+                  <span className="text-gray-900 font-medium">
+                    {folderData?.label || folder.label}
+                  </span>
                 </nav>
               </div>
 
@@ -174,7 +185,9 @@ const FolderModal: React.FC<FolderModalProps> = ({
                     <Folder03Icon className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-gray-400" />
                   </div>
                   <p className="text-gray-500 mb-2">This folder is empty</p>
-                  <p className="text-sm text-gray-400">Drag and drop materials into the Folder to add them</p>
+                  <p className="text-sm text-gray-400">
+                    Drag and drop materials into the Folder to add them
+                  </p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
@@ -211,4 +224,3 @@ const FolderModal: React.FC<FolderModalProps> = ({
 };
 
 export default FolderModal;
-
