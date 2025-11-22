@@ -29,3 +29,6 @@ dist-ssr
 
 /temp
 package-lock.json
+
+# Generated service worker files
+dev-dist
