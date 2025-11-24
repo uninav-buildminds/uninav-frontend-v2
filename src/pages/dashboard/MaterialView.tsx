@@ -28,7 +28,8 @@ import { allocateReadingPoints } from "@/api/points.api";
 import { ResponseStatus } from "@/lib/types/response.types";
 import { ResourceTypeEnum, RestrictionEnum } from "@/lib/types/material.types";
 import PDFViewer from "@/components/dashboard/viewers/PDFViewer";
-import ReactPdfViewer from "@/components/dashboard/viewers/ReactPdfViewer";
+import AdobePDFViewer from "@/components/dashboard/viewers/AdobePDFViewer";
+// import ReactPdfViewer from "@/components/dashboard/viewers/ReactPdfViewer"; // Commented out - will use later
 import GDriveFolderBrowser from "@/components/dashboard/viewers/GDriveFolderBrowser";
 import GDriveFileViewer from "@/components/dashboard/viewers/GDriveFileViewer";
 import YouTubeViewer from "@/components/dashboard/viewers/YouTubeViewer";
@@ -478,20 +479,25 @@ const MaterialView: React.FC = () => {
       material.type === MaterialTypeEnum.PDF &&
       material.resource?.resourceAddress
     ) {
-      // Use React-PDF viewer on mobile for better compatibility and performance
-      // if (isMobile) {
-      // testing in desktop mode as well
-      return (
-        <ReactPdfViewer
-          url={material.resource.resourceAddress}
-          title={material.label}
-          showControls={true}
-          onPageChange={handlePageChange}
-        />
-      );
-      // }
+      // Use Adobe PDF viewer on mobile for better compatibility
+      if (isMobile) {
+        return (
+          <AdobePDFViewer
+            url={material.resource.resourceAddress}
+            title={material.label}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            zoom={zoom}
+            onPreviousPage={handlePreviousPage}
+            onNextPage={handleNextPage}
+            onZoomIn={handleZoomIn}
+            onZoomOut={handleZoomOut}
+            showControls={true}
+          />
+        );
+      }
 
-      // Use iframe viewer on desktop
+      // Use native iframe viewer on desktop
       return (
         <PDFViewer
           url={material.resource.resourceAddress}
@@ -506,6 +512,16 @@ const MaterialView: React.FC = () => {
           showControls={true}
         />
       );
+
+      // ReactPdfViewer - commented out for now, will use later
+      // return (
+      //   <ReactPdfViewer
+      //     url={material.resource.resourceAddress}
+      //     title={material.label}
+      //     showControls={true}
+      //     onPageChange={handlePageChange}
+      //   />
+      // );
     }
 
     // Handle PowerPoint (ppt/pptx) using Office Online Viewer
