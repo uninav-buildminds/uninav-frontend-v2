@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import {componentTagger} from "lovable-tagger";
 import {VitePWA} from "vite-plugin-pwa";
+import {handler} from "tailwindcss-animate";
 
 // https://vitejs.dev/config/
 export default defineConfig(({mode}) => ({
@@ -14,6 +15,7 @@ export default defineConfig(({mode}) => ({
         react(),
         mode === "development" && componentTagger(),
         VitePWA({
+            includeAssets: ["favicon.ico", "apple-touch-icon.png"],
             strategies: "generateSW",
             registerType: "autoUpdate",
             manifest: {
@@ -80,6 +82,135 @@ export default defineConfig(({mode}) => ({
                             expiration: {
                                 maxEntries: 10,
                                 maxAgeSeconds: 60 * 60 * 24 * 365
+                            },
+                            cacheableResponse: {
+                                statuses: [0, 200]
+                            }
+                        }
+                    },
+                    {
+                        urlPattern: mode === "development" ? /^http:\/\/localhost:3200\/faculty\/.*/i : /^https:\/\/uninav-backend-v2.onrender.com\/faculty\/.*/i,
+                        handler: "StaleWhileRevalidate",
+                        method: "GET",
+                        options: {
+                            cacheName: 'faculty-cache',
+                            expiration: {
+                                maxEntries: 10,
+                                maxAgeSeconds: 60 * 60 * 24 * 7 // 1 week
+                            },
+                            cacheableResponse: {
+                                statuses: [0, 200]
+                            }
+                        }
+                    },
+                    {
+                        urlPattern: mode === "development" ? /^http:\/\/localhost:3200\/department\/.*/i : /^https:\/\/uninav-backend-v2.onrender.com\/department\/.*/i,
+                        handler: "StaleWhileRevalidate",
+                        method: "GET",
+                        options: {
+                            cacheName: 'department-cache',
+                            expiration: {
+                                maxEntries: 10,
+                                maxAgeSeconds: 60 * 60 * 24 * 7 // 1 week
+                            },
+                            cacheableResponse: {
+                                statuses: [0, 200]
+                            }
+                        }
+                    },
+                    {
+                        urlPattern: mode === "development" ? /^http:\/\/localhost:3200\/user\/bookmarks\/.*/i : /^https:\/\/uninav-backend-v2.onrender.com\/user\/bookmarks\/.*/i,
+                        handler: "StaleWhileRevalidate",
+                        method: "GET",
+                        options: {
+                            cacheName: 'bookmarks-cache',
+                            expiration: {
+                                maxEntries: 10,
+                                maxAgeSeconds: 60 * 60 * 24 * 14 // 2 weeks
+                            },
+                            cacheableResponse: {
+                                statuses: [0, 200]
+                            }
+                        }
+                    },
+                    // Don't cache requests for generating download links
+                    {
+                        urlPattern: mode === "development" ? /^http:\/\/localhost:3200\/materials\/download\/.*/i : /^https:\/\/uninav-backend-v2.onrender.com\/materials\/download\/.*/i,
+                        handler: "NetworkOnly",
+                        method: "GET"
+                    },
+                    {
+                        urlPattern: mode === "development" ? /^http:\/\/localhost:3200\/materials\/recent/i : /^https:\/\/uninav-backend-v2.onrender.com\/materials\/recent/i,
+                        handler: "StaleWhileRevalidate",
+                        method: "GET",
+                        options: {
+                            cacheName: "recent-materials-cache",
+                            expiration: {
+                                maxEntries: 10,
+                                maxAgeSeconds: 60 * 60 * 24 * 7
+                            },
+                            cacheableResponse: {
+                                statuses: [0, 200]
+                            }
+                        }
+                    },
+                    // TODO: Separate cache for individual materials due to maxEntries quota
+                    {
+                        urlPattern: mode === "development" ? /^http:\/\/localhost:3200\/materials\/.*/i : /^https:\/\/uninav-backend-v2.onrender.com\/materials\/.*/i,
+                        handler: "StaleWhileRevalidate",
+                        method: "GET",
+                        options: {
+                            cacheName: 'materials-cache',
+                            expiration: {
+                                maxEntries: 10,
+                                maxAgeSeconds: 60 * 60 * 24 * 14 // 2 weeks
+                            },
+                            cacheableResponse: {
+                                statuses: [0, 200]
+                            }
+                        }
+                    },
+                    // TODO: Separate cache for individual courses due to maxEntries quota
+                    {
+                        urlPattern: mode === "development" ? /^http:\/\/localhost:3200\/courses\/.*/i : /^https:\/\/uninav-backend-v2.onrender.com\/courses\/.*/i,
+                        handler: "StaleWhileRevalidate",
+                        method: "GET",
+                        options: {
+                            cacheName: 'courses-cache',
+                            expiration: {
+                                maxEntries: 10,
+                                maxAgeSeconds: 60 * 60 * 24 * 14 // 2 weeks
+                            },
+                            cacheableResponse: {
+                                statuses: [0, 200]
+                            }
+                        }
+                    },
+                    {
+                        urlPattern: mode === "development" ? /^http:\/\/localhost:3200\/user\/profile/i : /^https:\/\/uninav-backend-v2.onrender.com\/user\/profile/i,
+                        handler: "StaleWhileRevalidate",
+                        method: "GET",
+                        options: {
+                            cacheName: 'auth-cache',
+                            expiration: {
+                                maxEntries: 10,
+                                maxAgeSeconds: 60 * 60 * 24 * 7 // 1 week
+                            },
+                            cacheableResponse: {
+                                statuses: [0, 200]
+                            }
+                        }
+
+                    },
+                    {
+                        urlPattern: mode === "development" ? /^http:\/\/localhost:3200\/auth\/check/i : /^https:\/\/uninav-backend-v2.onrender.com\/auth\/check/i,
+                        handler: "StaleWhileRevalidate",
+                        method: "GET",
+                        options: {
+                            cacheName: 'auth-cache',
+                            expiration: {
+                                maxEntries: 10,
+                                maxAgeSeconds: 60 * 60 * 24 * 7 // 1 week
                             },
                             cacheableResponse: {
                                 statuses: [0, 200]
