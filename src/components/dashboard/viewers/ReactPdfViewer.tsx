@@ -182,7 +182,7 @@ const ReactPdfViewer: React.FC<ReactPdfViewerProps> = ({
 
       {/* Floating Zoom Controls - Bottom Right */}
       {showControls && numPages && (
-        <div className="fixed bottom-6 right-4 z-50 flex items-center gap-2 bg-black/80 backdrop-blur rounded-full px-2 py-1">
+        <div className="fixed bottom-6 right-4 z-50 hidden md:flex items-center gap-2 bg-black/80 backdrop-blur rounded-full px-2 py-1">
           <Button
             variant="ghost"
             size="sm"
