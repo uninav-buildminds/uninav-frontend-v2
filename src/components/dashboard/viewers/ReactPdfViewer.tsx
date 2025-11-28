@@ -18,11 +18,10 @@ import { Alert02Icon } from "hugeicons-react";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
-// Import worker as static asset - Vite will handle it correctly in both dev and prod
-import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+const workerSrc = "/pdf.worker.min.mjs";
 
 // Configure PDF.js worker for async rendering
-pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
+pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
 
 interface ReactPdfViewerProps {
   url: string;

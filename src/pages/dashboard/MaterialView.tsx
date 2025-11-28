@@ -29,7 +29,7 @@ import { ResponseStatus } from "@/lib/types/response.types";
 import { ResourceTypeEnum, RestrictionEnum } from "@/lib/types/material.types";
 import PDFViewer from "@/components/dashboard/viewers/PDFViewer";
 import AdobePDFViewer from "@/components/dashboard/viewers/AdobePDFViewer";
-// import ReactPdfViewer from "@/components/dashboard/viewers/ReactPdfViewer"; // Commented out - will use later
+import ReactPdfViewer from "@/components/dashboard/viewers/ReactPdfViewer"; // Commented out - will use later
 import GDriveFolderBrowser from "@/components/dashboard/viewers/GDriveFolderBrowser";
 import GDriveFileViewer from "@/components/dashboard/viewers/GDriveFileViewer";
 import YouTubeViewer from "@/components/dashboard/viewers/YouTubeViewer";
@@ -480,48 +480,48 @@ const MaterialView: React.FC = () => {
       material.resource?.resourceAddress
     ) {
       // Use Adobe PDF viewer on mobile for better compatibility
-      if (isMobile) {
-        return (
-          <AdobePDFViewer
-            url={material.resource.resourceAddress}
-            title={material.label}
-            currentPage={currentPage}
-            totalPages={totalPages}
-            zoom={zoom}
-            onPreviousPage={handlePreviousPage}
-            onNextPage={handleNextPage}
-            onZoomIn={handleZoomIn}
-            onZoomOut={handleZoomOut}
-            showControls={true}
-          />
-        );
-      }
+      // if (isMobile) {
+      //   return (
+      //     <AdobePDFViewer
+      //       url={material.resource.resourceAddress}
+      //       title={material.label}
+      //       currentPage={currentPage}
+      //       totalPages={totalPages}
+      //       zoom={zoom}
+      //       onPreviousPage={handlePreviousPage}
+      //       onNextPage={handleNextPage}
+      //       onZoomIn={handleZoomIn}
+      //       onZoomOut={handleZoomOut}
+      //       showControls={true}
+      //     />
+      //   );
+      // }
 
       // Use native iframe viewer on desktop
-      return (
-        <PDFViewer
-          url={material.resource.resourceAddress}
-          title={material.label}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          zoom={zoom}
-          onPreviousPage={handlePreviousPage}
-          onNextPage={handleNextPage}
-          onZoomIn={handleZoomIn}
-          onZoomOut={handleZoomOut}
-          showControls={true}
-        />
-      );
-
-      // ReactPdfViewer - commented out for now, will use later
       // return (
-      //   <ReactPdfViewer
+      //   <PDFViewer
       //     url={material.resource.resourceAddress}
       //     title={material.label}
+      //     currentPage={currentPage}
+      //     totalPages={totalPages}
+      //     zoom={zoom}
+      //     onPreviousPage={handlePreviousPage}
+      //     onNextPage={handleNextPage}
+      //     onZoomIn={handleZoomIn}
+      //     onZoomOut={handleZoomOut}
       //     showControls={true}
-      //     onPageChange={handlePageChange}
       //   />
       // );
+
+      // ReactPdfViewer - commented out for now, will use later
+      return (
+        <ReactPdfViewer
+          url={material.resource.resourceAddress}
+          title={material.label}
+          showControls={true}
+          onPageChange={handlePageChange}
+        />
+      );
     }
 
     // Handle PowerPoint (ppt/pptx) using Office Online Viewer
