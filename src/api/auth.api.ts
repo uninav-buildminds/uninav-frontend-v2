@@ -32,11 +32,11 @@ export async function signUp(formData: SignUpData) {
       token: response.headers?.["authorization"]?.replace("Bearer ", "") || "",
     };
   } catch (error) {
-    const actualError = error.data.error
+    const actualError = error.data.error;
     throw {
-		statusCode: actualError.statusCode || 500,
-		message: actualError.cause || "Signup failed. Please try again.",
-	};
+      statusCode: actualError.statusCode || 500,
+      message: actualError.cause || "Signup failed. Please try again.",
+    };
   }
 }
 
@@ -47,24 +47,24 @@ export async function signUp(formData: SignUpData) {
  * @throws {statusCode, message} if response's status code is not in the 200s
  */
 export async function login(data: LoginData) {
-	try {
-		const response = await httpClient.post("/auth/login", data);
-		const authHeader = response.headers?.["authorization"] || "";
-		const token = authHeader.startsWith("Bearer ")
-			? authHeader.slice(7)
-			: authHeader;
+  try {
+    const response = await httpClient.post("/auth/login", data);
+    const authHeader = response.headers?.["authorization"] || "";
+    const token = authHeader.startsWith("Bearer ")
+      ? authHeader.slice(7)
+      : authHeader;
 
-		return {
-			token,
-			data: response.data,
-		};
-	} catch (error) {
-		const actualError = error.data.error;
-		throw {
-			statusCode: actualError.statusCode || 500,
-			message: actualError.cause || "Login failed. Please try again.",
-		};
-	}
+    return {
+      token,
+      data: response.data,
+    };
+  } catch (error) {
+    const actualError = error.data.error;
+    throw {
+      statusCode: actualError.statusCode || 500,
+      message: actualError.cause || "Login failed. Please try again.",
+    };
+  }
 }
 
 /**
@@ -73,16 +73,16 @@ export async function login(data: LoginData) {
  * @throws {statusCode, message} if response's status code is not in the 200s
  */
 export async function logOut() {
-	try {
-		const response = await httpClient.post("/auth/logout");
-		return response.data;
-	} catch (error) {
-		const actualError = error.data.error;
-		throw {
-			statusCode: actualError.statusCode || 500,
-			message: actualError.cause || "Logout failed. Please try again.",
-		};
-	}
+  try {
+    const response = await httpClient.post("/auth/logout");
+    return response.data;
+  } catch (error) {
+    const actualError = error.data.error;
+    throw {
+      statusCode: actualError.statusCode || 500,
+      message: actualError.cause || "Logout failed. Please try again.",
+    };
+  }
 }
 
 /**
@@ -92,19 +92,19 @@ export async function logOut() {
  * @returns Response body from the server
  */
 export async function verifyEmailByCode(email: string, code: string) {
-	try {
-		const response = await httpClient.post("/auth/verify-email", {
-			email,
-			code,
-		});
-		return response.data;
-	} catch (error) {
-		const actualError = error.data.error;
-		throw {
-			statusCode: actualError.statusCode || 500,
-			message: actualError.cause || "Verification failed. Please try again.",
-		};
-	}
+  try {
+    const response = await httpClient.post("/auth/verify-email", {
+      email,
+      code,
+    });
+    return response.data;
+  } catch (error) {
+    const actualError = error.data.error;
+    throw {
+      statusCode: actualError.statusCode || 500,
+      message: actualError.cause || "Verification failed. Please try again.",
+    };
+  }
 }
 
 /**
@@ -114,19 +114,18 @@ export async function verifyEmailByCode(email: string, code: string) {
  * @throws {statusCode, message} if response's status code is not in the 200s
  */
 export async function verifyEmail(token: string) {
-	try {
-		const response = await httpClient.get(
-			`/auth/verify-email/token?token=${token}`
-		);
-		return response.data;
-	} catch (error) {
-		const actualError = error.data.error;
-		throw {
-			statusCode: actualError.statusCode || 500,
-			message:
-				actualError.cause || "Verification failed. Please try again.",
-		};
-	}
+  try {
+    const response = await httpClient.get(
+      `/auth/verify-email/token?token=${token}`
+    );
+    return response.data;
+  } catch (error) {
+    const actualError = error.data.error;
+    throw {
+      statusCode: actualError.statusCode || 500,
+      message: actualError.cause || "Verification failed. Please try again.",
+    };
+  }
 }
 
 /**
@@ -136,20 +135,20 @@ export async function verifyEmail(token: string) {
  * @throws {statusCode, message} if response's status code is not in the 200s
  */
 export async function requestEmailVerification(email: string) {
-	try {
-		const response = await httpClient.post("/auth/resend-verification", {
-			email,
-		});
-		return response.data;
-	} catch (error) {
-		const actualError = error.data.error;
-		throw {
-			statusCode: actualError.statusCode || 500,
-			message:
-				actualError.cause ||
-				"Failed to send verification email. Please try again.",
-		};
-	}
+  try {
+    const response = await httpClient.post("/auth/resend-verification", {
+      email,
+    });
+    return response.data;
+  } catch (error) {
+    const actualError = error.data.error;
+    throw {
+      statusCode: actualError.statusCode || 500,
+      message:
+        actualError.cause ||
+        "Failed to send verification email. Please try again.",
+    };
+  }
 }
 
 /**
@@ -160,20 +159,20 @@ export async function requestEmailVerification(email: string) {
  * @throws {statusCode, message} if response's status code is not in the 200s
  */
 export async function requestPasswordReset(email: string) {
-	try {
-		const response = await httpClient.post("/auth/forgot-password", {
-			email,
-		});
-		return response.data;
-	} catch (error) {
-		const actualError = error.data.error;
-		throw {
-			statusCode: actualError.statusCode || 500,
-			message:
-				actualError.cause ||
-				"Failed to send password reset email. Please try again.",
-		};
-	}
+  try {
+    const response = await httpClient.post("/auth/forgot-password", {
+      email,
+    });
+    return response.data;
+  } catch (error) {
+    const actualError = error.data.error;
+    throw {
+      statusCode: actualError.statusCode || 500,
+      message:
+        actualError.cause ||
+        "Failed to send password reset email. Please try again.",
+    };
+  }
 }
 
 /**
@@ -184,21 +183,20 @@ export async function requestPasswordReset(email: string) {
  * @throws {statusCode, message} if response's status code is not in the 200s
  */
 export async function resetPassword(token: string, newPassword: string) {
-	try {
-		const response = await httpClient.post("/auth/reset-password", {
-			token,
-			newPassword,
-		});
-		return response.data;
-	} catch (error) {
-		const actualError = error.data.error;
-		throw {
-			statusCode: actualError.statusCode || 500,
-			message:
-				actualError.cause ||
-				"Failed to reset password. Please try again.",
-		};
-	}
+  try {
+    const response = await httpClient.post("/auth/reset-password", {
+      token,
+      newPassword,
+    });
+    return response.data;
+  } catch (error) {
+    const actualError = error.data.error;
+    throw {
+      statusCode: actualError.statusCode || 500,
+      message:
+        actualError.cause || "Failed to reset password. Please try again.",
+    };
+  }
 }
 
 /**
@@ -208,25 +206,25 @@ export async function resetPassword(token: string, newPassword: string) {
  * @param onError - Callback function to execute on login failure
  */
 export async function signInWithOneTap(
-	credentialResponse: CredentialResponse,
-	onSuccess: () => void,
-	onError: () => void
+  credentialResponse: CredentialResponse,
+  onSuccess: () => void,
+  onError: () => void
 ) {
-	try {
-		const response = await httpClient.get(
-			`/auth/google/onetap?token=${credentialResponse.credential}`
-		);
-		if (response.status === 200) {
-			return onSuccess();
-		}
-		return onError();
-	} catch (error) {
-		const actualError = error.data.error;
-		throw {
-			statusCode: actualError.statusCode || 500,
-			message: actualError.cause || "Signup failed. Please try again.",
-		};
-	}
+  try {
+    const response = await httpClient.get(
+      `/auth/google/onetap?token=${credentialResponse.credential}`
+    );
+    if (response.status === 200) {
+      return onSuccess();
+    }
+    return onError();
+  } catch (error) {
+    const actualError = error.data.error;
+    throw {
+      statusCode: actualError.statusCode || 500,
+      message: actualError.cause || "Signup failed. Please try again.",
+    };
+  }
 }
 
 /**

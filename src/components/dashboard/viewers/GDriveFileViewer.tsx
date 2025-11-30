@@ -4,16 +4,19 @@
  */
 
 import React, { useState, useEffect, useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { Download, ZoomIn, ZoomOut, RotateCw } from "lucide-react";
-import { LockIcon, File01Icon, Attachment01Icon, Triangle01Icon } from "hugeicons-react";
+import { ZoomIn, ZoomOut, RotateCw } from "lucide-react";
+import {
+  LockIcon,
+  File01Icon,
+  Attachment01Icon,
+  Triangle01Icon,
+} from "hugeicons-react";
 import { toast } from "sonner";
 import { getFileMetadata, GDriveFile } from "@/api/gdrive.api";
 import { ENV } from "@/lib/env.config";
 import {
   getGDriveUrls,
   getGoogleWorkspaceEmbedUrl,
-  extractGDriveId,
 } from "@/lib/utils/gdriveUtils";
 import PDFViewer from "./PDFViewer";
 
@@ -113,15 +116,6 @@ const GDriveFileViewer: React.FC<GDriveFileViewerProps> = ({
 
   const mimeType = propMimeType || fileMetadata?.mimeType || "";
 
-  const handleDownload = () => {
-    if (fileMetadata?.webContentLink) {
-      window.open(fileMetadata.webContentLink, "_blank");
-      toast.success("Download started!");
-    } else {
-      toast.info("Download link not available for this file.");
-    }
-  };
-
   if (loading) {
     return (
       <div className="h-full flex items-center justify-center bg-white rounded-lg">
@@ -179,13 +173,9 @@ const GDriveFileViewer: React.FC<GDriveFileViewerProps> = ({
           <div className="text-center">
             <File01Icon size={48} className="mx-auto mb-4 text-gray-400" />
             <p className="text-lg font-medium mb-2">{fileMetadata.name}</p>
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-gray-600">
               This file type cannot be previewed inline.
             </p>
-            <Button onClick={handleDownload}>
-              <Download size={16} className="mr-2" />
-              Download File
-            </Button>
           </div>
         </div>
       );
@@ -264,20 +254,15 @@ const GDriveFileViewer: React.FC<GDriveFileViewerProps> = ({
         {imageLoadError && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-900/95">
             <div className="text-center text-white max-w-md px-4">
-              <Triangle01Icon size={48} className="mx-auto mb-4 text-yellow-400" />
+              <Triangle01Icon
+                size={48}
+                className="mx-auto mb-4 text-yellow-400"
+              />
               <p className="text-lg font-medium mb-2">Failed to load image</p>
-              <p className="text-sm text-gray-400 mb-4">
+              <p className="text-sm text-gray-400">
                 The image could not be displayed. It may not be publicly
                 accessible.
               </p>
-              <Button
-                onClick={handleDownload}
-                variant="outline"
-                className="text-white border-white hover:bg-white/10"
-              >
-                <Download size={16} className="mr-2" />
-                Download Image
-              </Button>
             </div>
           </div>
         )}
@@ -345,17 +330,6 @@ const GDriveFileViewer: React.FC<GDriveFileViewerProps> = ({
           >
             <RotateCw size={18} className="text-white" />
           </button>
-
-          <div className="h-6 w-px bg-gray-600 mx-1"></div>
-
-          <button
-            onClick={handleDownload}
-            className="p-2 hover:bg-gray-700 rounded-full transition-colors"
-            aria-label="Download"
-            title="Download image"
-          >
-            <Download size={18} className="text-white" />
-          </button>
         </div>
       </div>
     );
@@ -372,12 +346,6 @@ const GDriveFileViewer: React.FC<GDriveFileViewerProps> = ({
             title={fileMetadata.name}
             allow="autoplay"
           />
-        </div>
-        <div className="p-3 border-t border-gray-200 flex justify-center">
-          <Button onClick={handleDownload} size="sm">
-            <Download size={16} className="mr-2" />
-            Download
-          </Button>
         </div>
       </div>
     );
@@ -402,12 +370,6 @@ const GDriveFileViewer: React.FC<GDriveFileViewerProps> = ({
           title={fileMetadata.name}
           allow="autoplay"
         />
-        <div className="p-2 border-t border-gray-200 flex justify-center bg-gray-50">
-          <Button onClick={handleDownload} size="sm">
-            <Download size={16} className="mr-2" />
-            Download
-          </Button>
-        </div>
       </div>
     );
   }
@@ -418,13 +380,9 @@ const GDriveFileViewer: React.FC<GDriveFileViewerProps> = ({
       <div className="text-center">
         <Attachment01Icon size={48} className="mx-auto mb-4 text-gray-400" />
         <p className="text-lg font-medium mb-2">{fileMetadata.name}</p>
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-sm text-gray-600">
           This file type cannot be previewed inline.
         </p>
-        <Button onClick={handleDownload}>
-          <Download size={16} className="mr-2" />
-          Download File
-        </Button>
       </div>
     </div>
   );
