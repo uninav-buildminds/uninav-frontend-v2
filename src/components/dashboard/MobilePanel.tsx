@@ -7,6 +7,7 @@ import { panelData } from "@/data/panel";
 import { useAuth } from "@/hooks/useAuth";
 import { isProfileIncomplete } from "@/utils/profile.utils";
 import RecentsList from "./RecentsList";
+import InstallPWA from "./InstallPWA";
 
 interface MobilePanelProps {
   isOpen: boolean;
@@ -218,13 +219,18 @@ const MobilePanel: React.FC<MobilePanelProps> = ({
                   </div>
                 </button>
 
-                <button
-                  onClick={onLogout}
-                  className="w-full text-sm text-white bg-red-600 hover:bg-red-700 rounded-lg px-4 py-2 flex items-center justify-center gap-2 transition-colors"
-                >
-                  <Logout01Icon size={16} />
-                  Logout
-                </button>
+                <div className="flex flex-col gap-1">
+                  <InstallPWA variant="landscape" />
+                
+                  <button
+                    onClick={onLogout}
+                    className="w-full text-sm text-white bg-red-600 hover:bg-red-700 rounded-lg px-4 py-2 flex items-center justify-center gap-2 transition-colors"
+                  >
+                    <Logout01Icon size={16} />
+                    Logout
+                  </button>
+                </div>
+                
               </div>
             </div>
           </motion.div>
