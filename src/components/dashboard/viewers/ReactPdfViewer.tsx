@@ -18,11 +18,10 @@ import { Alert02Icon } from "hugeicons-react";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
-// Import worker as static asset - Vite will handle it correctly in both dev and prod
-import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+const workerSrc = "/pdf.worker.min.mjs";
 
 // Configure PDF.js worker for async rendering
-pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
+pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
 
 interface ReactPdfViewerProps {
   url: string;
@@ -183,7 +182,7 @@ const ReactPdfViewer: React.FC<ReactPdfViewerProps> = ({
 
       {/* Floating Zoom Controls - Bottom Right */}
       {showControls && numPages && (
-        <div className="fixed bottom-6 right-4 z-50 flex items-center gap-2 bg-black/80 backdrop-blur rounded-full px-2 py-1">
+        <div className="fixed bottom-6 right-4 z-50 hidden md:flex items-center gap-2 bg-black/80 backdrop-blur rounded-full px-2 py-1">
           <Button
             variant="ghost"
             size="sm"

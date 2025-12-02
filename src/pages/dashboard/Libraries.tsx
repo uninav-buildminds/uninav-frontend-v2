@@ -238,7 +238,7 @@ const Libraries: React.FC = () => {
           if (selectedFolder?.id === folderId) {
             setSelectedFolder(response.data);
           }
-          toast.success("Folder renamed successfully!");
+          // Success - no toast notification
         }
       })
       .catch((error: unknown) => {
@@ -320,7 +320,7 @@ const Libraries: React.FC = () => {
 
     try {
       await addMaterialToFolder(folder.id, draggedMaterial.id);
-      toast.success(`Added to ${folder.label}`);
+      // Success - no toast notification
 
       // Remove material from the main materials list
       setSavedMaterials((prev) =>
@@ -374,7 +374,7 @@ const Libraries: React.FC = () => {
 
     try {
       await addMaterialToFolder(folder.id, draggedMaterial.id);
-      toast.success(`Added to ${folder.label}`);
+      // Success - no toast notification
 
       setSavedMaterials((prev) =>
         prev.filter((m) => m.id !== draggedMaterial.id)
@@ -415,7 +415,7 @@ const Libraries: React.FC = () => {
   ) => {
     try {
       await removeMaterialFromFolder(folderId, materialId);
-      toast.success("Material removed from folder");
+      // Success - no toast notification
 
       loadFolders();
 
@@ -446,7 +446,8 @@ const Libraries: React.FC = () => {
   };
 
   const getFolderMaterialCount = (folder: Folder): number => {
-    return folder.content?.filter((item) => item.material).length || 0;
+    // Count materials by checking contentMaterialId (more reliable than checking material object)
+    return folder.content?.filter((item) => item.contentMaterialId).length || 0;
   };
 
   // Material handlers
@@ -692,7 +693,9 @@ const Libraries: React.FC = () => {
             {activeTab !== "all" && (
               <>
                 <span className="text-gray-400">/</span>
-                <span className="text-brand font-medium capitalize">{activeTab}</span>
+                <span className="text-brand font-medium capitalize">
+                  {activeTab}
+                </span>
               </>
             )}
           </nav>
@@ -756,24 +759,27 @@ const Libraries: React.FC = () => {
         )}
 
         {/* Empty State */}
-        {!hasContent && !bookmarksLoading && !isLoadingUploads && !isLoadingFolders && (
-          <div className="text-center py-12">
-            <p className="text-gray-500 mb-4">
-              {activeTab === "all" && "No materials or folders yet"}
-              {activeTab === "saved" && "No saved materials or folders yet"}
-              {activeTab === "uploads" && "No uploads yet"}
-            </p>
-            {showFolders && (
-              <button
-                onClick={handleCreateFolder}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand/90"
-              >
-                <FolderAddIcon size={18} />
-                Create Your First Folder
-              </button>
-            )}
-          </div>
-        )}
+        {!hasContent &&
+          !bookmarksLoading &&
+          !isLoadingUploads &&
+          !isLoadingFolders && (
+            <div className="text-center py-12">
+              <p className="text-gray-500 mb-4">
+                {activeTab === "all" && "No materials or folders yet"}
+                {activeTab === "saved" && "No saved materials or folders yet"}
+                {activeTab === "uploads" && "No uploads yet"}
+              </p>
+              {showFolders && (
+                <button
+                  onClick={handleCreateFolder}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand/90"
+                >
+                  <FolderAddIcon size={18} />
+                  Create Your First Folder
+                </button>
+              )}
+            </div>
+          )}
       </div>
 
       {/* Modals */}
