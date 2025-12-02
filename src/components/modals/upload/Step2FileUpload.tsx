@@ -114,6 +114,7 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
     }
   };
 
+  // Handle file selection and enforce max upload size
   const handleFile = (file: File) => {
     if (file.size > 500 * 1024 * 1024) {
       // 500MB limit
