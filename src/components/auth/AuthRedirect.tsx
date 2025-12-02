@@ -2,6 +2,7 @@ import { Navigate } from "react-router-dom";
 import { ReactNode, useEffect, useState } from "react";
 import { isClientAuthenticated } from "@/api/auth.api";
 import { useAuth } from "@/hooks/useAuth";
+import { getAuthState } from "@/lib/authStorage";
 
 interface AuthRedirectProps {
   children: ReactNode;
@@ -16,15 +17,31 @@ interface AuthRedirectProps {
  * @returns JSX.Element
  */
 export const AuthRedirect = ({ children, routePath = "/dashboard" }: AuthRedirectProps) => {
+  // Check localStorage first for instant redirect
+  const localStorageAuthState = getAuthState();
   const [isLoading, setIsLoading] = useState(true);
-  const [clientIsAuthenticated, setClientIsAuthenticated] = useState(false);
+  const [clientIsAuthenticated, setClientIsAuthenticated] = useState(localStorageAuthState === true);
 
   useEffect(() => {
-    isClientAuthenticated().then(status => {
-      setClientIsAuthenticated(status);
-      setIsLoading(false);
-    })
-  }, []);
+    // If localStorage says logged in, verify with server
+    if (localStorageAuthState === true) {
+      isClientAuthenticated().then(status => {
+        setClientIsAuthenticated(status);
+        setIsLoading(false);
+      });
+    } else {
+      // If localStorage says not logged in, still verify with server but don't wait
+      isClientAuthenticated().then(status => {
+        setClientIsAuthenticated(status);
+        setIsLoading(false);
+      });
+    }
+  }, [localStorageAuthState]);
+
+  // Instant redirect if localStorage says logged in (optimistic)
+  if (localStorageAuthState === true && !isLoading) {
+    return <Navigate to={routePath} replace />;
+  }
 
   // If user is not authenticated and is loading, show loading spinner
   if (isLoading) {
@@ -54,6 +71,12 @@ export const AuthRedirect = ({ children, routePath = "/dashboard" }: AuthRedirec
  */
 export const ProtectedRoute = ({ children, routePath = "/auth/signin" }: AuthRedirectProps) => {
   const { user, authInitializing } = useAuth();
+  const localStorageAuthState = getAuthState();
+
+  // If localStorage says not logged in, redirect immediately (no need to wait for server)
+  if (localStorageAuthState === false && !authInitializing) {
+    return <Navigate to={routePath} replace />;
+  }
 
   if (authInitializing) {
     return (

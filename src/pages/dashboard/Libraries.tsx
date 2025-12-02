@@ -238,7 +238,7 @@ const Libraries: React.FC = () => {
           if (selectedFolder?.id === folderId) {
             setSelectedFolder(response.data);
           }
-          toast.success("Folder renamed successfully!");
+          // Success - no toast notification
         }
       })
       .catch((error: unknown) => {
@@ -320,7 +320,7 @@ const Libraries: React.FC = () => {
 
     try {
       await addMaterialToFolder(folder.id, draggedMaterial.id);
-      toast.success(`Added to ${folder.label}`);
+      // Success - no toast notification
 
       // Remove material from the main materials list
       setSavedMaterials((prev) =>
@@ -374,7 +374,7 @@ const Libraries: React.FC = () => {
 
     try {
       await addMaterialToFolder(folder.id, draggedMaterial.id);
-      toast.success(`Added to ${folder.label}`);
+      // Success - no toast notification
 
       setSavedMaterials((prev) =>
         prev.filter((m) => m.id !== draggedMaterial.id)
@@ -415,7 +415,7 @@ const Libraries: React.FC = () => {
   ) => {
     try {
       await removeMaterialFromFolder(folderId, materialId);
-      toast.success("Material removed from folder");
+      // Success - no toast notification
 
       loadFolders();
 
@@ -446,7 +446,8 @@ const Libraries: React.FC = () => {
   };
 
   const getFolderMaterialCount = (folder: Folder): number => {
-    return folder.content?.filter((item) => item.material).length || 0;
+    // Count materials by checking contentMaterialId (more reliable than checking material object)
+    return folder.content?.filter((item) => item.contentMaterialId).length || 0;
   };
 
   // Material handlers

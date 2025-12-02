@@ -12,6 +12,7 @@ import useSWR from "swr";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { UserProfile } from "@/lib/types/user.types";
+import { getAuthState, setAuthState, clearAuthState } from "@/lib/authStorage";
 
 /**
  * Fetches the profile of the currently authenticated user
@@ -40,7 +41,9 @@ interface AuthContextProviderProps {
 export default function AuthContextProvider({
   children,
 }: AuthContextProviderProps) {
-  const [loggedIn, setLoggedIn] = useState(false);
+  // Check localStorage first for instant auth state
+  const localStorageAuthState = getAuthState();
+  const [loggedIn, setLoggedIn] = useState(localStorageAuthState === true);
   const [showOneTap, setShowOneTap] = useState(false);
   const initialAuthCheckDoneRef = useRef(false);
   const {
@@ -58,8 +61,17 @@ export default function AuthContextProvider({
 
   useEffect(() => {
     let active = true;
+    // Verify with server and sync localStorage
     isClientAuthenticated().then((status) => {
       if (!active) return;
+      // If server says not logged in but localStorage says yes, clear localStorage
+      if (!status && localStorageAuthState === true) {
+        clearAuthState();
+      }
+      // If server says logged in, update localStorage
+      if (status) {
+        setAuthState(true);
+      }
       setLoggedIn(status);
       setShowOneTap(status === false);
       initialAuthCheckDoneRef.current = true;
@@ -67,13 +79,15 @@ export default function AuthContextProvider({
     return () => {
       active = false;
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
 
   useGoogleOneTapLogin({
     onSuccess: (credentialResponse) =>
       signInWithOneTap(
         credentialResponse,
         () => {
+          setAuthState(true); // Set localStorage before reload
           navigate("/dashboard");
           window.location.reload();
         },
@@ -92,12 +106,14 @@ export default function AuthContextProvider({
       const userProfile = await apiLogin({ emailOrMatricNo, password });
       mutate(userProfile); // Update the user data without revalidating
       setLoggedIn(true);
+      setAuthState(true); // Persist login state in localStorage
     },
     [mutate]
   );
 
   const logOut = useCallback(async () => {
     googleLogout();
+    clearAuthState(); // Clear localStorage before logout
     await apiLogOut();
     window.location.reload();
   }, []);
