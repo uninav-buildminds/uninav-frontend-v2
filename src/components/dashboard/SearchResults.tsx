@@ -1,8 +1,10 @@
 import React, { useEffect } from "react";
 import { motion } from "framer-motion";
 import MaterialCard from "./MaterialCard";
+import FolderCard from "./FolderCard";
 import MaterialCardSkeleton from "./MaterialCardSkeleton";
 import { Material } from "@/lib/types/material.types";
+import { Folder } from "@/api/folder.api";
 import {
   Search01Icon,
   Cancel01Icon,
@@ -15,10 +17,12 @@ import { searchMaterials } from "@/api/materials.api";
 import { SearchResult } from "@/lib/types/search.types";
 import { useInView } from "react-intersection-observer";
 import { toast } from "sonner";
+import { isMaterial, isFolder } from "@/lib/utils/typeGuards";
+import { useNavigate } from "react-router-dom";
 
 interface SearchResultsProps {
   query: string;
-  results: SearchResult<Material>;
+  results: SearchResult<Material | Folder>;
   isSearching: boolean;
   metadata: {
     total: number;
@@ -46,6 +50,8 @@ const SearchResults: React.FC<SearchResultsProps> = ({
   onClearSearch,
   onUpload,
 }) => {
+  const navigate = useNavigate();
+
   async function handleInfiniteQuery({ pageParam = 1}) {
     const response = await searchMaterials({
       query: query.trim(),
@@ -191,29 +197,37 @@ const SearchResults: React.FC<SearchResultsProps> = ({
             const atLastPage = i == data.pages.length - 1;
 						return (
 							<React.Fragment key={i}>
-								{page.items.map((material, index) => {
+								{page.items.map((item, index) => {
 									const atLastElement =
 										atLastPage &&
                     index == page.items.length - 1;
 
 									return (
 										<motion.div
-											key={material.id}
+											key={item.id}
 											initial={{ opacity: 0, y: 20 }}
 											animate={{ opacity: 1, y: 0 }}
 											transition={{
 												delay: index * 0.05,
 											}}>
-											<MaterialCard
-												material={material}
-												onShare={onShare}
-												onRead={onRead}
-												componentRef={
-													atLastElement
-														? infiniteScrollTriggerRef
-														: null
-												}
-											/>
+											{isMaterial(item) ? (
+												<MaterialCard
+													material={item}
+													onShare={onShare}
+													onRead={onRead}
+													componentRef={
+														atLastElement
+															? infiniteScrollTriggerRef
+															: null
+													}
+												/>
+											) : isFolder(item) ? (
+												<FolderCard
+													folder={item}
+													onClick={() => navigate(`/dashboard/folders/${item.id}`)}
+													materialCount={item.content?.length || 0}
+												/>
+											) : null}
 										</motion.div>
 									);
 								})}
