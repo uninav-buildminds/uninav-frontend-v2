@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { formatRelativeTime } from "@/lib/utils";
 import { Material, MaterialTypeEnum } from "@/lib/types/material.types";
 import { getMaterialById, trackMaterialDownload } from "@/api/materials.api";
+import { getFoldersByMaterial } from "@/api/folder.api";
 import { allocateReadingPoints } from "@/api/points.api";
 import { ResponseStatus } from "@/lib/types/response.types";
 import { ResourceTypeEnum, RestrictionEnum } from "@/lib/types/material.types";
@@ -34,6 +35,7 @@ import GDriveFolderBrowser from "@/components/dashboard/viewers/GDriveFolderBrow
 import GDriveFileViewer from "@/components/dashboard/viewers/GDriveFileViewer";
 import YouTubeViewer from "@/components/dashboard/viewers/YouTubeViewer";
 import PowerPointViewer from "@/components/dashboard/viewers/PowerPointViewer";
+import MiniMaterialCard from "@/components/dashboard/MiniMaterialCard";
 import { extractGDriveId, isGDriveFolder } from "@/lib/utils/gdriveUtils";
 import {
   downloadGDriveFile,
@@ -144,8 +146,34 @@ const MaterialView: React.FC = () => {
             setTotalPages(8); // Fallback
           }
 
-          // TODO: Fetch related materials based on tags or course
-          setRelatedMaterials([]);
+          // Fetch related materials from folders containing this material
+          try {
+            const foldersResponse = await getFoldersByMaterial(id);
+            if (foldersResponse?.status === ResponseStatus.SUCCESS) {
+              // Extract all materials from folders, excluding current material
+              const allMaterials: Material[] = [];
+              const seenIds = new Set<string>([id]); // Track to avoid duplicates
+
+              foldersResponse.data.forEach((folder) => {
+                folder.content?.forEach((content) => {
+                  if (
+                    content.material &&
+                    !seenIds.has(content.material.id)
+                  ) {
+                    allMaterials.push(content.material);
+                    seenIds.add(content.material.id);
+                  }
+                });
+              });
+
+              // Limit to 10 related materials
+              setRelatedMaterials(allMaterials.slice(0, 10));
+            }
+          } catch (error) {
+            console.error("Error fetching related materials:", error);
+            // Silently fail - related materials are optional
+            setRelatedMaterials([]);
+          }
 
           // Notify other components (e.g., sidebar Recents) to refresh
           // when a material is opened/viewed. This keeps normal navigation
@@ -848,7 +876,7 @@ const MaterialView: React.FC = () => {
 
             {/* Related Materials */}
             <div className="flex-1 p-3 overflow-y-auto">
-              <h3 className="text-xs font-semibold text-gray-900 mb-2">
+              <h3 className="text-xs font-semibold text-gray-900 mb-3">
                 Related Materials
               </h3>
               {relatedMaterials.length === 0 ? (
@@ -856,26 +884,15 @@ const MaterialView: React.FC = () => {
                   No related materials found
                 </p>
               ) : (
-                <div className="space-y-2">
+                <div className="grid grid-cols-2 gap-2">
                   {relatedMaterials.map((relatedMaterial) => (
-                    <Card
+                    <MiniMaterialCard
                       key={relatedMaterial.id}
-                      className="cursor-pointer hover:shadow-md transition-shadow"
+                      material={relatedMaterial}
                       onClick={() =>
                         navigate(`/dashboard/material/${relatedMaterial.id}`)
                       }
-                    >
-                      <CardHeader className="pb-1.5 px-2.5 pt-2.5">
-                        <CardTitle className="text-xs font-medium text-gray-900 line-clamp-1">
-                          {relatedMaterial.label}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="pt-0 px-2.5 pb-2.5">
-                        <p className="text-xs text-gray-600 line-clamp-2">
-                          {relatedMaterial.description}
-                        </p>
-                      </CardContent>
-                    </Card>
+                    />
                   ))}
                 </div>
               )}
@@ -1032,27 +1049,16 @@ const MaterialView: React.FC = () => {
                     No related materials found
                   </p>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-2">
                     {relatedMaterials.map((relatedMaterial) => (
-                      <Card
+                      <MiniMaterialCard
                         key={relatedMaterial.id}
-                        className="cursor-pointer hover:shadow-md transition-shadow"
+                        material={relatedMaterial}
                         onClick={() => {
                           navigate(`/dashboard/material/${relatedMaterial.id}`);
                           setInfoSheetOpen(false);
                         }}
-                      >
-                        <CardHeader className="pb-2 px-4 pt-4">
-                          <CardTitle className="text-sm font-medium text-gray-900 line-clamp-1">
-                            {relatedMaterial.label}
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="pt-0 px-4 pb-4">
-                          <p className="text-sm text-gray-600 line-clamp-2">
-                            {relatedMaterial.description}
-                          </p>
-                        </CardContent>
-                      </Card>
+                      />
                     ))}
                   </div>
                 )}
