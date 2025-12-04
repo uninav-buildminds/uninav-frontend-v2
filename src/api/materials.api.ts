@@ -9,13 +9,13 @@ import {
 import { ApprovalStatusEnum as ApprovalStatus } from "@/lib/types/response.types";
 import { SearchResult } from "@/lib/types/search.types";
 
-// Re-export types for convenience
-export type {
+// Re-export enums (as values, not just types) for convenience
+export {
   MaterialTypeEnum,
   VisibilityEnum,
   RestrictionEnum,
 } from "@/lib/types/material.types";
-export type { ApprovalStatusEnum as ApprovalStatus } from "@/lib/types/response.types";
+export { ApprovalStatusEnum as ApprovalStatus } from "@/lib/types/response.types";
 
 // Form data interface for file uploads
 export interface CreateMaterialFileForm {
@@ -603,4 +603,139 @@ export async function getReadingStats(): Promise<
         error.response?.data?.message || "Failed to get reading stats",
     };
   }
+}
+
+// ============= BATCH UPLOAD API =============
+
+/**
+ * Single item in a batch upload request (for links only)
+ */
+export interface BatchMaterialItem {
+  label: string;
+  description?: string;
+  type: MaterialTypeEnum;
+  resourceAddress: string;
+  previewUrl?: string;
+  tags?: string[];
+  visibility?: VisibilityEnum;
+  restriction?: RestrictionEnum;
+  targetCourseId?: string;
+  metaData?: Record<string, any>;
+}
+
+/**
+ * Result for individual material in batch creation
+ */
+export interface BatchMaterialResult {
+  index: number;
+  success: boolean;
+  materialId?: string;
+  label: string;
+  error?: string;
+}
+
+/**
+ * Response for batch material creation
+ */
+export interface BatchCreateMaterialsResponse {
+  totalRequested: number;
+  totalSucceeded: number;
+  totalFailed: number;
+  results: BatchMaterialResult[];
+}
+
+/**
+ * Batch create materials (for links only)
+ * Files must be uploaded sequentially through the regular createMaterials function
+ */
+export async function batchCreateMaterials(
+  materials: BatchMaterialItem[]
+): Promise<Response<BatchCreateMaterialsResponse>> {
+  try {
+    const response = await httpClient.post("/materials/batch", { materials });
+    return response.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status || 500,
+      message:
+        error.response?.data?.message || "Batch upload failed. Please try again.",
+    };
+  }
+}
+
+/**
+ * Helper to process batch file uploads sequentially
+ * Returns results similar to batch link uploads for consistency
+ */
+export async function batchCreateFilesMaterials(
+  files: Array<{
+    file: File;
+    materialTitle: string;
+    description?: string;
+    type?: MaterialTypeEnum;
+    tags?: string[];
+    visibility: VisibilityEnum;
+    accessRestrictions: RestrictionEnum;
+    targetCourseId?: string;
+    pageCount?: number;
+    filePreview?: File;
+  }>,
+  onProgress?: (current: number, total: number, result: BatchMaterialResult) => void
+): Promise<BatchCreateMaterialsResponse> {
+  const results: BatchMaterialResult[] = [];
+
+  for (let i = 0; i < files.length; i++) {
+    const item = files[i];
+    try {
+      const formData: CreateMaterialFileForm = {
+        materialTitle: item.materialTitle,
+        description: item.description || "",
+        type: item.type,
+        visibility: item.visibility,
+        accessRestrictions: item.accessRestrictions,
+        tags: item.tags || [],
+        targetCourseId: item.targetCourseId,
+        pageCount: item.pageCount,
+        file: item.file,
+        filePreview: item.filePreview,
+      };
+
+      const response = await createMaterials(formData);
+      
+      // Upload preview if available
+      if (item.filePreview && response?.data?.id) {
+        try {
+          await uploadMaterialPreview(response.data.id, item.filePreview);
+        } catch (previewError) {
+          console.warn("Preview upload failed for batch item:", i, previewError);
+          // Continue - main material was created successfully
+        }
+      }
+
+      const result: BatchMaterialResult = {
+        index: i,
+        success: true,
+        materialId: response?.data?.id,
+        label: item.materialTitle,
+      };
+      results.push(result);
+      onProgress?.(i + 1, files.length, result);
+    } catch (error: any) {
+      const result: BatchMaterialResult = {
+        index: i,
+        success: false,
+        label: item.materialTitle,
+        error: error?.message || "Upload failed",
+      };
+      results.push(result);
+      onProgress?.(i + 1, files.length, result);
+    }
+  }
+
+  return {
+    totalRequested: files.length,
+    totalSucceeded: results.filter((r) => r.success).length,
+    totalFailed: results.filter((r) => !r.success).length,
+    results,
+  };
 }

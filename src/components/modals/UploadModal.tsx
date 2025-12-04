@@ -6,6 +6,7 @@ import Step1 from "./upload/Step1";
 import Step2FileUpload from "./upload/Step2FileUpload";
 import Step2HelpfulLink from "./upload/Step2HelpfulLink";
 import UploadSuccess from "./upload/UploadSuccess";
+import { BatchUploadModal } from "./upload/batch";
 import {
   createMaterials,
   updateMaterial,
@@ -53,6 +54,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
   const [submitting, setSubmitting] = useState(false); // Loader state
   const [tempPreviewUrl, setTempPreviewUrl] = useState<string | null>(null); // Track temp preview for cleanup
   const [errorMessage, setErrorMessage] = useState<string | null>(null); // Error state for user feedback
+  const [showBatchUpload, setShowBatchUpload] = useState(false); // Batch upload modal state
 
   // Reset state when modal opens/closes or editing material changes
   useEffect(() => {
@@ -74,6 +76,16 @@ const UploadModal: React.FC<UploadModalProps> = ({
   const handleMaterialTypeSelect = (type: MaterialType) => {
     setMaterialType(type);
     setCurrentStep("upload-details");
+  };
+
+  const handleBatchUpload = () => {
+    // Close the regular modal and open batch upload
+    handleClose();
+    setShowBatchUpload(true);
+  };
+
+  const handleBatchUploadClose = () => {
+    setShowBatchUpload(false);
   };
 
   const handleUploadComplete = async (data: CreateMaterialForm) => {
@@ -235,7 +247,12 @@ const UploadModal: React.FC<UploadModalProps> = ({
   const renderStep = () => {
     switch (currentStep) {
       case "type-selection":
-        return <Step1 onSelectType={handleMaterialTypeSelect} />;
+        return (
+          <Step1
+            onSelectType={handleMaterialTypeSelect}
+            onBatchUpload={!isEditMode ? handleBatchUpload : undefined}
+          />
+        );
       case "upload-details":
         if (materialType === "file") {
           return (
@@ -294,49 +311,59 @@ const UploadModal: React.FC<UploadModalProps> = ({
     }
   };
 
-  return createPortal(
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-modal-backdrop flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-          onClick={(e) => e.target === e.currentTarget && handleClose()}
-        >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="relative w-full max-w-2xl max-h-[90vh] bg-white rounded-2xl shadow-2xl border border-gray-100 z-modal flex flex-col mx-1 sm:mx-4 md:mx-0"
-          >
-            {/* Loader overlay */}
-            {submitting && (
-              <div className="absolute inset-0 bg-white/70 flex items-center justify-center z-50 rounded-2xl">
-                <div className="animate-spin rounded-full h-12 w-12 border-4 border-brand border-t-transparent"></div>
-              </div>
-            )}
-
-            {/* Close button */}
-            <button
-              onClick={handleClose}
-              className="absolute top-2 right-2 p-2 rounded-full bg-white/10 hover:bg-gray-100 transition-colors duration-200 z-10"
-              disabled={submitting}
+  return (
+    <>
+      {createPortal(
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-modal-backdrop flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+              onClick={(e) => e.target === e.currentTarget && handleClose()}
             >
-              <Cancel01Icon size={20} className="text-gray-500" />
-            </button>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                className="relative w-full max-w-2xl max-h-[90vh] bg-white rounded-2xl shadow-2xl border border-gray-100 z-modal flex flex-col mx-1 sm:mx-4 md:mx-0"
+              >
+                {/* Loader overlay */}
+                {submitting && (
+                  <div className="absolute inset-0 bg-white/70 flex items-center justify-center z-50 rounded-2xl">
+                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-brand border-t-transparent"></div>
+                  </div>
+                )}
 
-            {/* Modal content */}
-            <div className="p-3 sm:p-6 pt-5 sm:pt-8 flex-1 overflow-y-auto scrollbar-hide">
-              {renderStep()}
-            </div>
-          </motion.div>
-        </motion.div>
+                {/* Close button */}
+                <button
+                  onClick={handleClose}
+                  className="absolute top-2 right-2 p-2 rounded-full bg-white/10 hover:bg-gray-100 transition-colors duration-200 z-10"
+                  disabled={submitting}
+                >
+                  <Cancel01Icon size={20} className="text-gray-500" />
+                </button>
+
+                {/* Modal content */}
+                <div className="p-3 sm:p-6 pt-5 sm:pt-8 flex-1 overflow-y-auto scrollbar-hide">
+                  {renderStep()}
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
       )}
-    </AnimatePresence>,
-    document.body
+
+      {/* Batch Upload Modal */}
+      <BatchUploadModal
+        isOpen={showBatchUpload}
+        onClose={handleBatchUploadClose}
+      />
+    </>
   );
 };
 
