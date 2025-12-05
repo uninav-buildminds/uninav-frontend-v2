@@ -738,23 +738,22 @@ const Libraries: React.FC = () => {
               ))}
 
             {/* Materials */}
-            {currentMaterials.map((material) => (
-              <MaterialCard
-                key={material.id}
-                material={material}
-                onShare={handleShare}
-                onRead={handleRead}
-                draggable={activeTab === "saved" || activeTab === "all"}
-                onDragStart={handleDragStart}
-                onEdit={
-                  activeTab === "uploads" ? handleEditMaterial : undefined
-                }
-                onDelete={
-                  activeTab === "uploads" ? handleDeleteMaterial : undefined
-                }
-                showEditDelete={activeTab === "uploads"}
-              />
-            ))}
+            {currentMaterials.map((material) => {
+              const isOwner = material.creator?.id === user?.id;
+              return (
+                <MaterialCard
+                  key={material.id}
+                  material={material}
+                  onShare={handleShare}
+                  onRead={handleRead}
+                  draggable={activeTab === "saved" || activeTab === "all"}
+                  onDragStart={handleDragStart}
+                  onEdit={isOwner ? handleEditMaterial : undefined}
+                  onDelete={isOwner ? handleDeleteMaterial : undefined}
+                  showEditDelete={isOwner}
+                />
+              );
+            })}
           </div>
         )}
 
