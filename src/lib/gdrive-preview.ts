@@ -53,7 +53,7 @@ export async function listFolderFiles(
 }
 
 /**
- * Get metadata for a single Google Drive file
+ * Get metadata for a single Google Drive file or folder
  */
 export async function getFileMetadata(fileId: string): Promise<GDriveFile> {
   const urlBuilder = (apiKey: string) => {
@@ -247,7 +247,7 @@ export function extractGDriveId(
   try {
     const urlObj = new URL(url);
 
-    // Handle folder URLs
+    // Handle folder URLs - multiple patterns
     if (url.includes("/folders/")) {
       const match = url.match(/\/folders\/([a-zA-Z0-9_-]+)/);
       if (match) {
@@ -255,9 +255,30 @@ export function extractGDriveId(
       }
     }
 
+    // Handle folderview?id= format
+    if (url.includes("folderview")) {
+      const id = urlObj.searchParams.get("id");
+      if (id) {
+        return { id, type: "folder" };
+      }
+    }
+
     // Handle file URLs
     if (url.includes("/file/d/")) {
       const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+      if (match) {
+        return { id: match[1], type: "file" };
+      }
+    }
+
+    // Handle document/spreadsheet/presentation URLs
+    const docPatterns = [
+      /\/document\/d\/([a-zA-Z0-9_-]+)/,
+      /\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/,
+      /\/presentation\/d\/([a-zA-Z0-9_-]+)/,
+    ];
+    for (const pattern of docPatterns) {
+      const match = url.match(pattern);
       if (match) {
         return { id: match[1], type: "file" };
       }
@@ -271,9 +292,103 @@ export function extractGDriveId(
       }
     }
 
+    // Handle generic id parameter
+    const genericId = urlObj.searchParams.get("id");
+    if (genericId) {
+      // Could be folder or file - default to file
+      return { id: genericId, type: "file" };
+    }
+
     return null;
   } catch (error) {
     console.error("Error parsing Google Drive URL:", error);
     return null;
+  }
+}
+
+/**
+ * Recursively find the first actual file (non-folder) in a Google Drive folder
+ * This handles nested folder structures by traversing until finding a file
+ */
+export async function findFirstFileInFolder(
+  folderId: string,
+  maxDepth: number = 5
+): Promise<GDriveFile | null> {
+  if (maxDepth <= 0) {
+    console.warn("Max depth reached while searching for files in folder");
+    return null;
+  }
+
+  try {
+    const contents = await listFolderFiles(folderId);
+    
+    if (!contents.files || contents.files.length === 0) {
+      return null;
+    }
+
+    // First, try to find a non-folder file at this level
+    const file = contents.files.find(
+      (f) => f.mimeType !== "application/vnd.google-apps.folder"
+    );
+    
+    if (file) {
+      return file;
+    }
+
+    // If no files found, recursively search in subfolders
+    for (const item of contents.files) {
+      if (item.mimeType === "application/vnd.google-apps.folder") {
+        const nestedFile = await findFirstFileInFolder(item.id, maxDepth - 1);
+        if (nestedFile) {
+          return nestedFile;
+        }
+      }
+    }
+
+    return null;
+  } catch (error) {
+    console.error("Error finding first file in folder:", error);
+    return null;
+  }
+}
+
+/**
+ * Get the name of a Google Drive file or folder from its ID
+ */
+export async function getGDriveName(fileId: string): Promise<string | null> {
+  try {
+    const metadata = await getFileMetadata(fileId);
+    return metadata.name || null;
+  } catch (error) {
+    console.error("Error getting GDrive name:", error);
+    return null;
+  }
+}
+
+/**
+ * Get folder/file info including name and first file for preview
+ * Returns both the name and the first previewable file
+ */
+export async function getGDriveFolderInfo(folderId: string): Promise<{
+  name: string | null;
+  firstFile: GDriveFile | null;
+  fileCount: number;
+}> {
+  try {
+    // Get folder metadata for name
+    const folderMeta = await getFileMetadata(folderId);
+    const name = folderMeta.name || null;
+
+    // Get first file recursively
+    const firstFile = await findFirstFileInFolder(folderId);
+    
+    // Get file count (non-recursive, just top level for performance)
+    const contents = await listFolderFiles(folderId);
+    const fileCount = contents.files?.length || 0;
+
+    return { name, firstFile, fileCount };
+  } catch (error) {
+    console.error("Error getting GDrive folder info:", error);
+    return { name: null, firstFile: null, fileCount: 0 };
   }
 }

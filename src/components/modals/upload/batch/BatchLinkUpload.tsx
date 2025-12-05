@@ -24,7 +24,14 @@ import { SelectCourse } from "../shared/SelectCourse";
 import { checkIsYouTubeUrl } from "@/components/Preview/youtube";
 import { checkIsGoogleDriveUrl } from "@/components/Preview/gDrive";
 import { isGDriveFolder } from "@/lib/utils/gdriveUtils";
-import { listFolderFiles, extractGDriveId } from "@/lib/gdrive-preview";
+import { 
+  extractGDriveId, 
+  findFirstFileInFolder, 
+  getFileMetadata,
+  getGDriveFolderInfo,
+  getGDriveName,
+  listFolderFiles,
+} from "@/lib/gdrive-preview";
 
 interface BatchLinkItem {
   id: string;
@@ -33,6 +40,7 @@ interface BatchLinkItem {
   previewUrl: string | null;
   type: MaterialTypeEnum;
   isLoadingPreview: boolean;
+  isLoadingTitle: boolean;
   status: "pending" | "ready" | "error";
   error?: string;
 }
@@ -96,38 +104,55 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
 
     // Google Drive
     if (checkIsGoogleDriveUrl(url)) {
-      if (isGDriveFolder(url)) {
-        // For folders, get first file and use its thumbnail
-        const identifier = extractGDriveId(url);
-        if (identifier && identifier.type === "folder") {
-          try {
-            const contents = await listFolderFiles(identifier.id);
-            const firstFile = contents.files.find(
-              (f) => f.mimeType !== "application/vnd.google-apps.folder"
-            ) || contents.files[0];
-            if (firstFile) {
-              return `https://drive.google.com/thumbnail?id=${firstFile.id}&sz=w400-h300`;
-            }
-          } catch {
-            return null;
+      const identifier = extractGDriveId(url);
+      if (!identifier) return null;
+
+      if (identifier.type === "folder") {
+        // For folders, recursively find first actual file
+        try {
+          const firstFile = await findFirstFileInFolder(identifier.id);
+          if (firstFile) {
+            return `https://drive.google.com/thumbnail?id=${firstFile.id}&sz=w400-h300`;
           }
+        } catch (error) {
+          console.error("Error getting folder preview:", error);
         }
         return null;
       } else {
-        // Single file
-        const patterns = [
-          /\/file\/d\/([a-zA-Z0-9-_]+)/,
-          /\/document\/d\/([a-zA-Z0-9-_]+)/,
-          /\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/,
-          /\/presentation\/d\/([a-zA-Z0-9-_]+)/,
-          /[?&]id=([a-zA-Z0-9-_]+)/,
-        ];
-        for (const pattern of patterns) {
-          const match = url.match(pattern);
-          if (match && match[1]) {
-            return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w400-h300`;
-          }
+        // Single file - use its ID directly
+        return `https://drive.google.com/thumbnail?id=${identifier.id}&sz=w400-h300`;
+      }
+    }
+
+    return null;
+  };
+
+  // Fetch actual title from the source (Google Drive API, YouTube oEmbed, etc.)
+  const fetchActualTitle = async (url: string): Promise<string | null> => {
+    // Google Drive - get actual folder/file name
+    if (checkIsGoogleDriveUrl(url)) {
+      const identifier = extractGDriveId(url);
+      if (identifier) {
+        try {
+          const name = await getGDriveName(identifier.id);
+          return name;
+        } catch (error) {
+          console.error("Error fetching GDrive name:", error);
         }
+      }
+    }
+
+    // YouTube - try to get video title via oEmbed (no API key needed)
+    if (checkIsYouTubeUrl(url)) {
+      try {
+        const oembedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`;
+        const response = await fetch(oembedUrl);
+        if (response.ok) {
+          const data = await response.json();
+          return data.title || null;
+        }
+      } catch (error) {
+        console.error("Error fetching YouTube title:", error);
       }
     }
 
@@ -169,6 +194,7 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
           // Detect which column is URL and which is title
           let url = "";
           let title = "";
+          let needsRemoteTitleFetch = false;
 
           if (parts.length >= 2) {
             // Two columns: detect which is URL
@@ -184,9 +210,10 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
               url = parts[1];
             }
           } else if (parts.length === 1) {
-            // Single column: must be URL, generate title
+            // Single column: must be URL, will fetch title from source
             url = parts[0];
             title = "";
+            needsRemoteTitleFetch = true;
           }
 
           if (!url) continue;
@@ -195,15 +222,20 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
           const type = checkIsYouTubeUrl(normalizedUrl)
             ? MaterialTypeEnum.YOUTUBE
             : inferMaterialType(normalizedUrl);
-          const finalTitle = title || generateDefaultTitle(normalizedUrl);
+          
+          // Use placeholder title if we need to fetch it remotely
+          const placeholderTitle = needsRemoteTitleFetch 
+            ? "Loading title..." 
+            : (title || generateDefaultTitle(normalizedUrl));
 
           const item: BatchLinkItem = {
             id: generateId(),
             url: normalizedUrl,
-            title: finalTitle,
+            title: placeholderTitle,
             previewUrl: null,
             type,
             isLoadingPreview: true,
+            isLoadingTitle: needsRemoteTitleFetch,
             status: "pending",
           };
 
@@ -218,14 +250,20 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
         // Add items first with loading state
         setLinks((prev) => [...prev, ...parsedItems]);
 
-        // Generate previews in background
+        // Generate previews and fetch titles in background
         for (const item of parsedItems) {
+          // Fetch preview
           generatePreviewUrl(item.url)
             .then((preview) => {
               setLinks((prev) =>
                 prev.map((l) =>
                   l.id === item.id
-                    ? { ...l, previewUrl: preview, isLoadingPreview: false, status: "ready" }
+                    ? { 
+                        ...l, 
+                        previewUrl: preview, 
+                        isLoadingPreview: false,
+                        status: !l.isLoadingTitle ? "ready" : l.status
+                      }
                     : l
                 )
               );
@@ -234,12 +272,52 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
               setLinks((prev) =>
                 prev.map((l) =>
                   l.id === item.id
-                    ? { ...l, isLoadingPreview: false, status: "ready" }
+                    ? { 
+                        ...l, 
+                        isLoadingPreview: false,
+                        status: !l.isLoadingTitle ? "ready" : l.status
+                      }
                     : l
                 )
               );
             });
+
+          // Fetch actual title if needed
+          if (item.isLoadingTitle) {
+            fetchActualTitle(item.url)
+              .then((actualTitle) => {
+                setLinks((prev) =>
+                  prev.map((l) =>
+                    l.id === item.id
+                      ? { 
+                          ...l, 
+                          title: actualTitle || generateDefaultTitle(item.url),
+                          isLoadingTitle: false,
+                          status: l.isLoadingPreview ? l.status : "ready"
+                        }
+                      : l
+                  )
+                );
+              })
+              .catch(() => {
+                setLinks((prev) =>
+                  prev.map((l) =>
+                    l.id === item.id
+                      ? { 
+                          ...l, 
+                          title: generateDefaultTitle(item.url),
+                          isLoadingTitle: false,
+                          status: l.isLoadingPreview ? l.status : "ready"
+                        }
+                      : l
+                  )
+                );
+              });
+          }
         }
+
+        // Update status to ready when both preview and title are done
+        // (This is handled in the individual callbacks above)
 
         setCsvInput("");
         toast.success(`Added ${parsedItems.length} links`);
@@ -289,16 +367,16 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
     }
 
     // Validate all titles are filled
-    const emptyTitles = links.filter((l) => !l.title.trim());
+    const emptyTitles = links.filter((l) => !l.title.trim() || l.title === "Loading title...");
     if (emptyTitles.length > 0) {
       toast.error("Please fill in all material titles");
       return;
     }
 
-    // Wait for all previews to finish loading
-    const stillLoading = links.some((l) => l.isLoadingPreview);
+    // Wait for all previews and titles to finish loading
+    const stillLoading = links.some((l) => l.isLoadingPreview || l.isLoadingTitle);
     if (stillLoading) {
-      toast.error("Please wait for all previews to load");
+      toast.error("Please wait for all data to load");
       return;
     }
 
@@ -413,8 +491,9 @@ Example:
 Introduction to Python,https://youtube.com/watch?v=...
 Course Notes,https://drive.google.com/file/d/...
 
-Or just URLs (titles will be auto-generated):
-https://youtube.com/watch?v=...`}
+Or just URLs (titles will be fetched from source):
+https://youtube.com/watch?v=...
+https://drive.google.com/drive/folders/...`}
           className="w-full h-32 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors resize-none text-sm disabled:opacity-50"
         />
 
@@ -477,21 +556,32 @@ https://youtube.com/watch?v=...`}
 
                   {/* Content */}
                   <div className="flex-1 min-w-0">
-                    <input
-                      type="text"
-                      value={item.title}
-                      onChange={(e) => updateLinkTitle(item.id, e.target.value)}
-                      disabled={isUploading}
-                      className="w-full text-sm font-medium text-gray-900 border-b border-transparent hover:border-gray-300 focus:border-brand focus:outline-none bg-transparent truncate disabled:opacity-75"
-                      placeholder="Enter title..."
-                    />
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={item.title}
+                        onChange={(e) => updateLinkTitle(item.id, e.target.value)}
+                        disabled={isUploading || item.isLoadingTitle}
+                        className={`w-full text-sm font-medium text-gray-900 border-b border-transparent hover:border-gray-300 focus:border-brand focus:outline-none bg-transparent truncate disabled:opacity-75 ${
+                          item.isLoadingTitle ? "text-gray-400 italic" : ""
+                        }`}
+                        placeholder="Enter title..."
+                      />
+                      {item.isLoadingTitle && (
+                        <Loading03Icon size={12} className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 animate-spin" />
+                      )}
+                    </div>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-xs px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">
                         {getTypeLabel(item.type)}
                       </span>
-                      <span className="text-xs text-gray-400 truncate" title={item.url}>
+                      <button
+                        onClick={() => window.open(item.url, '_blank', 'noopener,noreferrer')}
+                        className="text-xs text-gray-400 hover:text-brand hover:underline truncate transition-colors cursor-pointer"
+                        title={`Click to open: ${item.url}`}
+                      >
                         {new URL(item.url).hostname}
-                      </span>
+                      </button>
                     </div>
                   </div>
 
