@@ -95,7 +95,7 @@ export function extractGDriveId(url: string): GDriveIdentifier | null {
  * Check if URL is a Google Drive folder
  */
 export function isGDriveFolder(url: string): boolean {
-  return url.includes('/folders/');
+  return url.includes('/folders/') || url.includes('folderview');
 }
 
 /**

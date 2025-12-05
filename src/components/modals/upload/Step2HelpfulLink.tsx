@@ -27,9 +27,7 @@ import {
 } from "@/components/Preview/gDrive";
 import {
   listFolderFiles,
-  generateAndUploadPreview,
   extractGDriveId,
-  generateGDrivePreviewBlob,
 } from "@/lib/gdrive-preview";
 import { isGDriveFolder } from "@/lib/utils/gdriveUtils";
 import {
@@ -186,7 +184,7 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
     setDerivedPreviewUrl(null);
     setFileCount(undefined);
     setIsCountingFiles(false);
-    // Clear temp preview tracking when URL changes
+    // Clear temp preview tracking when URL changes (no longer needed for GDrive since we use direct URLs)
     onTempPreviewChange?.(null);
 
     if (!url || !checkIsGoogleDriveUrl(url)) return;
@@ -221,16 +219,10 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
           return; // empty folder => no preview
         }
 
-        // Generate preview and upload to Cloudinary
-        const cloudinaryUrl = await generateAndUploadPreview(
-          firstFile.id,
-          firstFile.name
-        );
-        if (cloudinaryUrl) {
-          setDerivedPreviewUrl(cloudinaryUrl);
-          // Notify parent component about temp preview
-          onTempPreviewChange?.(cloudinaryUrl);
-        }
+        // Use direct Google Drive thumbnail URL for the first file (no upload needed)
+        const directThumbnailUrl = `https://drive.google.com/thumbnail?id=${firstFile.id}&sz=w400-h300`;
+        setDerivedPreviewUrl(directThumbnailUrl);
+        // No need to track temp preview since this is a direct URL (not uploaded)
         
         // Count files in the background (non-blocking)
         countGDriveUrlFiles(url)

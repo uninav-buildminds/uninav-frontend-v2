@@ -1,14 +1,15 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { File02Icon, Link01Icon } from 'hugeicons-react';
+import { File02Icon, Link01Icon, Layers01Icon } from 'hugeicons-react';
 import HeaderStepper from './shared/HeaderStepper';
 import { MaterialType } from '../UploadModal';
 
 interface Step1Props {
   onSelectType: (type: MaterialType) => void;
+  onBatchUpload?: () => void;
 }
 
-const Step1: React.FC<Step1Props> = ({ onSelectType }) => {
+const Step1: React.FC<Step1Props> = ({ onSelectType, onBatchUpload }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -69,6 +70,28 @@ const Step1: React.FC<Step1Props> = ({ onSelectType }) => {
                       </div>
                     </div>
           </motion.button>
+
+          {/* Batch Upload Option */}
+          {onBatchUpload && (
+            <motion.button
+              onClick={onBatchUpload}
+              className="w-full p-4 border-2 border-gray-200 rounded-xl hover:border-purple-500 hover:bg-purple-50 transition-all duration-200 group"
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+            >
+              <div className="flex items-center space-x-3 sm:space-x-4">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors">
+                  <Layers01Icon size={16} className="sm:w-5 sm:h-5 text-purple-600" />
+                </div>
+                <div className="text-left">
+                  <h4 className="text-sm sm:text-base font-semibold text-gray-900">Batch Upload</h4>
+                  <p className="text-xs sm:text-sm text-gray-600">
+                    Upload multiple files or import links via CSV
+                  </p>
+                </div>
+              </div>
+            </motion.button>
+          )}
         </div>
       </div>
     </motion.div>
