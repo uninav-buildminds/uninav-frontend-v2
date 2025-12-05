@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Cancel01Icon, AlertCircleIcon, File02Icon, Link01Icon } from "hugeicons-react";
+import { Cancel01Icon, AlertCircleIcon, File02Icon, Link01Icon, ArrowLeft01Icon } from "hugeicons-react";
 import BatchFileUpload from "./BatchFileUpload";
 import BatchLinkUpload from "./BatchLinkUpload";
 import BatchUploadSuccess from "./BatchUploadSuccess";
@@ -125,6 +125,18 @@ const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                   </motion.div>
                 )}
               </AnimatePresence>
+            </div>
+            
+            {/* Action Buttons */}
+            <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+              <button
+                onClick={handleClose}
+                disabled={isUploading}
+                className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ArrowLeft01Icon size={16} />
+                <span>Back</span>
+              </button>
             </div>
           </div>
         );

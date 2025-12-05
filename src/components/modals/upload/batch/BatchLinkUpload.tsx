@@ -142,17 +142,20 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
       }
     }
 
-    // YouTube - try to get video title via oEmbed (no API key needed)
+    // YouTube - get video title via oEmbed API (same as single upload)
     if (checkIsYouTubeUrl(url)) {
       try {
-        const oembedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`;
-        const response = await fetch(oembedUrl);
+        const response = await fetch(
+          `https://www.youtube.com/oembed?url=${encodeURIComponent(
+            url
+          )}&format=json&maxwidth=320&maxheight=180`
+        );
         if (response.ok) {
           const data = await response.json();
           return data.title || null;
         }
       } catch (error) {
-        console.error("Error fetching YouTube title:", error);
+        console.error("Error fetching YouTube title via oEmbed:", error);
       }
     }
 
