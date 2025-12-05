@@ -354,15 +354,147 @@ export async function findFirstFileInFolder(
 
 /**
  * Get the name of a Google Drive file or folder from its ID
+ * If the name is too short (less than minLength), tries to find a more descriptive name
+ * from the folder contents
  */
-export async function getGDriveName(fileId: string): Promise<string | null> {
+export async function getGDriveName(
+  fileId: string, 
+  minLength: number = 5
+): Promise<string | null> {
   try {
     const metadata = await getFileMetadata(fileId);
-    return metadata.name || null;
+    const name = metadata.name || null;
+    
+    // If name is descriptive enough, return it
+    if (name && name.length >= minLength) {
+      return name;
+    }
+    
+    // If it's a folder with a short name, look for better names inside
+    if (metadata.mimeType === "application/vnd.google-apps.folder") {
+      const betterName = await findDescriptiveNameInFolder(fileId, minLength);
+      if (betterName) {
+        return betterName;
+      }
+    }
+    
+    // Return the original name even if short
+    return name;
   } catch (error) {
     console.error("Error getting GDrive name:", error);
     return null;
   }
+}
+
+/**
+ * Search inside a folder for a file/subfolder with a more descriptive name
+ * Returns the most descriptive name found (longest name that seems meaningful)
+ */
+async function findDescriptiveNameInFolder(
+  folderId: string,
+  minLength: number = 5,
+  maxDepth: number = 2
+): Promise<string | null> {
+  if (maxDepth <= 0) {
+    return null;
+  }
+
+  try {
+    const contents = await listFolderFiles(folderId);
+    
+    if (!contents.files || contents.files.length === 0) {
+      return null;
+    }
+
+    // Collect all names and find the most descriptive one
+    let bestName: string | null = null;
+    let bestScore = 0;
+
+    for (const item of contents.files) {
+      const itemName = item.name;
+      if (!itemName) continue;
+
+      // Calculate a "descriptiveness" score
+      // - Longer names are better (up to a point)
+      // - Names with spaces/underscores suggest more description
+      // - Avoid names that are just numbers or single words
+      const score = calculateNameScore(itemName, minLength);
+      
+      if (score > bestScore) {
+        bestScore = score;
+        bestName = itemName;
+      }
+    }
+
+    // If we found a good name, return it
+    if (bestName && bestScore >= minLength) {
+      // Clean up file extension if present
+      return cleanFileName(bestName);
+    }
+
+    // If no good name at this level, try going deeper into subfolders
+    for (const item of contents.files) {
+      if (item.mimeType === "application/vnd.google-apps.folder") {
+        const nestedName = await findDescriptiveNameInFolder(item.id, minLength, maxDepth - 1);
+        if (nestedName) {
+          return nestedName;
+        }
+      }
+    }
+
+    return null;
+  } catch (error) {
+    console.error("Error finding descriptive name in folder:", error);
+    return null;
+  }
+}
+
+/**
+ * Calculate a score for how descriptive a name is
+ */
+function calculateNameScore(name: string, minLength: number): number {
+  // Remove file extension for scoring
+  const cleanName = name.replace(/\.[^/.]+$/, "");
+  
+  // Base score is the length
+  let score = cleanName.length;
+  
+  // Bonus for names with spaces or underscores (suggests multiple words)
+  if (cleanName.includes(" ") || cleanName.includes("_") || cleanName.includes("-")) {
+    score += 5;
+  }
+  
+  // Penalty for names that are just numbers
+  if (/^\d+$/.test(cleanName)) {
+    score = 0;
+  }
+  
+  // Penalty for very generic names
+  const genericNames = ["file", "folder", "document", "untitled", "new", "copy"];
+  if (genericNames.some(g => cleanName.toLowerCase() === g)) {
+    score = 0;
+  }
+  
+  // Penalty for names that are too short
+  if (cleanName.length < minLength) {
+    score = Math.max(0, score - (minLength - cleanName.length) * 2);
+  }
+  
+  return score;
+}
+
+/**
+ * Clean up a file name by removing extension and normalizing
+ */
+function cleanFileName(name: string): string {
+  // Remove common file extensions
+  const cleaned = name.replace(/\.(pdf|docx?|pptx?|xlsx?|txt|csv|jpg|jpeg|png|gif|mp4|mov|avi)$/i, "");
+  
+  // Replace underscores with spaces and clean up
+  return cleaned
+    .replace(/_/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 /**
