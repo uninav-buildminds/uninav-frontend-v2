@@ -18,7 +18,7 @@ interface FolderModalProps {
   folder: Folder | null;
   onShare?: (folderId: string) => void;
   onDelete?: (folderId: string) => void;
-  onRead?: (materialId: string) => void;
+  onRead?: (slug: string) => void;
   onRemoveMaterial?: (folderId: string, materialId: string) => void;
 }
 

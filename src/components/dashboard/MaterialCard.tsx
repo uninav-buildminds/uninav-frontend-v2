@@ -59,7 +59,7 @@ const BookmarkFilledIcon = ({
 interface MaterialCardProps {
   material: Material;
   onShare?: (id: string) => void;
-  onRead?: (id: string) => void;
+  onRead?: (slug: string) => void;
   lastViewedAt?: string; // For recent materials - shows when the user last viewed this material
   onEdit?: (material: Material) => void; // For user uploads - edit material
   onDelete?: (id: string) => void; // For user uploads - delete material
@@ -124,7 +124,11 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
 
   const handleShare = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const link = `${window.location.origin}/dashboard/material/${id}`;
+    if (!material.slug) {
+      toast.error("Cannot share material without slug");
+      return;
+    }
+    const link = `${window.location.origin}/dashboard/material/${material.slug}`;
     navigator.clipboard
       .writeText(link)
       .then(() => {
@@ -209,7 +213,7 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
     <TooltipProvider>
       <div
         className="group relative cursor-pointer"
-        onClick={() => onRead?.(id)}
+        onClick={() => onRead?.(material.slug)}
         ref={componentRef}
         draggable={draggable}
         onDragStart={handleDragStartEvent}

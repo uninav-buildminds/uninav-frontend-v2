@@ -537,7 +537,7 @@ const Profile: React.FC = () => {
                           </td>
                           <td className="py-3 px-3 sm:px-5 text-right">
                             <button
-                              onClick={() => navigate(`/dashboard/material/${material.id}`)}
+                              onClick={() => navigate(`/dashboard/material/${material.slug}`)}
                               className="inline-flex items-center justify-center w-8 h-8 text-gray-600 hover:text-brand hover:bg-brand/10 rounded-lg transition-all duration-200 hover:scale-110"
                               aria-label="View material"
                             >
@@ -558,7 +558,7 @@ const Profile: React.FC = () => {
                     return (
                       <div
                         key={material.id}
-                        onClick={() => navigate(`/dashboard/material/${material.id}`)}
+                        onClick={() => navigate(`/dashboard/material/${material.slug}`)}
                         className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer"
                       >
                         <div className="flex items-start justify-between mb-2">
@@ -575,7 +575,7 @@ const Profile: React.FC = () => {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                navigate(`/dashboard/material/${material.id}`);
+                                navigate(`/dashboard/material/${material.slug}`);
                               }}
                               className="inline-flex items-center justify-center w-7 h-7 text-gray-400 hover:text-brand rounded-lg transition-all duration-200 hover:scale-110"
                               aria-label="View material"

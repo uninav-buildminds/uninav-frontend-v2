@@ -96,7 +96,7 @@ type GridMaterialsSectionProps = {
   onViewAll?: () => void;
   onFilter?: () => void;
   onShare?: (id: string) => void;
-  onRead?: (id: string) => void;
+  onRead?: (slug: string) => void;
   showViewAll?: boolean;
   emptyStateType?:
     | "recent"

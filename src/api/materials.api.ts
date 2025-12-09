@@ -1,4 +1,8 @@
-import { PaginatedResponse, Response, ResponseSuccess } from "@/lib/types/response.types";
+import {
+  PaginatedResponse,
+  Response,
+  ResponseSuccess,
+} from "@/lib/types/response.types";
 import { httpClient } from "./api";
 import {
   Material,
@@ -136,23 +140,31 @@ export async function createMaterials(materialData: CreateMaterialForm) {
   if (materialData.targetCourseId) {
     formData.append("targetCourseId", materialData.targetCourseId);
   }
-  
+
   // Build metaData array with pageCount or fileCount
   const metaDataArray: string[] = [];
-  
-  if ("pageCount" in materialData && materialData.pageCount !== undefined && materialData.pageCount > 0) {
+
+  if (
+    "pageCount" in materialData &&
+    materialData.pageCount !== undefined &&
+    materialData.pageCount > 0
+  ) {
     metaDataArray.push(JSON.stringify({ pageCount: materialData.pageCount }));
   }
-  
-  if ("fileCount" in materialData && materialData.fileCount !== undefined && materialData.fileCount > 0) {
+
+  if (
+    "fileCount" in materialData &&
+    materialData.fileCount !== undefined &&
+    materialData.fileCount > 0
+  ) {
     metaDataArray.push(JSON.stringify({ fileCount: materialData.fileCount }));
   }
-  
+
   // Add any existing metaData
   if (materialData.metaData) {
     materialData.metaData.forEach((meta: string) => metaDataArray.push(meta));
   }
-  
+
   // Append metaData to form
   if (metaDataArray.length > 0) {
     metaDataArray.forEach((meta: string) => formData.append("metaData", meta));
@@ -190,31 +202,31 @@ export async function createMaterials(materialData: CreateMaterialForm) {
 }
 
 export async function getMaterialRecommendations(
-	params: MaterialRecommendation
+  params: MaterialRecommendation
 ): Promise<
-	ResponseSuccess<{
-		items: Material[];
-		pagination: {
-			total: number;
-			page: number;
-			pageSize: number;
-			totalPages: number;
-		};
-	}>
+  ResponseSuccess<{
+    items: Material[];
+    pagination: {
+      total: number;
+      page: number;
+      pageSize: number;
+      totalPages: number;
+    };
+  }>
 > {
-	try {
-		const response = await httpClient.get("/materials/recommendations", {
-			params,
-		});
-		return response.data;
-	} catch (error: any) {
-		throw {
-			statusCode: error.response?.status,
-			message:
-				error.response?.data?.message ||
-				"Fetching material recommendations failed. Please try again.",
-		};
-	}
+  try {
+    const response = await httpClient.get("/materials/recommendations", {
+      params,
+    });
+    return response.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status,
+      message:
+        error.response?.data?.message ||
+        "Fetching material recommendations failed. Please try again.",
+    };
+  }
 }
 
 // Recent materials are returned with lastViewedAt included in each material object
@@ -268,9 +280,9 @@ export async function getPopularMaterials(limit: number = 10): Promise<
 }
 
 // Search materials with pagination and filtering
-export async function searchMaterials(params: MaterialSearchParams): Promise<
-  ResponseSuccess<SearchResult<Material>>
-> {
+export async function searchMaterials(
+  params: MaterialSearchParams
+): Promise<ResponseSuccess<SearchResult<Material>>> {
   // delete params.advancedSearch;
   try {
     const response = await httpClient.get("/materials", {
@@ -299,6 +311,24 @@ export async function getMaterialById(id: string): Promise<Response<Material>> {
       message:
         error.response?.data?.message ||
         "Getting material by id failed. Please try again.",
+    };
+  }
+}
+
+// Get material by slug
+export async function getMaterialBySlug(
+  slug: string
+): Promise<Response<Material>> {
+  try {
+    const response = await httpClient.get(`/materials/${slug}`);
+    return response.data;
+  } catch (error: any) {
+    console.error("Error getting material:", error);
+    throw {
+      statusCode: error.response?.status,
+      message:
+        error.response?.data?.message ||
+        "Getting material failed. Please try again.",
     };
   }
 }
@@ -599,8 +629,7 @@ export async function getReadingStats(): Promise<
   } catch (error: any) {
     throw {
       statusCode: error.response?.status || 500,
-      message:
-        error.response?.data?.message || "Failed to get reading stats",
+      message: error.response?.data?.message || "Failed to get reading stats",
     };
   }
 }
@@ -658,7 +687,8 @@ export async function batchCreateMaterials(
     throw {
       statusCode: error.response?.status || 500,
       message:
-        error.response?.data?.message || "Batch upload failed. Please try again.",
+        error.response?.data?.message ||
+        "Batch upload failed. Please try again.",
     };
   }
 }
@@ -680,7 +710,11 @@ export async function batchCreateFilesMaterials(
     pageCount?: number;
     filePreview?: File;
   }>,
-  onProgress?: (current: number, total: number, result: BatchMaterialResult) => void
+  onProgress?: (
+    current: number,
+    total: number,
+    result: BatchMaterialResult
+  ) => void
 ): Promise<BatchCreateMaterialsResponse> {
   const results: BatchMaterialResult[] = [];
 
@@ -701,13 +735,17 @@ export async function batchCreateFilesMaterials(
       };
 
       const response = await createMaterials(formData);
-      
+
       // Upload preview if available
       if (item.filePreview && response?.data?.id) {
         try {
           await uploadMaterialPreview(response.data.id, item.filePreview);
         } catch (previewError) {
-          console.warn("Preview upload failed for batch item:", i, previewError);
+          console.warn(
+            "Preview upload failed for batch item:",
+            i,
+            previewError
+          );
           // Continue - main material was created successfully
         }
       }

@@ -23,7 +23,7 @@ import { useFullscreen } from "@/context/FullscreenContext";
 import { toast } from "sonner";
 import { formatRelativeTime } from "@/lib/utils";
 import { Material, MaterialTypeEnum } from "@/lib/types/material.types";
-import { getMaterialById, trackMaterialDownload } from "@/api/materials.api";
+import { getMaterialBySlug, trackMaterialDownload } from "@/api/materials.api";
 import { allocateReadingPoints } from "@/api/points.api";
 import { ResponseStatus } from "@/lib/types/response.types";
 import { ResourceTypeEnum, RestrictionEnum } from "@/lib/types/material.types";
@@ -47,7 +47,7 @@ import {
 } from "@/components/ui/sheet";
 
 const MaterialView: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { isBookmarked, toggleBookmark } = useBookmarks();
   const { isFullscreen, toggleFullscreen } = useFullscreen();
@@ -123,12 +123,12 @@ const MaterialView: React.FC = () => {
     const fetchMaterial = async () => {
       setLoading(true);
       try {
-        if (!id) {
-          toast.error("Invalid material ID");
+        if (!slug) {
+          toast.error("Invalid material slug");
           return;
         }
 
-        const response = await getMaterialById(id);
+        const response = await getMaterialBySlug(slug);
 
         if (response.status === ResponseStatus.SUCCESS) {
           setMaterial(response.data);
@@ -164,10 +164,10 @@ const MaterialView: React.FC = () => {
       }
     };
 
-    if (id) {
+    if (slug) {
       fetchMaterial();
     }
-  }, [id, navigate]);
+  }, [slug, navigate]);
 
   // Allocate reading points every 10 minutes
   useEffect(() => {
@@ -305,7 +305,11 @@ const MaterialView: React.FC = () => {
   };
 
   const handleShare = () => {
-    const link = `${window.location.origin}/dashboard/material/${id}`;
+    if (!material?.slug) {
+      toast.error("Cannot share material without slug");
+      return;
+    }
+    const link = `${window.location.origin}/dashboard/material/${material.slug}`;
     navigator.clipboard
       .writeText(link)
       .then(() => {
@@ -862,7 +866,7 @@ const MaterialView: React.FC = () => {
                       key={relatedMaterial.id}
                       className="cursor-pointer hover:shadow-md transition-shadow"
                       onClick={() =>
-                        navigate(`/dashboard/material/${relatedMaterial.id}`)
+                        navigate(`/dashboard/material/${relatedMaterial.slug}`)
                       }
                     >
                       <CardHeader className="pb-1.5 px-2.5 pt-2.5">
@@ -1038,7 +1042,9 @@ const MaterialView: React.FC = () => {
                         key={relatedMaterial.id}
                         className="cursor-pointer hover:shadow-md transition-shadow"
                         onClick={() => {
-                          navigate(`/dashboard/material/${relatedMaterial.id}`);
+                          navigate(
+                            `/dashboard/material/${relatedMaterial.slug}`
+                          );
                           setInfoSheetOpen(false);
                         }}
                       >

@@ -93,16 +93,13 @@ const App = () => {
                           />
                           <Route path="settings" element={<SettingsPage />} />
                           <Route path="help" element={<Help />} />
-                          
+
                           {/* Profile View */}
-                          <Route
-                            path="profile/:userId"
-                            element={<Profile />}
-                          />
+                          <Route path="profile/:userId" element={<Profile />} />
 
                           {/* Material View */}
                           <Route
-                            path="material/:id"
+                            path="material/:slug"
                             element={<MaterialView />}
                           />
                         </Route>

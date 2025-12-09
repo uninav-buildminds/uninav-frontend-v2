@@ -237,7 +237,7 @@ const MaterialReviewModal: React.FC<MaterialReviewModalProps> = ({
 
   const handleViewInDashboard = () => {
     if (fullMaterial) {
-      window.open(`/dashboard/material/${fullMaterial.id}`, "_blank");
+      window.open(`/dashboard/material/${fullMaterial.slug}`, "_blank");
     }
   };
 
