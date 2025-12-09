@@ -28,8 +28,6 @@ import { getFoldersByMaterial } from "@/api/folder.api";
 import { allocateReadingPoints } from "@/api/points.api";
 import { ResponseStatus } from "@/lib/types/response.types";
 import { ResourceTypeEnum, RestrictionEnum } from "@/lib/types/material.types";
-import PDFViewer from "@/components/dashboard/viewers/PDFViewer";
-import AdobePDFViewer from "@/components/dashboard/viewers/AdobePDFViewer";
 import ReactPdfViewer from "@/components/dashboard/viewers/ReactPdfViewer"; // Commented out - will use later
 import GDriveFolderBrowser from "@/components/dashboard/viewers/GDriveFolderBrowser";
 import GDriveFileViewer from "@/components/dashboard/viewers/GDriveFileViewer";
