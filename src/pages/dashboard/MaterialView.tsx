@@ -23,12 +23,8 @@ import { useFullscreen } from "@/context/FullscreenContext";
 import { toast } from "sonner";
 import { formatRelativeTime } from "@/lib/utils";
 import { Material, MaterialTypeEnum } from "@/lib/types/material.types";
-<<<<<<< HEAD
-import { getMaterialById, trackMaterialDownload } from "@/api/materials.api";
-import { getFoldersByMaterial } from "@/api/folder.api";
-=======
 import { getMaterialBySlug, trackMaterialDownload } from "@/api/materials.api";
->>>>>>> main
+import { getFoldersByMaterial } from "@/api/folder.api";
 import { allocateReadingPoints } from "@/api/points.api";
 import { ResponseStatus } from "@/lib/types/response.types";
 import { ResourceTypeEnum, RestrictionEnum } from "@/lib/types/material.types";
@@ -152,18 +148,17 @@ const MaterialView: React.FC = () => {
 
           // Fetch related materials from folders containing this material
           try {
-            const foldersResponse = await getFoldersByMaterial(id);
+            const foldersResponse = await getFoldersByMaterial(
+              response.data.id
+            );
             if (foldersResponse?.status === ResponseStatus.SUCCESS) {
               // Extract all materials from folders, excluding current material
               const allMaterials: Material[] = [];
-              const seenIds = new Set<string>([id]); // Track to avoid duplicates
+              const seenIds = new Set<string>([response.data.id]); // Track to avoid duplicates
 
               foldersResponse.data.forEach((folder) => {
                 folder.content?.forEach((content) => {
-                  if (
-                    content.material &&
-                    !seenIds.has(content.material.id)
-                  ) {
+                  if (content.material && !seenIds.has(content.material.id)) {
                     allMaterials.push(content.material);
                     seenIds.add(content.material.id);
                   }
