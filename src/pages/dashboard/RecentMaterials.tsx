@@ -75,8 +75,8 @@ const RecentMaterials: React.FC = () => {
     console.log(`Share material ${materialId}`);
   };
 
-  const handleRead = (materialId: string) => {
-    navigate(`/dashboard/material/${materialId}`);
+  const handleRead = (slug: string) => {
+    navigate(`/dashboard/material/${slug}`);
   };
 
   const handleEmptyStateAction = () => {

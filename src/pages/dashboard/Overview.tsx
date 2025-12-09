@@ -89,8 +89,8 @@ const Overview: React.FC = () => {
     console.log(`Share material ${id}`);
   };
 
-  const handleRead = (id: string) => {
-    navigate(`/dashboard/material/${id}`);
+  const handleRead = (slug: string) => {
+    navigate(`/dashboard/material/${slug}`);
   };
 
   // Debounce timer ref

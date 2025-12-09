@@ -91,8 +91,8 @@ const RecentsList: React.FC<RecentsListProps> = ({ limit = 5, onViewAll }) => {
     return () => window.removeEventListener("recents:refresh", handleRefresh);
   }, [loadRecentMaterials]);
 
-  const handleMaterialClick = (materialId: string) => {
-    navigate(`/dashboard/material/${materialId}`);
+  const handleMaterialClick = (slug: string) => {
+    navigate(`/dashboard/material/${slug}`);
   };
 
   if (isLoading) {
@@ -128,7 +128,7 @@ const RecentsList: React.FC<RecentsListProps> = ({ limit = 5, onViewAll }) => {
         <RecentItem
           key={material.id}
           material={material}
-          onClick={() => handleMaterialClick(material.id)}
+          onClick={() => handleMaterialClick(material.slug)}
         />
       ))}
     </div>

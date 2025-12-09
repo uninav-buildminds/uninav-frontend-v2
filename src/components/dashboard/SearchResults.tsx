@@ -33,7 +33,7 @@ interface SearchResultsProps {
   advancedSearchEnabled: boolean;
   onToggleAdvancedSearch: () => void;
   onShare?: (id: string) => void;
-  onRead?: (id: string) => void;
+  onRead?: (slug: string) => void;
   onClearSearch: () => void;
   onUpload?: () => void;
 }

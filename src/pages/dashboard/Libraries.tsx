@@ -451,12 +451,12 @@ const Libraries: React.FC = () => {
   };
 
   // Material handlers
-  const handleRead = (materialId: string) => {
-    navigate(`/dashboard/material/${materialId}`);
+  const handleRead = (slug: string) => {
+    navigate(`/dashboard/material/${slug}`);
   };
 
-  const handleShare = (materialId: string) => {
-    const materialUrl = `${window.location.origin}/dashboard/material/${materialId}`;
+  const handleShare = (slug: string) => {
+    const materialUrl = `${window.location.origin}/dashboard/material/${slug}`;
     navigator.clipboard.writeText(materialUrl);
     toast.success("Link copied to clipboard!");
   };

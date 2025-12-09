@@ -23,8 +23,12 @@ import { useFullscreen } from "@/context/FullscreenContext";
 import { toast } from "sonner";
 import { formatRelativeTime } from "@/lib/utils";
 import { Material, MaterialTypeEnum } from "@/lib/types/material.types";
+<<<<<<< HEAD
 import { getMaterialById, trackMaterialDownload } from "@/api/materials.api";
 import { getFoldersByMaterial } from "@/api/folder.api";
+=======
+import { getMaterialBySlug, trackMaterialDownload } from "@/api/materials.api";
+>>>>>>> main
 import { allocateReadingPoints } from "@/api/points.api";
 import { ResponseStatus } from "@/lib/types/response.types";
 import { ResourceTypeEnum, RestrictionEnum } from "@/lib/types/material.types";
@@ -49,7 +53,7 @@ import {
 } from "@/components/ui/sheet";
 
 const MaterialView: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { isBookmarked, toggleBookmark } = useBookmarks();
   const { isFullscreen, toggleFullscreen } = useFullscreen();
@@ -125,12 +129,12 @@ const MaterialView: React.FC = () => {
     const fetchMaterial = async () => {
       setLoading(true);
       try {
-        if (!id) {
-          toast.error("Invalid material ID");
+        if (!slug) {
+          toast.error("Invalid material slug");
           return;
         }
 
-        const response = await getMaterialById(id);
+        const response = await getMaterialBySlug(slug);
 
         if (response.status === ResponseStatus.SUCCESS) {
           setMaterial(response.data);
@@ -192,10 +196,10 @@ const MaterialView: React.FC = () => {
       }
     };
 
-    if (id) {
+    if (slug) {
       fetchMaterial();
     }
-  }, [id, navigate]);
+  }, [slug, navigate]);
 
   // Allocate reading points every 10 minutes
   useEffect(() => {
@@ -333,7 +337,11 @@ const MaterialView: React.FC = () => {
   };
 
   const handleShare = () => {
-    const link = `${window.location.origin}/dashboard/material/${id}`;
+    if (!material?.slug) {
+      toast.error("Cannot share material without slug");
+      return;
+    }
+    const link = `${window.location.origin}/dashboard/material/${material.slug}`;
     navigator.clipboard
       .writeText(link)
       .then(() => {
@@ -890,7 +898,7 @@ const MaterialView: React.FC = () => {
                       key={relatedMaterial.id}
                       material={relatedMaterial}
                       onClick={() =>
-                        navigate(`/dashboard/material/${relatedMaterial.id}`)
+                        navigate(`/dashboard/material/${relatedMaterial.slug}`)
                       }
                     />
                   ))}
@@ -1055,7 +1063,9 @@ const MaterialView: React.FC = () => {
                         key={relatedMaterial.id}
                         material={relatedMaterial}
                         onClick={() => {
-                          navigate(`/dashboard/material/${relatedMaterial.id}`);
+                          navigate(
+                            `/dashboard/material/${relatedMaterial.slug}`
+                          );
                           setInfoSheetOpen(false);
                         }}
                       />

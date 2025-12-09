@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 export interface TrendingItem {
   id: string;
+  slug?: string;
   label?: string;
   tags?: string[];
   previewUrl?: string;
@@ -39,7 +40,7 @@ const TrendingNow: React.FC<TrendingNowProps> = ({ items }) => {
               key={`${m.id}-${idx}`}
               onClick={() => {
                 if (!loggedIn) return navigate("/auth/signin");
-                navigate(`/dashboard/material/${m.id}`);
+                navigate(`/dashboard/material/${m.slug}`);
               }}
               className="group relative w-56 h-32 shrink-0 rounded-2xl border border-gray-200/70 bg-white/60 backdrop-blur-sm overflow-hidden text-left shadow-sm hover:shadow-md transition-all duration-200"
             >
