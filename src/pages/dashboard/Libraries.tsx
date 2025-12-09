@@ -217,7 +217,7 @@ const Libraries: React.FC = () => {
   };
 
   const handleShareFolder = (folderId: string) => {
-    const folderUrl = `${window.location.origin}/dashboard/collection/${folderId}`;
+    const folderUrl = `${window.location.origin}/dashboard/folder/${folderId}`;
     navigator.clipboard.writeText(folderUrl);
     toast.success("Folder link copied to clipboard!");
   };
