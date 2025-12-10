@@ -37,7 +37,7 @@ const CreateFolderModal: React.FC<CreateFolderModalProps> = ({
       const folderData: CreateFolderDto = {
         label: folderName.trim(),
         description: description.trim() || undefined,
-        visibility: "private", // Default to private for saved materials folders
+        visibility: "public", // Default to public to match backend and material creation
       };
 
       const response = await createFolder(folderData);
