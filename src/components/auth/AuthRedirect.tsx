@@ -97,7 +97,7 @@ export const ProtectedRoute = ({
   const getPublicRedirectPath = (): string | null => {
     const pathname = location.pathname;
 
-    // Check for folder route: /dashboard/folder/:id
+    // Check for folder route: /dashboard/folder/:slug
     const folderMatch = pathname.match(/^\/dashboard\/folder\/(.+)$/);
     if (folderMatch) {
       return `/view/folder/${folderMatch[1]}`;

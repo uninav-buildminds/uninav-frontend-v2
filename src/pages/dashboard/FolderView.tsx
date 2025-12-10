@@ -4,7 +4,7 @@ import { ArrowLeft01Icon, Folder03Icon, Share08Icon } from "hugeicons-react";
 import PageHeader from "@/components/dashboard/PageHeader";
 import FolderCard from "@/components/dashboard/FolderCard";
 import MaterialCard from "@/components/dashboard/MaterialCard";
-import { getFolder, type Folder } from "@/api/folder.api";
+import { getFolderBySlug, type Folder } from "@/api/folder.api";
 import { Material } from "@/lib/types/material.types";
 import { toast } from "sonner";
 import { ResponseStatus } from "@/lib/types/response.types";
@@ -15,7 +15,7 @@ interface FolderViewProps {
 }
 
 const FolderView: React.FC<FolderViewProps> = ({ isPublic = false }) => {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const [folder, setFolder] = useState<Folder | null>(null);
   const [materials, setMaterials] = useState<Material[]>([]);
@@ -23,11 +23,11 @@ const FolderView: React.FC<FolderViewProps> = ({ isPublic = false }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch folder data by ID
+  // Fetch folder data by slug
   useEffect(() => {
     const fetchFolder = async () => {
-      if (!id) {
-        setError("Invalid folder ID");
+      if (!slug) {
+        setError("Invalid folder slug");
         setIsLoading(false);
         return;
       }
@@ -36,7 +36,7 @@ const FolderView: React.FC<FolderViewProps> = ({ isPublic = false }) => {
       setError(null);
 
       try {
-        const response = await getFolder(id);
+        const response = await getFolderBySlug(slug);
         if (response && response.status === "success" && response.data) {
           setFolder(response.data);
 
@@ -71,7 +71,7 @@ const FolderView: React.FC<FolderViewProps> = ({ isPublic = false }) => {
     };
 
     fetchFolder();
-  }, [id]);
+  }, [slug]);
 
   // Determine base path based on public/private mode
   const basePath = isPublic ? "/view" : "/dashboard";
@@ -82,8 +82,8 @@ const FolderView: React.FC<FolderViewProps> = ({ isPublic = false }) => {
     navigate(backDestination);
   };
 
-  const handleFolderClick = (folderId: string) => {
-    navigate(`${basePath}/folder/${folderId}`);
+  const handleFolderClick = (folderSlug: string) => {
+    navigate(`${basePath}/folder/${folderSlug}`);
   };
 
   const handleMaterialRead = (slug: string) => {
@@ -91,7 +91,11 @@ const FolderView: React.FC<FolderViewProps> = ({ isPublic = false }) => {
   };
 
   const handleShare = () => {
-    const shareUrl = `${window.location.origin}/view/folder/${id}`;
+    if (!folder?.slug) {
+      toast.error("Cannot share folder without slug");
+      return;
+    }
+    const shareUrl = `${window.location.origin}/view/folder/${folder.slug}`;
     navigator.clipboard.writeText(shareUrl);
     toast.success("Link copied to clipboard!");
   };
@@ -230,7 +234,7 @@ const FolderView: React.FC<FolderViewProps> = ({ isPublic = false }) => {
               <FolderCard
                 key={nestedFolder.id}
                 folder={nestedFolder}
-                onClick={() => handleFolderClick(nestedFolder.id)}
+                onClick={() => handleFolderClick(nestedFolder.slug)}
                 materialCount={getFolderMaterialCount(nestedFolder)}
               />
             ))}

@@ -216,8 +216,8 @@ const Libraries: React.FC = () => {
     setShowFolderModal(true);
   };
 
-  const handleShareFolder = (folderId: string) => {
-    const folderUrl = `${window.location.origin}/dashboard/folder/${folderId}`;
+  const handleShareFolder = (folderSlug: string) => {
+    const folderUrl = `${window.location.origin}/dashboard/folder/${folderSlug}`;
     navigator.clipboard.writeText(folderUrl);
     toast.success("Folder link copied to clipboard!");
   };
@@ -728,7 +728,7 @@ const Libraries: React.FC = () => {
                   <FolderCard
                     folder={folder}
                     onClick={() => handleFolderClick(folder)}
-                    onShare={() => handleShareFolder(folder.id)}
+                    onShare={() => handleShareFolder(folder.slug)}
                     onEdit={handleEditFolder}
                     onDelete={handleDeleteFolder}
                     materialCount={getFolderMaterialCount(folder)}

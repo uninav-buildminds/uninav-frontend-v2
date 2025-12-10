@@ -78,7 +78,11 @@ const FolderModal: React.FC<FolderModalProps> = ({
         onShare(folder.id);
       } else {
         // Copy folder link to clipboard
-        const folderUrl = `${window.location.origin}/dashboard/folder/${folder.id}`;
+        if (!folder.slug) {
+          toast.error("Cannot share folder without slug");
+          return;
+        }
+        const folderUrl = `${window.location.origin}/dashboard/folder/${folder.slug}`;
         navigator.clipboard.writeText(folderUrl);
         toast.success("Folder link copied to clipboard!");
       }

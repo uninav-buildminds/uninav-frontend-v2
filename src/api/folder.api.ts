@@ -4,6 +4,7 @@ import { Response } from "@/lib/types/response.types";
 // Folder type matching backend structure
 export interface Folder {
   id: string;
+  slug: string;
   label: string;
   description?: string;
   visibility: "public" | "private";
@@ -82,7 +83,29 @@ export async function getMyFolders(): Promise<Response<Folder[]> | null> {
 }
 
 /**
- * Get folder by ID
+ * Get folder by slug
+ * @param slug - Folder slug
+ * @returns folder response or null
+ */
+export async function getFolderBySlug(
+  slug: string
+): Promise<Response<Folder> | null> {
+  try {
+    const response = await httpClient.get(`/folders/${slug}`);
+    if (response.data.status === "success") {
+      return response.data;
+    }
+    return null;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status || 500,
+      message: error.response?.data?.message || "Failed to fetch folder",
+    };
+  }
+}
+
+/**
+ * Get folder by ID (for backward compatibility with internal operations)
  * @param folderId - Folder ID
  * @returns folder response or null
  */

@@ -108,7 +108,7 @@ const App = () => {
 
                           {/* Folder View */}
                           <Route
-                            path="folder/:id"
+                            path="folder/:slug"
                             element={<FolderView />}
                           />
                         </Route>
@@ -232,7 +232,7 @@ const App = () => {
 
                         {/* Public View Routes - No authentication required */}
                         <Route
-                          path="/view/folder/:id"
+                          path="/view/folder/:slug"
                           element={<PublicFolderView />}
                         />
                         <Route
