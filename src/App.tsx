@@ -25,6 +25,7 @@ import Recommendations from "./pages/dashboard/Recommendations";
 import Notifications from "./pages/dashboard/Notifications";
 import SettingsPage from "./pages/dashboard/Settings";
 import MaterialView from "./pages/dashboard/MaterialView";
+import FolderView from "./pages/dashboard/FolderView";
 import ManagementLayout from "./components/management/ManagementLayout";
 import ManagementDashboard from "./pages/management/ManagementDashboard";
 import CourseManagement from "./pages/management/CourseManagement";
@@ -101,6 +102,12 @@ const App = () => {
                           <Route
                             path="material/:slug"
                             element={<MaterialView />}
+                          />
+
+                          {/* Folder View */}
+                          <Route
+                            path="folder/:id"
+                            element={<FolderView />}
                           />
                         </Route>
 

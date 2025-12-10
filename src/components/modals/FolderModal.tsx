@@ -78,7 +78,7 @@ const FolderModal: React.FC<FolderModalProps> = ({
         onShare(folder.id);
       } else {
         // Copy folder link to clipboard
-        const folderUrl = `${window.location.origin}/dashboard/collection/${folder.id}`;
+        const folderUrl = `${window.location.origin}/dashboard/folder/${folder.id}`;
         navigator.clipboard.writeText(folderUrl);
         toast.success("Folder link copied to clipboard!");
       }
