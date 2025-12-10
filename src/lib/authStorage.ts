@@ -60,3 +60,44 @@ export function hasAuthState(): boolean {
   }
 }
 
+const REDIRECT_PATH_KEY = 'uninav_redirect_path';
+
+/**
+ * Sets the redirect path in localStorage
+ * @param path - The path to redirect to after authentication
+ */
+export function setRedirectPath(path: string): void {
+  try {
+    // Only store if it's not an auth page or homepage
+    if (path && !path.startsWith('/auth') && path !== '/') {
+      localStorage.setItem(REDIRECT_PATH_KEY, path);
+    }
+  } catch (error) {
+    console.warn('Failed to set redirect path in localStorage:', error);
+  }
+}
+
+/**
+ * Gets the redirect path from localStorage
+ * @returns The stored redirect path or null if not set
+ */
+export function getRedirectPath(): string | null {
+  try {
+    return localStorage.getItem(REDIRECT_PATH_KEY);
+  } catch (error) {
+    console.warn('Failed to get redirect path from localStorage:', error);
+    return null;
+  }
+}
+
+/**
+ * Clears the redirect path from localStorage
+ */
+export function clearRedirectPath(): void {
+  try {
+    localStorage.removeItem(REDIRECT_PATH_KEY);
+  } catch (error) {
+    console.warn('Failed to clear redirect path from localStorage:', error);
+  }
+}
+

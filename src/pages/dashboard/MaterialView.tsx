@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import {
   Download01Icon,
@@ -46,7 +46,11 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 
-const MaterialView: React.FC = () => {
+interface MaterialViewProps {
+  isPublic?: boolean;
+}
+
+const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { isBookmarked, toggleBookmark } = useBookmarks();
@@ -169,9 +173,9 @@ const MaterialView: React.FC = () => {
     }
   }, [slug, navigate]);
 
-  // Allocate reading points every 10 minutes
+  // Allocate reading points every 10 minutes (only for authenticated users)
   useEffect(() => {
-    if (!material?.id) return;
+    if (!material?.id || isPublic) return;
 
     const allocatePoints = async () => {
       try {
@@ -188,7 +192,7 @@ const MaterialView: React.FC = () => {
     const interval = setInterval(allocatePoints, 10 * 60 * 1000);
 
     return () => clearInterval(interval);
-  }, [material?.id]);
+  }, [material?.id, isPublic]);
 
   // Handle page change from ReactPdfViewer
   const handlePageChange = useCallback((page: number, total: number) => {
@@ -309,7 +313,8 @@ const MaterialView: React.FC = () => {
       toast.error("Cannot share material without slug");
       return;
     }
-    const link = `${window.location.origin}/dashboard/material/${material.slug}`;
+    // Use public link for sharing
+    const link = `${window.location.origin}/view/material/${material.slug}`;
     navigator.clipboard
       .writeText(link)
       .then(() => {
@@ -583,6 +588,23 @@ const MaterialView: React.FC = () => {
 
   return (
     <>
+      {/* Sign-in prompt banner for public views */}
+      {isPublic && (
+        <div className="bg-gradient-to-r from-brand/10 to-brand/5 border-b border-brand/20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+            <p className="text-sm text-gray-700">
+              <span className="font-medium">Viewing as guest.</span> Sign in to save materials, track progress, and more.
+            </p>
+            <Link
+              to="/auth/signin"
+              className="text-sm font-medium text-brand hover:text-brand/80 transition-colors"
+            >
+              Sign In
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* Main Content - Full Height with Floating Controls */}
       <div className="flex gap-2 sm:gap-3 h-full px-2 sm:px-3 py-2 relative">
         {/* Floating Back Button - Top Left */}
@@ -612,21 +634,24 @@ const MaterialView: React.FC = () => {
                 : "translate-x-full opacity-0 pointer-events-none"
             }`}
           >
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleBookmark}
-              className={`bg-white/90 backdrop-blur hover:bg-white border border-gray-200 h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-full shadow-lg flex-shrink-0 ${
-                isBookmarkedMaterial ? "text-brand" : ""
-              }`}
-            >
-              <Bookmark01Icon
-                size={15}
-                className={`sm:w-4 sm:h-4 ${
-                  isBookmarkedMaterial ? "fill-current" : ""
+            {/* Bookmark button - only show for authenticated users */}
+            {!isPublic && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleBookmark}
+                className={`bg-white/90 backdrop-blur hover:bg-white border border-gray-200 h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-full shadow-lg flex-shrink-0 ${
+                  isBookmarkedMaterial ? "text-brand" : ""
                 }`}
-              />
-            </Button>
+              >
+                <Bookmark01Icon
+                  size={15}
+                  className={`sm:w-4 sm:h-4 ${
+                    isBookmarkedMaterial ? "fill-current" : ""
+                  }`}
+                />
+              </Button>
+            )}
             <Button
               variant="outline"
               size="sm"
