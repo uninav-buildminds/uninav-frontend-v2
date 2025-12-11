@@ -32,6 +32,7 @@ interface UploadModalProps {
   onEditComplete?: () => void; // Callback after successful edit
   onCreateComplete?: (material: Material) => void; // Callback after successful creation
   folderId?: string; // Optional folder ID to pre-fill when uploading to a specific folder
+  currentFolder?: { id: string; label: string; description?: string }; // Current folder info (for public folders not in user's list)
 }
 
 const UploadModal: React.FC<UploadModalProps> = ({
@@ -41,6 +42,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
   onEditComplete,
   onCreateComplete,
   folderId,
+  currentFolder,
 }) => {
   const isEditMode = !!editingMaterial;
 
@@ -269,6 +271,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
               editingMaterial={editingMaterial}
               isEditMode={isEditMode}
               folderId={folderId}
+              currentFolder={currentFolder}
             />
           );
         } else if (materialType === "link") {
@@ -280,6 +283,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
               isEditMode={isEditMode}
               onTempPreviewChange={setTempPreviewUrl}
               folderId={folderId}
+              currentFolder={currentFolder}
             />
           );
         }

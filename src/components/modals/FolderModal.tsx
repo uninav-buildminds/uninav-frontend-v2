@@ -284,6 +284,11 @@ const FolderModal: React.FC<FolderModalProps> = ({
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}
         folderId={folderData?.id || folder?.id}
+        currentFolder={folderData || folder ? {
+          id: (folderData?.id || folder?.id)!,
+          label: (folderData?.label || folder?.label)!,
+          description: folderData?.description || folder?.description,
+        } : undefined}
         onCreateComplete={handleUploadComplete}
       />
     </>

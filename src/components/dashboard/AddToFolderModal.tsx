@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate, useLocation } from "react-router-dom";
 import { X } from "lucide-react";
 import { toast } from "sonner";
 import { SelectModal, SelectOption } from "./SearchSelectModal";
 import { getMyFolders, addMaterialToFolder, type Folder } from "@/api/folder.api";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+import { setRedirectPath, convertPublicToAuthPath } from "@/lib/authStorage";
 
 interface AddToFolderModalProps {
   isOpen: boolean;
@@ -20,6 +23,9 @@ const AddToFolderModal: React.FC<AddToFolderModalProps> = ({
   materialId,
   materialTitle,
 }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useAuth();
   const [folders, setFolders] = useState<Folder[]>([]);
   const [selectedFolderId, setSelectedFolderId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
@@ -38,6 +44,18 @@ const AddToFolderModal: React.FC<AddToFolderModalProps> = ({
   }, [isOpen]);
 
   const fetchFolders = async () => {
+    // Check if user is authenticated
+    if (!user) {
+      // Store current path for redirect after sign-in
+      const currentPath = location.pathname + location.search;
+      const authPath = convertPublicToAuthPath(currentPath);
+      setRedirectPath(authPath);
+      toast.info("Please sign in to add materials to folders");
+      navigate("/auth/signin");
+      onClose();
+      return;
+    }
+
     setIsFetchingFolders(true);
     setError("");
     try {
@@ -49,6 +67,16 @@ const AddToFolderModal: React.FC<AddToFolderModalProps> = ({
       }
     } catch (err: any) {
       console.error("Error fetching folders:", err);
+      // Check if error is due to authentication
+      if (err.statusCode === 401 || err.statusCode === 403) {
+        const currentPath = location.pathname + location.search;
+        const authPath = convertPublicToAuthPath(currentPath);
+        setRedirectPath(authPath);
+        toast.info("Please sign in to add materials to folders");
+        navigate("/auth/signin");
+        onClose();
+        return;
+      }
       setError(err.message || "Failed to load folders");
       toast.error("Failed to load your folders");
     } finally {
@@ -57,6 +85,17 @@ const AddToFolderModal: React.FC<AddToFolderModalProps> = ({
   };
 
   const handleAddToFolder = async () => {
+    // Check if user is authenticated
+    if (!user) {
+      const currentPath = location.pathname + location.search;
+      const authPath = convertPublicToAuthPath(currentPath);
+      setRedirectPath(authPath);
+      toast.info("Please sign in to add materials to folders");
+      navigate("/auth/signin");
+      onClose();
+      return;
+    }
+
     if (!selectedFolderId) {
       setError("Please select a folder");
       return;
@@ -75,6 +114,16 @@ const AddToFolderModal: React.FC<AddToFolderModalProps> = ({
       }
     } catch (err: any) {
       console.error("Error adding material to folder:", err);
+      // Check if error is due to authentication
+      if (err.statusCode === 401 || err.statusCode === 403) {
+        const currentPath = location.pathname + location.search;
+        const authPath = convertPublicToAuthPath(currentPath);
+        setRedirectPath(authPath);
+        toast.info("Please sign in to add materials to folders");
+        navigate("/auth/signin");
+        onClose();
+        return;
+      }
       const errorMessage = err.message || "Failed to add material to folder";
       setError(errorMessage);
       toast.error(errorMessage);

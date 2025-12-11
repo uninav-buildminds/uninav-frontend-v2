@@ -55,6 +55,7 @@ interface Step2HelpfulLinkProps {
   isEditMode?: boolean;
   onTempPreviewChange?: (url: string | null) => void; // Callback to track temp preview
   folderId?: string;
+  currentFolder?: { id: string; label: string; description?: string };
 }
 
 const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
@@ -64,13 +65,14 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
   isEditMode = false,
   onTempPreviewChange,
   folderId: propFolderId,
+  currentFolder,
 }) => {
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
   const [customPreviewFile, setCustomPreviewFile] = useState<File | null>(null);
-  const [customPreviewPreview, setCustomPreviewPreview] = useState<string | null>(
-    null
-  );
+  const [customPreviewPreview, setCustomPreviewPreview] = useState<
+    string | null
+  >(null);
   const [classification, setClassification] = useState<string>("");
   const [targetCourseId, setTargetCourseId] = useState<string>("");
   const [derivedPreviewUrl, setDerivedPreviewUrl] = useState<string | null>(
@@ -145,12 +147,14 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
         setTargetCourseId(editingMaterial.targetCourseId);
       }
     }
-    
-    // Pre-fill folderId if provided via prop
-    if (propFolderId && !isEditMode) {
+  }, [isEditMode, editingMaterial, setValue]);
+
+  // Pre-fill folderId if provided via prop (separate effect to ensure it always updates)
+  useEffect(() => {
+    if (propFolderId) {
       setFolderId(propFolderId);
     }
-  }, [isEditMode, editingMaterial, setValue, propFolderId]);
+  }, [propFolderId]);
 
   // Handle URL input change to auto-populate title
   const handleUrlChange = async (raw: string) => {
@@ -237,7 +241,7 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
       try {
         setResolvingGDrivePreview(true);
         setIsCountingFiles(true);
-        
+
         const contents = await listFolderFiles(identifier.id);
         if (cancelled) return;
 
@@ -256,7 +260,7 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
         const directThumbnailUrl = `https://drive.google.com/thumbnail?id=${firstFile.id}&sz=w400-h300`;
         setDerivedPreviewUrl(directThumbnailUrl);
         // No need to track temp preview since this is a direct URL (not uploaded)
-        
+
         // Count files in the background (non-blocking)
         countGDriveUrlFiles(url)
           .then((count) => {
@@ -272,7 +276,6 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
           .finally(() => {
             setIsCountingFiles(false);
           });
-        
       } catch (err) {
         // Silent fail; user can still submit without preview
         setDerivedPreviewUrl(null);
@@ -570,9 +573,7 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
                       />
                       {/* Show "1 file" for single files */}
                       {fileCount === 1 && (
-                        <p className="text-xs text-brand font-medium">
-                          1 file
-                        </p>
+                        <p className="text-xs text-brand font-medium">1 file</p>
                       )}
                     </div>
                   )
@@ -643,6 +644,7 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
         description={watchedValues.description || ""}
         classification={classification}
         folderId={folderId}
+        currentFolder={currentFolder}
         onVisibilityChange={(value) =>
           setValue("visibility", value as VisibilityEnum)
         }

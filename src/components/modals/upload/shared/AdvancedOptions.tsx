@@ -20,6 +20,7 @@ interface AdvancedOptionsProps {
   description: string;
   classification: string;
   folderId?: string;
+  currentFolder?: { id: string; label: string; description?: string };
   onVisibilityChange: (value: string) => void;
   onAccessRestrictionsChange: (value: string) => void;
   onTagAdd: (e: React.KeyboardEvent) => void;
@@ -38,6 +39,7 @@ const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
   description,
   classification,
   folderId,
+  currentFolder,
   onVisibilityChange,
   onAccessRestrictionsChange,
   onTagAdd,
@@ -51,29 +53,62 @@ const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
   const [folderOptions, setFolderOptions] = useState<SelectOption[]>([]);
   const [foldersLoading, setFoldersLoading] = useState(false);
 
-  // Fetch user folders on mount
+  // Auto-expand advanced options if folderId is provided
+  useEffect(() => {
+    if (folderId) {
+      setShowAdvanced(true);
+    }
+  }, [folderId]);
+
+  // Fetch user folders on mount and include currentFolder if provided
   useEffect(() => {
     const fetchFolders = async () => {
       try {
         setFoldersLoading(true);
         const response = await getMyFolders();
-        if (response?.data) {
-          const options: SelectOption[] = response.data.map((folder: Folder) => ({
-            value: folder.id,
-            label: folder.label,
-            description: folder.description,
-          }));
-          setFolderOptions(options);
+        const options: SelectOption[] = [];
+        
+        // Add current folder first if provided (for public folders not in user's list)
+        if (currentFolder) {
+          options.push({
+            value: currentFolder.id,
+            label: currentFolder.label,
+            description: currentFolder.description,
+          });
         }
+        
+        // Add user's folders, but skip if it's the same as currentFolder
+        if (response?.data) {
+          response.data.forEach((folder: Folder) => {
+            // Only add if it's not already in the list (avoid duplicates)
+            if (!currentFolder || folder.id !== currentFolder.id) {
+              options.push({
+                value: folder.id,
+                label: folder.label,
+                description: folder.description,
+              });
+            }
+          });
+        }
+        
+        setFolderOptions(options);
       } catch (error) {
         console.error("Failed to fetch folders:", error);
+        // Still add currentFolder even if fetch fails
+        if (currentFolder) {
+          setFolderOptions([{
+            value: currentFolder.id,
+            label: currentFolder.label,
+            description: currentFolder.description,
+          }]);
+        }
       } finally {
         setFoldersLoading(false);
       }
     };
 
     fetchFolders();
-  }, []);
+  }, [currentFolder]);
 
   // Define options for dropdowns
   const visibilityOptions: CustomSelectOption[] = [

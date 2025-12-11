@@ -17,7 +17,7 @@ import { ResponseStatus } from "@/lib/types/response.types";
 import { Button } from "@/components/ui/button";
 import UploadModal from "@/components/modals/UploadModal";
 import { useAuth } from "@/hooks/useAuth";
-import { setRedirectPath } from "@/lib/authStorage";
+import { setRedirectPath, convertPublicToAuthPath } from "@/lib/authStorage";
 
 interface FolderViewProps {
   isPublic?: boolean;
@@ -185,6 +185,12 @@ const FolderView: React.FC<FolderViewProps> = ({ isPublic = false }) => {
             </p>
             <Link
               to="/auth/signin"
+              onClick={() => {
+                // Store current path for redirect after sign-in
+                const currentPath = `/view/folder/${slug}`;
+                const authPath = convertPublicToAuthPath(currentPath);
+                setRedirectPath(authPath);
+              }}
               className="text-sm font-medium text-brand hover:text-brand/80 transition-colors"
             >
               Sign In
@@ -327,6 +333,15 @@ const FolderView: React.FC<FolderViewProps> = ({ isPublic = false }) => {
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}
         folderId={folder?.id}
+        currentFolder={
+          folder
+            ? {
+                id: folder.id,
+                label: folder.label,
+                description: folder.description,
+              }
+            : undefined
+        }
         onCreateComplete={handleUploadComplete}
       />
     </div>

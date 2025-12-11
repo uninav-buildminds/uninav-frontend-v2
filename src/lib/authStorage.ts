@@ -101,3 +101,25 @@ export function clearRedirectPath(): void {
   }
 }
 
+/**
+ * Converts a public route path to an authenticated route path
+ * @param path - The public route path (e.g., /view/folder/slug or /view/material/slug)
+ * @returns The authenticated route path (e.g., /dashboard/folder/slug or /dashboard/material/slug)
+ */
+export function convertPublicToAuthPath(path: string): string {
+  // Convert /view/folder/:slug to /dashboard/folder/:slug
+  const folderMatch = path.match(/^\/view\/folder\/(.+)$/);
+  if (folderMatch) {
+    return `/dashboard/folder/${folderMatch[1]}`;
+  }
+
+  // Convert /view/material/:slug to /dashboard/material/:slug
+  const materialMatch = path.match(/^\/view\/material\/(.+)$/);
+  if (materialMatch) {
+    return `/dashboard/material/${materialMatch[1]}`;
+  }
+
+  // If it's already an authenticated path or doesn't match, return as-is
+  return path;
+}
+

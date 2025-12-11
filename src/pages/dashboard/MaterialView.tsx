@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { formatRelativeTime } from "@/lib/utils";
 import { Material, MaterialTypeEnum } from "@/lib/types/material.types";
 import { getMaterialBySlug, trackMaterialDownload } from "@/api/materials.api";
+import { setRedirectPath, convertPublicToAuthPath } from "@/lib/authStorage";
 import { allocateReadingPoints } from "@/api/points.api";
 import { ResponseStatus } from "@/lib/types/response.types";
 import { ResourceTypeEnum, RestrictionEnum } from "@/lib/types/material.types";
@@ -610,6 +611,12 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
             </p>
             <Link
               to="/auth/signin"
+              onClick={() => {
+                // Store current path for redirect after sign-in
+                const currentPath = `/view/material/${slug}`;
+                const authPath = convertPublicToAuthPath(currentPath);
+                setRedirectPath(authPath);
+              }}
               className="text-sm font-medium text-brand hover:text-brand/80 transition-colors"
             >
               Sign In

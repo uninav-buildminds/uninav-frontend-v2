@@ -35,6 +35,7 @@ interface Step2FileUploadProps {
   editingMaterial?: Material | null;
   isEditMode?: boolean;
   folderId?: string;
+  currentFolder?: { id: string; label: string; description?: string };
 }
 
 const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
@@ -43,6 +44,7 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
   editingMaterial = null,
   isEditMode = false,
   folderId: propFolderId,
+  currentFolder,
 }) => {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -94,12 +96,14 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
         setTargetCourseId(editingMaterial.targetCourseId);
       }
     }
-    
-    // Pre-fill folderId if provided via prop
-    if (propFolderId && !isEditMode) {
+  }, [isEditMode, editingMaterial, setValue]);
+
+  // Pre-fill folderId if provided via prop (separate effect to ensure it always updates)
+  useEffect(() => {
+    if (propFolderId) {
       setFolderId(propFolderId);
     }
-  }, [isEditMode, editingMaterial, setValue, propFolderId]);
+  }, [propFolderId]);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -452,6 +456,7 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
         description={watchedValues.description || ""}
         classification={classification}
         folderId={folderId}
+        currentFolder={currentFolder}
         onVisibilityChange={(value) =>
           setValue("visibility", value as VisibilityEnum)
         }
