@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { FolderAddIcon, PreferenceHorizontalIcon } from "hugeicons-react";
 import PageHeader from "@/components/dashboard/PageHeader";
@@ -546,7 +546,9 @@ const Libraries: React.FC = () => {
         break;
       case "all":
       default:
-        materials = [...filteredSavedMaterials, ...filteredUploads];
+        materials = [...filteredSavedMaterials, ...filteredUploads].filter(
+          (material) => !folderMaterialIds.has(material.id)
+        );
         break;
     }
     return sortMaterialsByLastViewed(materials);
@@ -566,6 +568,18 @@ const Libraries: React.FC = () => {
     const bCreated = b.createdAt ? new Date(b.createdAt).getTime() : 0;
     return bCreated - aCreated;
   });
+
+  // Materials that already live inside any folder (by material id)
+  const folderMaterialIds = useMemo(() => {
+    const ids = new Set<string>();
+    folders.forEach((folder) => {
+      folder.content?.forEach((item) => {
+        if (item.contentMaterialId) ids.add(item.contentMaterialId);
+        if (item.material?.id) ids.add(item.material.id);
+      });
+    });
+    return ids;
+  }, [folders]);
 
   const currentMaterials = getCurrentMaterials();
   const hasContent = folders.length > 0 || currentMaterials.length > 0;

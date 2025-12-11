@@ -65,7 +65,6 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
 }) => {
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [customPreviewFile, setCustomPreviewFile] = useState<File | null>(null);
   const [customPreviewPreview, setCustomPreviewPreview] = useState<string | null>(
     null
@@ -79,6 +78,7 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
     useState<boolean>(false);
   const [fileCount, setFileCount] = useState<number | undefined>(undefined);
   const [isCountingFiles, setIsCountingFiles] = useState(false);
+  const [folderId, setFolderId] = useState<string>("");
 
   // Helper function to safely get hostname from URL
   const getUrlHostname = (url: string): string => {
@@ -99,7 +99,6 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
     }
   };
 
-  const imageInputRef = useRef<HTMLInputElement>(null);
   const previewUploadInputRef = useRef<HTMLInputElement>(null);
   const latestUrlRef = useRef<string>("");
 
@@ -405,8 +404,8 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
       accessRestrictions: data.accessRestrictions,
       tags: data.tags || [],
       targetCourseId: targetCourseId || undefined,
+      folderId: folderId || undefined,
       url: data.url,
-      image: selectedImage,
       filePreview: finalPreview, // Prefer user-uploaded preview, otherwise derived preview URL
       fileCount: fileCount, // Include file count for GDrive materials
     };
@@ -634,9 +633,9 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
         accessRestrictions={watchedValues.accessRestrictions}
         tags={tags}
         tagInput={tagInput}
-        selectedImage={selectedImage}
         description={watchedValues.description || ""}
         classification={classification}
+        folderId={folderId}
         onVisibilityChange={(value) =>
           setValue("visibility", value as VisibilityEnum)
         }
@@ -646,10 +645,9 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
         onTagAdd={handleTagAdd}
         onTagRemove={handleTagRemove}
         onTagInputChange={setTagInput}
-        onImageChange={setSelectedImage}
         onDescriptionChange={(value) => setValue("description", value)}
         onClassificationChange={handleClassificationChange}
-        imageInputRef={imageInputRef}
+        onFolderChange={setFolderId}
       />
 
       {/* Action Buttons */}

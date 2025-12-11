@@ -46,16 +46,15 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [classification, setClassification] = useState<string>("");
   const [targetCourseId, setTargetCourseId] = useState<string>("");
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
   const [filePreview, setFilePreview] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState<number | undefined>(undefined);
   const [isCountingPages, setIsCountingPages] = useState(false);
+  const [folderId, setFolderId] = useState<string>("");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const imageInputRef = useRef<HTMLInputElement>(null);
   const previewUploadInputRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -159,12 +158,6 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
     }
   };
 
-  const handleImageInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setSelectedImage(e.target.files[0]);
-    }
-  };
-
   const handleCustomPreviewUpload = (file: File | null) => {
     if (previewImageUrl) {
       URL.revokeObjectURL(previewImageUrl);
@@ -248,9 +241,9 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
       accessRestrictions: data.accessRestrictions,
       tags: data.tags || [],
       targetCourseId: targetCourseId || undefined,
+      folderId: folderId || undefined,
       pageCount: pageCount, // Include page count
       ...(selectedFile && { file: selectedFile }),
-      ...(selectedImage && { image: selectedImage }),
       ...(filePreview && { filePreview: filePreview }), // Include file preview
     } as CreateMaterialFileForm;
 
@@ -449,9 +442,9 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
         accessRestrictions={watchedValues.accessRestrictions}
         tags={tags}
         tagInput={tagInput}
-        selectedImage={selectedImage}
         description={watchedValues.description || ""}
         classification={classification}
+        folderId={folderId}
         onVisibilityChange={(value) =>
           setValue("visibility", value as VisibilityEnum)
         }
@@ -461,10 +454,9 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
         onTagAdd={handleTagAdd}
         onTagRemove={handleTagRemove}
         onTagInputChange={setTagInput}
-        onImageChange={setSelectedImage}
         onDescriptionChange={(value) => setValue("description", value)}
         onClassificationChange={handleClassificationChange}
-        imageInputRef={imageInputRef}
+        onFolderChange={setFolderId}
       />
 
       {/* Action Buttons */}

@@ -31,6 +31,7 @@ export interface CreateMaterialFileForm {
   accessRestrictions: RestrictionEnum;
   tags?: string[];
   targetCourseId?: string;
+  folderId?: string; // Optional folder ID to add material to
   metaData?: string[];
   pageCount?: number; // Page count for PDF/DOCX/PPT files
   file: File;
@@ -48,6 +49,7 @@ export interface CreateMaterialLinkForm {
   accessRestrictions: RestrictionEnum;
   tags?: string[];
   targetCourseId?: string;
+  folderId?: string; // Optional folder ID to add material to
   metaData?: string[];
   fileCount?: number; // File count for Google Drive folders
   url: string;
@@ -139,6 +141,9 @@ export async function createMaterials(materialData: CreateMaterialForm) {
   }
   if (materialData.targetCourseId) {
     formData.append("targetCourseId", materialData.targetCourseId);
+  }
+  if (materialData.folderId) {
+    formData.append("folderId", materialData.folderId);
   }
 
   // Build metaData array with pageCount or fileCount
