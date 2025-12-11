@@ -139,17 +139,17 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
 
           // Check if this material should redirect externally
           // Redirect if: resourceType is URL OR material type is "other"
-          const resourceAddress = materialData.resource?.resourceAddress;
-          if (
-            resourceAddress &&
-            (materialData.resource?.resourceType === ResourceTypeEnum.URL ||
-              materialData.type === MaterialTypeEnum.OTHER)
-          ) {
-            // Redirect to external URL
-            window.open(resourceAddress, "_blank", "noopener,noreferrer"); // open in new tab
-            navigate(-1); // go to previous path in history
-            return;
-          }
+          // const resourceAddress = materialData.resource?.resourceAddress;
+          // if (
+          //   resourceAddress &&
+          //   (materialData.resource?.resourceType === ResourceTypeEnum.URL ||
+          //     materialData.type === MaterialTypeEnum.OTHER)
+          // ) {
+          //   // Redirect to external URL
+          //   window.open(resourceAddress, "_blank", "noopener,noreferrer"); // open in new tab
+          //   navigate(-1); // go to previous path in history
+          //   return;
+          // }
 
           setMaterial(materialData);
 
