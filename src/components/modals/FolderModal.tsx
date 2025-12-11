@@ -111,7 +111,9 @@ const FolderModal: React.FC<FolderModalProps> = ({
     // Check if user is authenticated
     if (!user) {
       // Store current path for redirect after sign-in
-      const currentPath = `/dashboard/folder/${folderData?.slug || folder?.slug}`;
+      const currentPath = `/dashboard/folder/${
+        folderData?.slug || folder?.slug
+      }`;
       setRedirectPath(currentPath);
       toast.info("Please sign in to contribute to this folder");
       onClose(); // Close folder modal first
@@ -153,7 +155,8 @@ const FolderModal: React.FC<FolderModalProps> = ({
               >
                 {/* Action buttons - Add, Share, Delete, Close */}
                 <div className="absolute top-2 right-2 flex items-center gap-2 z-10">
-                  {(folderData?.visibility === "public" || folder?.visibility === "public") && (
+                  {(folderData?.visibility === "public" ||
+                    folder?.visibility === "public") && (
                     <button
                       onClick={handleAddMaterial}
                       className="p-2 rounded-full bg-white/10 hover:bg-brand/10 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
@@ -201,7 +204,7 @@ const FolderModal: React.FC<FolderModalProps> = ({
                         {folderData.description}
                       </p>
                     )}
-                    {/* Public folder contribution notice */}
+                    {/* Public folder contribution notice
                     {(folderData?.visibility === "public" || folder?.visibility === "public") && (
                       <div className="mb-3 flex items-center gap-1.5">
                         <InformationCircleIcon size={14} className="text-gray-500 flex-shrink-0" />
@@ -213,7 +216,7 @@ const FolderModal: React.FC<FolderModalProps> = ({
                           <span className="sm:hidden">Open for contributions</span>
                         </p>
                       </div>
-                    )}
+                    )} */}
                     {/* Breadcrumb Navigation */}
                     <nav className="flex items-center gap-2 text-sm">
                       <button
@@ -241,7 +244,8 @@ const FolderModal: React.FC<FolderModalProps> = ({
                       </div>
                       <p className="text-gray-500 mb-2">This folder is empty</p>
                       <p className="text-sm text-gray-400">
-                        {(folderData?.visibility === "public" || folder?.visibility === "public")
+                        {folderData?.visibility === "public" ||
+                        folder?.visibility === "public"
                           ? "Click the + button above to add materials"
                           : "Drag and drop materials into the Folder to add them"}
                       </p>
@@ -284,11 +288,15 @@ const FolderModal: React.FC<FolderModalProps> = ({
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}
         folderId={folderData?.id || folder?.id}
-        currentFolder={folderData || folder ? {
-          id: (folderData?.id || folder?.id)!,
-          label: (folderData?.label || folder?.label)!,
-          description: folderData?.description || folder?.description,
-        } : undefined}
+        currentFolder={
+          folderData || folder
+            ? {
+                id: (folderData?.id || folder?.id)!,
+                label: (folderData?.label || folder?.label)!,
+                description: folderData?.description || folder?.description,
+              }
+            : undefined
+        }
         onCreateComplete={handleUploadComplete}
       />
     </>
