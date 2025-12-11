@@ -1,5 +1,5 @@
-import React from "react";
-import { Share08Icon, PencilEdit02Icon, Delete02Icon } from "hugeicons-react";
+import React, { useState } from "react";
+import { Share08Icon, PencilEdit02Icon, Delete02Icon, MoreVerticalIcon, FolderAddIcon } from "hugeicons-react";
 import { toast } from "sonner";
 import { Material } from "../../lib/types/material.types";
 import { formatRelativeTime } from "../../lib/utils";
@@ -10,7 +10,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import Placeholder from "/placeholder.svg";
+import AddToFolderModal from "./AddToFolderModal";
 
 // Custom Bookmark Icons
 const BookmarkOutlineIcon = ({
@@ -93,6 +99,8 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
 
   const { isBookmarked, toggleBookmark } = useBookmarks();
   const saved = isBookmarked(id);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAddToFolderModalOpen, setIsAddToFolderModalOpen] = useState(false);
 
   // Extract page count or file count from metaData
   const getMetaInfo = (): string | null => {
@@ -159,6 +167,16 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
         toast.success("Link copied to clipboard!");
       });
     onShare?.(id);
+  };
+
+  const handleAddToFolder = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsMenuOpen(false);
+    setIsAddToFolderModalOpen(true);
+  };
+
+  const handleMenuClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
   };
 
   const handleDragStartEvent = (e: React.DragEvent) => {
@@ -280,18 +298,46 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
               </button>
             </div>
           ) : (
-            // Bookmark button for other materials
-            <button
-              onClick={handleSave}
-              className="absolute top-2 right-2 p-1 text-gray-600 hover:text-brand bg-[#DCDFFE] rounded-md transition-colors duration-200"
-              aria-label={saved ? "Remove from saved" : "Save material"}
-            >
-              {saved ? (
-                <BookmarkFilledIcon size={20} className="text-brand" />
-              ) : (
-                <BookmarkOutlineIcon size={20} />
-              )}
-            </button>
+            // Bookmark and Menu buttons for other materials
+            <div className="absolute top-2 right-2 flex gap-1">
+              <button
+                onClick={handleSave}
+                className="p-1 text-gray-600 hover:text-brand bg-[#DCDFFE] rounded-md transition-colors duration-200"
+                aria-label={saved ? "Remove from saved" : "Save material"}
+              >
+                {saved ? (
+                  <BookmarkFilledIcon size={20} className="text-brand" />
+                ) : (
+                  <BookmarkOutlineIcon size={20} />
+                )}
+              </button>
+              
+              {/* More Options Menu */}
+              <Popover open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+                <PopoverTrigger asChild>
+                  <button
+                    onClick={handleMenuClick}
+                    className="p-1 text-gray-600 hover:text-brand bg-white/90 backdrop-blur-sm rounded-md transition-colors duration-200 shadow-sm"
+                    aria-label="More options"
+                  >
+                    <MoreVerticalIcon size={20} />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent 
+                  className="w-48 p-1" 
+                  align="end"
+                  onClick={handleMenuClick}
+                >
+                  <button
+                    onClick={handleAddToFolder}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                  >
+                    <FolderAddIcon size={16} />
+                    Add to Folder
+                  </button>
+                </PopoverContent>
+              </Popover>
+            </div>
           )}
 
           {/* Tags - Bottom Left */}
@@ -313,14 +359,14 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
             </div>
           )}
 
-          {/* Page/File Count - Bottom Right */}
-          {metaInfo && (
-            <div className="absolute bottom-2 right-2">
-              <span className="inline-block px-2 py-1 text-xs bg-white/90 backdrop-blur-sm text-gray-700 rounded-md font-medium shadow-sm border border-gray-200">
-                {metaInfo}
-              </span>
-            </div>
-          )}
+          {/* Share Icon - Bottom Right */}
+          <button
+            onClick={handleShare}
+            className="absolute bottom-2 right-2 p-1.5 text-gray-600 hover:text-brand bg-white/90 backdrop-blur-sm rounded-md transition-colors duration-200 shadow-sm"
+            aria-label="Share"
+          >
+            <Share08Icon size={16} />
+          </button>
         </div>
 
         {/* Content */}
@@ -340,7 +386,7 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
             </TooltipContent>
           </Tooltip>
 
-          {/* Metadata and Action Icons */}
+          {/* Metadata */}
           <div className="flex items-center justify-between">
             <div className="text-xs text-gray-500 truncate flex-1">
               {lastViewedAt
@@ -349,20 +395,17 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
                     createdAt
                   )} • ${views} views • ${likes} likes`}
             </div>
-
-            {/* Action Icons - Share only */}
-            <div className="flex items-center gap-1 ml-2">
-              <button
-                onClick={handleShare}
-                className="p-1 text-gray-600 hover:text-brand hover:bg-[#DCDFFE] rounded-md transition-colors duration-200"
-                aria-label="Share"
-              >
-                <Share08Icon size={16} />
-              </button>
-            </div>
           </div>
         </div>
       </div>
+
+      {/* Add to Folder Modal */}
+      <AddToFolderModal
+        isOpen={isAddToFolderModalOpen}
+        onClose={() => setIsAddToFolderModalOpen(false)}
+        materialId={material.id}
+        materialTitle={material.label}
+      />
     </TooltipProvider>
   );
 };

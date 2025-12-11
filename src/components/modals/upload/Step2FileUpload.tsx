@@ -34,6 +34,7 @@ interface Step2FileUploadProps {
   onBack: () => void;
   editingMaterial?: Material | null;
   isEditMode?: boolean;
+  folderId?: string;
 }
 
 const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
@@ -41,6 +42,7 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
   onBack,
   editingMaterial = null,
   isEditMode = false,
+  folderId: propFolderId,
 }) => {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -52,7 +54,7 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
   const [filePreview, setFilePreview] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState<number | undefined>(undefined);
   const [isCountingPages, setIsCountingPages] = useState(false);
-  const [folderId, setFolderId] = useState<string>("");
+  const [folderId, setFolderId] = useState<string>(propFolderId || "");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const previewUploadInputRef = useRef<HTMLInputElement>(null);
@@ -75,7 +77,7 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
 
   const watchedValues = watch();
 
-  // Prefill form when in edit mode
+  // Prefill form when in edit mode or when folderId is provided
   useEffect(() => {
     if (isEditMode && editingMaterial) {
       setValue("materialTitle", editingMaterial.label);
@@ -92,7 +94,12 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
         setTargetCourseId(editingMaterial.targetCourseId);
       }
     }
-  }, [isEditMode, editingMaterial, setValue]);
+    
+    // Pre-fill folderId if provided via prop
+    if (propFolderId && !isEditMode) {
+      setFolderId(propFolderId);
+    }
+  }, [isEditMode, editingMaterial, setValue, propFolderId]);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();

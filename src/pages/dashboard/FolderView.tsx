@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { ArrowLeft01Icon, Folder03Icon, Share08Icon } from "hugeicons-react";
+import {
+  ArrowLeft01Icon,
+  Folder03Icon,
+  Share08Icon,
+  Add01Icon,
+  InformationCircleIcon,
+} from "hugeicons-react";
 import PageHeader from "@/components/dashboard/PageHeader";
 import FolderCard from "@/components/dashboard/FolderCard";
 import MaterialCard from "@/components/dashboard/MaterialCard";
@@ -9,6 +15,9 @@ import { Material } from "@/lib/types/material.types";
 import { toast } from "sonner";
 import { ResponseStatus } from "@/lib/types/response.types";
 import { Button } from "@/components/ui/button";
+import UploadModal from "@/components/modals/UploadModal";
+import { useAuth } from "@/hooks/useAuth";
+import { setRedirectPath } from "@/lib/authStorage";
 
 interface FolderViewProps {
   isPublic?: boolean;
@@ -17,11 +26,13 @@ interface FolderViewProps {
 const FolderView: React.FC<FolderViewProps> = ({ isPublic = false }) => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [folder, setFolder] = useState<Folder | null>(null);
   const [materials, setMaterials] = useState<Material[]>([]);
   const [nestedFolders, setNestedFolders] = useState<Folder[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   // Fetch folder data by slug
   useEffect(() => {
@@ -102,6 +113,27 @@ const FolderView: React.FC<FolderViewProps> = ({ isPublic = false }) => {
 
   const getFolderMaterialCount = (folder: Folder): number => {
     return folder.content?.filter((item) => item.contentMaterialId).length || 0;
+  };
+
+  const handleAddMaterial = () => {
+    // Check if user is authenticated
+    if (!user) {
+      // Store current path for redirect after sign-in
+      const currentPath = `/dashboard/folder/${slug}`;
+      setRedirectPath(currentPath);
+      toast.info("Please sign in to contribute to this folder");
+      navigate("/auth/signin");
+      return;
+    }
+
+    // Open upload modal with folder context
+    setIsUploadModalOpen(true);
+  };
+
+  const handleUploadComplete = (material: Material) => {
+    // Refresh folder contents after successful upload
+    setMaterials((prev) => [...prev, material]);
+    toast.success("Material added to folder successfully!");
   };
 
   if (isLoading) {
@@ -189,11 +221,40 @@ const FolderView: React.FC<FolderViewProps> = ({ isPublic = false }) => {
         </div>
 
         <div className="mb-4">
-          <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900 mb-2">
-            {folder.label}
-          </h1>
+          <div className="flex items-start justify-between gap-4 mb-2">
+            <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">
+              {folder.label}
+            </h1>
+            {/* Add Material Button - Only show for public folders */}
+            {folder.visibility === "public" && (
+              <Button
+                onClick={handleAddMaterial}
+                size="sm"
+                className="inline-flex items-center gap-2 bg-brand hover:bg-brand/90 text-white"
+              >
+                <Add01Icon size={16} />
+                <span className="hidden sm:inline">Add Material</span>
+              </Button>
+            )}
+          </div>
           {folder.description && (
             <p className="text-sm text-gray-600 mb-3">{folder.description}</p>
+          )}
+          {/* Public folder contribution notice */}
+          {folder.visibility === "public" && (
+            <div className="mb-3 flex items-center gap-1.5">
+              <InformationCircleIcon
+                size={14}
+                className="text-gray-500 flex-shrink-0"
+              />
+              <p className="text-xs text-gray-600">
+                <span className="font-medium">Public:</span>{" "}
+                <span className="hidden sm:inline">
+                  Anyone can contribute materials to this folder.
+                </span>
+                <span className="sm:hidden">Open for contributions</span>
+              </p>
+            </div>
           )}
           {/* Breadcrumb Navigation */}
           <nav className="flex items-center gap-2 text-sm">
@@ -260,6 +321,14 @@ const FolderView: React.FC<FolderViewProps> = ({ isPublic = false }) => {
           </div>
         )}
       </div>
+
+      {/* Upload Modal */}
+      <UploadModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        folderId={folder?.id}
+        onCreateComplete={handleUploadComplete}
+      />
     </div>
   );
 };

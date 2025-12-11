@@ -54,6 +54,7 @@ interface Step2HelpfulLinkProps {
   editingMaterial?: Material | null;
   isEditMode?: boolean;
   onTempPreviewChange?: (url: string | null) => void; // Callback to track temp preview
+  folderId?: string;
 }
 
 const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
@@ -62,6 +63,7 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
   editingMaterial = null,
   isEditMode = false,
   onTempPreviewChange,
+  folderId: propFolderId,
 }) => {
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
@@ -78,7 +80,7 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
     useState<boolean>(false);
   const [fileCount, setFileCount] = useState<number | undefined>(undefined);
   const [isCountingFiles, setIsCountingFiles] = useState(false);
-  const [folderId, setFolderId] = useState<string>("");
+  const [folderId, setFolderId] = useState<string>(propFolderId || "");
 
   // Helper function to safely get hostname from URL
   const getUrlHostname = (url: string): string => {
@@ -121,7 +123,7 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
 
   const watchedValues = watch();
 
-  // Prefill form when in edit mode
+  // Prefill form when in edit mode or when folderId is provided
   useEffect(() => {
     if (isEditMode && editingMaterial) {
       setValue("materialTitle", editingMaterial.label);
@@ -143,7 +145,12 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
         setTargetCourseId(editingMaterial.targetCourseId);
       }
     }
-  }, [isEditMode, editingMaterial, setValue]);
+    
+    // Pre-fill folderId if provided via prop
+    if (propFolderId && !isEditMode) {
+      setFolderId(propFolderId);
+    }
+  }, [isEditMode, editingMaterial, setValue, propFolderId]);
 
   // Handle URL input change to auto-populate title
   const handleUrlChange = async (raw: string) => {
