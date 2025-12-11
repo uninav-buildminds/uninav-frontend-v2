@@ -30,6 +30,7 @@ interface UploadModalProps {
   onClose: () => void;
   editingMaterial?: Material | null; // Material to edit (if in editing mode)
   onEditComplete?: () => void; // Callback after successful edit
+  onCreateComplete?: (material: Material) => void; // Callback after successful creation
 }
 
 const UploadModal: React.FC<UploadModalProps> = ({
@@ -37,6 +38,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
   onClose,
   editingMaterial = null,
   onEditComplete,
+  onCreateComplete,
 }) => {
   const isEditMode = !!editingMaterial;
 
@@ -163,6 +165,9 @@ const UploadModal: React.FC<UploadModalProps> = ({
         } else {
           console.log("No preview to process");
         }
+
+        // Let callers update their local state immediately
+        onCreateComplete?.(result.data);
 
         setCurrentStep("success");
       }

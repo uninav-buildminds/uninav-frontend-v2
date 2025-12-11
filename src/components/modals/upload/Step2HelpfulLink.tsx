@@ -28,6 +28,7 @@ import {
 import {
   listFolderFiles,
   extractGDriveId,
+  getGDriveName,
 } from "@/lib/gdrive-preview";
 import { isGDriveFolder } from "@/lib/utils/gdriveUtils";
 import {
@@ -100,11 +101,13 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
 
   const imageInputRef = useRef<HTMLInputElement>(null);
   const previewUploadInputRef = useRef<HTMLInputElement>(null);
+  const latestUrlRef = useRef<string>("");
 
   const {
     register,
     handleSubmit,
     setValue,
+    getValues,
     watch,
     formState: { errors, isSubmitting },
   } = useForm<UploadLinkInput>({
@@ -161,9 +164,13 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
     setCustomPreviewPreview(null);
 
     setValue("url", url);
+    latestUrlRef.current = url;
 
     // Auto-populate title if empty
     if (!watchedValues.materialTitle && url) {
+      const fallback = generateDefaultTitle(url);
+      setValue("materialTitle", fallback);
+
       try {
         // If YouTube, try oEmbed for accurate title
         if (checkIsYouTubeUrl(url)) {
@@ -174,13 +181,22 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
           ).then((r) => (r.ok ? r.json() : null));
           if (oembed?.title) {
             setValue("materialTitle", oembed.title);
-          } else {
-            const fallback = generateDefaultTitle(url);
-            setValue("materialTitle", fallback);
           }
-        } else {
-          const defaultTitle = generateDefaultTitle(url);
-          setValue("materialTitle", defaultTitle);
+        } else if (checkIsGoogleDriveUrl(url)) {
+          const identifier = extractGDriveId(url);
+          if (identifier?.id) {
+            try {
+              const remoteName = await getGDriveName(identifier.id);
+              if (remoteName && latestUrlRef.current === url) {
+                const currentTitle = getValues("materialTitle");
+                if (!currentTitle || currentTitle === fallback) {
+                  setValue("materialTitle", remoteName);
+                }
+              }
+            } catch {
+              // Silent fail; fallback already applied
+            }
+          }
         }
       } catch {
         // Silent fail; keep input responsive
@@ -448,7 +464,25 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
         {/* URL Preview Section */}
         {watchedValues.url && (
           <div className="mt-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
-            <h4 className="text-sm font-medium text-gray-700 mb-3">Preview</h4>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-sm font-medium text-gray-700">Preview</h4>
+              <button
+                type="button"
+                onClick={() => previewUploadInputRef.current?.click()}
+                className="text-xs font-medium text-brand hover:text-brand/80"
+              >
+                Upload a different preview
+              </button>
+              <input
+                ref={previewUploadInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) =>
+                  handleCustomPreviewSelect(e.target.files?.[0] || null)
+                }
+              />
+            </div>
 
             {!isValidUrl(watchedValues.url) ? (
               <div className="flex items-center justify-center p-6 bg-yellow-50 rounded-lg border-2 border-dashed border-yellow-300">
@@ -468,7 +502,15 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
               <>
                 {/* Valid URL Previews */}
 
-                {checkIsYouTubeUrl(watchedValues.url) ? (
+                {customPreviewFile && customPreviewPreview ? (
+                  <div className="flex justify-center">
+                    <img
+                      src={customPreviewPreview}
+                      alt="Custom preview"
+                      className="rounded-lg border border-gray-200 w-full max-w-sm object-cover"
+                    />
+                  </div>
+                ) : checkIsYouTubeUrl(watchedValues.url) ? (
                   <div className="flex justify-center">
                     <YoutubePreview
                       url={watchedValues.url}
@@ -544,44 +586,6 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
                     </div>
                   </div>
                 )}
-
-                <div className="mt-4 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-gray-700">
-                      Preview image
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => previewUploadInputRef.current?.click()}
-                      className="text-sm font-medium text-brand hover:text-brand/80"
-                    >
-                      Upload a different preview
-                    </button>
-                  </div>
-
-                  {customPreviewFile && customPreviewPreview ? (
-                    <img
-                      src={customPreviewPreview}
-                      alt="Custom preview"
-                      className="w-full max-w-xs rounded-lg border border-gray-200 object-cover"
-                    />
-                  ) : (
-                    <p className="text-xs text-gray-500">
-                      Using the auto-generated preview. Upload a custom image if
-                      you would prefer a different thumbnail.
-                    </p>
-                  )}
-
-                  <input
-                    ref={previewUploadInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) =>
-                      handleCustomPreviewSelect(e.target.files?.[0] || null)
-                    }
-                  />
-                </div>
               </>
             )}
           </div>

@@ -466,6 +466,14 @@ const Libraries: React.FC = () => {
     setShowUploadModal(true);
   };
 
+  const handleCreateComplete = (material: Material) => {
+    setUserUploads((prev) => [material, ...prev]);
+    setFilteredUploads((prev) => [material, ...prev]);
+    setActiveTab("uploads");
+    // Sync with server to ensure the latest data (e.g., moderation updates)
+    void fetchUserUploads();
+  };
+
   const handleDeleteMaterial = async (id: string) => {
     toast.warning("Are you sure you want to delete this material?", {
       description: "This action cannot be undone.",
@@ -816,6 +824,7 @@ const Libraries: React.FC = () => {
         isOpen={showUploadModal}
         onClose={handleModalClose}
         editingMaterial={editingMaterial}
+        onCreateComplete={handleCreateComplete}
         onEditComplete={handleEditComplete}
       />
     </>

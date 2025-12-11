@@ -310,30 +310,49 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
         >
           {selectedFile ? (
             <div className="space-y-3">
-              {/* Check if file is PDF or DOCX */}
-              {selectedFile.type === "application/pdf" ||
-              selectedFile.type ===
-                "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ? (
-                <Previewer
-                  file={selectedFile}
-                  onPreviewReady={(file: File) => {
-                    handleCustomPreviewUpload(file); // Handle the preview file as needed
-                  }}
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-gray-900">Preview</p>
+                <button
+                  type="button"
+                  onClick={() => previewUploadInputRef.current?.click()}
+                  className="text-xs font-medium text-brand hover:text-brand/80"
+                >
+                  Upload a different preview
+                </button>
+                <input
+                  ref={previewUploadInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) =>
+                    handleCustomPreviewUpload(e.target.files?.[0] || null)
+                  }
                 />
-              ) : filePreview ? (
-                // Render image preview if available
-                <img
-                  src={previewImageUrl || URL.createObjectURL(filePreview)}
-                  alt={selectedFile.name}
-                  className="mx-auto sm:w-24 sm:h-24 object-contain rounded"
-                />
-              ) : (
-                // Fallback icon if no preview is available
-                <File01Icon
-                  size={40}
-                  className="text-brand mx-auto sm:w-12 sm:h-12"
-                />
-              )}
+              </div>
+
+              <div className="flex justify-center">
+                {previewImageUrl || filePreview ? (
+                  <img
+                    src={previewImageUrl || URL.createObjectURL(filePreview!)}
+                    alt="Custom preview"
+                    className="mx-auto sm:w-36 sm:h-36 object-contain rounded border border-gray-200 bg-white"
+                  />
+                ) : selectedFile.type === "application/pdf" ||
+                  selectedFile.type ===
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ? (
+                  <Previewer
+                    file={selectedFile}
+                    onPreviewReady={(file: File) => {
+                      handleCustomPreviewUpload(file); // Handle the preview file as needed
+                    }}
+                  />
+                ) : (
+                  <File01Icon
+                    size={40}
+                    className="text-brand mx-auto sm:w-12 sm:h-12"
+                  />
+                )}
+              </div>
 
               <div>
                 <p className="text-sm sm:text-base font-medium text-gray-900">
@@ -353,45 +372,6 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
                   </p>
                 ) : null}
               </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between pt-1">
-                  <p className="text-sm font-medium text-gray-700">
-                    Preview image
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => previewUploadInputRef.current?.click()}
-                    className="text-sm font-medium text-brand hover:text-brand/80"
-                  >
-                    Upload a different preview
-                  </button>
-                </div>
-
-                {previewImageUrl || filePreview ? (
-                  <img
-                    src={previewImageUrl || URL.createObjectURL(filePreview!)}
-                    alt="Custom preview"
-                    className="mx-auto sm:w-24 sm:h-24 object-contain rounded border border-gray-200"
-                  />
-                ) : (
-                  <p className="text-xs text-gray-500">
-                    We will generate a preview for supported files. If you do not
-                    like it, upload your own image.
-                  </p>
-                )}
-
-                <input
-                  ref={previewUploadInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) =>
-                    handleCustomPreviewUpload(e.target.files?.[0] || null)
-                  }
-                />
-              </div>
-
             </div>
           ) : (
             <div className="space-y-3">
