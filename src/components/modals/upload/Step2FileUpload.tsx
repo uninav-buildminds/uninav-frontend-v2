@@ -49,13 +49,14 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [classification, setClassification] = useState<string>("");
   const [targetCourseId, setTargetCourseId] = useState<string>("");
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
   const [filePreview, setFilePreview] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState<number | undefined>(undefined);
   const [isCountingPages, setIsCountingPages] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const previewUploadInputRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
@@ -122,6 +123,11 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
       return;
     }
     setSelectedFile(file);
+    setFilePreview(null);
+    if (previewImageUrl) {
+      URL.revokeObjectURL(previewImageUrl);
+      setPreviewImageUrl(null);
+    }
 
     // Auto-populate title if current title is empty
     if (!watchedValues.materialTitle) {
@@ -159,6 +165,22 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
     }
   };
 
+  const handleCustomPreviewUpload = (file: File | null) => {
+    if (previewImageUrl) {
+      URL.revokeObjectURL(previewImageUrl);
+    }
+
+    if (!file) {
+      setFilePreview(null);
+      setPreviewImageUrl(null);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    setFilePreview(file);
+    setPreviewImageUrl(objectUrl);
+  };
+
   const handleTagAdd = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && tagInput.trim()) {
       e.preventDefault();
@@ -182,6 +204,14 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
   const handleTargetCourseIdChange = (value: string) => {
     setTargetCourseId(value);
   };
+
+  useEffect(() => {
+    return () => {
+      if (previewImageUrl) {
+        URL.revokeObjectURL(previewImageUrl);
+      }
+    };
+  }, [previewImageUrl]);
 
   const handleTagRemove = (index: number) => {
     const newTags = tags.filter((_, i) => i !== index);
@@ -287,13 +317,13 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
                 <Previewer
                   file={selectedFile}
                   onPreviewReady={(file: File) => {
-                    setFilePreview(file); // Handle the preview file as needed
+                    handleCustomPreviewUpload(file); // Handle the preview file as needed
                   }}
                 />
               ) : filePreview ? (
                 // Render image preview if available
                 <img
-                  src={URL.createObjectURL(filePreview)}
+                  src={previewImageUrl || URL.createObjectURL(filePreview)}
                   alt={selectedFile.name}
                   className="mx-auto sm:w-24 sm:h-24 object-contain rounded"
                 />
@@ -324,7 +354,44 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
                 ) : null}
               </div>
 
-            
+              <div className="space-y-2">
+                <div className="flex items-center justify-between pt-1">
+                  <p className="text-sm font-medium text-gray-700">
+                    Preview image
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => previewUploadInputRef.current?.click()}
+                    className="text-sm font-medium text-brand hover:text-brand/80"
+                  >
+                    Upload a different preview
+                  </button>
+                </div>
+
+                {previewImageUrl || filePreview ? (
+                  <img
+                    src={previewImageUrl || URL.createObjectURL(filePreview!)}
+                    alt="Custom preview"
+                    className="mx-auto sm:w-24 sm:h-24 object-contain rounded border border-gray-200"
+                  />
+                ) : (
+                  <p className="text-xs text-gray-500">
+                    We will generate a preview for supported files. If you do not
+                    like it, upload your own image.
+                  </p>
+                )}
+
+                <input
+                  ref={previewUploadInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) =>
+                    handleCustomPreviewUpload(e.target.files?.[0] || null)
+                  }
+                />
+              </div>
+
             </div>
           ) : (
             <div className="space-y-3">

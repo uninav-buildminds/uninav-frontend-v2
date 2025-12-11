@@ -1,7 +1,7 @@
 import React from "react";
 import { Share08Icon, PencilEdit02Icon, Delete02Icon } from "hugeicons-react";
 import { toast } from "sonner";
-import { Material } from "../../lib/types/material.types";
+import { Material, ResourceTypeEnum } from "../../lib/types/material.types";
 import { formatRelativeTime } from "../../lib/utils";
 import { useBookmarks } from "../../context/bookmark/BookmarkContextProvider";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -122,6 +122,19 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
     onDelete?.(id);
   };
 
+  const handleCardClick = () => {
+    const resourceAddress = material.resource?.resourceAddress;
+    if (
+      material.resource?.resourceType === ResourceTypeEnum.URL &&
+      resourceAddress
+    ) {
+      window.open(resourceAddress, "_blank", "noopener,noreferrer");
+      return;
+    }
+
+    onRead?.(material.slug);
+  };
+
   const handleShare = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!material.slug) {
@@ -213,7 +226,7 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
     <TooltipProvider>
       <div
         className="group relative cursor-pointer"
-        onClick={() => onRead?.(material.slug)}
+        onClick={handleCardClick}
         ref={componentRef}
         draggable={draggable}
         onDragStart={handleDragStartEvent}

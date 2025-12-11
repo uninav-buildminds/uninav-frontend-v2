@@ -65,6 +65,10 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [customPreviewFile, setCustomPreviewFile] = useState<File | null>(null);
+  const [customPreviewPreview, setCustomPreviewPreview] = useState<string | null>(
+    null
+  );
   const [classification, setClassification] = useState<string>("");
   const [targetCourseId, setTargetCourseId] = useState<string>("");
   const [derivedPreviewUrl, setDerivedPreviewUrl] = useState<string | null>(
@@ -95,6 +99,7 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
   };
 
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const previewUploadInputRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
@@ -148,6 +153,12 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
     if (url && !/^https?:\/\//i.test(url)) {
       url = `https://${url}`;
     }
+
+    if (customPreviewPreview) {
+      URL.revokeObjectURL(customPreviewPreview);
+    }
+    setCustomPreviewFile(null);
+    setCustomPreviewPreview(null);
 
     setValue("url", url);
 
@@ -256,6 +267,14 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [watchedValues.url]);
 
+  useEffect(() => {
+    return () => {
+      if (customPreviewPreview) {
+        URL.revokeObjectURL(customPreviewPreview);
+      }
+    };
+  }, [customPreviewPreview]);
+
   const handleTagAdd = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && tagInput.trim()) {
       e.preventDefault();
@@ -284,6 +303,22 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
     const newTags = tags.filter((_, i) => i !== index);
     setTags(newTags);
     setValue("tags", newTags);
+  };
+
+  const handleCustomPreviewSelect = (file: File | null) => {
+    if (customPreviewPreview) {
+      URL.revokeObjectURL(customPreviewPreview);
+    }
+
+    if (!file) {
+      setCustomPreviewFile(null);
+      setCustomPreviewPreview(null);
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    setCustomPreviewFile(file);
+    setCustomPreviewPreview(previewUrl);
   };
 
   // Utility function to generate YouTube thumbnail URL
@@ -343,6 +378,7 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
 
     // Generate preview URL if possible
     const previewUrl = generatePreviewUrl(data.url);
+    const finalPreview = customPreviewFile || previewUrl || undefined;
 
     const formData: CreateMaterialLinkForm = {
       materialTitle: data.materialTitle,
@@ -355,7 +391,7 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
       targetCourseId: targetCourseId || undefined,
       url: data.url,
       image: selectedImage,
-      filePreview: previewUrl || undefined, // Add the preview URL (supports GDrive folders)
+      filePreview: finalPreview, // Prefer user-uploaded preview, otherwise derived preview URL
       fileCount: fileCount, // Include file count for GDrive materials
     };
 
@@ -508,6 +544,44 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
                     </div>
                   </div>
                 )}
+
+                <div className="mt-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium text-gray-700">
+                      Preview image
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => previewUploadInputRef.current?.click()}
+                      className="text-sm font-medium text-brand hover:text-brand/80"
+                    >
+                      Upload a different preview
+                    </button>
+                  </div>
+
+                  {customPreviewFile && customPreviewPreview ? (
+                    <img
+                      src={customPreviewPreview}
+                      alt="Custom preview"
+                      className="w-full max-w-xs rounded-lg border border-gray-200 object-cover"
+                    />
+                  ) : (
+                    <p className="text-xs text-gray-500">
+                      Using the auto-generated preview. Upload a custom image if
+                      you would prefer a different thumbnail.
+                    </p>
+                  )}
+
+                  <input
+                    ref={previewUploadInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) =>
+                      handleCustomPreviewSelect(e.target.files?.[0] || null)
+                    }
+                  />
+                </div>
               </>
             )}
           </div>
