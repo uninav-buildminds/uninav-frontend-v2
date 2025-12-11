@@ -135,10 +135,26 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
         const response = await getMaterialBySlug(slug);
 
         if (response.status === ResponseStatus.SUCCESS) {
-          setMaterial(response.data);
+          const materialData = response.data;
+
+          // Check if this material should redirect externally
+          // Redirect if: resourceType is URL OR material type is "other"
+          const resourceAddress = materialData.resource?.resourceAddress;
+          if (
+            resourceAddress &&
+            (materialData.resource?.resourceType === ResourceTypeEnum.URL ||
+              materialData.type === MaterialTypeEnum.OTHER)
+          ) {
+            // Redirect to external URL
+            window.open(resourceAddress, "_blank", "noopener,noreferrer"); // open in new tab
+            navigate(-1); // go to previous path in history
+            return;
+          }
+
+          setMaterial(materialData);
 
           // Extract total pages from metadata if available
-          const metaData = response.data.metaData as any;
+          const metaData = materialData.metaData as any;
           if (metaData?.pageCount) {
             setTotalPages(metaData.pageCount);
           } else if (metaData?.fileCount) {
@@ -593,7 +609,8 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
         <div className="bg-gradient-to-r from-brand/10 to-brand/5 border-b border-brand/20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
             <p className="text-sm text-gray-700">
-              <span className="font-medium">Viewing as guest.</span> Sign in to save materials, track progress, and more.
+              <span className="font-medium">Viewing as guest.</span> Sign in to
+              save materials, track progress, and more.
             </p>
             <Link
               to="/auth/signin"

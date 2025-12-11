@@ -1,10 +1,15 @@
 import React from "react";
 import { Share08Icon, PencilEdit02Icon, Delete02Icon } from "hugeicons-react";
 import { toast } from "sonner";
-import { Material, ResourceTypeEnum } from "../../lib/types/material.types";
+import { Material } from "../../lib/types/material.types";
 import { formatRelativeTime } from "../../lib/utils";
 import { useBookmarks } from "../../context/bookmark/BookmarkContextProvider";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import Placeholder from "/placeholder.svg";
 
 // Custom Bookmark Icons
@@ -81,7 +86,8 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
   draggable = false,
   onDragStart,
 }) => {
-  const { id, label, createdAt, downloads, tags, views, likes, metaData } = material;
+  const { id, label, createdAt, downloads, tags, views, likes, metaData } =
+    material;
 
   const previewImage = material.previewUrl;
 
@@ -91,17 +97,21 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
   // Extract page count or file count from metaData
   const getMetaInfo = (): string | null => {
     if (!metaData) return null;
-    
+
     // metaData can be a JSON object with pageCount or fileCount
-    if (typeof metaData === 'object') {
-      if ('pageCount' in metaData && metaData.pageCount) {
-        return `${metaData.pageCount} ${metaData.pageCount === 1 ? 'page' : 'pages'}`;
+    if (typeof metaData === "object") {
+      if ("pageCount" in metaData && metaData.pageCount) {
+        return `${metaData.pageCount} ${
+          metaData.pageCount === 1 ? "page" : "pages"
+        }`;
       }
-      if ('fileCount' in metaData && metaData.fileCount) {
-        return `${metaData.fileCount} ${metaData.fileCount === 1 ? 'file' : 'files'}`;
+      if ("fileCount" in metaData && metaData.fileCount) {
+        return `${metaData.fileCount} ${
+          metaData.fileCount === 1 ? "file" : "files"
+        }`;
       }
     }
-    
+
     return null;
   };
 
@@ -123,15 +133,6 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
   };
 
   const handleCardClick = () => {
-    const resourceAddress = material.resource?.resourceAddress;
-    if (
-      material.resource?.resourceType === ResourceTypeEnum.URL &&
-      resourceAddress
-    ) {
-      window.open(resourceAddress, "_blank", "noopener,noreferrer");
-      return;
-    }
-
     onRead?.(material.slug);
   };
 
@@ -182,19 +183,19 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
   // Mobile drag support
   const handleTouchStart = (e: React.TouchEvent) => {
     if (!draggable || !onDragStart) return;
-    
+
     const touch = e.touches[0];
     const element = e.currentTarget as HTMLElement;
-    
+
     // Store initial touch position
     const startX = touch.clientX;
     const startY = touch.clientY;
-    
+
     const handleTouchMove = (moveEvent: TouchEvent) => {
       const currentTouch = moveEvent.touches[0];
       const deltaX = Math.abs(currentTouch.clientX - startX);
       const deltaY = Math.abs(currentTouch.clientY - startY);
-      
+
       // If moved significantly, start drag
       if (deltaX > 10 || deltaY > 10) {
         onDragStart(material);
@@ -204,20 +205,20 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
         dragImage.style.position = "absolute";
         dragImage.style.top = "-1000px";
         document.body.appendChild(dragImage);
-        
+
         // Clean up
         setTimeout(() => {
           document.body.removeChild(dragImage);
         }, 0);
       }
     };
-    
+
     const handleTouchEnd = () => {
       element.style.opacity = "1";
       document.removeEventListener("touchmove", handleTouchMove);
       document.removeEventListener("touchend", handleTouchEnd);
     };
-    
+
     document.addEventListener("touchmove", handleTouchMove, { passive: false });
     document.addEventListener("touchend", handleTouchEnd);
   };
@@ -259,109 +260,109 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
             }}
           />
 
-        {/* Action Buttons - Top Right */}
-        {showEditDelete ? (
-          // Edit/Delete buttons for user uploads
-          <div className="absolute top-2 right-2 flex gap-1">
-            <button
-              onClick={handleEdit}
-              className="p-1 bg-white/90 backdrop-blur-sm text-gray-600 hover:text-brand hover:bg-[#DCDFFE] rounded-md transition-colors duration-200 shadow-sm"
-              aria-label="Edit material"
-            >
-              <PencilEdit02Icon size={18} />
-            </button>
-            <button
-              onClick={handleDelete}
-              className="p-1 bg-white/90 backdrop-blur-sm text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors duration-200 shadow-sm"
-              aria-label="Delete material"
-            >
-              <Delete02Icon size={18} />
-            </button>
-          </div>
-        ) : (
-          // Bookmark button for other materials
-          <button
-            onClick={handleSave}
-            className="absolute top-2 right-2 p-1 text-gray-600 hover:text-brand bg-[#DCDFFE] rounded-md transition-colors duration-200"
-            aria-label={saved ? "Remove from saved" : "Save material"}
-          >
-            {saved ? (
-              <BookmarkFilledIcon size={20} className="text-brand" />
-            ) : (
-              <BookmarkOutlineIcon size={20} />
-            )}
-          </button>
-        )}
-
-        {/* Tags - Bottom Left */}
-        {tags && tags.length > 0 && (
-          <div className="absolute bottom-2 left-2 flex flex-wrap gap-1">
-            {tags.slice(0, 2).map((tag, index) => (
-              <span
-                key={index}
-                className="inline-block px-2 py-0.5 text-xs bg-[#DCDFFE] text-brand rounded-md"
+          {/* Action Buttons - Top Right */}
+          {showEditDelete ? (
+            // Edit/Delete buttons for user uploads
+            <div className="absolute top-2 right-2 flex gap-1">
+              <button
+                onClick={handleEdit}
+                className="p-1 bg-white/90 backdrop-blur-sm text-gray-600 hover:text-brand hover:bg-[#DCDFFE] rounded-md transition-colors duration-200 shadow-sm"
+                aria-label="Edit material"
               >
-                {tag}
-              </span>
-            ))}
-            {tags.length > 3 && (
-              <span className="inline-block px-2 py-0.5 text-xs bg-[#DCDFFE] text-brand rounded-md">
-                +{tags.length - 2}
-              </span>
-            )}
-          </div>
-        )}
-
-        {/* Page/File Count - Bottom Right */}
-        {metaInfo && (
-          <div className="absolute bottom-2 right-2">
-            <span className="inline-block px-2 py-1 text-xs bg-white/90 backdrop-blur-sm text-gray-700 rounded-md font-medium shadow-sm border border-gray-200">
-              {metaInfo}
-            </span>
-          </div>
-        )}
-      </div>
-
-      {/* Content */}
-      <div className="space-y-1">
-        {/* Name */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <h4
-              className="font-medium text-sm text-gray-900 leading-tight truncate"
-              title={label}
-            >
-              {label}
-            </h4>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{label}</p>
-          </TooltipContent>
-        </Tooltip>
-
-        {/* Metadata and Action Icons */}
-        <div className="flex items-center justify-between">
-          <div className="text-xs text-gray-500 truncate flex-1">
-            {lastViewedAt
-              ? `Viewed ${formatRelativeTime(lastViewedAt)}`
-              : `${formatRelativeTime(
-                  createdAt
-                )} • ${views} views • ${likes} likes`}
-          </div>
-
-          {/* Action Icons - Share only */}
-          <div className="flex items-center gap-1 ml-2">
+                <PencilEdit02Icon size={18} />
+              </button>
+              <button
+                onClick={handleDelete}
+                className="p-1 bg-white/90 backdrop-blur-sm text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors duration-200 shadow-sm"
+                aria-label="Delete material"
+              >
+                <Delete02Icon size={18} />
+              </button>
+            </div>
+          ) : (
+            // Bookmark button for other materials
             <button
-              onClick={handleShare}
-              className="p-1 text-gray-600 hover:text-brand hover:bg-[#DCDFFE] rounded-md transition-colors duration-200"
-              aria-label="Share"
+              onClick={handleSave}
+              className="absolute top-2 right-2 p-1 text-gray-600 hover:text-brand bg-[#DCDFFE] rounded-md transition-colors duration-200"
+              aria-label={saved ? "Remove from saved" : "Save material"}
             >
-              <Share08Icon size={16} />
+              {saved ? (
+                <BookmarkFilledIcon size={20} className="text-brand" />
+              ) : (
+                <BookmarkOutlineIcon size={20} />
+              )}
             </button>
+          )}
+
+          {/* Tags - Bottom Left */}
+          {tags && tags.length > 0 && (
+            <div className="absolute bottom-2 left-2 flex flex-wrap gap-1">
+              {tags.slice(0, 2).map((tag, index) => (
+                <span
+                  key={index}
+                  className="inline-block px-2 py-0.5 text-xs bg-[#DCDFFE] text-brand rounded-md"
+                >
+                  {tag}
+                </span>
+              ))}
+              {tags.length > 3 && (
+                <span className="inline-block px-2 py-0.5 text-xs bg-[#DCDFFE] text-brand rounded-md">
+                  +{tags.length - 2}
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Page/File Count - Bottom Right */}
+          {metaInfo && (
+            <div className="absolute bottom-2 right-2">
+              <span className="inline-block px-2 py-1 text-xs bg-white/90 backdrop-blur-sm text-gray-700 rounded-md font-medium shadow-sm border border-gray-200">
+                {metaInfo}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Content */}
+        <div className="space-y-1">
+          {/* Name */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <h4
+                className="font-medium text-sm text-gray-900 leading-tight truncate"
+                title={label}
+              >
+                {label}
+              </h4>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{label}</p>
+            </TooltipContent>
+          </Tooltip>
+
+          {/* Metadata and Action Icons */}
+          <div className="flex items-center justify-between">
+            <div className="text-xs text-gray-500 truncate flex-1">
+              {lastViewedAt
+                ? `Viewed ${formatRelativeTime(lastViewedAt)}`
+                : `${formatRelativeTime(
+                    createdAt
+                  )} • ${views} views • ${likes} likes`}
+            </div>
+
+            {/* Action Icons - Share only */}
+            <div className="flex items-center gap-1 ml-2">
+              <button
+                onClick={handleShare}
+                className="p-1 text-gray-600 hover:text-brand hover:bg-[#DCDFFE] rounded-md transition-colors duration-200"
+                aria-label="Share"
+              >
+                <Share08Icon size={16} />
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
     </TooltipProvider>
   );
 };
