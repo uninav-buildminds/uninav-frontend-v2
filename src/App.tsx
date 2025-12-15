@@ -43,6 +43,8 @@ import { FullscreenProvider } from "./context/FullscreenContext";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import Help from "./pages/dashboard/Help";
 import Profile from "./pages/dashboard/Profile";
+import PublicFolderView from "./pages/public/PublicFolderView";
+import PublicMaterialView from "./pages/public/PublicMaterialView";
 import ScrollToTop from "./components/ScrollToTop";
 const queryClient = new QueryClient();
 import { Analytics } from "@vercel/analytics/react";
@@ -106,7 +108,7 @@ const App = () => {
 
                           {/* Folder View */}
                           <Route
-                            path="folder/:id"
+                            path="folder/:slug"
                             element={<FolderView />}
                           />
                         </Route>
@@ -226,6 +228,16 @@ const App = () => {
                         <Route
                           path="/auth/password/success"
                           element={<ResetSuccess />}
+                        />
+
+                        {/* Public View Routes - No authentication required */}
+                        <Route
+                          path="/view/folder/:slug"
+                          element={<PublicFolderView />}
+                        />
+                        <Route
+                          path="/view/material/:slug"
+                          element={<PublicMaterialView />}
                         />
 
                         {/* 404 - Catch all unmatched routes */}

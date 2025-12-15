@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Link01Icon,
@@ -19,14 +19,23 @@ import {
   inferMaterialType,
   generateDefaultTitle,
 } from "@/lib/utils/inferMaterialType";
-import { MaterialTypeEnum, VisibilityEnum, RestrictionEnum } from "@/lib/types/material.types";
+import {
+  MaterialTypeEnum,
+  VisibilityEnum,
+  RestrictionEnum,
+} from "@/lib/types/material.types";
 import { SelectCourse } from "../shared/SelectCourse";
 import { checkIsYouTubeUrl } from "@/components/Preview/youtube";
 import { checkIsGoogleDriveUrl } from "@/components/Preview/gDrive";
 import { isGDriveFolder } from "@/lib/utils/gdriveUtils";
-import { 
-  extractGDriveId, 
-  findFirstFileInFolder, 
+import {
+  SelectModal,
+  SelectOption,
+} from "@/components/dashboard/SearchSelectModal";
+import { getMyFolders, Folder } from "@/api/folder.api";
+import {
+  extractGDriveId,
+  findFirstFileInFolder,
   getFileMetadata,
   getGDriveFolderInfo,
   getGDriveName,
@@ -63,6 +72,35 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
   const [targetCourseId, setTargetCourseId] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
+  const [folderId, setFolderId] = useState<string>("");
+  const [folderOptions, setFolderOptions] = useState<SelectOption[]>([]);
+  const [foldersLoading, setFoldersLoading] = useState(false);
+
+  // Load user's folders for optional folder selection in batch link upload
+  useEffect(() => {
+    const fetchFolders = async () => {
+      try {
+        setFoldersLoading(true);
+        const response = await getMyFolders();
+        if (response?.data) {
+          const options: SelectOption[] = response.data.map(
+            (folder: Folder) => ({
+              value: folder.id,
+              label: folder.label,
+              description: folder.description,
+            })
+          );
+          setFolderOptions(options);
+        }
+      } catch (error) {
+        console.error("Failed to fetch folders for batch links:", error);
+      } finally {
+        setFoldersLoading(false);
+      }
+    };
+
+    fetchFolders();
+  }, []);
 
   const generateId = () => Math.random().toString(36).substring(2, 9);
 
@@ -82,7 +120,10 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
 
   // Helper to normalize URL (add https if missing)
   const normalizeUrl = (url: string): string => {
-    const trimmed = url.trim().replace(/^[@"']+/, "").replace(/["']+$/, "");
+    const trimmed = url
+      .trim()
+      .replace(/^[@"']+/, "")
+      .replace(/["']+$/, "");
     if (!/^https?:\/\//i.test(trimmed)) {
       return `https://${trimmed}`;
     }
@@ -166,7 +207,7 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
   const parseCSV = useCallback(
     async (content: string) => {
       setIsParsing(true);
-      
+
       try {
         const lines = content
           .split(/[\r\n]+/)
@@ -192,7 +233,9 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
         const parsedItems: BatchLinkItem[] = [];
 
         for (const line of lines) {
-          const parts = line.split(delimiter).map((p) => p.trim().replace(/^["']|["']$/g, ""));
+          const parts = line
+            .split(delimiter)
+            .map((p) => p.trim().replace(/^["']|["']$/g, ""));
 
           // Detect which column is URL and which is title
           let url = "";
@@ -201,10 +244,20 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
 
           if (parts.length >= 2) {
             // Two columns: detect which is URL
-            if (isValidUrl(parts[0]) || parts[0].includes("http") || parts[0].includes("drive.google") || parts[0].includes("youtube")) {
+            if (
+              isValidUrl(parts[0]) ||
+              parts[0].includes("http") ||
+              parts[0].includes("drive.google") ||
+              parts[0].includes("youtube")
+            ) {
               url = parts[0];
               title = parts[1];
-            } else if (isValidUrl(parts[1]) || parts[1].includes("http") || parts[1].includes("drive.google") || parts[1].includes("youtube")) {
+            } else if (
+              isValidUrl(parts[1]) ||
+              parts[1].includes("http") ||
+              parts[1].includes("drive.google") ||
+              parts[1].includes("youtube")
+            ) {
               url = parts[1];
               title = parts[0];
             } else {
@@ -225,11 +278,11 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
           const type = checkIsYouTubeUrl(normalizedUrl)
             ? MaterialTypeEnum.YOUTUBE
             : inferMaterialType(normalizedUrl);
-          
+
           // Use placeholder title if we need to fetch it remotely
-          const placeholderTitle = needsRemoteTitleFetch 
-            ? "Loading title..." 
-            : (title || generateDefaultTitle(normalizedUrl));
+          const placeholderTitle = needsRemoteTitleFetch
+            ? "Loading title..."
+            : title || generateDefaultTitle(normalizedUrl);
 
           const item: BatchLinkItem = {
             id: generateId(),
@@ -261,11 +314,11 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
               setLinks((prev) =>
                 prev.map((l) =>
                   l.id === item.id
-                    ? { 
-                        ...l, 
-                        previewUrl: preview, 
+                    ? {
+                        ...l,
+                        previewUrl: preview,
                         isLoadingPreview: false,
-                        status: !l.isLoadingTitle ? "ready" : l.status
+                        status: !l.isLoadingTitle ? "ready" : l.status,
                       }
                     : l
                 )
@@ -275,10 +328,10 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
               setLinks((prev) =>
                 prev.map((l) =>
                   l.id === item.id
-                    ? { 
-                        ...l, 
+                    ? {
+                        ...l,
                         isLoadingPreview: false,
-                        status: !l.isLoadingTitle ? "ready" : l.status
+                        status: !l.isLoadingTitle ? "ready" : l.status,
                       }
                     : l
                 )
@@ -292,11 +345,11 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
                 setLinks((prev) =>
                   prev.map((l) =>
                     l.id === item.id
-                      ? { 
-                          ...l, 
+                      ? {
+                          ...l,
                           title: actualTitle || generateDefaultTitle(item.url),
                           isLoadingTitle: false,
-                          status: l.isLoadingPreview ? l.status : "ready"
+                          status: l.isLoadingPreview ? l.status : "ready",
                         }
                       : l
                   )
@@ -306,11 +359,11 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
                 setLinks((prev) =>
                   prev.map((l) =>
                     l.id === item.id
-                      ? { 
-                          ...l, 
+                      ? {
+                          ...l,
                           title: generateDefaultTitle(item.url),
                           isLoadingTitle: false,
-                          status: l.isLoadingPreview ? l.status : "ready"
+                          status: l.isLoadingPreview ? l.status : "ready",
                         }
                       : l
                   )
@@ -354,9 +407,7 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
   };
 
   const updateLinkTitle = (id: string, title: string) => {
-    setLinks((prev) =>
-      prev.map((l) => (l.id === id ? { ...l, title } : l))
-    );
+    setLinks((prev) => prev.map((l) => (l.id === id ? { ...l, title } : l)));
   };
 
   const removeLink = (id: string) => {
@@ -370,14 +421,18 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
     }
 
     // Validate all titles are filled
-    const emptyTitles = links.filter((l) => !l.title.trim() || l.title === "Loading title...");
+    const emptyTitles = links.filter(
+      (l) => !l.title.trim() || l.title === "Loading title..."
+    );
     if (emptyTitles.length > 0) {
       toast.error("Please fill in all material titles");
       return;
     }
 
     // Wait for all previews and titles to finish loading
-    const stillLoading = links.some((l) => l.isLoadingPreview || l.isLoadingTitle);
+    const stillLoading = links.some(
+      (l) => l.isLoadingPreview || l.isLoadingTitle
+    );
     if (stillLoading) {
       toast.error("Please wait for all data to load");
       return;
@@ -395,14 +450,15 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
         visibility: VisibilityEnum.PUBLIC,
         restriction: RestrictionEnum.DOWNLOADABLE,
         targetCourseId: targetCourseId || undefined,
+        folderId: folderId || undefined,
       }));
 
       const result = await batchCreateMaterials(materials);
       // Result is Response<BatchCreateMaterialsResponse>
-      if ('data' in result && result.data) {
+      if ("data" in result && result.data) {
         onComplete(result.data);
       } else {
-        throw new Error('Unexpected response format');
+        throw new Error("Unexpected response format");
       }
     } catch (error: any) {
       onError(error?.message || "Batch upload failed");
@@ -456,7 +512,7 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
 Introduction to Python,https://www.youtube.com/watch?v=dQw4w9WgXcQ
 Course Materials Folder,https://drive.google.com/drive/folders/1234567890
 Week 1 Lecture Notes,https://docs.google.com/document/d/abc123`;
-    
+
     const blob = new Blob([sample], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -482,7 +538,7 @@ Week 1 Lecture Notes,https://docs.google.com/document/d/abc123`;
             Download Sample
           </button>
         </div>
-        
+
         <textarea
           value={csvInput}
           onChange={(e) => setCsvInput(e.target.value)}
@@ -508,7 +564,7 @@ https://drive.google.com/drive/folders/...`}
           >
             {isParsing ? "Parsing..." : "Parse CSV"}
           </button>
-          
+
           <label className="flex-1">
             <input
               type="file"
@@ -563,7 +619,9 @@ https://drive.google.com/drive/folders/...`}
                       <input
                         type="text"
                         value={item.title}
-                        onChange={(e) => updateLinkTitle(item.id, e.target.value)}
+                        onChange={(e) =>
+                          updateLinkTitle(item.id, e.target.value)
+                        }
                         disabled={isUploading || item.isLoadingTitle}
                         className={`w-full text-sm font-medium text-gray-900 border-b border-transparent hover:border-gray-300 focus:border-brand focus:outline-none bg-transparent truncate disabled:opacity-75 ${
                           item.isLoadingTitle ? "text-gray-400 italic" : ""
@@ -571,7 +629,10 @@ https://drive.google.com/drive/folders/...`}
                         placeholder="Enter title..."
                       />
                       {item.isLoadingTitle && (
-                        <Loading03Icon size={12} className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 animate-spin" />
+                        <Loading03Icon
+                          size={12}
+                          className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 animate-spin"
+                        />
                       )}
                     </div>
                     <div className="flex items-center gap-2 mt-1">
@@ -579,7 +640,9 @@ https://drive.google.com/drive/folders/...`}
                         {getTypeLabel(item.type)}
                       </span>
                       <button
-                        onClick={() => window.open(item.url, '_blank', 'noopener,noreferrer')}
+                        onClick={() =>
+                          window.open(item.url, "_blank", "noopener,noreferrer")
+                        }
                         className="text-xs text-gray-400 hover:text-brand hover:underline truncate transition-colors cursor-pointer"
                         title={`Click to open: ${item.url}`}
                       >
@@ -604,19 +667,43 @@ https://drive.google.com/drive/folders/...`}
         </div>
       )}
 
-      {/* Course Selection */}
-      <div className="pt-2">
+      {/* Course & Folder Selection */}
+      <div className="pt-2 space-y-3">
         <SelectCourse
           label="Target Course (Optional - applies to all)"
           currentValue={targetCourseId}
           onChange={setTargetCourseId}
         />
+
+        <div>
+          <SelectModal
+            label="Add to Folder (Optional - applies to all)"
+            value={folderId}
+            onChange={setFolderId}
+            options={folderOptions}
+            placeholder="Search and select a folder..."
+            searchable={true}
+            loading={foldersLoading}
+            emptyMessage="No folders found. Create a folder first."
+            displayValue={(value, selectedOption) => {
+              if (!value) return "";
+              return selectedOption?.label || "";
+            }}
+          />
+          <p className="text-xs text-gray-600 mt-1">
+            Select a folder to organize all uploaded links
+          </p>
+        </div>
       </div>
 
       {/* Upload Button */}
       <button
         onClick={handleUpload}
-        disabled={isUploading || links.length === 0 || links.some((l) => l.isLoadingPreview)}
+        disabled={
+          isUploading ||
+          links.length === 0 ||
+          links.some((l) => l.isLoadingPreview)
+        }
         className="w-full py-3 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
       >
         {isUploading

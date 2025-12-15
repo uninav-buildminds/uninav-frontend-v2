@@ -30,6 +30,9 @@ interface UploadModalProps {
   onClose: () => void;
   editingMaterial?: Material | null; // Material to edit (if in editing mode)
   onEditComplete?: () => void; // Callback after successful edit
+  onCreateComplete?: (material: Material) => void; // Callback after successful creation
+  folderId?: string; // Optional folder ID to pre-fill when uploading to a specific folder
+  currentFolder?: { id: string; label: string; description?: string }; // Current folder info (for public folders not in user's list)
 }
 
 const UploadModal: React.FC<UploadModalProps> = ({
@@ -37,6 +40,9 @@ const UploadModal: React.FC<UploadModalProps> = ({
   onClose,
   editingMaterial = null,
   onEditComplete,
+  onCreateComplete,
+  folderId,
+  currentFolder,
 }) => {
   const isEditMode = !!editingMaterial;
 
@@ -164,6 +170,9 @@ const UploadModal: React.FC<UploadModalProps> = ({
           console.log("No preview to process");
         }
 
+        // Let callers update their local state immediately
+        onCreateComplete?.(result.data);
+
         setCurrentStep("success");
       }
     } catch (error: any) {
@@ -261,6 +270,8 @@ const UploadModal: React.FC<UploadModalProps> = ({
               onBack={handleBack}
               editingMaterial={editingMaterial}
               isEditMode={isEditMode}
+              folderId={folderId}
+              currentFolder={currentFolder}
             />
           );
         } else if (materialType === "link") {
@@ -271,6 +282,8 @@ const UploadModal: React.FC<UploadModalProps> = ({
               editingMaterial={editingMaterial}
               isEditMode={isEditMode}
               onTempPreviewChange={setTempPreviewUrl}
+              folderId={folderId}
+              currentFolder={currentFolder}
             />
           );
         }

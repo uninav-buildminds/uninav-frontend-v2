@@ -12,7 +12,7 @@ import useSWR from "swr";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { UserProfile } from "@/lib/types/user.types";
-import { getAuthState, setAuthState, clearAuthState } from "@/lib/authStorage";
+import { getAuthState, setAuthState, clearAuthState, getRedirectPath, clearRedirectPath } from "@/lib/authStorage";
 
 /**
  * Fetches the profile of the currently authenticated user
@@ -88,7 +88,10 @@ export default function AuthContextProvider({
         credentialResponse,
         () => {
           setAuthState(true); // Set localStorage before reload
-          navigate("/dashboard");
+          // Check for stored redirect path, fallback to dashboard
+          const redirectPath = getRedirectPath() || "/dashboard";
+          clearRedirectPath(); // Clear redirect path after using it
+          navigate(redirectPath);
           window.location.reload();
         },
         () => {
@@ -114,6 +117,7 @@ export default function AuthContextProvider({
   const logOut = useCallback(async () => {
     googleLogout();
     clearAuthState(); // Clear localStorage before logout
+    clearRedirectPath(); // Clear redirect path on logout
     await apiLogOut();
     window.location.reload();
   }, []);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { FolderAddIcon, PreferenceHorizontalIcon } from "hugeicons-react";
 import PageHeader from "@/components/dashboard/PageHeader";
@@ -216,8 +216,8 @@ const Libraries: React.FC = () => {
     setShowFolderModal(true);
   };
 
-  const handleShareFolder = (folderId: string) => {
-    const folderUrl = `${window.location.origin}/dashboard/folder/${folderId}`;
+  const handleShareFolder = (folderSlug: string) => {
+    const folderUrl = `${window.location.origin}/dashboard/folder/${folderSlug}`;
     navigator.clipboard.writeText(folderUrl);
     toast.success("Folder link copied to clipboard!");
   };
@@ -446,7 +446,10 @@ const Libraries: React.FC = () => {
   };
 
   const getFolderMaterialCount = (folder: Folder): number => {
-    // Count materials by checking contentMaterialId (more reliable than checking material object)
+    // Prefer backend-provided stats when available, fall back to content array
+    if (typeof folder.materialCount === "number") {
+      return folder.materialCount;
+    }
     return folder.content?.filter((item) => item.contentMaterialId).length || 0;
   };
 
@@ -464,6 +467,14 @@ const Libraries: React.FC = () => {
   const handleEditMaterial = (material: Material) => {
     setEditingMaterial(material);
     setShowUploadModal(true);
+  };
+
+  const handleCreateComplete = (material: Material) => {
+    setUserUploads((prev) => [material, ...prev]);
+    setFilteredUploads((prev) => [material, ...prev]);
+    setActiveTab("uploads");
+    // Sync with server to ensure the latest data (e.g., moderation updates)
+    void fetchUserUploads();
   };
 
   const handleDeleteMaterial = async (id: string) => {
@@ -538,7 +549,9 @@ const Libraries: React.FC = () => {
         break;
       case "all":
       default:
-        materials = [...filteredSavedMaterials, ...filteredUploads];
+        materials = [...filteredSavedMaterials, ...filteredUploads].filter(
+          (material) => !folderMaterialIds.has(material.id)
+        );
         break;
     }
     return sortMaterialsByLastViewed(materials);
@@ -558,6 +571,18 @@ const Libraries: React.FC = () => {
     const bCreated = b.createdAt ? new Date(b.createdAt).getTime() : 0;
     return bCreated - aCreated;
   });
+
+  // Materials that already live inside any folder (by material id)
+  const folderMaterialIds = useMemo(() => {
+    const ids = new Set<string>();
+    folders.forEach((folder) => {
+      folder.content?.forEach((item) => {
+        if (item.contentMaterialId) ids.add(item.contentMaterialId);
+        if (item.material?.id) ids.add(item.material.id);
+      });
+    });
+    return ids;
+  }, [folders]);
 
   const currentMaterials = getCurrentMaterials();
   const hasContent = folders.length > 0 || currentMaterials.length > 0;
@@ -728,7 +753,7 @@ const Libraries: React.FC = () => {
                   <FolderCard
                     folder={folder}
                     onClick={() => handleFolderClick(folder)}
-                    onShare={() => handleShareFolder(folder.id)}
+                    onShare={() => handleShareFolder(folder.slug)}
                     onEdit={handleEditFolder}
                     onDelete={handleDeleteFolder}
                     materialCount={getFolderMaterialCount(folder)}
@@ -815,6 +840,7 @@ const Libraries: React.FC = () => {
         isOpen={showUploadModal}
         onClose={handleModalClose}
         editingMaterial={editingMaterial}
+        onCreateComplete={handleCreateComplete}
         onEditComplete={handleEditComplete}
       />
     </>
