@@ -30,6 +30,14 @@ export interface Folder {
   lastViewedAt?: string;
   createdAt: string;
   updatedAt: string;
+  // Optional stats attached by backend for convenience
+  materialCount?: number;
+  nestedFolderCount?: number;
+}
+
+export interface FolderStats {
+  materialCount: number;
+  nestedFolderCount: number;
 }
 
 export interface CreateFolderDto {
@@ -122,6 +130,28 @@ export async function getFolder(
     throw {
       statusCode: error.response?.status || 500,
       message: error.response?.data?.message || "Failed to fetch folder",
+    };
+  }
+}
+
+/**
+ * Get folder stats (material and nested folder counts)
+ * @param folderId - Folder ID
+ * @returns stats response or null
+ */
+export async function getFolderStats(
+  folderId: string
+): Promise<Response<FolderStats> | null> {
+  try {
+    const response = await httpClient.get(`/folders/stats/${folderId}`);
+    if (response.data.status === "success") {
+      return response.data;
+    }
+    return null;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status || 500,
+      message: error.response?.data?.message || "Failed to fetch folder stats",
     };
   }
 }

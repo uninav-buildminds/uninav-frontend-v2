@@ -446,7 +446,10 @@ const Libraries: React.FC = () => {
   };
 
   const getFolderMaterialCount = (folder: Folder): number => {
-    // Count materials by checking contentMaterialId (more reliable than checking material object)
+    // Prefer backend-provided stats when available, fall back to content array
+    if (typeof folder.materialCount === "number") {
+      return folder.materialCount;
+    }
     return folder.content?.filter((item) => item.contentMaterialId).length || 0;
   };
 

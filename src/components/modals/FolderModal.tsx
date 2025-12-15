@@ -248,7 +248,7 @@ const FolderModal: React.FC<FolderModalProps> = ({
                     <div className="flex items-center justify-center py-12">
                       <div className="animate-spin rounded-full h-12 w-12 border-4 border-brand border-t-transparent" />
                     </div>
-                  ) : materials.length === 0 ? (
+                  ) : materials.length === 0 && nestedFolders.length === 0 ? (
                     <div className="text-center py-12">
                       <div className="mb-4 p-3 sm:p-4 bg-gray-50 rounded-full inline-block">
                         <Folder03Icon className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-gray-400" />
@@ -272,9 +272,11 @@ const FolderModal: React.FC<FolderModalProps> = ({
                             navigate(`/dashboard/folder/${nestedFolder.slug}`)
                           }
                           materialCount={
-                            nestedFolder.content?.filter(
-                              (item) => item.contentMaterialId
-                            ).length || 0
+                            typeof nestedFolder.materialCount === "number"
+                              ? nestedFolder.materialCount
+                              : nestedFolder.content?.filter(
+                                  (item) => item.contentMaterialId
+                                ).length || 0
                           }
                         />
                       ))}

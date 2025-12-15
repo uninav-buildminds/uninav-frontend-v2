@@ -112,6 +112,10 @@ const FolderView: React.FC<FolderViewProps> = ({ isPublic = false }) => {
   };
 
   const getFolderMaterialCount = (folder: Folder): number => {
+    // Prefer backend-provided stats when available, fall back to content if present
+    if (typeof folder.materialCount === "number") {
+      return folder.materialCount;
+    }
     return folder.content?.filter((item) => item.contentMaterialId).length || 0;
   };
 
