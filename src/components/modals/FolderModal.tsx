@@ -12,6 +12,7 @@ import {
 import { Folder, getFolder } from "@/api/folder.api";
 import { Material } from "@/lib/types/material.types";
 import MaterialCard from "@/components/dashboard/MaterialCard";
+import FolderCard from "@/components/dashboard/FolderCard";
 import { toast } from "sonner";
 import UploadModal from "./UploadModal";
 import { useAuth } from "@/hooks/useAuth";
@@ -42,6 +43,7 @@ const FolderModal: React.FC<FolderModalProps> = ({
   const [folderData, setFolderData] = useState<Folder | null>(folder);
   const [isLoading, setIsLoading] = useState(false);
   const [materials, setMaterials] = useState<Material[]>([]);
+  const [nestedFolders, setNestedFolders] = useState<Folder[]>([]);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   useEffect(() => {
@@ -63,12 +65,21 @@ const FolderModal: React.FC<FolderModalProps> = ({
       const response = await getFolder(folder.id);
       if (response && response.status === "success" && response.data) {
         setFolderData(response.data);
-        // Extract materials from folder content
-        const folderMaterials =
-          response.data.content
-            ?.filter((item) => item.material)
-            .map((item) => item.material as Material) || [];
+        // Extract materials and nested folders from folder content
+        const folderMaterials: Material[] = [];
+        const folderNestedFolders: Folder[] = [];
+
+        response.data.content?.forEach((item) => {
+          if (item.material) {
+            folderMaterials.push(item.material as Material);
+          }
+          if (item.nestedFolder) {
+            folderNestedFolders.push(item.nestedFolder as Folder);
+          }
+        });
+
         setMaterials(folderMaterials);
+        setNestedFolders(folderNestedFolders);
       }
     } catch (error: unknown) {
       const errorMessage =
@@ -252,6 +263,23 @@ const FolderModal: React.FC<FolderModalProps> = ({
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
+                      {/* Nested Folders */}
+                      {nestedFolders.map((nestedFolder) => (
+                        <FolderCard
+                          key={nestedFolder.id}
+                          folder={nestedFolder}
+                          onClick={() =>
+                            navigate(`/dashboard/folder/${nestedFolder.slug}`)
+                          }
+                          materialCount={
+                            nestedFolder.content?.filter(
+                              (item) => item.contentMaterialId
+                            ).length || 0
+                          }
+                        />
+                      ))}
+
+                      {/* Materials */}
                       {materials.map((material) => (
                         <div key={material.id} className="relative group">
                           <MaterialCard
