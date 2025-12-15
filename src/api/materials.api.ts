@@ -654,6 +654,7 @@ export interface BatchMaterialItem {
   visibility?: VisibilityEnum;
   restriction?: RestrictionEnum;
   targetCourseId?: string;
+  folderId?: string;
   metaData?: Record<string, any>;
 }
 
@@ -712,6 +713,7 @@ export async function batchCreateFilesMaterials(
     visibility: VisibilityEnum;
     accessRestrictions: RestrictionEnum;
     targetCourseId?: string;
+    folderId?: string;
     pageCount?: number;
     filePreview?: File;
   }>,
@@ -734,6 +736,7 @@ export async function batchCreateFilesMaterials(
         accessRestrictions: item.accessRestrictions,
         tags: item.tags || [],
         targetCourseId: item.targetCourseId,
+        folderId: item.folderId,
         pageCount: item.pageCount,
         file: item.file,
         filePreview: item.filePreview,

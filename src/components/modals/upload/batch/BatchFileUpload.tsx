@@ -17,7 +17,11 @@ import {
   batchCreateFilesMaterials,
   BatchMaterialResult,
 } from "@/api/materials.api";
-import { VisibilityEnum, RestrictionEnum, MaterialTypeEnum } from "@/lib/types/material.types";
+import {
+  VisibilityEnum,
+  RestrictionEnum,
+  MaterialTypeEnum,
+} from "@/lib/types/material.types";
 import {
   inferMaterialType,
   generateDefaultTitle,
@@ -25,6 +29,11 @@ import {
 import { SelectCourse } from "../shared/SelectCourse";
 import { countFilePages } from "@/lib/utils/pageCounter";
 import { pdfjs } from "react-pdf";
+import {
+  SelectModal,
+  SelectOption,
+} from "@/components/dashboard/SearchSelectModal";
+import { getMyFolders, Folder } from "@/api/folder.api";
 
 // Configure PDF.js worker
 const workerSrc = "/pdf.worker.min.mjs";
@@ -52,34 +61,42 @@ const MAX_FILES = 20;
 const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500MB
 
 // Generate PDF thumbnail
-async function generatePdfThumbnail(file: File): Promise<{ preview: File; url: string } | null> {
+async function generatePdfThumbnail(
+  file: File
+): Promise<{ preview: File; url: string } | null> {
   try {
     const arrayBuffer = await file.arrayBuffer();
     const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
     const page = await pdf.getPage(1);
-    
+
     const scale = 0.5;
     const viewport = page.getViewport({ scale });
-    
+
     const canvas = document.createElement("canvas");
     const context = canvas.getContext("2d");
     if (!context) return null;
-    
+
     canvas.width = viewport.width;
     canvas.height = viewport.height;
-    
+
     await page.render({ canvasContext: context, viewport, canvas }).promise;
-    
+
     return new Promise((resolve) => {
-      canvas.toBlob((blob) => {
-        if (blob) {
-          const previewFile = new File([blob], `${file.name}-preview.jpg`, { type: "image/jpeg" });
-          const url = URL.createObjectURL(blob);
-          resolve({ preview: previewFile, url });
-        } else {
-          resolve(null);
-        }
-      }, "image/jpeg", 0.7);
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            const previewFile = new File([blob], `${file.name}-preview.jpg`, {
+              type: "image/jpeg",
+            });
+            const url = URL.createObjectURL(blob);
+            resolve({ preview: previewFile, url });
+          } else {
+            resolve(null);
+          }
+        },
+        "image/jpeg",
+        0.7
+      );
     });
   } catch (e) {
     console.error("PDF thumbnail generation failed:", e);
@@ -109,6 +126,9 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
   const [files, setFiles] = useState<BatchFileItem[]>([]);
   const [dragActive, setDragActive] = useState(false);
   const [targetCourseId, setTargetCourseId] = useState<string>("");
+  const [folderId, setFolderId] = useState<string>("");
+  const [folderOptions, setFolderOptions] = useState<SelectOption[]>([]);
+  const [foldersLoading, setFoldersLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<{
     current: number;
@@ -119,37 +139,66 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
 
   const generateId = () => Math.random().toString(36).substring(2, 9);
 
-  const processFile = useCallback(async (file: File): Promise<BatchFileItem> => {
-    const item: BatchFileItem = {
-      id: generateId(),
-      file,
-      title: generateDefaultTitle(file),
-      preview: null,
-      previewUrl: null,
-      status: "pending",
+  // Load user's folders for optional folder selection in batch file upload
+  useEffect(() => {
+    const fetchFolders = async () => {
+      try {
+        setFoldersLoading(true);
+        const response = await getMyFolders();
+        if (response?.data) {
+          const options: SelectOption[] = response.data.map(
+            (folder: Folder) => ({
+              value: folder.id,
+              label: folder.label,
+              description: folder.description,
+            })
+          );
+          setFolderOptions(options);
+        }
+      } catch (error) {
+        console.error("Failed to fetch folders for batch files:", error);
+      } finally {
+        setFoldersLoading(false);
+      }
     };
 
-    // Generate preview for PDFs
-    if (file.type === "application/pdf") {
-      const result = await generatePdfThumbnail(file);
-      if (result) {
-        item.preview = result.preview;
-        item.previewUrl = result.url;
-      }
-    }
-
-    // Count pages in background
-    try {
-      const pageCount = await countFilePages(file);
-      if (pageCount > 0) {
-        item.pageCount = pageCount;
-      }
-    } catch (e) {
-      // Silent fail - page count is optional
-    }
-
-    return item;
+    fetchFolders();
   }, []);
+
+  const processFile = useCallback(
+    async (file: File): Promise<BatchFileItem> => {
+      const item: BatchFileItem = {
+        id: generateId(),
+        file,
+        title: generateDefaultTitle(file),
+        preview: null,
+        previewUrl: null,
+        status: "pending",
+      };
+
+      // Generate preview for PDFs
+      if (file.type === "application/pdf") {
+        const result = await generatePdfThumbnail(file);
+        if (result) {
+          item.preview = result.preview;
+          item.previewUrl = result.url;
+        }
+      }
+
+      // Count pages in background
+      try {
+        const pageCount = await countFilePages(file);
+        if (pageCount > 0) {
+          item.pageCount = pageCount;
+        }
+      } catch (e) {
+        // Silent fail - page count is optional
+      }
+
+      return item;
+    },
+    []
+  );
 
   const handleFiles = useCallback(
     async (newFiles: FileList | File[]) => {
@@ -217,9 +266,7 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
   };
 
   const updateFileTitle = (id: string, title: string) => {
-    setFiles((prev) =>
-      prev.map((f) => (f.id === id ? { ...f, title } : f))
-    );
+    setFiles((prev) => prev.map((f) => (f.id === id ? { ...f, title } : f)));
   };
 
   const removeFile = (id: string) => {
@@ -264,13 +311,14 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
         targetCourseId: targetCourseId || undefined,
         pageCount: f.pageCount,
         filePreview: f.preview || undefined,
+        folderId: folderId || undefined,
       }));
 
       const result = await batchCreateFilesMaterials(
         filesToUpload,
         (current, total, itemResult) => {
           setUploadProgress({ current, total });
-          
+
           // Update individual file status
           setFiles((prev) =>
             prev.map((f, idx) => {
@@ -426,7 +474,10 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
                         </span>
                       )}
                       {item.error && (
-                        <span className="text-xs text-red-500 truncate" title={item.error}>
+                        <span
+                          className="text-xs text-red-500 truncate"
+                          title={item.error}
+                        >
                           {item.error}
                         </span>
                       )}
@@ -452,13 +503,33 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
         </div>
       )}
 
-      {/* Course Selection */}
-      <div className="pt-2">
+      {/* Course & Folder Selection */}
+      <div className="pt-2 space-y-3">
         <SelectCourse
           label="Target Course (Optional - applies to all)"
           currentValue={targetCourseId}
           onChange={setTargetCourseId}
         />
+
+        <div>
+          <SelectModal
+            label="Add to Folder (Optional - applies to all)"
+            value={folderId}
+            onChange={setFolderId}
+            options={folderOptions}
+            placeholder="Search and select a folder..."
+            searchable={true}
+            loading={foldersLoading}
+            emptyMessage="No folders found. Create a folder first."
+            displayValue={(value, selectedOption) => {
+              if (!value) return "";
+              return selectedOption?.label || "";
+            }}
+          />
+          <p className="text-xs text-gray-600 mt-1">
+            Select a folder to organize all uploaded files
+          </p>
+        </div>
       </div>
 
       {/* Upload Progress */}
@@ -474,7 +545,9 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
             <div
               className="bg-brand h-2 rounded-full transition-all duration-300"
               style={{
-                width: `${(uploadProgress.current / uploadProgress.total) * 100}%`,
+                width: `${
+                  (uploadProgress.current / uploadProgress.total) * 100
+                }%`,
               }}
             />
           </div>
