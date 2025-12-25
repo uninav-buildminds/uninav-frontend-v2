@@ -32,7 +32,7 @@ import { pdfjs } from "react-pdf";
 import {
   SelectModal,
   SelectOption,
-} from "@/components/dashboard/SearchSelectModal";
+} from "@/components/modals/shared/SearchSelectModal";
 import { getMyFolders, Folder } from "@/api/folder.api";
 
 // Configure PDF.js worker

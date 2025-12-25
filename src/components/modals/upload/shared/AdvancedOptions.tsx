@@ -9,7 +9,7 @@ import {
   Download01Icon,
   ArrowDown01Icon,
 } from "hugeicons-react";
-import { SelectModal, SelectOption } from "@/components/dashboard/SearchSelectModal";
+import { SelectModal, SelectOption } from "@/components/modals/shared/SearchSelectModal";
 import { getMyFolders, Folder } from "@/api/folder.api";
 
 interface AdvancedOptionsProps {

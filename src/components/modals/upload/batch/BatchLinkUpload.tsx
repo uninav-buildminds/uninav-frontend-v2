@@ -31,7 +31,7 @@ import { isGDriveFolder } from "@/lib/utils/gdriveUtils";
 import {
   SelectModal,
   SelectOption,
-} from "@/components/dashboard/SearchSelectModal";
+} from "@/components/modals/shared/SearchSelectModal";
 import { getMyFolders, Folder } from "@/api/folder.api";
 import {
   extractGDriveId,

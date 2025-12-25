@@ -38,17 +38,17 @@ const Step1: React.FC<Step1Props> = ({ onSelectType, onBatchUpload }) => {
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.99 }}
           >
-                    <div className="flex items-center space-x-3 sm:space-x-4">
-                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-brand/20 rounded-lg flex items-center justify-center group-hover:bg-brand/30 transition-colors">
-                        <File02Icon size={16} className="sm:w-5 sm:h-5 text-brand" />
-                      </div>
-                      <div className="text-left">
-                        <h4 className="text-sm sm:text-base font-semibold text-gray-900">File Upload</h4>
-                        <p className="text-xs sm:text-sm text-gray-600">
-                          Drag your PDF, PPT, or DOC file or browse
-                        </p>
-                      </div>
-                    </div>
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-brand/20 rounded-lg flex items-center justify-center group-hover:bg-brand/30 transition-colors">
+                <File02Icon size={16} className="sm:w-5 sm:h-5 text-brand" />
+              </div>
+              <div className="text-left">
+                <h4 className="text-sm sm:text-base font-semibold text-gray-900">File Upload</h4>
+                <p className="text-xs sm:text-sm text-gray-600">
+                  Drag your PDF, PPT, or DOC file or browse
+                </p>
+              </div>
+            </div>
           </motion.button>
 
           {/* Helpful Link Option */}
@@ -58,30 +58,30 @@ const Step1: React.FC<Step1Props> = ({ onSelectType, onBatchUpload }) => {
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.99 }}
           >
-                    <div className="flex items-center space-x-3 sm:space-x-4">
-                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 transition-colors">
-                        <Link01Icon size={16} className="sm:w-5 sm:h-5 text-green-600" />
-                      </div>
-                      <div className="text-left">
-                        <h4 className="text-sm sm:text-base font-semibold text-gray-900">Helpful Link</h4>
-                        <p className="text-xs sm:text-sm text-gray-600">
-                          Paste the URL
-                        </p>
-                      </div>
-                    </div>
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 transition-colors">
+                <Link01Icon size={16} className="sm:w-5 sm:h-5 text-green-600" />
+              </div>
+              <div className="text-left">
+                <h4 className="text-sm sm:text-base font-semibold text-gray-900">Helpful Link</h4>
+                <p className="text-xs sm:text-sm text-gray-600">
+                  Paste the URL
+                </p>
+              </div>
+            </div>
           </motion.button>
 
           {/* Batch Upload Option */}
           {onBatchUpload && (
             <motion.button
               onClick={onBatchUpload}
-              className="w-full p-4 border-2 border-gray-200 rounded-xl hover:border-purple-500 hover:bg-purple-50 transition-all duration-200 group"
+              className="w-full p-4 border-2 border-gray-200 rounded-xl hover:border-brand hover:bg-brand/5 transition-all duration-200 group"
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
             >
               <div className="flex items-center space-x-3 sm:space-x-4">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors">
-                  <Layers01Icon size={16} className="sm:w-5 sm:h-5 text-purple-600" />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-brand/20 rounded-lg flex items-center justify-center group-hover:bg-brand/30 transition-colors">
+                  <Layers01Icon size={16} className="sm:w-5 sm:h-5 text-brand" />
                 </div>
                 <div className="text-left">
                   <h4 className="text-sm sm:text-base font-semibold text-gray-900">Batch Upload</h4>

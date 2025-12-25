@@ -4,6 +4,7 @@ import {
   Share08Icon,
   PencilEdit02Icon,
   Delete02Icon,
+  FolderAddIcon,
 } from "hugeicons-react";
 import { Folder } from "@/api/folder.api";
 import {
@@ -12,7 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import AddFolderToFolderModal from "./AddFolderToFolderModal";
+import AddFolderToFolderModal from "@/components/modals/folder/AddFolderToFolderModal";
 
 interface FolderCardProps {
   folder: Folder;
@@ -180,7 +181,7 @@ const FolderCard: React.FC<FolderCardProps> = ({
                     onClick={handleAddToFolderClick}
                     className="flex items-center gap-2 cursor-pointer"
                   >
-                    <Share08Icon size={16} />
+                    <FolderAddIcon size={16} />
                     Add to Folder
                   </DropdownMenuItem>
                   {onEdit && (
