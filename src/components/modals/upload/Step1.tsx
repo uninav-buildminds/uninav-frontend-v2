@@ -59,8 +59,8 @@ const Step1: React.FC<Step1Props> = ({ onSelectType, onBatchUpload }) => {
             whileTap={{ scale: 0.99 }}
           >
             <div className="flex items-center space-x-3 sm:space-x-4">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 transition-colors">
-                <Link01Icon size={16} className="sm:w-5 sm:h-5 text-green-600" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-brand/20 rounded-lg flex items-center justify-center group-hover:bg-brand/30 transition-colors">
+                <Link01Icon size={16} className="sm:w-5 sm:h-5 text-brand" />
               </div>
               <div className="text-left">
                 <h4 className="text-sm sm:text-base font-semibold text-gray-900">Helpful Link</h4>

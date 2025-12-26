@@ -8,6 +8,7 @@ import {
   AlertCircleIcon,
   FileDownloadIcon,
   Upload01Icon,
+  ArrowLeft01Icon,
 } from "hugeicons-react";
 import { toast } from "sonner";
 import {
@@ -58,6 +59,7 @@ interface BatchLinkUploadProps {
   onComplete: (result: BatchCreateMaterialsResponse) => void;
   onError: (error: string) => void;
   onUploadingChange: (isUploading: boolean) => void;
+  onBack?: () => void;
 }
 
 const MAX_LINKS = 50;
@@ -66,6 +68,7 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
   onComplete,
   onError,
   onUploadingChange,
+  onBack,
 }) => {
   const [links, setLinks] = useState<BatchLinkItem[]>([]);
   const [csvInput, setCsvInput] = useState("");
@@ -696,22 +699,34 @@ https://drive.google.com/drive/folders/...`}
         </div>
       </div>
 
-      {/* Upload Button */}
-      <button
-        onClick={handleUpload}
-        disabled={
-          isUploading ||
-          links.length === 0 ||
-          links.some((l) => l.isLoadingPreview)
-        }
-        className="w-full py-3 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-      >
-        {isUploading
-          ? "Uploading..."
-          : links.some((l) => l.isLoadingPreview)
-          ? "Loading previews..."
-          : `Upload ${links.length} Link${links.length !== 1 ? "s" : ""}`}
-      </button>
+      {/* Action Buttons */}
+      <div className="flex space-x-3 pt-3">
+        {onBack && (
+          <button
+            onClick={onBack}
+            disabled={isUploading}
+            className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <ArrowLeft01Icon size={16} />
+            <span>Back</span>
+          </button>
+        )}
+        <button
+          onClick={handleUpload}
+          disabled={
+            isUploading ||
+            links.length === 0 ||
+            links.some((l) => l.isLoadingPreview)
+          }
+          className="flex-1 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+        >
+          {isUploading
+            ? "Uploading..."
+            : links.some((l) => l.isLoadingPreview)
+            ? "Loading previews..."
+            : `Upload ${links.length} Link${links.length !== 1 ? "s" : ""}`}
+        </button>
+      </div>
     </div>
   );
 };

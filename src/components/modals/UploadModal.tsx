@@ -85,13 +85,22 @@ const UploadModal: React.FC<UploadModalProps> = ({
   };
 
   const handleBatchUpload = () => {
-    // Close the regular modal and open batch upload
-    handleClose();
+    // Don't close the modal, just show batch upload on top
+    // Reset to Step1 state for when user comes back
+    setCurrentStep("type-selection");
+    setMaterialType(null);
     setShowBatchUpload(true);
   };
 
   const handleBatchUploadClose = () => {
     setShowBatchUpload(false);
+  };
+
+  const handleBatchUploadBack = () => {
+    // Close batch upload and show main modal at Step1
+    setShowBatchUpload(false);
+    setCurrentStep("type-selection");
+    setMaterialType(null);
   };
 
   const handleUploadComplete = async (data: CreateMaterialForm) => {
@@ -328,7 +337,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
     <>
       {createPortal(
         <AnimatePresence>
-          {isOpen && (
+          {isOpen && !showBatchUpload && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -375,6 +384,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
       <BatchUploadModal
         isOpen={showBatchUpload}
         onClose={handleBatchUploadClose}
+        onBack={handleBatchUploadBack}
       />
     </>
   );

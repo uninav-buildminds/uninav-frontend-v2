@@ -288,6 +288,7 @@ const FolderModal: React.FC<FolderModalProps> = ({
                             material={material}
                             onRead={onRead}
                             onShare={onShare}
+                            isInFolder={true}
                           />
                           {onRemoveMaterial && folder?.id && (
                             <button

@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { getMyFolders, addMaterialToFolder, type Folder } from "@/api/folder.api";
 import { useAuth } from "@/hooks/useAuth";
 import { setRedirectPath, convertPublicToAuthPath } from "@/lib/authStorage";
+import { useFolderContext } from "@/context/folder/FolderContextProvider";
 import {
   Combobox,
   ComboboxInput,
@@ -33,6 +34,7 @@ const AddToFolderModal: React.FC<AddToFolderModalProps> = ({
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const { refreshFolders } = useFolderContext();
   const [folders, setFolders] = useState<Folder[]>([]);
   const [selectedFolderId, setSelectedFolderId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
@@ -119,6 +121,8 @@ const AddToFolderModal: React.FC<AddToFolderModalProps> = ({
       const response = await addMaterialToFolder(selectedFolderId, materialId);
       if (response && response.status === "success") {
         toast.success("Material added to folder successfully!");
+        // Refresh folder context so MaterialCards update immediately
+        await refreshFolders();
         onClose();
       } else {
         throw new Error("Failed to add material to folder");

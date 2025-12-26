@@ -40,6 +40,7 @@ import AuthContextProvider from "./context/authentication/AuthContextProvider";
 import { BookmarkProvider } from "./context/bookmark/BookmarkContextProvider";
 import { DepartmentProvider } from "./context/department/DepartmentContextProvider";
 import { FullscreenProvider } from "./context/FullscreenContext";
+import { FolderProvider } from "./context/folder/FolderContextProvider";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import Help from "./pages/dashboard/Help";
 import Profile from "./pages/dashboard/Profile";
@@ -63,7 +64,8 @@ const App = () => {
               <AuthContextProvider>
                 <DepartmentProvider>
                   <BookmarkProvider>
-                    <FullscreenProvider>
+                    <FolderProvider>
+                      <FullscreenProvider>
                       <Routes>
                         <Route path="/" element={<Index />} />
 
@@ -243,7 +245,8 @@ const App = () => {
                         {/* 404 - Catch all unmatched routes */}
                         <Route path="*" element={<NotFound />} />
                       </Routes>
-                    </FullscreenProvider>
+                      </FullscreenProvider>
+                    </FolderProvider>
                   </BookmarkProvider>
                 </DepartmentProvider>
               </AuthContextProvider>

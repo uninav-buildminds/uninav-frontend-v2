@@ -1,25 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import {
-  UploadSquare01Icon,
-  ArrowLeft01Icon,
-  File01Icon,
-
-} from "hugeicons-react";
+import { UploadSquare01Icon, ArrowLeft01Icon, File01Icon } from "hugeicons-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  uploadFileSchema,
-  type UploadFileInput,
-} from "@/lib/validation/upload";
+import { uploadFileSchema, type UploadFileInput } from "@/lib/validation/upload";
 import { toast } from "sonner";
 import HeaderStepper from "./shared/HeaderStepper";
 import { Previewer } from "@/components/Preview/doc_viewer";
 import AdvancedOptions from "./shared/AdvancedOptions";
-import {
-  inferMaterialType,
-  generateDefaultTitle,
-} from "@/lib/utils/inferMaterialType";
+import { inferMaterialType, generateDefaultTitle } from "@/lib/utils/inferMaterialType";
 import { CreateMaterialFileForm } from "@/api/materials.api";
 import {
   VisibilityEnum,

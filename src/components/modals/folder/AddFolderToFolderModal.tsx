@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { getMyFolders, addNestedFolder, type Folder } from "@/api/folder.api";
 import { useAuth } from "@/hooks/useAuth";
 import { setRedirectPath, convertPublicToAuthPath } from "@/lib/authStorage";
+import { useFolderContext } from "@/context/folder/FolderContextProvider";
 import {
   Combobox,
   ComboboxInput,
@@ -34,6 +35,7 @@ const AddFolderToFolderModal: React.FC<AddFolderToFolderModalProps> = ({
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const { refreshFolders } = useFolderContext();
   const [folders, setFolders] = useState<Folder[]>([]);
   const [selectedParentId, setSelectedParentId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
@@ -118,6 +120,8 @@ const AddFolderToFolderModal: React.FC<AddFolderToFolderModalProps> = ({
       const response = await addNestedFolder(selectedParentId, folderId);
       if (response && response.status === "success") {
         toast.success("Folder added to target folder successfully!");
+        // Refresh folder context
+        await refreshFolders();
         onClose();
       } else {
         throw new Error("Failed to add folder to target folder");

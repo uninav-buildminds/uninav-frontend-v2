@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Material } from "../../lib/types/material.types";
 import { formatRelativeTime } from "../../lib/utils";
 import { useBookmarks } from "../../context/bookmark/BookmarkContextProvider";
+import { useMaterialInFolder } from "../../hooks/useMaterialInFolder";
 import {
   Tooltip,
   TooltipContent,
@@ -73,6 +74,7 @@ interface MaterialCardProps {
   componentRef?: React.Ref<HTMLDivElement>; // Ref for the card container
   draggable?: boolean; // Enable drag functionality
   onDragStart?: (material: Material) => void; // Drag start handler
+  isInFolder?: boolean; // Whether the material is already in a folder (optional override, will auto-detect if not provided)
 }
 
 const MaterialCard: React.FC<MaterialCardProps> = ({
@@ -86,6 +88,7 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
   showEditDelete = false,
   draggable = false,
   onDragStart,
+  isInFolder,
 }) => {
   const { id, label, createdAt, downloads, tags, views, likes, metaData } =
     material;
@@ -95,6 +98,12 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
   const { isBookmarked, toggleBookmark } = useBookmarks();
   const saved = isBookmarked(id);
   const [isAddToFolderModalOpen, setIsAddToFolderModalOpen] = useState(false);
+  const { materialIdsInFolders } = useMaterialInFolder();
+  
+  // Determine if material is in a folder (use prop if provided, otherwise auto-detect)
+  const materialIsInFolder = isInFolder !== undefined 
+    ? isInFolder 
+    : materialIdsInFolders.has(id);
 
   // Extract page count or file count from metaData
   const getMetaInfo = (): string | null => {
@@ -165,6 +174,10 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
 
   const handleAddToFolder = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (materialIsInFolder) {
+      toast.info("This material is already in a folder");
+      return;
+    }
     setIsAddToFolderModalOpen(true);
   };
 
@@ -355,9 +368,9 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
           </div>
 
           {/* Action Icons - Bottom Right, in front of text */}
-          <div className="absolute bottom-0 right-0 flex items-center">
-            {/* Folder Icon */}
-            {!showEditDelete && (
+          <div className="absolute bottom-0 right-0 flex items-center gap-1">
+            {/* Folder Icon - Only show if material is not already in a folder */}
+            {!showEditDelete && !materialIsInFolder && (
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
