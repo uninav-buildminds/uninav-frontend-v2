@@ -320,17 +320,18 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
 
           {/* Tags - Bottom Left */}
           {tags && tags.length > 0 && (
-            <div className="absolute bottom-2 left-2 flex flex-wrap gap-1">
+            <div className="absolute bottom-2 left-2 flex flex-nowrap gap-1 overflow-hidden max-w-[calc(100%-1rem)]">
               {tags.slice(0, 2).map((tag, index) => (
                 <span
                   key={index}
-                  className="inline-block px-2 py-0.5 text-xs bg-[#DCDFFE] text-brand rounded-md"
+                  className="inline-block px-2 py-0.5 text-xs bg-[#DCDFFE] text-brand rounded-md truncate min-w-0 flex-shrink"
+                  title={tag}
                 >
                   {tag}
                 </span>
               ))}
               {tags.length > 3 && (
-                <span className="inline-block px-2 py-0.5 text-xs bg-[#DCDFFE] text-brand rounded-md">
+                <span className="inline-block px-2 py-0.5 text-xs bg-[#DCDFFE] text-brand rounded-md flex-shrink-0 whitespace-nowrap">
                   +{tags.length - 2}
                 </span>
               )}

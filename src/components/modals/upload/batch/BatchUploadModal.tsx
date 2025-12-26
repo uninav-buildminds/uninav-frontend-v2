@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Cancel01Icon, AlertCircleIcon, File02Icon, Link01Icon, ArrowLeft01Icon } from "hugeicons-react";
 import BatchFileUpload from "./BatchFileUpload";
 import BatchLinkUpload from "./BatchLinkUpload";
-import BatchUploadSuccess from "./BatchUploadSuccess";
+import UploadSuccess from "../UploadSuccess";
 import { BatchCreateMaterialsResponse } from "@/api/materials.api";
 
 export type BatchUploadTab = "files" | "links";
@@ -149,8 +149,7 @@ const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
           >
-            <BatchUploadSuccess
-              result={uploadResult!}
+            <UploadSuccess
               onComplete={handleClose}
             />
           </motion.div>
