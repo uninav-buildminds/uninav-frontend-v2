@@ -181,12 +181,8 @@ const FolderView: React.FC<FolderViewProps> = ({ isPublic = false }) => {
     <div className="min-h-screen">
       {/* Sign-in prompt banner for public views */}
       {isPublic && (
-        <div className="bg-gradient-to-r from-brand/10 to-brand/5 border-b border-brand/20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-            <p className="text-sm text-gray-700">
-              <span className="font-medium">Viewing as guest.</span> Sign in to
-              save folders, track progress, and more.
-            </p>
+        <div className="bg-gradient-to-r from-brand/10 to-brand/5 border-b border-brand/20 relative z-10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-center">
             <Link
               to="/auth/signin"
               onClick={() => {
@@ -195,9 +191,11 @@ const FolderView: React.FC<FolderViewProps> = ({ isPublic = false }) => {
                 const authPath = convertPublicToAuthPath(currentPath);
                 setRedirectPath(authPath);
               }}
-              className="text-sm font-medium text-brand hover:text-brand/80 transition-colors"
+              className="text-sm text-gray-700 hover:text-brand transition-colors text-center"
             >
-              Sign In
+              <span className="font-medium">Viewing as guest.</span>{" "}
+              <span className="text-brand hover:underline">Sign in</span> to save
+              folders, track progress, and more.
             </Link>
           </div>
         </div>
