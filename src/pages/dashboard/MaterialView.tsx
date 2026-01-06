@@ -5,7 +5,7 @@ import {
   Download01Icon,
   Share08Icon,
   Bookmark01Icon,
-  Triangle01Icon,
+  Alert02Icon,
   File01Icon,
   MaximizeScreenIcon,
   MinimizeScreenIcon,
@@ -446,7 +446,7 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
         return (
           <div className="h-full flex items-center justify-center text-gray-500">
             <div className="text-center">
-              <Triangle01Icon
+              <Alert02Icon
                 size={48}
                 className="mx-auto mb-4 text-yellow-400"
               />
@@ -478,10 +478,10 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
             gdriveId.type === "doc"
               ? "application/vnd.google-apps.document"
               : gdriveId.type === "sheet"
-              ? "application/vnd.google-apps.spreadsheet"
-              : gdriveId.type === "presentation"
-              ? "application/vnd.google-apps.presentation"
-              : undefined
+                ? "application/vnd.google-apps.spreadsheet"
+                : gdriveId.type === "presentation"
+                  ? "application/vnd.google-apps.presentation"
+                  : undefined
           }
           zoom={zoom}
           onZoomIn={handleZoomIn}
@@ -630,9 +630,8 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
         {/* Floating Back Button - Top Left */}
         <button
           onClick={handleBack}
-          className={`fixed left-3 sm:left-4 z-50 p-2 sm:p-2.5 bg-white/90 backdrop-blur hover:bg-white border border-gray-200 rounded-full shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 ${
-            isPublic ? "top-[3.75rem] sm:top-4" : "top-3 sm:top-4"
-          }`}
+          className={`fixed left-3 sm:left-4 z-50 p-2 sm:p-2.5 bg-white/90 backdrop-blur hover:bg-white border border-gray-200 rounded-full shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 ${isPublic ? "top-[3.75rem] sm:top-4" : "top-3 sm:top-4"
+            }`}
           aria-label="Go back"
         >
           <ArrowLeft size={18} className="text-gray-700" />
@@ -640,23 +639,20 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
 
         {/* Floating Action Buttons - Top Right */}
         <div
-          className={`fixed z-50 flex items-center gap-1.5 sm:gap-2 transition-all duration-300 ${
-            isPublic ? "top-[3.75rem] sm:top-4" : "top-3 sm:top-4"
-          } ${
-            isFullscreen
+          className={`fixed z-50 flex items-center gap-1.5 sm:gap-2 transition-all duration-300 ${isPublic ? "top-[3.75rem] sm:top-4" : "top-3 sm:top-4"
+            } ${isFullscreen
               ? "right-3 sm:right-4"
               : !sidebarCollapsed
-              ? "right-3 sm:right-4 md:right-[calc(288px+0.5rem)]"
-              : "right-3 sm:right-4"
-          }`}
+                ? "right-3 sm:right-4 md:right-[calc(288px+0.5rem)]"
+                : "right-3 sm:right-4"
+            }`}
         >
           {/* Collapsible Icons Container - Slides out to the right when expanded */}
           <div
-            className={`flex items-center gap-1.5 sm:gap-2 transition-all duration-500 ease-in-out ${
-              iconsExpanded
+            className={`flex items-center gap-1.5 sm:gap-2 transition-all duration-500 ease-in-out ${iconsExpanded
                 ? "translate-x-0 opacity-100"
                 : "translate-x-full opacity-0 pointer-events-none"
-            }`}
+              }`}
           >
             {/* Bookmark button - only show for authenticated users */}
             {!isPublic && (
@@ -664,15 +660,13 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
                 variant="outline"
                 size="sm"
                 onClick={handleBookmark}
-                className={`bg-white/90 backdrop-blur hover:bg-white border border-gray-200 h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-full shadow-lg flex-shrink-0 ${
-                  isBookmarkedMaterial ? "text-brand" : ""
-                }`}
+                className={`bg-white/90 backdrop-blur hover:bg-white border border-gray-200 h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-full shadow-lg flex-shrink-0 ${isBookmarkedMaterial ? "text-brand" : ""
+                  }`}
               >
                 <Bookmark01Icon
                   size={15}
-                  className={`sm:w-4 sm:h-4 ${
-                    isBookmarkedMaterial ? "fill-current" : ""
-                  }`}
+                  className={`sm:w-4 sm:h-4 ${isBookmarkedMaterial ? "fill-current" : ""
+                    }`}
                 />
               </Button>
             )}
@@ -734,9 +728,8 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
 
             {/* Separator Line - Only visible when expanded */}
             <div
-              className={`h-6 w-[1px] bg-gray-300 transition-all duration-500 ease-in-out ${
-                iconsExpanded ? "opacity-100" : "opacity-0"
-              }`}
+              className={`h-6 w-[1px] bg-gray-300 transition-all duration-500 ease-in-out ${iconsExpanded ? "opacity-100" : "opacity-0"
+                }`}
             />
 
             {/* Chevron Section - Always visible, expands button width when icons are expanded */}
@@ -747,9 +740,8 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
             >
               <ArrowRight01Icon
                 size={15}
-                className={`sm:w-4 sm:h-4 transition-transform duration-300 ${
-                  iconsExpanded ? "rotate-180" : ""
-                }`}
+                className={`sm:w-4 sm:h-4 transition-transform duration-300 ${iconsExpanded ? "rotate-180" : ""
+                  }`}
               />
             </button>
           </div>
@@ -768,9 +760,8 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
         {/* Right Sidebar - Material Info & Related Materials (Hidden on mobile and in fullscreen) */}
         {!isFullscreen && (
           <div
-            className={`relative bg-white rounded-lg sm:rounded-xl border border-gray-200 flex-col transition-all duration-300 shadow-sm hidden md:flex ${
-              sidebarCollapsed ? "w-0 border-0 overflow-hidden" : "w-64 sm:w-72"
-            }`}
+            className={`relative bg-white rounded-lg sm:rounded-xl border border-gray-200 flex-col transition-all duration-300 shadow-sm hidden md:flex ${sidebarCollapsed ? "w-0 border-0 overflow-hidden" : "w-64 sm:w-72"
+              }`}
           >
             {/* Collapse handle - centered on left border */}
             {!sidebarCollapsed && (
@@ -837,16 +828,16 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
                           </div>
                           {material.targetCourse.departments[0].department
                             .faculty && (
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Faculty:</span>
-                              <span className="font-medium">
-                                {
-                                  material.targetCourse.departments[0]
-                                    .department.faculty.name
-                                }
-                              </span>
-                            </div>
-                          )}
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">Faculty:</span>
+                                <span className="font-medium">
+                                  {
+                                    material.targetCourse.departments[0]
+                                      .department.faculty.name
+                                  }
+                                </span>
+                              </div>
+                            )}
                         </>
                       )}
                   </>
@@ -1009,16 +1000,16 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
                             </div>
                             {material.targetCourse.departments[0].department
                               .faculty && (
-                              <div className="flex justify-between">
-                                <span className="text-gray-600">Faculty:</span>
-                                <span className="font-medium">
-                                  {
-                                    material.targetCourse.departments[0]
-                                      .department.faculty.name
-                                  }
-                                </span>
-                              </div>
-                            )}
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600">Faculty:</span>
+                                  <span className="font-medium">
+                                    {
+                                      material.targetCourse.departments[0]
+                                        .department.faculty.name
+                                    }
+                                  </span>
+                                </div>
+                              )}
                           </>
                         )}
                     </>
