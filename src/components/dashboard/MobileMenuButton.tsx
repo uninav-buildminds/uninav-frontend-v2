@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Menu01Icon, Cancel01Icon, HelpCircleIcon } from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Cancel01Icon, HelpCircleIcon, Menu01Icon } from "@hugeicons/core-free-icons";
 import { useNavigate } from "react-router-dom";
 
 interface MobileMenuButtonProps {
@@ -62,9 +63,9 @@ const MobileMenuButton: React.FC<MobileMenuButtonProps> = ({ isOpen, onClick, di
           aria-label={isOpen ? "Close menu" : "Open menu"}
         >
           {isOpen ? (
-            <Cancel01Icon size={20} className="text-gray-700" />
+            <HugeiconsIcon icon={Cancel01Icon} strokeWidth={1.5} size={20} className="text-gray-700" />
           ) : (
-            <Menu01Icon size={20} className="text-gray-700" />
+            <HugeiconsIcon icon={Menu01Icon} strokeWidth={1.5} size={20} className="text-gray-700" />
           )}
         </button>
         
@@ -74,7 +75,7 @@ const MobileMenuButton: React.FC<MobileMenuButtonProps> = ({ isOpen, onClick, di
             className="p-3 hover:bg-gray-50 transition-colors"
             aria-label="Help"
           >
-            <HelpCircleIcon size={20} className="text-gray-700" />
+            <HugeiconsIcon icon={HelpCircleIcon} strokeWidth={1.5} size={20} className="text-gray-700" />
           </button>
         )}
       </div>

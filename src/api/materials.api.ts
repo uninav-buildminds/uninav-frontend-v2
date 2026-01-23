@@ -1,4 +1,8 @@
-import { PaginatedResponse, Response, ResponseSuccess } from "@/lib/types/response.types";
+import {
+  PaginatedResponse,
+  Response,
+  ResponseSuccess,
+} from "@/lib/types/response.types";
 import { httpClient } from "./api";
 import {
   Material,
@@ -9,13 +13,13 @@ import {
 import { ApprovalStatusEnum as ApprovalStatus } from "@/lib/types/response.types";
 import { SearchResult } from "@/lib/types/search.types";
 
-// Re-export types for convenience
-export type {
+// Re-export enums (as values, not just types) for convenience
+export {
   MaterialTypeEnum,
   VisibilityEnum,
   RestrictionEnum,
 } from "@/lib/types/material.types";
-export type { ApprovalStatusEnum as ApprovalStatus } from "@/lib/types/response.types";
+export { ApprovalStatusEnum as ApprovalStatus } from "@/lib/types/response.types";
 
 // Form data interface for file uploads
 export interface CreateMaterialFileForm {
@@ -27,6 +31,7 @@ export interface CreateMaterialFileForm {
   accessRestrictions: RestrictionEnum;
   tags?: string[];
   targetCourseId?: string;
+  folderId?: string; // Optional folder ID to add material to
   metaData?: string[];
   pageCount?: number; // Page count for PDF/DOCX/PPT files
   file: File;
@@ -44,6 +49,7 @@ export interface CreateMaterialLinkForm {
   accessRestrictions: RestrictionEnum;
   tags?: string[];
   targetCourseId?: string;
+  folderId?: string; // Optional folder ID to add material to
   metaData?: string[];
   fileCount?: number; // File count for Google Drive folders
   url: string;
@@ -136,23 +142,34 @@ export async function createMaterials(materialData: CreateMaterialForm) {
   if (materialData.targetCourseId) {
     formData.append("targetCourseId", materialData.targetCourseId);
   }
-  
+  if (materialData.folderId) {
+    formData.append("folderId", materialData.folderId);
+  }
+
   // Build metaData array with pageCount or fileCount
   const metaDataArray: string[] = [];
-  
-  if ("pageCount" in materialData && materialData.pageCount !== undefined && materialData.pageCount > 0) {
+
+  if (
+    "pageCount" in materialData &&
+    materialData.pageCount !== undefined &&
+    materialData.pageCount > 0
+  ) {
     metaDataArray.push(JSON.stringify({ pageCount: materialData.pageCount }));
   }
-  
-  if ("fileCount" in materialData && materialData.fileCount !== undefined && materialData.fileCount > 0) {
+
+  if (
+    "fileCount" in materialData &&
+    materialData.fileCount !== undefined &&
+    materialData.fileCount > 0
+  ) {
     metaDataArray.push(JSON.stringify({ fileCount: materialData.fileCount }));
   }
-  
+
   // Add any existing metaData
   if (materialData.metaData) {
     materialData.metaData.forEach((meta: string) => metaDataArray.push(meta));
   }
-  
+
   // Append metaData to form
   if (metaDataArray.length > 0) {
     metaDataArray.forEach((meta: string) => formData.append("metaData", meta));
@@ -190,31 +207,31 @@ export async function createMaterials(materialData: CreateMaterialForm) {
 }
 
 export async function getMaterialRecommendations(
-	params: MaterialRecommendation
+  params: MaterialRecommendation
 ): Promise<
-	ResponseSuccess<{
-		items: Material[];
-		pagination: {
-			total: number;
-			page: number;
-			pageSize: number;
-			totalPages: number;
-		};
-	}>
+  ResponseSuccess<{
+    items: Material[];
+    pagination: {
+      total: number;
+      page: number;
+      pageSize: number;
+      totalPages: number;
+    };
+  }>
 > {
-	try {
-		const response = await httpClient.get("/materials/recommendations", {
-			params,
-		});
-		return response.data;
-	} catch (error: any) {
-		throw {
-			statusCode: error.response?.status,
-			message:
-				error.response?.data?.message ||
-				"Fetching material recommendations failed. Please try again.",
-		};
-	}
+  try {
+    const response = await httpClient.get("/materials/recommendations", {
+      params,
+    });
+    return response.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status,
+      message:
+        error.response?.data?.message ||
+        "Fetching material recommendations failed. Please try again.",
+    };
+  }
 }
 
 // Recent materials are returned with lastViewedAt included in each material object
@@ -268,9 +285,9 @@ export async function getPopularMaterials(limit: number = 10): Promise<
 }
 
 // Search materials with pagination and filtering
-export async function searchMaterials(params: MaterialSearchParams): Promise<
-  ResponseSuccess<SearchResult<Material>>
-> {
+export async function searchMaterials(
+  params: MaterialSearchParams
+): Promise<ResponseSuccess<SearchResult<Material>>> {
   // delete params.advancedSearch;
   try {
     const response = await httpClient.get("/materials", {
@@ -299,6 +316,24 @@ export async function getMaterialById(id: string): Promise<Response<Material>> {
       message:
         error.response?.data?.message ||
         "Getting material by id failed. Please try again.",
+    };
+  }
+}
+
+// Get material by slug
+export async function getMaterialBySlug(
+  slug: string
+): Promise<Response<Material>> {
+  try {
+    const response = await httpClient.get(`/materials/${slug}`);
+    return response.data;
+  } catch (error: any) {
+    console.error("Error getting material:", error);
+    throw {
+      statusCode: error.response?.status,
+      message:
+        error.response?.data?.message ||
+        "Getting material failed. Please try again.",
     };
   }
 }
@@ -599,8 +634,154 @@ export async function getReadingStats(): Promise<
   } catch (error: any) {
     throw {
       statusCode: error.response?.status || 500,
-      message:
-        error.response?.data?.message || "Failed to get reading stats",
+      message: error.response?.data?.message || "Failed to get reading stats",
     };
   }
+}
+
+// ============= BATCH UPLOAD API =============
+
+/**
+ * Single item in a batch upload request (for links only)
+ */
+export interface BatchMaterialItem {
+  label: string;
+  description?: string;
+  type: MaterialTypeEnum;
+  resourceAddress: string;
+  previewUrl?: string;
+  tags?: string[];
+  visibility?: VisibilityEnum;
+  restriction?: RestrictionEnum;
+  targetCourseId?: string;
+  folderId?: string;
+  metaData?: Record<string, any>;
+}
+
+/**
+ * Result for individual material in batch creation
+ */
+export interface BatchMaterialResult {
+  index: number;
+  success: boolean;
+  materialId?: string;
+  label: string;
+  error?: string;
+}
+
+/**
+ * Response for batch material creation
+ */
+export interface BatchCreateMaterialsResponse {
+  totalRequested: number;
+  totalSucceeded: number;
+  totalFailed: number;
+  results: BatchMaterialResult[];
+}
+
+/**
+ * Batch create materials (for links only)
+ * Files must be uploaded sequentially through the regular createMaterials function
+ */
+export async function batchCreateMaterials(
+  materials: BatchMaterialItem[]
+): Promise<Response<BatchCreateMaterialsResponse>> {
+  try {
+    const response = await httpClient.post("/materials/batch", { materials });
+    return response.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status || 500,
+      message:
+        error.response?.data?.message ||
+        "Batch upload failed. Please try again.",
+    };
+  }
+}
+
+/**
+ * Helper to process batch file uploads sequentially
+ * Returns results similar to batch link uploads for consistency
+ */
+export async function batchCreateFilesMaterials(
+  files: Array<{
+    file: File;
+    materialTitle: string;
+    description?: string;
+    type?: MaterialTypeEnum;
+    tags?: string[];
+    visibility: VisibilityEnum;
+    accessRestrictions: RestrictionEnum;
+    targetCourseId?: string;
+    folderId?: string;
+    pageCount?: number;
+    filePreview?: File;
+  }>,
+  onProgress?: (
+    current: number,
+    total: number,
+    result: BatchMaterialResult
+  ) => void
+): Promise<BatchCreateMaterialsResponse> {
+  const results: BatchMaterialResult[] = [];
+
+  for (let i = 0; i < files.length; i++) {
+    const item = files[i];
+    try {
+      const formData: CreateMaterialFileForm = {
+        materialTitle: item.materialTitle,
+        description: item.description || "",
+        type: item.type,
+        visibility: item.visibility,
+        accessRestrictions: item.accessRestrictions,
+        tags: item.tags || [],
+        targetCourseId: item.targetCourseId,
+        folderId: item.folderId,
+        pageCount: item.pageCount,
+        file: item.file,
+        filePreview: item.filePreview,
+      };
+
+      const response = await createMaterials(formData);
+
+      // Upload preview if available
+      if (item.filePreview && response?.data?.id) {
+        try {
+          await uploadMaterialPreview(response.data.id, item.filePreview);
+        } catch (previewError) {
+          console.warn(
+            "Preview upload failed for batch item:",
+            i,
+            previewError
+          );
+          // Continue - main material was created successfully
+        }
+      }
+
+      const result: BatchMaterialResult = {
+        index: i,
+        success: true,
+        materialId: response?.data?.id,
+        label: item.materialTitle,
+      };
+      results.push(result);
+      onProgress?.(i + 1, files.length, result);
+    } catch (error: any) {
+      const result: BatchMaterialResult = {
+        index: i,
+        success: false,
+        label: item.materialTitle,
+        error: error?.message || "Upload failed",
+      };
+      results.push(result);
+      onProgress?.(i + 1, files.length, result);
+    }
+  }
+
+  return {
+    totalRequested: files.length,
+    totalSucceeded: results.filter((r) => r.success).length,
+    totalFailed: results.filter((r) => !r.success).length,
+    results,
+  };
 }

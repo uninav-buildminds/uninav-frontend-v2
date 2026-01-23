@@ -14,6 +14,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "@/lib/utils";
 import { toast } from "sonner";
 import AuthContext from "@/context/authentication/AuthContext";
+import { getRedirectPath, clearRedirectPath } from "@/lib/authStorage";
 
 const SigninForm: React.FC = () => {
   const navigate = useNavigate();
@@ -34,7 +35,10 @@ const SigninForm: React.FC = () => {
 
     try {
       await logIn(data.email, data.password);
-      navigate("/dashboard");
+      // Check for stored redirect path, fallback to dashboard
+      const redirectPath = getRedirectPath() || "/dashboard";
+      clearRedirectPath(); // Clear redirect path after using it
+      navigate(redirectPath);
     } catch (error) {
       if (error.statusCode === 400) {
         // Email not verified, Backend has sent a verification link, notify the user

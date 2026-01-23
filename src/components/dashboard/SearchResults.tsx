@@ -3,13 +3,8 @@ import { motion } from "framer-motion";
 import MaterialCard from "./MaterialCard";
 import MaterialCardSkeleton from "./MaterialCardSkeleton";
 import { Material } from "@/lib/types/material.types";
-import {
-  Search01Icon,
-  Cancel01Icon,
-  SparklesIcon,
-  UploadSquare01Icon,
-  ArrowRight01Icon,
-} from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowRight01Icon, Cancel01Icon, Search01Icon, SparklesIcon, UploadSquare01Icon } from "@hugeicons/core-free-icons";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { searchMaterials } from "@/api/materials.api";
 import { SearchResult } from "@/lib/types/search.types";
@@ -29,7 +24,7 @@ interface SearchResultsProps {
   advancedSearchEnabled: boolean;
   onToggleAdvancedSearch: () => void;
   onShare?: (id: string) => void;
-  onRead?: (id: string) => void;
+  onRead?: (slug: string) => void;
   onClearSearch: () => void;
   onUpload?: () => void;
 }
@@ -99,7 +94,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
 				<div className="flex items-center justify-between flex-wrap gap-4">
 					<div className="flex-1">
 						<h2 className="text-2xl font-semibold text-gray-900 flex items-center gap-2">
-							<Search01Icon size={24} className="text-brand" />
+							<HugeiconsIcon icon={Search01Icon} strokeWidth={1.5} size={24} className="text-brand" />
 							Search Results
 						</h2>
 						{metadata && (
@@ -120,7 +115,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
 									: "bg-gray-100 text-gray-700 hover:bg-gray-200"
 							}`}
 							title="Advanced search looks deeper into course descriptions, tags, and related materials">
-							<SparklesIcon size={14} />
+							<HugeiconsIcon icon={SparklesIcon} strokeWidth={1.5} size={14} />
 							Advanced
 						</button>
 					</div>
@@ -142,7 +137,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
 					className="flex items-center justify-center py-6 sm:py-8 md:py-12 px-4">
 					<div className="text-center max-w-lg w-full">
 						<div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 mb-3 sm:mb-4 md:mb-6 bg-gray-100 rounded-full">
-							<Search01Icon size={24} className="sm:w-8 sm:h-8 md:w-10 md:h-10 text-gray-400" />
+							<HugeiconsIcon icon={Search01Icon} strokeWidth={1.5} size={24} className="sm:w-8 sm:h-8 md:w-10 md:h-10 text-gray-400" />
 						</div>
 						<h3 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 mb-2 sm:mb-3">
 							No materials found for "{query}"
@@ -156,7 +151,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
 								<button
 									onClick={onUpload}
 									className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-brand text-white rounded-lg font-medium hover:bg-brand/90 transition-colors duration-200 text-sm sm:text-base shadow-sm hover:shadow-md">
-									<UploadSquare01Icon size={16} className="sm:w-[18px] sm:h-[18px]" />
+									<HugeiconsIcon icon={UploadSquare01Icon} strokeWidth={1.5} size={16} className="sm:w-[18px] sm:h-[18px]" />
 									<span>Upload Material</span>
 								</button>
 							)}

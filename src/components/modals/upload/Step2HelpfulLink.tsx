@@ -1,13 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import {
-  Link01Icon,
-  ArrowLeft01Icon,
-  Tag01Icon,
-  Download01Icon,
-  ArrowDown01Icon,
-  Alert02Icon,
-} from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Alert02Icon, ArrowDown01Icon, ArrowLeft01Icon, Download01Icon, Link01Icon, Tag01Icon } from "@hugeicons/core-free-icons";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -27,9 +21,8 @@ import {
 } from "@/components/Preview/gDrive";
 import {
   listFolderFiles,
-  generateAndUploadPreview,
   extractGDriveId,
-  generateGDrivePreviewBlob,
+  getGDriveName,
 } from "@/lib/gdrive-preview";
 import { isGDriveFolder } from "@/lib/utils/gdriveUtils";
 import {
@@ -55,6 +48,8 @@ interface Step2HelpfulLinkProps {
   editingMaterial?: Material | null;
   isEditMode?: boolean;
   onTempPreviewChange?: (url: string | null) => void; // Callback to track temp preview
+  folderId?: string;
+  currentFolder?: { id: string; label: string; description?: string };
 }
 
 const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
@@ -63,10 +58,15 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
   editingMaterial = null,
   isEditMode = false,
   onTempPreviewChange,
+  folderId: propFolderId,
+  currentFolder,
 }) => {
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [customPreviewFile, setCustomPreviewFile] = useState<File | null>(null);
+  const [customPreviewPreview, setCustomPreviewPreview] = useState<
+    string | null
+  >(null);
   const [classification, setClassification] = useState<string>("");
   const [targetCourseId, setTargetCourseId] = useState<string>("");
   const [derivedPreviewUrl, setDerivedPreviewUrl] = useState<string | null>(
@@ -76,6 +76,7 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
     useState<boolean>(false);
   const [fileCount, setFileCount] = useState<number | undefined>(undefined);
   const [isCountingFiles, setIsCountingFiles] = useState(false);
+  const [folderId, setFolderId] = useState<string>(propFolderId || "");
 
   // Helper function to safely get hostname from URL
   const getUrlHostname = (url: string): string => {
@@ -96,12 +97,14 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
     }
   };
 
-  const imageInputRef = useRef<HTMLInputElement>(null);
+  const previewUploadInputRef = useRef<HTMLInputElement>(null);
+  const latestUrlRef = useRef<string>("");
 
   const {
     register,
     handleSubmit,
     setValue,
+    getValues,
     watch,
     formState: { errors, isSubmitting },
   } = useForm<UploadLinkInput>({
@@ -116,7 +119,7 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
 
   const watchedValues = watch();
 
-  // Prefill form when in edit mode
+  // Prefill form when in edit mode or when folderId is provided
   useEffect(() => {
     if (isEditMode && editingMaterial) {
       setValue("materialTitle", editingMaterial.label);
@@ -140,6 +143,13 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
     }
   }, [isEditMode, editingMaterial, setValue]);
 
+  // Pre-fill folderId if provided via prop (separate effect to ensure it always updates)
+  useEffect(() => {
+    if (propFolderId) {
+      setFolderId(propFolderId);
+    }
+  }, [propFolderId]);
+
   // Handle URL input change to auto-populate title
   const handleUrlChange = async (raw: string) => {
     // Normalize input: remove leading '@' and quotes, trim, add protocol if missing
@@ -151,10 +161,20 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
       url = `https://${url}`;
     }
 
+    if (customPreviewPreview) {
+      URL.revokeObjectURL(customPreviewPreview);
+    }
+    setCustomPreviewFile(null);
+    setCustomPreviewPreview(null);
+
     setValue("url", url);
+    latestUrlRef.current = url;
 
     // Auto-populate title if empty
     if (!watchedValues.materialTitle && url) {
+      const fallback = generateDefaultTitle(url);
+      setValue("materialTitle", fallback);
+
       try {
         // If YouTube, try oEmbed for accurate title
         if (checkIsYouTubeUrl(url)) {
@@ -165,13 +185,22 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
           ).then((r) => (r.ok ? r.json() : null));
           if (oembed?.title) {
             setValue("materialTitle", oembed.title);
-          } else {
-            const fallback = generateDefaultTitle(url);
-            setValue("materialTitle", fallback);
           }
-        } else {
-          const defaultTitle = generateDefaultTitle(url);
-          setValue("materialTitle", defaultTitle);
+        } else if (checkIsGoogleDriveUrl(url)) {
+          const identifier = extractGDriveId(url);
+          if (identifier?.id) {
+            try {
+              const remoteName = await getGDriveName(identifier.id);
+              if (remoteName && latestUrlRef.current === url) {
+                const currentTitle = getValues("materialTitle");
+                if (!currentTitle || currentTitle === fallback) {
+                  setValue("materialTitle", remoteName);
+                }
+              }
+            } catch {
+              // Silent fail; fallback already applied
+            }
+          }
         }
       } catch {
         // Silent fail; keep input responsive
@@ -186,7 +215,7 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
     setDerivedPreviewUrl(null);
     setFileCount(undefined);
     setIsCountingFiles(false);
-    // Clear temp preview tracking when URL changes
+    // Clear temp preview tracking when URL changes (no longer needed for GDrive since we use direct URLs)
     onTempPreviewChange?.(null);
 
     if (!url || !checkIsGoogleDriveUrl(url)) return;
@@ -206,7 +235,7 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
       try {
         setResolvingGDrivePreview(true);
         setIsCountingFiles(true);
-        
+
         const contents = await listFolderFiles(identifier.id);
         if (cancelled) return;
 
@@ -221,17 +250,11 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
           return; // empty folder => no preview
         }
 
-        // Generate preview and upload to Cloudinary
-        const cloudinaryUrl = await generateAndUploadPreview(
-          firstFile.id,
-          firstFile.name
-        );
-        if (cloudinaryUrl) {
-          setDerivedPreviewUrl(cloudinaryUrl);
-          // Notify parent component about temp preview
-          onTempPreviewChange?.(cloudinaryUrl);
-        }
-        
+        // Use direct Google Drive thumbnail URL for the first file (no upload needed)
+        const directThumbnailUrl = `https://drive.google.com/thumbnail?id=${firstFile.id}&sz=w400-h300`;
+        setDerivedPreviewUrl(directThumbnailUrl);
+        // No need to track temp preview since this is a direct URL (not uploaded)
+
         // Count files in the background (non-blocking)
         countGDriveUrlFiles(url)
           .then((count) => {
@@ -247,7 +270,6 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
           .finally(() => {
             setIsCountingFiles(false);
           });
-        
       } catch (err) {
         // Silent fail; user can still submit without preview
         setDerivedPreviewUrl(null);
@@ -263,6 +285,14 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [watchedValues.url]);
+
+  useEffect(() => {
+    return () => {
+      if (customPreviewPreview) {
+        URL.revokeObjectURL(customPreviewPreview);
+      }
+    };
+  }, [customPreviewPreview]);
 
   const handleTagAdd = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && tagInput.trim()) {
@@ -292,6 +322,22 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
     const newTags = tags.filter((_, i) => i !== index);
     setTags(newTags);
     setValue("tags", newTags);
+  };
+
+  const handleCustomPreviewSelect = (file: File | null) => {
+    if (customPreviewPreview) {
+      URL.revokeObjectURL(customPreviewPreview);
+    }
+
+    if (!file) {
+      setCustomPreviewFile(null);
+      setCustomPreviewPreview(null);
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    setCustomPreviewFile(file);
+    setCustomPreviewPreview(previewUrl);
   };
 
   // Utility function to generate YouTube thumbnail URL
@@ -351,6 +397,7 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
 
     // Generate preview URL if possible
     const previewUrl = generatePreviewUrl(data.url);
+    const finalPreview = customPreviewFile || previewUrl || undefined;
 
     const formData: CreateMaterialLinkForm = {
       materialTitle: data.materialTitle,
@@ -361,9 +408,9 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
       accessRestrictions: data.accessRestrictions,
       tags: data.tags || [],
       targetCourseId: targetCourseId || undefined,
+      folderId: folderId || undefined,
       url: data.url,
-      image: selectedImage,
-      filePreview: previewUrl || undefined, // Add the preview URL (supports GDrive folders)
+      filePreview: finalPreview, // Prefer user-uploaded preview, otherwise derived preview URL
       fileCount: fileCount, // Include file count for GDrive materials
     };
 
@@ -409,7 +456,7 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
               className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors"
             />
             <div className="absolute right-3 top-1/2 -translate-y-1/2">
-              <Link01Icon size={16} className="text-gray-400" />
+              <HugeiconsIcon icon={Link01Icon} strokeWidth={1.5} size={16} className="text-gray-400" />
             </div>
           </div>
           {errors.url && (
@@ -420,13 +467,31 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
         {/* URL Preview Section */}
         {watchedValues.url && (
           <div className="mt-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
-            <h4 className="text-sm font-medium text-gray-700 mb-3">Preview</h4>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-sm font-medium text-gray-700">Preview</h4>
+              <button
+                type="button"
+                onClick={() => previewUploadInputRef.current?.click()}
+                className="text-xs font-medium text-brand hover:text-brand/80"
+              >
+                Upload a different preview
+              </button>
+              <input
+                ref={previewUploadInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) =>
+                  handleCustomPreviewSelect(e.target.files?.[0] || null)
+                }
+              />
+            </div>
 
             {!isValidUrl(watchedValues.url) ? (
               <div className="flex items-center justify-center p-6 bg-yellow-50 rounded-lg border-2 border-dashed border-yellow-300">
                 <div className="text-center">
                   <div className="mb-2 flex justify-center">
-                    <Alert02Icon size={32} className="text-yellow-600" />
+                    <HugeiconsIcon icon={Alert02Icon} strokeWidth={1.5} size={32} className="text-yellow-600" />
                   </div>
                   <p className="text-sm text-yellow-700 font-medium">
                     Invalid URL format
@@ -440,7 +505,15 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
               <>
                 {/* Valid URL Previews */}
 
-                {checkIsYouTubeUrl(watchedValues.url) ? (
+                {customPreviewFile && customPreviewPreview ? (
+                  <div className="flex justify-center">
+                    <img
+                      src={customPreviewPreview}
+                      alt="Custom preview"
+                      className="rounded-lg border border-gray-200 w-full max-w-sm object-cover"
+                    />
+                  </div>
+                ) : checkIsYouTubeUrl(watchedValues.url) ? (
                   <div className="flex justify-center">
                     <YoutubePreview
                       url={watchedValues.url}
@@ -494,19 +567,16 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
                       />
                       {/* Show "1 file" for single files */}
                       {fileCount === 1 && (
-                        <p className="text-xs text-brand font-medium">
-                          1 file
-                        </p>
+                        <p className="text-xs text-brand font-medium">1 file</p>
                       )}
                     </div>
                   )
                 ) : (
                   <div className="flex items-center justify-center p-6 bg-white rounded-lg border-2 border-dashed border-gray-300">
                     <div className="text-center">
-                      <Link01Icon
+                      <HugeiconsIcon icon={Link01Icon} strokeWidth={1.5}
                         size={32}
-                        className="text-gray-400 mx-auto mb-2"
-                      />
+                        className="text-gray-400 mx-auto mb-2" />
                       <p className="text-sm text-gray-600 font-medium">
                         {getUrlHostname(watchedValues.url)}
                       </p>
@@ -564,9 +634,10 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
         accessRestrictions={watchedValues.accessRestrictions}
         tags={tags}
         tagInput={tagInput}
-        selectedImage={selectedImage}
         description={watchedValues.description || ""}
         classification={classification}
+        folderId={folderId}
+        currentFolder={currentFolder}
         onVisibilityChange={(value) =>
           setValue("visibility", value as VisibilityEnum)
         }
@@ -576,10 +647,9 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
         onTagAdd={handleTagAdd}
         onTagRemove={handleTagRemove}
         onTagInputChange={setTagInput}
-        onImageChange={setSelectedImage}
         onDescriptionChange={(value) => setValue("description", value)}
         onClassificationChange={handleClassificationChange}
-        imageInputRef={imageInputRef}
+        onFolderChange={setFolderId}
       />
 
       {/* Action Buttons */}
@@ -589,7 +659,7 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
             onClick={onBack}
             className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2"
           >
-            <ArrowLeft01Icon size={16} />
+            <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={1.5} size={16} />
             <span>Back</span>
           </button>
         )}

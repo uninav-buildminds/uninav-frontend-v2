@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Cancel01Icon } from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Cancel01Icon } from "@hugeicons/core-free-icons";
 import {
   createFolder,
   type Folder,
@@ -37,7 +38,7 @@ const CreateFolderModal: React.FC<CreateFolderModalProps> = ({
       const folderData: CreateFolderDto = {
         label: folderName.trim(),
         description: description.trim() || undefined,
-        visibility: "private", // Default to private for saved materials folders
+        visibility: "public", // Default to public to match backend and material creation
       };
 
       const response = await createFolder(folderData);
@@ -94,7 +95,7 @@ const CreateFolderModal: React.FC<CreateFolderModalProps> = ({
               disabled={isCreating}
               aria-label="Close"
             >
-              <Cancel01Icon size={20} className="text-gray-500" />
+              <HugeiconsIcon icon={Cancel01Icon} strokeWidth={1.5} size={20} className="text-gray-500" />
             </button>
 
             {/* Modal content */}

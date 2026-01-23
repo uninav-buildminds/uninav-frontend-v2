@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Logout01Icon, Cancel01Icon, ArrowRight02Icon, UserCircleIcon } from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowRight02Icon, Cancel01Icon, Logout01Icon, UserCircleIcon } from "@hugeicons/core-free-icons";
 import { LogoutModal } from "@/components/modals";
 import { panelData } from "@/data/panel";
 import { useAuth } from "@/hooks/useAuth";
 import { isProfileIncomplete } from "@/utils/profile.utils";
 import RecentsList from "./RecentsList";
-import InstallPWA from "./InstallPWA";
 
 interface MobilePanelProps {
   isOpen: boolean;
@@ -110,7 +110,7 @@ const MobilePanel: React.FC<MobilePanelProps> = ({
                   onClick={onClose}
                   className="p-2 rounded-full hover:bg-gray-100 transition-colors"
                 >
-                  <Cancel01Icon size={20} className="text-gray-500" />
+                  <HugeiconsIcon icon={Cancel01Icon} strokeWidth={1.5} size={20} className="text-gray-500" />
                 </button>
               </div>
 
@@ -132,11 +132,11 @@ const MobilePanel: React.FC<MobilePanelProps> = ({
                         className="absolute top-2 right-2 p-1 rounded-full hover:bg-white/20 transition-colors"
                         aria-label="Dismiss"
                       >
-                        <Cancel01Icon size={14} className="text-white" />
+                        <HugeiconsIcon icon={Cancel01Icon} strokeWidth={1.5} size={14} className="text-white" />
                       </button>
                       <div className="flex items-start gap-3 pr-6">
                         <div className="flex-shrink-0 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                          <UserCircleIcon size={18} className="text-white" />
+                          <HugeiconsIcon icon={UserCircleIcon} strokeWidth={1.5} size={18} className="text-white" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <h4 className="text-sm font-semibold text-white mb-1">
@@ -147,7 +147,7 @@ const MobilePanel: React.FC<MobilePanelProps> = ({
                           </p>
                           <div className="flex items-center gap-1 mt-2">
                             <span className="text-xs text-white/90 font-medium">Complete now</span>
-                            <ArrowRight02Icon size={12} className="text-white" />
+                            <HugeiconsIcon icon={ArrowRight02Icon} strokeWidth={1.5} size={12} className="text-white" />
                           </div>
                         </div>
                       </div>
@@ -219,18 +219,13 @@ const MobilePanel: React.FC<MobilePanelProps> = ({
                   </div>
                 </button>
 
-                <div className="flex flex-col gap-1">
-                  <InstallPWA variant="landscape" />
-                
-                  <button
-                    onClick={onLogout}
-                    className="w-full text-sm text-white bg-red-600 hover:bg-red-700 rounded-lg px-4 py-2 flex items-center justify-center gap-2 transition-colors"
-                  >
-                    <Logout01Icon size={16} />
-                    Logout
-                  </button>
-                </div>
-                
+                <button
+                  onClick={onLogout}
+                  className="w-full text-sm text-white bg-red-600 hover:bg-red-700 rounded-lg px-4 py-2 flex items-center justify-center gap-2 transition-colors"
+                >
+                  <HugeiconsIcon icon={Logout01Icon} strokeWidth={1.5} size={16} />
+                  Logout
+                </button>
               </div>
             </div>
           </motion.div>

@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Cancel01Icon, AlertCircleIcon } from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { AlertCircleIcon, Cancel01Icon } from "@hugeicons/core-free-icons";
 import Step1 from "./upload/Step1";
 import Step2FileUpload from "./upload/Step2FileUpload";
 import Step2HelpfulLink from "./upload/Step2HelpfulLink";
 import UploadSuccess from "./upload/UploadSuccess";
+import { BatchUploadModal } from "./upload/batch";
 import {
   createMaterials,
   updateMaterial,
@@ -29,6 +31,9 @@ interface UploadModalProps {
   onClose: () => void;
   editingMaterial?: Material | null; // Material to edit (if in editing mode)
   onEditComplete?: () => void; // Callback after successful edit
+  onCreateComplete?: (material: Material) => void; // Callback after successful creation
+  folderId?: string; // Optional folder ID to pre-fill when uploading to a specific folder
+  currentFolder?: { id: string; label: string; description?: string }; // Current folder info (for public folders not in user's list)
 }
 
 const UploadModal: React.FC<UploadModalProps> = ({
@@ -36,6 +41,9 @@ const UploadModal: React.FC<UploadModalProps> = ({
   onClose,
   editingMaterial = null,
   onEditComplete,
+  onCreateComplete,
+  folderId,
+  currentFolder,
 }) => {
   const isEditMode = !!editingMaterial;
 
@@ -53,6 +61,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
   const [submitting, setSubmitting] = useState(false); // Loader state
   const [tempPreviewUrl, setTempPreviewUrl] = useState<string | null>(null); // Track temp preview for cleanup
   const [errorMessage, setErrorMessage] = useState<string | null>(null); // Error state for user feedback
+  const [showBatchUpload, setShowBatchUpload] = useState(false); // Batch upload modal state
 
   // Reset state when modal opens/closes or editing material changes
   useEffect(() => {
@@ -74,6 +83,25 @@ const UploadModal: React.FC<UploadModalProps> = ({
   const handleMaterialTypeSelect = (type: MaterialType) => {
     setMaterialType(type);
     setCurrentStep("upload-details");
+  };
+
+  const handleBatchUpload = () => {
+    // Don't close the modal, just show batch upload on top
+    // Reset to Step1 state for when user comes back
+    setCurrentStep("type-selection");
+    setMaterialType(null);
+    setShowBatchUpload(true);
+  };
+
+  const handleBatchUploadClose = () => {
+    setShowBatchUpload(false);
+  };
+
+  const handleBatchUploadBack = () => {
+    // Close batch upload and show main modal at Step1
+    setShowBatchUpload(false);
+    setCurrentStep("type-selection");
+    setMaterialType(null);
   };
 
   const handleUploadComplete = async (data: CreateMaterialForm) => {
@@ -151,6 +179,9 @@ const UploadModal: React.FC<UploadModalProps> = ({
         } else {
           console.log("No preview to process");
         }
+
+        // Let callers update their local state immediately
+        onCreateComplete?.(result.data);
 
         setCurrentStep("success");
       }
@@ -235,7 +266,12 @@ const UploadModal: React.FC<UploadModalProps> = ({
   const renderStep = () => {
     switch (currentStep) {
       case "type-selection":
-        return <Step1 onSelectType={handleMaterialTypeSelect} />;
+        return (
+          <Step1
+            onSelectType={handleMaterialTypeSelect}
+            onBatchUpload={!isEditMode ? handleBatchUpload : undefined}
+          />
+        );
       case "upload-details":
         if (materialType === "file") {
           return (
@@ -244,6 +280,8 @@ const UploadModal: React.FC<UploadModalProps> = ({
               onBack={handleBack}
               editingMaterial={editingMaterial}
               isEditMode={isEditMode}
+              folderId={folderId}
+              currentFolder={currentFolder}
             />
           );
         } else if (materialType === "link") {
@@ -254,6 +292,8 @@ const UploadModal: React.FC<UploadModalProps> = ({
               editingMaterial={editingMaterial}
               isEditMode={isEditMode}
               onTempPreviewChange={setTempPreviewUrl}
+              folderId={folderId}
+              currentFolder={currentFolder}
             />
           );
         }
@@ -264,7 +304,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
         return (
           <div className="flex flex-col items-center justify-center py-8 px-6 text-center">
             <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-4">
-              <AlertCircleIcon size={32} className="text-red-500" />
+              <HugeiconsIcon icon={AlertCircleIcon} strokeWidth={1.5} size={32} className="text-red-500" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               Upload Failed
@@ -294,49 +334,60 @@ const UploadModal: React.FC<UploadModalProps> = ({
     }
   };
 
-  return createPortal(
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-modal-backdrop flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-          onClick={(e) => e.target === e.currentTarget && handleClose()}
-        >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="relative w-full max-w-2xl max-h-[90vh] bg-white rounded-2xl shadow-2xl border border-gray-100 z-modal flex flex-col mx-1 sm:mx-4 md:mx-0"
-          >
-            {/* Loader overlay */}
-            {submitting && (
-              <div className="absolute inset-0 bg-white/70 flex items-center justify-center z-50 rounded-2xl">
-                <div className="animate-spin rounded-full h-12 w-12 border-4 border-brand border-t-transparent"></div>
-              </div>
-            )}
-
-            {/* Close button */}
-            <button
-              onClick={handleClose}
-              className="absolute top-2 right-2 p-2 rounded-full bg-white/10 hover:bg-gray-100 transition-colors duration-200 z-10"
-              disabled={submitting}
+  return (
+    <>
+      {createPortal(
+        <AnimatePresence>
+          {isOpen && !showBatchUpload && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-modal-backdrop flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+              onClick={(e) => e.target === e.currentTarget && handleClose()}
             >
-              <Cancel01Icon size={20} className="text-gray-500" />
-            </button>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                className="relative w-full max-w-2xl max-h-[90vh] bg-white rounded-2xl shadow-2xl border border-gray-100 z-modal flex flex-col mx-1 sm:mx-4 md:mx-0"
+              >
+                {/* Loader overlay */}
+                {submitting && (
+                  <div className="absolute inset-0 bg-white/70 flex items-center justify-center z-50 rounded-2xl">
+                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-brand border-t-transparent"></div>
+                  </div>
+                )}
 
-            {/* Modal content */}
-            <div className="p-3 sm:p-6 pt-5 sm:pt-8 flex-1 overflow-y-auto scrollbar-hide">
-              {renderStep()}
-            </div>
-          </motion.div>
-        </motion.div>
+                {/* Close button */}
+                <button
+                  onClick={handleClose}
+                  className="absolute top-2 right-2 p-2 rounded-full bg-white/10 hover:bg-gray-100 transition-colors duration-200 z-10"
+                  disabled={submitting}
+                >
+                  <HugeiconsIcon icon={Cancel01Icon} strokeWidth={1.5} size={20} className="text-gray-500" />
+                </button>
+
+                {/* Modal content */}
+                <div className="p-3 sm:p-6 pt-5 sm:pt-8 flex-1 overflow-y-auto scrollbar-hide">
+                  {renderStep()}
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
       )}
-    </AnimatePresence>,
-    document.body
+
+      {/* Batch Upload Modal */}
+      <BatchUploadModal
+        isOpen={showBatchUpload}
+        onClose={handleBatchUploadClose}
+        onBack={handleBatchUploadBack}
+      />
+    </>
   );
 };
 

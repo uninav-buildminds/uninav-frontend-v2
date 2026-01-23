@@ -49,6 +49,7 @@ export interface MaterialMetadata {
 
 export interface Material {
   id: string;
+  slug: string;
   label: string;
   description?: string;
   type: MaterialTypeEnum;

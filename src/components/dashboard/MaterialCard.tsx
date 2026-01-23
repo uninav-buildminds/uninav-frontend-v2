@@ -1,11 +1,19 @@
-import React from "react";
-import { Share08Icon, PencilEdit02Icon, Delete02Icon } from "hugeicons-react";
+import React, { useState } from "react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Delete02Icon, FolderAddIcon, PencilEdit02Icon, Share08Icon } from "@hugeicons/core-free-icons";
 import { toast } from "sonner";
 import { Material } from "../../lib/types/material.types";
 import { formatRelativeTime } from "../../lib/utils";
 import { useBookmarks } from "../../context/bookmark/BookmarkContextProvider";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useMaterialInFolder } from "../../hooks/useMaterialInFolder";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import Placeholder from "/placeholder.svg";
+import AddToFolderModal from "@/components/modals/folder/AddToFolderModal";
 
 // Custom Bookmark Icons
 const BookmarkOutlineIcon = ({
@@ -59,7 +67,7 @@ const BookmarkFilledIcon = ({
 interface MaterialCardProps {
   material: Material;
   onShare?: (id: string) => void;
-  onRead?: (id: string) => void;
+  onRead?: (slug: string) => void;
   lastViewedAt?: string; // For recent materials - shows when the user last viewed this material
   onEdit?: (material: Material) => void; // For user uploads - edit material
   onDelete?: (id: string) => void; // For user uploads - delete material
@@ -67,6 +75,7 @@ interface MaterialCardProps {
   componentRef?: React.Ref<HTMLDivElement>; // Ref for the card container
   draggable?: boolean; // Enable drag functionality
   onDragStart?: (material: Material) => void; // Drag start handler
+  isInFolder?: boolean; // Whether the material is already in a folder (optional override, will auto-detect if not provided)
 }
 
 const MaterialCard: React.FC<MaterialCardProps> = ({
@@ -80,28 +89,41 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
   showEditDelete = false,
   draggable = false,
   onDragStart,
+  isInFolder,
 }) => {
-  const { id, label, createdAt, downloads, tags, views, likes, metaData } = material;
+  const { id, label, createdAt, downloads, tags, views, likes, metaData } =
+    material;
 
   const previewImage = material.previewUrl;
 
   const { isBookmarked, toggleBookmark } = useBookmarks();
   const saved = isBookmarked(id);
+  const [isAddToFolderModalOpen, setIsAddToFolderModalOpen] = useState(false);
+  const { materialIdsInFolders } = useMaterialInFolder();
+  
+  // Determine if material is in a folder (use prop if provided, otherwise auto-detect)
+  const materialIsInFolder = isInFolder !== undefined 
+    ? isInFolder 
+    : materialIdsInFolders.has(id);
 
   // Extract page count or file count from metaData
   const getMetaInfo = (): string | null => {
     if (!metaData) return null;
-    
+
     // metaData can be a JSON object with pageCount or fileCount
-    if (typeof metaData === 'object') {
-      if ('pageCount' in metaData && metaData.pageCount) {
-        return `${metaData.pageCount} ${metaData.pageCount === 1 ? 'page' : 'pages'}`;
+    if (typeof metaData === "object") {
+      if ("pageCount" in metaData && metaData.pageCount) {
+        return `${metaData.pageCount} ${
+          metaData.pageCount === 1 ? "page" : "pages"
+        }`;
       }
-      if ('fileCount' in metaData && metaData.fileCount) {
-        return `${metaData.fileCount} ${metaData.fileCount === 1 ? 'file' : 'files'}`;
+      if ("fileCount" in metaData && metaData.fileCount) {
+        return `${metaData.fileCount} ${
+          metaData.fileCount === 1 ? "file" : "files"
+        }`;
       }
     }
-    
+
     return null;
   };
 
@@ -122,9 +144,17 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
     onDelete?.(id);
   };
 
+  const handleCardClick = () => {
+    onRead?.(material.slug);
+  };
+
   const handleShare = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const link = `${window.location.origin}/dashboard/material/${id}`;
+    if (!material.slug) {
+      toast.error("Cannot share material without slug");
+      return;
+    }
+    const link = `${window.location.origin}/dashboard/material/${material.slug}`;
     navigator.clipboard
       .writeText(link)
       .then(() => {
@@ -141,6 +171,15 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
         toast.success("Link copied to clipboard!");
       });
     onShare?.(id);
+  };
+
+  const handleAddToFolder = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (materialIsInFolder) {
+      toast.info("This material is already in a folder");
+      return;
+    }
+    setIsAddToFolderModalOpen(true);
   };
 
   const handleDragStartEvent = (e: React.DragEvent) => {
@@ -165,19 +204,19 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
   // Mobile drag support
   const handleTouchStart = (e: React.TouchEvent) => {
     if (!draggable || !onDragStart) return;
-    
+
     const touch = e.touches[0];
     const element = e.currentTarget as HTMLElement;
-    
+
     // Store initial touch position
     const startX = touch.clientX;
     const startY = touch.clientY;
-    
+
     const handleTouchMove = (moveEvent: TouchEvent) => {
       const currentTouch = moveEvent.touches[0];
       const deltaX = Math.abs(currentTouch.clientX - startX);
       const deltaY = Math.abs(currentTouch.clientY - startY);
-      
+
       // If moved significantly, start drag
       if (deltaX > 10 || deltaY > 10) {
         onDragStart(material);
@@ -187,20 +226,20 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
         dragImage.style.position = "absolute";
         dragImage.style.top = "-1000px";
         document.body.appendChild(dragImage);
-        
+
         // Clean up
         setTimeout(() => {
           document.body.removeChild(dragImage);
         }, 0);
       }
     };
-    
+
     const handleTouchEnd = () => {
       element.style.opacity = "1";
       document.removeEventListener("touchmove", handleTouchMove);
       document.removeEventListener("touchend", handleTouchEnd);
     };
-    
+
     document.addEventListener("touchmove", handleTouchMove, { passive: false });
     document.addEventListener("touchend", handleTouchEnd);
   };
@@ -209,7 +248,7 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
     <TooltipProvider>
       <div
         className="group relative cursor-pointer"
-        onClick={() => onRead?.(id)}
+        onClick={handleCardClick}
         ref={componentRef}
         draggable={draggable}
         onDragStart={handleDragStartEvent}
@@ -242,109 +281,140 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
             }}
           />
 
-        {/* Action Buttons - Top Right */}
-        {showEditDelete ? (
-          // Edit/Delete buttons for user uploads
-          <div className="absolute top-2 right-2 flex gap-1">
-            <button
-              onClick={handleEdit}
-              className="p-1 bg-white/90 backdrop-blur-sm text-gray-600 hover:text-brand hover:bg-[#DCDFFE] rounded-md transition-colors duration-200 shadow-sm"
-              aria-label="Edit material"
-            >
-              <PencilEdit02Icon size={18} />
-            </button>
-            <button
-              onClick={handleDelete}
-              className="p-1 bg-white/90 backdrop-blur-sm text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors duration-200 shadow-sm"
-              aria-label="Delete material"
-            >
-              <Delete02Icon size={18} />
-            </button>
-          </div>
-        ) : (
-          // Bookmark button for other materials
-          <button
-            onClick={handleSave}
-            className="absolute top-2 right-2 p-1 text-gray-600 hover:text-brand bg-[#DCDFFE] rounded-md transition-colors duration-200"
-            aria-label={saved ? "Remove from saved" : "Save material"}
-          >
-            {saved ? (
-              <BookmarkFilledIcon size={20} className="text-brand" />
-            ) : (
-              <BookmarkOutlineIcon size={20} />
-            )}
-          </button>
-        )}
-
-        {/* Tags - Bottom Left */}
-        {tags && tags.length > 0 && (
-          <div className="absolute bottom-2 left-2 flex flex-wrap gap-1">
-            {tags.slice(0, 2).map((tag, index) => (
-              <span
-                key={index}
-                className="inline-block px-2 py-0.5 text-xs bg-[#DCDFFE] text-brand rounded-md"
+          {/* Action Buttons - Top Right */}
+          {showEditDelete ? (
+            // Edit/Delete buttons for user uploads
+            <div className="absolute top-2 right-2 flex gap-1">
+              <button
+                onClick={handleEdit}
+                className="p-1 bg-white/90 backdrop-blur-sm text-gray-600 hover:text-brand hover:bg-[#DCDFFE] rounded-md transition-colors duration-200 shadow-sm"
+                aria-label="Edit material"
               >
-                {tag}
-              </span>
-            ))}
-            {tags.length > 3 && (
-              <span className="inline-block px-2 py-0.5 text-xs bg-[#DCDFFE] text-brand rounded-md">
-                +{tags.length - 2}
-              </span>
+                <HugeiconsIcon icon={PencilEdit02Icon} strokeWidth={1.5} size={18} />
+              </button>
+              <button
+                onClick={handleDelete}
+                className="p-1 bg-white/90 backdrop-blur-sm text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors duration-200 shadow-sm"
+                aria-label="Delete material"
+              >
+                <HugeiconsIcon icon={Delete02Icon} strokeWidth={1.5} size={18} />
+              </button>
+            </div>
+          ) : (
+            // Bookmark button for other materials
+            <div className="absolute top-2 right-2 flex gap-1">
+              <button
+                onClick={handleSave}
+                className={`p-1 text-gray-600 hover:text-brand rounded-md transition-colors duration-200 ${
+                  saved ? "bg-[#DCDFFE]" : "hover:bg-[#DCDFFE]"
+                }`}
+                aria-label={saved ? "Remove from saved" : "Save material"}
+              >
+                {saved ? (
+                  <BookmarkFilledIcon size={20} className="text-brand" />
+                ) : (
+                  <BookmarkOutlineIcon size={20} />
+                )}
+              </button>
+            </div>
+          )}
+
+          {/* Tags - Bottom Left */}
+          {tags && tags.length > 0 && (
+            <div className="absolute bottom-2 left-2 flex flex-nowrap gap-1 overflow-hidden max-w-[calc(100%-1rem)]">
+              {tags.slice(0, 2).map((tag, index) => (
+                <span
+                  key={index}
+                  className="inline-block px-2 py-0.5 text-xs bg-[#DCDFFE] text-brand rounded-md truncate min-w-0 flex-shrink"
+                  title={tag}
+                >
+                  {tag}
+                </span>
+              ))}
+              {tags.length > 3 && (
+                <span className="inline-block px-2 py-0.5 text-xs bg-[#DCDFFE] text-brand rounded-md flex-shrink-0 whitespace-nowrap">
+                  +{tags.length - 2}
+                </span>
+              )}
+            </div>
+          )}
+
+        </div>
+
+        {/* Content */}
+        <div className="space-y-1 relative">
+          {/* Name */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <h4
+                className="font-medium text-sm text-gray-900 leading-tight truncate pr-16"
+                title={label}
+              >
+                {label}
+              </h4>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{label}</p>
+            </TooltipContent>
+          </Tooltip>
+
+          {/* Metadata */}
+          <div className="flex items-center justify-between">
+            <div className="text-xs text-gray-500 truncate flex-1 pr-16">
+              {lastViewedAt
+                ? `Viewed ${formatRelativeTime(lastViewedAt)}`
+                : `${formatRelativeTime(
+                    createdAt
+                  )} • ${views} views • ${likes} likes`}
+            </div>
+          </div>
+
+          {/* Action Icons - Bottom Right, in front of text */}
+          <div className="absolute bottom-0 right-0 flex items-center gap-1">
+            {/* Folder Icon - Only show if material is not already in a folder */}
+            {!showEditDelete && !materialIsInFolder && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={handleAddToFolder}
+                    className="p-1.5 text-gray-600 hover:text-brand hover:bg-[#DCDFFE] rounded-md transition-colors duration-200"
+                    aria-label="Add to folder"
+                  >
+                    <HugeiconsIcon icon={FolderAddIcon} strokeWidth={1.5} size={16} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Add to Folder</p>
+                </TooltipContent>
+              </Tooltip>
             )}
-          </div>
-        )}
-
-        {/* Page/File Count - Bottom Right */}
-        {metaInfo && (
-          <div className="absolute bottom-2 right-2">
-            <span className="inline-block px-2 py-1 text-xs bg-white/90 backdrop-blur-sm text-gray-700 rounded-md font-medium shadow-sm border border-gray-200">
-              {metaInfo}
-            </span>
-          </div>
-        )}
-      </div>
-
-      {/* Content */}
-      <div className="space-y-1">
-        {/* Name */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <h4
-              className="font-medium text-sm text-gray-900 leading-tight truncate"
-              title={label}
-            >
-              {label}
-            </h4>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{label}</p>
-          </TooltipContent>
-        </Tooltip>
-
-        {/* Metadata and Action Icons */}
-        <div className="flex items-center justify-between">
-          <div className="text-xs text-gray-500 truncate flex-1">
-            {lastViewedAt
-              ? `Viewed ${formatRelativeTime(lastViewedAt)}`
-              : `${formatRelativeTime(
-                  createdAt
-                )} • ${views} views • ${likes} likes`}
-          </div>
-
-          {/* Action Icons - Share only */}
-          <div className="flex items-center gap-1 ml-2">
-            <button
-              onClick={handleShare}
-              className="p-1 text-gray-600 hover:text-brand hover:bg-[#DCDFFE] rounded-md transition-colors duration-200"
-              aria-label="Share"
-            >
-              <Share08Icon size={16} />
-            </button>
+            
+            {/* Share Icon */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={handleShare}
+                  className="p-1.5 text-gray-600 hover:text-brand hover:bg-[#DCDFFE] rounded-md transition-colors duration-200"
+                  aria-label="Share"
+                >
+                  <HugeiconsIcon icon={Share08Icon} strokeWidth={1.5} size={16} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Share</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Add to Folder Modal */}
+      <AddToFolderModal
+        isOpen={isAddToFolderModalOpen}
+        onClose={() => setIsAddToFolderModalOpen(false)}
+        materialId={material.id}
+        materialTitle={material.label}
+      />
     </TooltipProvider>
   );
 };

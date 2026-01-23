@@ -9,6 +9,7 @@ export const ENV = {
   GOOGLE_CLIENT_ID: import.meta.env.VITE_GOOGLE_CLIENT_ID,
   GOOGLE_DRIVE_API_KEY: import.meta.env.VITE_GOOGLE_DRIVE_API_KEY,
   GDRIVE_API_KEYS: import.meta.env.VITE_GDRIVE_API_KEYS,
+  YOUTUBE_API_KEY: import.meta.env.VITE_YOUTUBE_API_KEY,
   NODE_ENV: import.meta.env.NODE_ENV || "development",
   MODE: import.meta.env.MODE || "development",
 };

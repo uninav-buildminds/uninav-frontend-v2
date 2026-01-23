@@ -2,7 +2,8 @@ import { Material } from "../../lib/types/material.types";
 import { MaterialWithLastViewed } from "./MaterialsSection";
 
 import React, { useEffect, useState, useMemo } from "react";
-import { ArrowRight01Icon, SortingAZ02Icon } from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowRight01Icon, SortingAZ02Icon } from "@hugeicons/core-free-icons";
 import MaterialCard from "./MaterialCard";
 import MaterialCardSkeleton from "./MaterialCardSkeleton";
 import EmptyState from "./EmptyState";
@@ -96,7 +97,7 @@ type GridMaterialsSectionProps = {
   onViewAll?: () => void;
   onFilter?: () => void;
   onShare?: (id: string) => void;
-  onRead?: (id: string) => void;
+  onRead?: (slug: string) => void;
   showViewAll?: boolean;
   emptyStateType?:
     | "recent"
@@ -229,7 +230,7 @@ const GridMaterialsSection: React.FC<GridMaterialsSectionProps> = ({
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
               >
                 View All
-                <ArrowRight01Icon size={16} className="text-gray-500" />
+                <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={1.5} size={16} className="text-gray-500" />
               </button>
             )}
           </div>
@@ -263,7 +264,7 @@ const GridMaterialsSection: React.FC<GridMaterialsSectionProps> = ({
                 className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
                 aria-label="Sort materials"
               >
-                <SortingAZ02Icon size={18} className="text-gray-600" />
+                <HugeiconsIcon icon={SortingAZ02Icon} strokeWidth={1.5} size={18} className="text-gray-600" />
               </button>
 
               {/* Sort Options Dropdown */}
@@ -329,7 +330,7 @@ const GridMaterialsSection: React.FC<GridMaterialsSectionProps> = ({
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
               >
                 View All
-                <ArrowRight01Icon size={16} className="text-gray-500" />
+                <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={1.5} size={16} className="text-gray-500" />
               </button>
             )}
           </div>
@@ -357,7 +358,7 @@ const GridMaterialsSection: React.FC<GridMaterialsSectionProps> = ({
               className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
               aria-label="Sort materials"
             >
-              <SortingAZ02Icon size={18} className="text-gray-600" />
+              <HugeiconsIcon icon={SortingAZ02Icon} strokeWidth={1.5} size={18} className="text-gray-600" />
             </button>
 
             {/* Sort Options Dropdown */}
@@ -423,7 +424,7 @@ const GridMaterialsSection: React.FC<GridMaterialsSectionProps> = ({
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
             >
               View All
-              <ArrowRight01Icon size={16} className="text-gray-500" />
+              <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={1.5} size={16} className="text-gray-500" />
             </button>
           )}
         </div>

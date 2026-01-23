@@ -1,15 +1,11 @@
 import React, { useRef, useState, useEffect } from "react";
-import {
-  PencilEdit01Icon,
-  ImageUpload01Icon,
-  Logout01Icon,
-} from "hugeicons-react";
 import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/hooks/useAuth";
 import { LogoutModal } from "@/components/modals";
 import { updateUserProfile, updateProfilePicture } from "@/api/user.api";
 import { useToast } from "@/hooks/use-toast";
-import { UserIcon } from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ImageUpload01Icon, Logout01Icon, PencilEdit01Icon, UserIcon } from "@hugeicons/core-free-icons";
 
 const AccountSection: React.FC = () => {
   const { logOut, user, setUser } = useAuth();
@@ -142,7 +138,7 @@ const AccountSection: React.FC = () => {
             onClick={() => setIsEditing(true)}
             className="inline-flex items-center gap-2 px-3 py-2 bg-brand text-white rounded-lg text-sm hover:bg-brand/90"
           >
-            Edit <PencilEdit01Icon size={16} />
+            Edit <HugeiconsIcon icon={PencilEdit01Icon} strokeWidth={1.5} size={16} />
           </button>
         ) : (
           <div className="flex items-center gap-2">
@@ -172,14 +168,14 @@ const AccountSection: React.FC = () => {
                 className="w-14 h-14 rounded-full object-cover"
               />
             ) : (
-              <UserIcon size={56} />
+              <HugeiconsIcon icon={UserIcon} strokeWidth={1.5} size={56} />
             )}
             {isEditing && (
               <button
                 onClick={onPickAvatar}
                 className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-white shadow border border-gray-200 flex items-center justify-center"
               >
-                <ImageUpload01Icon size={16} className="text-gray-700" />
+                <HugeiconsIcon icon={ImageUpload01Icon} strokeWidth={1.5} size={16} className="text-gray-700" />
               </button>
             )}
             <input
@@ -268,7 +264,7 @@ const AccountSection: React.FC = () => {
               onClick={handleLogoutClick}
               className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
             >
-              <Logout01Icon size={16} />
+              <HugeiconsIcon icon={Logout01Icon} strokeWidth={1.5} size={16} />
               Logout
             </button>
           </div>

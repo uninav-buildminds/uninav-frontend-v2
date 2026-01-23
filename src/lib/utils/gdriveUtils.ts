@@ -3,18 +3,8 @@
  */
 
 import React from "react";
-import {
-  Folder01Icon,
-  File01Icon,
-  Image01Icon,
-  Video01Icon,
-  Mic01Icon,
-  File01Icon as FileTextIcon,
-  AiChat01Icon,
-  Presentation01Icon,
-  Archive01Icon,
-  Attachment01Icon,
-} from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { AiChat01Icon, Archive01Icon, Attachment01Icon, File01Icon, File01Icon as FileTextIcon, Folder01Icon, Image01Icon, Mic01Icon, Presentation01Icon, Video01Icon } from "@hugeicons/core-free-icons";
 
 export interface GDriveIdentifier {
   id: string;
@@ -95,7 +85,7 @@ export function extractGDriveId(url: string): GDriveIdentifier | null {
  * Check if URL is a Google Drive folder
  */
 export function isGDriveFolder(url: string): boolean {
-  return url.includes('/folders/');
+  return url.includes('/folders/') || url.includes('folderview');
 }
 
 /**
@@ -132,7 +122,7 @@ export function getGoogleWorkspaceEmbedUrl(
 /**
  * Get file type icon based on MIME type
  */
-export function getFileIcon(mimeType: string): React.ComponentType<any> {
+export function getFileIcon(mimeType: string): any {
   if (mimeType === 'application/vnd.google-apps.folder') return Folder01Icon;
   if (mimeType === 'application/pdf') return File01Icon;
   if (mimeType.includes('image')) return Image01Icon;

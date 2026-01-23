@@ -25,6 +25,7 @@ import Recommendations from "./pages/dashboard/Recommendations";
 import Notifications from "./pages/dashboard/Notifications";
 import SettingsPage from "./pages/dashboard/Settings";
 import MaterialView from "./pages/dashboard/MaterialView";
+import FolderView from "./pages/dashboard/FolderView";
 import ManagementLayout from "./components/management/ManagementLayout";
 import ManagementDashboard from "./pages/management/ManagementDashboard";
 import CourseManagement from "./pages/management/CourseManagement";
@@ -39,9 +40,12 @@ import AuthContextProvider from "./context/authentication/AuthContextProvider";
 import { BookmarkProvider } from "./context/bookmark/BookmarkContextProvider";
 import { DepartmentProvider } from "./context/department/DepartmentContextProvider";
 import { FullscreenProvider } from "./context/FullscreenContext";
+import { FolderProvider } from "./context/folder/FolderContextProvider";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import Help from "./pages/dashboard/Help";
 import Profile from "./pages/dashboard/Profile";
+import PublicFolderView from "./pages/public/PublicFolderView";
+import PublicMaterialView from "./pages/public/PublicMaterialView";
 import ScrollToTop from "./components/ScrollToTop";
 const queryClient = new QueryClient();
 import { Analytics } from "@vercel/analytics/react";
@@ -60,7 +64,8 @@ const App = () => {
               <AuthContextProvider>
                 <DepartmentProvider>
                   <BookmarkProvider>
-                    <FullscreenProvider>
+                    <FolderProvider>
+                      <FullscreenProvider>
                       <Routes>
                         <Route path="/" element={<Index />} />
 
@@ -93,17 +98,20 @@ const App = () => {
                           />
                           <Route path="settings" element={<SettingsPage />} />
                           <Route path="help" element={<Help />} />
-                          
+
                           {/* Profile View */}
-                          <Route
-                            path="profile/:userId"
-                            element={<Profile />}
-                          />
+                          <Route path="profile/:userId" element={<Profile />} />
 
                           {/* Material View */}
                           <Route
-                            path="material/:id"
+                            path="material/:slug"
                             element={<MaterialView />}
+                          />
+
+                          {/* Folder View */}
+                          <Route
+                            path="folder/:slug"
+                            element={<FolderView />}
                           />
                         </Route>
 
@@ -224,10 +232,21 @@ const App = () => {
                           element={<ResetSuccess />}
                         />
 
+                        {/* Public View Routes - No authentication required */}
+                        <Route
+                          path="/view/folder/:slug"
+                          element={<PublicFolderView />}
+                        />
+                        <Route
+                          path="/view/material/:slug"
+                          element={<PublicMaterialView />}
+                        />
+
                         {/* 404 - Catch all unmatched routes */}
                         <Route path="*" element={<NotFound />} />
                       </Routes>
-                    </FullscreenProvider>
+                      </FullscreenProvider>
+                    </FolderProvider>
                   </BookmarkProvider>
                 </DepartmentProvider>
               </AuthContextProvider>

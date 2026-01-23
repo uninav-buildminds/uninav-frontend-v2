@@ -1,17 +1,7 @@
 import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import {
-  Home01Icon,
-  FolderLibraryIcon,
-  Notification01Icon,
-  Settings01Icon,
-  HelpCircleIcon,
-  Add01Icon,
-  SidebarLeftIcon,
-  SidebarLeft01Icon,
-  Logout01Icon,
-  UserGroupIcon,
-} from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Add01Icon, FolderLibraryIcon, HelpCircleIcon, Home01Icon, Logout01Icon, Notification01Icon, Settings01Icon, SidebarLeft01Icon, SidebarLeftIcon, UserGroupIcon } from "@hugeicons/core-free-icons";
 import UserRail from "./UserRail";
 import { LogoutModal, UploadModal } from "@/components/modals";
 import { panelData } from "@/data/panel";
@@ -97,15 +87,13 @@ const Sidebar: React.FC = () => {
                 aria-label="Toggle sidebar panel"
               >
                 {showPanel ? (
-                  <SidebarLeft01Icon
+                  <HugeiconsIcon icon={SidebarLeft01Icon} strokeWidth={1.5}
                     size={22}
-                    className="text-gray-700 transition-opacity duration-200"
-                  />
+                    className="text-gray-700 transition-opacity duration-200" />
                 ) : (
-                  <SidebarLeftIcon
+                  <HugeiconsIcon icon={SidebarLeftIcon} strokeWidth={1.5}
                     size={22}
-                    className="text-gray-700 transition-opacity duration-200"
-                  />
+                    className="text-gray-700 transition-opacity duration-200" />
                 )}
               </button>
 
@@ -115,7 +103,7 @@ const Sidebar: React.FC = () => {
                 className="mt-4 w-12 h-12 grid place-items-center mx-auto rounded-full bg-brand text-white shadow-sm transition-transform duration-200 hover:scale-105"
                 aria-label="New"
               >
-                <Add01Icon size={20} />
+                <HugeiconsIcon icon={Add01Icon} strokeWidth={1.5} size={20} />
               </button>
 
               {/* Nav rail */}
@@ -138,7 +126,7 @@ const Sidebar: React.FC = () => {
                               : "text-gray-700 hover:bg-[#DCDFFE]"
                           }`}
                         >
-                          <Icon size={18} />
+                          <HugeiconsIcon icon={Icon} strokeWidth={1.5} size={18} />
                         </div>
                         <span
                           className={`text-[11px] transition-colors ${
@@ -170,7 +158,7 @@ const Sidebar: React.FC = () => {
                             : "text-gray-700 hover:bg-[#DCDFFE]"
                         }`}
                       >
-                        <HelpCircleIcon size={18} />
+                        <HugeiconsIcon icon={HelpCircleIcon} strokeWidth={1.5} size={18} />
                       </div>
                       <span
                         className={`text-[11px] transition-colors ${
@@ -255,7 +243,7 @@ const Sidebar: React.FC = () => {
                   onClick={handleLogout}
                   className="text-xs text-white bg-red-600 hover:bg-red-700 rounded-md px-3 py-1 flex items-center gap-1"
                 >
-                  <Logout01Icon size={14} /> Logout
+                  <HugeiconsIcon icon={Logout01Icon} strokeWidth={1.5} size={14} /> Logout
                 </button>
               </div>
             </div>

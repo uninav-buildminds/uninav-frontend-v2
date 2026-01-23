@@ -1,33 +1,31 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   CustomSelect,
   CustomSelectOption,
 } from "@/components/dashboard/CustomSelect";
-import {
-  Tag01Icon,
-  Image01Icon,
-  Download01Icon,
-  ArrowDown01Icon,
-} from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowDown01Icon, Download01Icon, Tag01Icon } from "@hugeicons/core-free-icons";
+import { SelectModal, SelectOption } from "@/components/modals/shared/SearchSelectModal";
+import { getMyFolders, Folder } from "@/api/folder.api";
 
 interface AdvancedOptionsProps {
   visibility: string;
   accessRestrictions: string;
   tags: string[];
   tagInput: string;
-  selectedImage: File | null;
   description: string;
   classification: string;
+  folderId?: string;
+  currentFolder?: { id: string; label: string; description?: string };
   onVisibilityChange: (value: string) => void;
   onAccessRestrictionsChange: (value: string) => void;
   onTagAdd: (e: React.KeyboardEvent) => void;
   onTagRemove: (index: number) => void;
   onTagInputChange: (value: string) => void;
-  onImageChange: (file: File | null) => void;
   onDescriptionChange: (value: string) => void;
   onClassificationChange: (value: string) => void;
-  imageInputRef: React.RefObject<HTMLInputElement>;
+  onFolderChange: (folderId: string) => void;
 }
 
 const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
@@ -35,20 +33,79 @@ const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
   accessRestrictions,
   tags,
   tagInput,
-  selectedImage,
   description,
   classification,
+  folderId,
+  currentFolder,
   onVisibilityChange,
   onAccessRestrictionsChange,
   onTagAdd,
   onTagRemove,
   onTagInputChange,
-  onImageChange,
   onDescriptionChange,
   onClassificationChange,
-  imageInputRef,
+  onFolderChange,
 }) => {
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [folderOptions, setFolderOptions] = useState<SelectOption[]>([]);
+  const [foldersLoading, setFoldersLoading] = useState(false);
+
+  // Auto-expand advanced options if folderId is provided
+  useEffect(() => {
+    if (folderId) {
+      setShowAdvanced(true);
+    }
+  }, [folderId]);
+
+  // Fetch user folders on mount and include currentFolder if provided
+  useEffect(() => {
+    const fetchFolders = async () => {
+      try {
+        setFoldersLoading(true);
+        const response = await getMyFolders();
+        const options: SelectOption[] = [];
+        
+        // Add current folder first if provided (for public folders not in user's list)
+        if (currentFolder) {
+          options.push({
+            value: currentFolder.id,
+            label: currentFolder.label,
+            description: currentFolder.description,
+          });
+        }
+        
+        // Add user's folders, but skip if it's the same as currentFolder
+        if (response?.data) {
+          response.data.forEach((folder: Folder) => {
+            // Only add if it's not already in the list (avoid duplicates)
+            if (!currentFolder || folder.id !== currentFolder.id) {
+              options.push({
+                value: folder.id,
+                label: folder.label,
+                description: folder.description,
+              });
+            }
+          });
+        }
+        
+        setFolderOptions(options);
+      } catch (error) {
+        console.error("Failed to fetch folders:", error);
+        // Still add currentFolder even if fetch fails
+        if (currentFolder) {
+          setFolderOptions([{
+            value: currentFolder.id,
+            label: currentFolder.label,
+            description: currentFolder.description,
+          }]);
+        }
+      } finally {
+        setFoldersLoading(false);
+      }
+    };
+
+    fetchFolders();
+  }, [currentFolder]);
 
   // Define options for dropdowns
   const visibilityOptions: CustomSelectOption[] = [
@@ -80,10 +137,9 @@ const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
         className="flex items-center space-x-2 text-sm text-brand hover:text-brand/80 transition-colors"
       >
         <span>Advanced options</span>
-        <ArrowDown01Icon
+        <HugeiconsIcon icon={ArrowDown01Icon} strokeWidth={1.5}
           size={16}
-          className={`transition-transform ${showAdvanced ? "rotate-180" : ""}`}
-        />
+          className={`transition-transform ${showAdvanced ? "rotate-180" : ""}`} />
       </button>
 
       {showAdvanced && (
@@ -188,30 +244,25 @@ const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
             </div>
           </div>
 
-          {/* Add Image */}
+          {/* Folder Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Add Image
-            </label>
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={() => imageInputRef.current?.click()}
-                className="flex items-center space-x-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <Image01Icon size={16} className="text-gray-500" />
-                <span className="text-sm text-gray-700">Choose file</span>
-              </button>
-              <span className="text-sm text-gray-500">
-                {selectedImage ? selectedImage.name : "No file chosen"}
-              </span>
-            </div>
-            <input
-              ref={imageInputRef}
-              type="file"
-              accept="image/*"
-              onChange={(e) => onImageChange(e.target.files?.[0] || null)}
-              className="hidden"
+            <SelectModal
+              label="Add to Folder (Optional)"
+              value={folderId || ""}
+              onChange={(value) => onFolderChange(value)}
+              options={folderOptions}
+              placeholder="Search and select a folder..."
+              searchable={true}
+              loading={foldersLoading}
+              emptyMessage="No folders found. Create a folder first."
+              displayValue={(value, selectedOption) => {
+                if (!value) return "";
+                return selectedOption?.label || "";
+              }}
             />
+            <p className="text-xs text-gray-600 mt-1">
+              Select a folder to organize this material
+            </p>
           </div>
         </motion.div>
       )}

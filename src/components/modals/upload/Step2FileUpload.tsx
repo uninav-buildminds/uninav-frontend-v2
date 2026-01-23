@@ -1,25 +1,15 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import {
-  UploadSquare01Icon,
-  ArrowLeft01Icon,
-  File01Icon,
-
-} from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowLeft01Icon, File01Icon, UploadSquare01Icon } from "@hugeicons/core-free-icons";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  uploadFileSchema,
-  type UploadFileInput,
-} from "@/lib/validation/upload";
+import { uploadFileSchema, type UploadFileInput } from "@/lib/validation/upload";
 import { toast } from "sonner";
 import HeaderStepper from "./shared/HeaderStepper";
 import { Previewer } from "@/components/Preview/doc_viewer";
 import AdvancedOptions from "./shared/AdvancedOptions";
-import {
-  inferMaterialType,
-  generateDefaultTitle,
-} from "@/lib/utils/inferMaterialType";
+import { inferMaterialType, generateDefaultTitle } from "@/lib/utils/inferMaterialType";
 import { CreateMaterialFileForm } from "@/api/materials.api";
 import {
   VisibilityEnum,
@@ -34,6 +24,8 @@ interface Step2FileUploadProps {
   onBack: () => void;
   editingMaterial?: Material | null;
   isEditMode?: boolean;
+  folderId?: string;
+  currentFolder?: { id: string; label: string; description?: string };
 }
 
 const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
@@ -41,21 +33,23 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
   onBack,
   editingMaterial = null,
   isEditMode = false,
+  folderId: propFolderId,
+  currentFolder,
 }) => {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [classification, setClassification] = useState<string>("");
   const [targetCourseId, setTargetCourseId] = useState<string>("");
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
   const [filePreview, setFilePreview] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState<number | undefined>(undefined);
   const [isCountingPages, setIsCountingPages] = useState(false);
+  const [folderId, setFolderId] = useState<string>(propFolderId || "");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const imageInputRef = useRef<HTMLInputElement>(null);
+  const previewUploadInputRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
@@ -75,7 +69,7 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
 
   const watchedValues = watch();
 
-  // Prefill form when in edit mode
+  // Prefill form when in edit mode or when folderId is provided
   useEffect(() => {
     if (isEditMode && editingMaterial) {
       setValue("materialTitle", editingMaterial.label);
@@ -93,6 +87,13 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
       }
     }
   }, [isEditMode, editingMaterial, setValue]);
+
+  // Pre-fill folderId if provided via prop (separate effect to ensure it always updates)
+  useEffect(() => {
+    if (propFolderId) {
+      setFolderId(propFolderId);
+    }
+  }, [propFolderId]);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -122,6 +123,11 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
       return;
     }
     setSelectedFile(file);
+    setFilePreview(null);
+    if (previewImageUrl) {
+      URL.revokeObjectURL(previewImageUrl);
+      setPreviewImageUrl(null);
+    }
 
     // Auto-populate title if current title is empty
     if (!watchedValues.materialTitle) {
@@ -153,10 +159,20 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
     }
   };
 
-  const handleImageInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setSelectedImage(e.target.files[0]);
+  const handleCustomPreviewUpload = (file: File | null) => {
+    if (previewImageUrl) {
+      URL.revokeObjectURL(previewImageUrl);
     }
+
+    if (!file) {
+      setFilePreview(null);
+      setPreviewImageUrl(null);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    setFilePreview(file);
+    setPreviewImageUrl(objectUrl);
   };
 
   const handleTagAdd = (e: React.KeyboardEvent) => {
@@ -182,6 +198,14 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
   const handleTargetCourseIdChange = (value: string) => {
     setTargetCourseId(value);
   };
+
+  useEffect(() => {
+    return () => {
+      if (previewImageUrl) {
+        URL.revokeObjectURL(previewImageUrl);
+      }
+    };
+  }, [previewImageUrl]);
 
   const handleTagRemove = (index: number) => {
     const newTags = tags.filter((_, i) => i !== index);
@@ -218,9 +242,9 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
       accessRestrictions: data.accessRestrictions,
       tags: data.tags || [],
       targetCourseId: targetCourseId || undefined,
+      folderId: folderId || undefined,
       pageCount: pageCount, // Include page count
       ...(selectedFile && { file: selectedFile }),
-      ...(selectedImage && { image: selectedImage }),
       ...(filePreview && { filePreview: filePreview }), // Include file preview
     } as CreateMaterialFileForm;
 
@@ -280,30 +304,48 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
         >
           {selectedFile ? (
             <div className="space-y-3">
-              {/* Check if file is PDF or DOCX */}
-              {selectedFile.type === "application/pdf" ||
-              selectedFile.type ===
-                "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ? (
-                <Previewer
-                  file={selectedFile}
-                  onPreviewReady={(file: File) => {
-                    setFilePreview(file); // Handle the preview file as needed
-                  }}
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-gray-900">Preview</p>
+                <button
+                  type="button"
+                  onClick={() => previewUploadInputRef.current?.click()}
+                  className="text-xs font-medium text-brand hover:text-brand/80"
+                >
+                  Upload a different preview
+                </button>
+                <input
+                  ref={previewUploadInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) =>
+                    handleCustomPreviewUpload(e.target.files?.[0] || null)
+                  }
                 />
-              ) : filePreview ? (
-                // Render image preview if available
-                <img
-                  src={URL.createObjectURL(filePreview)}
-                  alt={selectedFile.name}
-                  className="mx-auto sm:w-24 sm:h-24 object-contain rounded"
-                />
-              ) : (
-                // Fallback icon if no preview is available
-                <File01Icon
-                  size={40}
-                  className="text-brand mx-auto sm:w-12 sm:h-12"
-                />
-              )}
+              </div>
+
+              <div className="flex justify-center">
+                {previewImageUrl || filePreview ? (
+                  <img
+                    src={previewImageUrl || URL.createObjectURL(filePreview!)}
+                    alt="Custom preview"
+                    className="mx-auto sm:w-36 sm:h-36 object-contain rounded border border-gray-200 bg-white"
+                  />
+                ) : selectedFile.type === "application/pdf" ||
+                  selectedFile.type ===
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ? (
+                  <Previewer
+                    file={selectedFile}
+                    onPreviewReady={(file: File) => {
+                      handleCustomPreviewUpload(file); // Handle the preview file as needed
+                    }}
+                  />
+                ) : (
+                  <HugeiconsIcon icon={File01Icon} strokeWidth={1.5}
+                    size={40}
+                    className="text-brand mx-auto sm:w-12 sm:h-12" />
+                )}
+              </div>
 
               <div>
                 <p className="text-sm sm:text-base font-medium text-gray-900">
@@ -323,15 +365,12 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
                   </p>
                 ) : null}
               </div>
-
-            
             </div>
           ) : (
             <div className="space-y-3">
-              <UploadSquare01Icon
+              <HugeiconsIcon icon={UploadSquare01Icon} strokeWidth={1.5}
                 size={40}
-                className="text-gray-400 mx-auto sm:w-12 sm:h-12"
-              />
+                className="text-gray-400 mx-auto sm:w-12 sm:h-12" />
               <div>
                 <p className="text-sm sm:text-base font-medium text-gray-900">
                   Click to Upload or Drag and Drop
@@ -402,9 +441,10 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
         accessRestrictions={watchedValues.accessRestrictions}
         tags={tags}
         tagInput={tagInput}
-        selectedImage={selectedImage}
         description={watchedValues.description || ""}
         classification={classification}
+        folderId={folderId}
+        currentFolder={currentFolder}
         onVisibilityChange={(value) =>
           setValue("visibility", value as VisibilityEnum)
         }
@@ -414,10 +454,9 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
         onTagAdd={handleTagAdd}
         onTagRemove={handleTagRemove}
         onTagInputChange={setTagInput}
-        onImageChange={setSelectedImage}
         onDescriptionChange={(value) => setValue("description", value)}
         onClassificationChange={handleClassificationChange}
-        imageInputRef={imageInputRef}
+        onFolderChange={setFolderId}
       />
 
       {/* Action Buttons */}
@@ -427,7 +466,7 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
             onClick={onBack}
             className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2"
           >
-            <ArrowLeft01Icon size={16} />
+            <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={1.5} size={16} />
             <span>Back</span>
           </button>
         )}

@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { FolderAddIcon, PreferenceHorizontalIcon } from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { FolderAddIcon, PreferenceHorizontalIcon } from "@hugeicons/core-free-icons";
 import PageHeader from "@/components/dashboard/PageHeader";
 import FolderCard from "@/components/dashboard/FolderCard";
 import FolderModal from "@/components/modals/FolderModal";
@@ -9,6 +10,7 @@ import { DeleteFolderModal } from "@/components/modals/DeleteFolderModal";
 import MaterialCard from "@/components/dashboard/MaterialCard";
 import { useAuth } from "@/hooks/useAuth";
 import { useBookmarks } from "@/context/bookmark/BookmarkContextProvider";
+import { useFolderContext } from "@/context/folder/FolderContextProvider";
 import { searchMaterials, deleteMaterial } from "@/api/materials.api";
 import {
   getMyFolders,
@@ -31,6 +33,7 @@ const Libraries: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { bookmarks, isLoading: bookmarksLoading } = useBookmarks();
+  const { materialIdsInFolders, refreshFolders } = useFolderContext();
 
   const [activeTab, setActiveTab] = useState<TabType>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -216,8 +219,8 @@ const Libraries: React.FC = () => {
     setShowFolderModal(true);
   };
 
-  const handleShareFolder = (folderId: string) => {
-    const folderUrl = `${window.location.origin}/dashboard/collection/${folderId}`;
+  const handleShareFolder = (folderSlug: string) => {
+    const folderUrl = `${window.location.origin}/dashboard/folder/${folderSlug}`;
     navigator.clipboard.writeText(folderUrl);
     toast.success("Folder link copied to clipboard!");
   };
@@ -331,6 +334,8 @@ const Libraries: React.FC = () => {
       );
 
       loadFolders();
+      // Refresh folder context so MaterialCards update immediately
+      await refreshFolders();
 
       if (selectedFolder?.id === folder.id) {
         setShowFolderModal(false);
@@ -418,6 +423,8 @@ const Libraries: React.FC = () => {
       // Success - no toast notification
 
       loadFolders();
+      // Refresh folder context so MaterialCards update immediately
+      await refreshFolders();
 
       if (selectedFolder?.id === folderId) {
         setShowFolderModal(false);
@@ -446,17 +453,20 @@ const Libraries: React.FC = () => {
   };
 
   const getFolderMaterialCount = (folder: Folder): number => {
-    // Count materials by checking contentMaterialId (more reliable than checking material object)
+    // Prefer backend-provided stats when available, fall back to content array
+    if (typeof folder.materialCount === "number") {
+      return folder.materialCount;
+    }
     return folder.content?.filter((item) => item.contentMaterialId).length || 0;
   };
 
   // Material handlers
-  const handleRead = (materialId: string) => {
-    navigate(`/dashboard/material/${materialId}`);
+  const handleRead = (slug: string) => {
+    navigate(`/dashboard/material/${slug}`);
   };
 
-  const handleShare = (materialId: string) => {
-    const materialUrl = `${window.location.origin}/dashboard/material/${materialId}`;
+  const handleShare = (slug: string) => {
+    const materialUrl = `${window.location.origin}/dashboard/material/${slug}`;
     navigator.clipboard.writeText(materialUrl);
     toast.success("Link copied to clipboard!");
   };
@@ -464,6 +474,14 @@ const Libraries: React.FC = () => {
   const handleEditMaterial = (material: Material) => {
     setEditingMaterial(material);
     setShowUploadModal(true);
+  };
+
+  const handleCreateComplete = (material: Material) => {
+    setUserUploads((prev) => [material, ...prev]);
+    setFilteredUploads((prev) => [material, ...prev]);
+    setActiveTab("uploads");
+    // Sync with server to ensure the latest data (e.g., moderation updates)
+    void fetchUserUploads();
   };
 
   const handleDeleteMaterial = async (id: string) => {
@@ -538,7 +556,9 @@ const Libraries: React.FC = () => {
         break;
       case "all":
       default:
-        materials = [...filteredSavedMaterials, ...filteredUploads];
+        materials = [...filteredSavedMaterials, ...filteredUploads].filter(
+          (material) => !folderMaterialIds.has(material.id)
+        );
         break;
     }
     return sortMaterialsByLastViewed(materials);
@@ -558,6 +578,9 @@ const Libraries: React.FC = () => {
     const bCreated = b.createdAt ? new Date(b.createdAt).getTime() : 0;
     return bCreated - aCreated;
   });
+
+  // Use folder context for material IDs in folders (more efficient, shared across app)
+  const folderMaterialIds = materialIdsInFolders;
 
   const currentMaterials = getCurrentMaterials();
   const hasContent = folders.length > 0 || currentMaterials.length > 0;
@@ -667,7 +690,7 @@ const Libraries: React.FC = () => {
               className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
               aria-label="Filter"
             >
-              <PreferenceHorizontalIcon size={18} className="text-gray-600" />
+              <HugeiconsIcon icon={PreferenceHorizontalIcon} strokeWidth={1.5} size={18} className="text-gray-600" />
             </button>
             {showFolders && (
               <button
@@ -675,7 +698,7 @@ const Libraries: React.FC = () => {
                 className="p-3 rounded-full bg-brand text-white hover:bg-brand/90 transition-colors shadow-lg hover:shadow-xl"
                 aria-label="Create folder"
               >
-                <FolderAddIcon size={18} />
+                <HugeiconsIcon icon={FolderAddIcon} strokeWidth={1.5} size={18} />
               </button>
             )}
           </div>
@@ -728,7 +751,7 @@ const Libraries: React.FC = () => {
                   <FolderCard
                     folder={folder}
                     onClick={() => handleFolderClick(folder)}
-                    onShare={() => handleShareFolder(folder.id)}
+                    onShare={() => handleShareFolder(folder.slug)}
                     onEdit={handleEditFolder}
                     onDelete={handleDeleteFolder}
                     materialCount={getFolderMaterialCount(folder)}
@@ -753,6 +776,7 @@ const Libraries: React.FC = () => {
                   activeTab === "uploads" ? handleDeleteMaterial : undefined
                 }
                 showEditDelete={activeTab === "uploads"}
+                isInFolder={folderMaterialIds.has(material.id)}
               />
             ))}
           </div>
@@ -774,7 +798,7 @@ const Libraries: React.FC = () => {
                   onClick={handleCreateFolder}
                   className="inline-flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand/90"
                 >
-                  <FolderAddIcon size={18} />
+                  <HugeiconsIcon icon={FolderAddIcon} strokeWidth={1.5} size={18} />
                   Create Your First Folder
                 </button>
               )}
@@ -816,6 +840,7 @@ const Libraries: React.FC = () => {
         isOpen={showUploadModal}
         onClose={handleModalClose}
         editingMaterial={editingMaterial}
+        onCreateComplete={handleCreateComplete}
         onEditComplete={handleEditComplete}
       />
     </>

@@ -5,7 +5,8 @@
  */
 
 import React from "react";
-import { Alert02Icon } from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Alert02Icon } from "@hugeicons/core-free-icons";
 
 interface PowerPointViewerProps {
   url: string; // Direct, publicly reachable or pre-signed HTTPS URL to .ppt or .pptx
@@ -49,7 +50,7 @@ const PowerPointViewer: React.FC<PowerPointViewerProps> = ({
           <div className="h-full flex items-center justify-center text-gray-500">
             <div className="text-center max-w-md">
               <div className="mb-4 flex justify-center">
-                <Alert02Icon size={48} className="text-gray-500" />
+                <HugeiconsIcon icon={Alert02Icon} strokeWidth={1.5} size={48} className="text-gray-500" />
               </div>
               <p className="text-lg font-medium mb-2">
                 Failed to load presentation

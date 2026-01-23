@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Search01Icon, ArrowRight02Icon, Cancel01Icon } from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowRight02Icon, Cancel01Icon, Search01Icon } from "@hugeicons/core-free-icons";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface SimpleSearchBarProps {
@@ -111,7 +112,7 @@ const SimpleSearchBar: React.FC<SimpleSearchBarProps> = ({
       <div className="flex items-center gap-3">
         <div className="relative flex-1">
           <div className="absolute left-4 top-1/2 -translate-y-1/2">
-            <Search01Icon size={18} className="text-gray-400" />
+            <HugeiconsIcon icon={Search01Icon} strokeWidth={1.5} size={18} className="text-gray-400" />
           </div>
           <input
             ref={inputRef}
@@ -129,7 +130,7 @@ const SimpleSearchBar: React.FC<SimpleSearchBarProps> = ({
               className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors"
               aria-label="Clear search"
             >
-              <Cancel01Icon size={16} className="text-gray-400" />
+              <HugeiconsIcon icon={Cancel01Icon} strokeWidth={1.5} size={16} className="text-gray-400" />
             </button>
           )}
         </div>
@@ -138,7 +139,7 @@ const SimpleSearchBar: React.FC<SimpleSearchBarProps> = ({
           className="inline-flex h-10 w-10 items-center justify-center rounded-full text-white shrink-0 bg-brand hover:bg-brand/90 transition-colors duration-200"
           aria-label="Search"
         >
-          <ArrowRight02Icon size={18} />
+          <HugeiconsIcon icon={ArrowRight02Icon} strokeWidth={1.5} size={18} />
         </button>
       </div>
 
@@ -163,7 +164,7 @@ const SimpleSearchBar: React.FC<SimpleSearchBarProps> = ({
                   }`}
                 >
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-gray-100 text-gray-600">
-                    <Search01Icon size={16} />
+                    <HugeiconsIcon icon={Search01Icon} strokeWidth={1.5} size={16} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-gray-900 truncate">

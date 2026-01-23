@@ -1,22 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import {
-  ArrowLeft01Icon,
-  Folder01Icon,
-  Folder03Icon,
-  UserCircleIcon,
-  UserAdd01Icon,
-  CrownIcon,
-  EyeIcon,
-  Download01Icon,
-  LinkSquare02Icon,
-  StarIcon,
-  Activity01Icon,
-  UserEdit01Icon,
-  HonourStarIcon,
-  Medal02Icon,
-  Award02Icon,
-} from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Activity01Icon, ArrowLeft01Icon, Award02Icon, CrownIcon, Download01Icon, EyeIcon, Folder01Icon, Folder03Icon, HonourStarIcon, LinkSquare02Icon, Medal02Icon, StarIcon, UserAdd01Icon, UserCircleIcon, UserEdit01Icon } from "@hugeicons/core-free-icons";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -71,7 +56,7 @@ const Profile: React.FC = () => {
         icon: (
           <div className="relative w-8 h-8 rounded-full bg-gradient-to-br from-amber-700 via-amber-800 to-amber-900 flex items-center justify-center shadow-lg overflow-hidden">
             <div className="absolute inset-0 shimmer-sweep" />
-            <HonourStarIcon size={18} className="text-white relative z-10" />
+            <HugeiconsIcon icon={HonourStarIcon} strokeWidth={1.5} size={18} className="text-white relative z-10" />
           </div>
         ),
       });
@@ -85,7 +70,7 @@ const Profile: React.FC = () => {
         icon: (
           <div className="relative w-8 h-8 rounded-full bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 flex items-center justify-center shadow-lg overflow-hidden">
             <div className="absolute inset-0 shimmer-sweep" />
-            <Medal02Icon size={18} className="text-white relative z-10" />
+            <HugeiconsIcon icon={Medal02Icon} strokeWidth={1.5} size={18} className="text-white relative z-10" />
           </div>
         ),
       });
@@ -100,7 +85,7 @@ const Profile: React.FC = () => {
         icon: (
           <div className="relative w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 via-yellow-500 to-amber-500 flex items-center justify-center shadow-lg overflow-hidden">
             <div className="absolute inset-0 shimmer-sweep" />
-            <Award02Icon size={18} className="text-white relative z-10" />
+            <HugeiconsIcon icon={Award02Icon} strokeWidth={1.5} size={18} className="text-white relative z-10" />
           </div>
         ),
       });
@@ -174,7 +159,7 @@ const Profile: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <UserCircleIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <HugeiconsIcon icon={UserCircleIcon} strokeWidth={1.5} className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-600 mb-4">Profile not found</p>
           <button
             onClick={() => navigate("/dashboard")}
@@ -202,7 +187,7 @@ const Profile: React.FC = () => {
                   onClick={() => navigate("/dashboard")}
                   className="inline-flex items-center gap-2 text-xs sm:text-sm text-muted-foreground hover:text-foreground"
                 >
-                  <ArrowLeft01Icon size={18} />
+                  <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={1.5} size={18} />
                   Back to Dashboard
                 </button>
               </div>
@@ -246,7 +231,7 @@ const Profile: React.FC = () => {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 mb-4 cursor-help">
-                        <CrownIcon size={16} className="text-amber-500" />
+                        <HugeiconsIcon icon={CrownIcon} strokeWidth={1.5} size={16} className="text-amber-500" />
                         <span className="text-xs sm:text-sm font-medium text-brand">
                           Top Contributor
                         </span>
@@ -280,7 +265,7 @@ const Profile: React.FC = () => {
                     </>
                   ) : (
                     <>
-                      <UserAdd01Icon size={18} />
+                      <HugeiconsIcon icon={UserAdd01Icon} strokeWidth={1.5} size={18} />
                       <span>Follow</span>
                     </>
                   )}
@@ -293,7 +278,7 @@ const Profile: React.FC = () => {
                   onClick={() => navigate("/dashboard/settings?tab=account")}
                   className="w-full px-6 py-3 rounded-xl text-sm font-medium transition-colors duration-200 flex items-center justify-center gap-2 bg-brand text-white hover:bg-brand/90 shadow-lg hover:shadow-xl mt-auto"
                 >
-                  <UserEdit01Icon size={18} />
+                  <HugeiconsIcon icon={UserEdit01Icon} strokeWidth={1.5} size={18} />
                   <span>Edit Profile</span>
                 </button>
               )}
@@ -415,7 +400,7 @@ const Profile: React.FC = () => {
                     ) : (
                       <div className="py-4">
                         <div className="flex items-center gap-2 text-gray-400">
-                          <StarIcon size={16} />
+                          <HugeiconsIcon icon={StarIcon} strokeWidth={1.5} size={16} />
                           <span className="text-xs sm:text-sm italic">No badges yet</span>
                         </div>
                       </div>
@@ -441,7 +426,7 @@ const Profile: React.FC = () => {
             </p>
           ) : (
             <div className="flex items-center gap-2 text-gray-400">
-              <UserCircleIcon size={20} />
+              <HugeiconsIcon icon={UserCircleIcon} strokeWidth={1.5} size={20} />
               <span className="text-sm italic">No bio available</span>
             </div>
           )}
@@ -455,7 +440,7 @@ const Profile: React.FC = () => {
           {userMaterials.length === 0 ? (
             <div className="text-center py-8">
               <div className="mb-4 p-3 sm:p-4 bg-gray-50 rounded-full inline-block">
-                <Folder03Icon className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-gray-400" />
+                <HugeiconsIcon icon={Folder03Icon} strokeWidth={1.5} className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-gray-400" />
               </div>
               <p className="text-sm text-gray-600">No uploads yet</p>
             </div>
@@ -511,14 +496,14 @@ const Profile: React.FC = () => {
                           <td className="py-3 px-3 sm:px-5">
                             <div className="flex items-center gap-3">
                               <div className="flex items-center gap-1">
-                                <Download01Icon size={14} className="text-brand" />
+                                <HugeiconsIcon icon={Download01Icon} strokeWidth={1.5} size={14} className="text-brand" />
                                 <span className="text-xs sm:text-sm font-medium text-gray-900">
                                   {material.downloads || "0"}
                                 </span>
                               </div>
                               <span className="text-xs text-gray-400">|</span>
                               <div className="flex items-center gap-1">
-                                <EyeIcon size={14} className="text-brand" />
+                                <HugeiconsIcon icon={EyeIcon} strokeWidth={1.5} size={14} className="text-brand" />
                                 <span className="text-xs sm:text-sm text-gray-600">
                                   {material.views}
                                 </span>
@@ -537,11 +522,11 @@ const Profile: React.FC = () => {
                           </td>
                           <td className="py-3 px-3 sm:px-5 text-right">
                             <button
-                              onClick={() => navigate(`/dashboard/material/${material.id}`)}
+                              onClick={() => navigate(`/dashboard/material/${material.slug}`)}
                               className="inline-flex items-center justify-center w-8 h-8 text-gray-600 hover:text-brand hover:bg-brand/10 rounded-lg transition-all duration-200 hover:scale-110"
                               aria-label="View material"
                             >
-                              <LinkSquare02Icon size={18} />
+                              <HugeiconsIcon icon={LinkSquare02Icon} strokeWidth={1.5} size={18} />
                             </button>
                           </td>
                         </tr>
@@ -558,7 +543,7 @@ const Profile: React.FC = () => {
                     return (
                       <div
                         key={material.id}
-                        onClick={() => navigate(`/dashboard/material/${material.id}`)}
+                        onClick={() => navigate(`/dashboard/material/${material.slug}`)}
                         className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer"
                       >
                         <div className="flex items-start justify-between mb-2">
@@ -575,12 +560,12 @@ const Profile: React.FC = () => {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                navigate(`/dashboard/material/${material.id}`);
+                                navigate(`/dashboard/material/${material.slug}`);
                               }}
                               className="inline-flex items-center justify-center w-7 h-7 text-gray-400 hover:text-brand rounded-lg transition-all duration-200 hover:scale-110"
                               aria-label="View material"
                             >
-                              <LinkSquare02Icon size={16} />
+                              <HugeiconsIcon icon={LinkSquare02Icon} strokeWidth={1.5} size={16} />
                             </button>
                             <span className="text-xs text-green-600 font-medium">
                               Approved
@@ -594,14 +579,14 @@ const Profile: React.FC = () => {
                           </span>
                           <div className="flex items-center gap-2 text-xs">
                             <div className="flex items-center gap-1">
-                              <Download01Icon size={14} className="text-brand" />
+                              <HugeiconsIcon icon={Download01Icon} strokeWidth={1.5} size={14} className="text-brand" />
                               <span className="font-medium text-gray-900">
                                 {material.downloads || "0"}
                               </span>
                             </div>
                             <span className="text-gray-400">|</span>
                             <div className="flex items-center gap-1">
-                              <EyeIcon size={14} className="text-brand" />
+                              <HugeiconsIcon icon={EyeIcon} strokeWidth={1.5} size={14} className="text-brand" />
                               <span className="text-gray-600">
                                 {material.views}
                               </span>
@@ -661,7 +646,7 @@ const Profile: React.FC = () => {
             ) : (
               <div className="text-center py-8">
                 <div className="mb-4 p-3 sm:p-4 bg-gray-50 rounded-full inline-block">
-                  <Activity01Icon className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-gray-400" />
+                  <HugeiconsIcon icon={Activity01Icon} strokeWidth={1.5} className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-gray-400" />
                 </div>
                 <p className="text-sm text-gray-600">No activity yet</p>
               </div>
