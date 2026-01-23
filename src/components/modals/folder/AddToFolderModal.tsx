@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Cancel01Icon } from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Cancel01Icon } from "@hugeicons/core-free-icons";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { toast } from "sonner";
 import { getMyFolders, addMaterialToFolder, type Folder } from "@/api/folder.api";
@@ -205,7 +206,7 @@ const AddToFolderModal: React.FC<AddToFolderModalProps> = ({
               disabled={isLoading}
               aria-label="Close"
             >
-              <Cancel01Icon size={20} className="text-gray-500" />
+              <HugeiconsIcon icon={Cancel01Icon} strokeWidth={1.5} size={20} className="text-gray-500" />
             </button>
 
             {/* Modal content */}

@@ -1,11 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import {
-  Search01Icon,
-  ArrowRight02Icon,
-  Book01Icon,
-  File01Icon,
-  Cancel01Icon,
-} from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowRight02Icon, Book01Icon, Cancel01Icon, File01Icon, Search01Icon } from "@hugeicons/core-free-icons";
 import { motion, AnimatePresence } from "framer-motion";
 import { SearchSuggestion } from "@/lib/types/search.types";
 
@@ -190,7 +185,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
       <div className="flex items-center gap-3">
         <div className="relative flex-1">
           <div className="absolute left-4 top-1/2 -translate-y-1/2">
-            <Search01Icon size={18} className="text-gray-400" />
+            <HugeiconsIcon icon={Search01Icon} strokeWidth={1.5} size={18} className="text-gray-400" />
           </div>
           <input
             ref={inputRef}
@@ -208,7 +203,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
               className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors"
               aria-label="Clear search"
             >
-              <Cancel01Icon size={16} className="text-gray-400" />
+              <HugeiconsIcon icon={Cancel01Icon} strokeWidth={1.5} size={16} className="text-gray-400" />
             </button>
           )}
         </div>
@@ -217,7 +212,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           className="inline-flex h-10 w-10 items-center justify-center rounded-full text-white shrink-0 bg-brand hover:bg-brand/90 transition-colors duration-200"
           aria-label="Search"
         >
-          <ArrowRight02Icon size={18} />
+          <HugeiconsIcon icon={ArrowRight02Icon} strokeWidth={1.5} size={18} />
         </button>
       </div>
 
@@ -255,9 +250,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
                         }`}
                       >
                         {suggestion.type === "course" ? (
-                          <Book01Icon size={16} />
+                          <HugeiconsIcon icon={Book01Icon} strokeWidth={1.5} size={16} />
                         ) : (
-                          <File01Icon size={16} />
+                          <HugeiconsIcon icon={File01Icon} strokeWidth={1.5} size={16} />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">

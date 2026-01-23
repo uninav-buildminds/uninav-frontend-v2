@@ -1,5 +1,6 @@
 import React from "react";
-import { File01Icon } from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { File01Icon } from "@hugeicons/core-free-icons";
 
 interface MaterialPlaceholderProps {
   name: string;
@@ -24,7 +25,7 @@ const MaterialPlaceholder: React.FC<MaterialPlaceholderProps> = ({ name, classNa
 
   return (
     <div className={`w-full h-full flex flex-col items-center justify-center p-4 ${colorClass} ${className}`}>
-      <File01Icon size={32} className="mb-2" />
+      <HugeiconsIcon icon={File01Icon} strokeWidth={1.5} size={32} className="mb-2" />
       <div className="text-center">
         <div className="text-xs font-medium mb-1">File Preview</div>
         <div className="text-xs opacity-75">{name}</div>

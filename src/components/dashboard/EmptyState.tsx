@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Search01Icon, UploadSquare01Icon, Bookmark01Icon, Folder01Icon, Home01Icon, ArrowRight01Icon, UserCircleIcon } from 'hugeicons-react';
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowRight01Icon, Bookmark01Icon, Folder01Icon, Home01Icon, Search01Icon, UploadSquare01Icon, UserCircleIcon } from "@hugeicons/core-free-icons";
 import { useNavigate } from 'react-router-dom';
 
 interface EmptyStateProps {
@@ -28,7 +29,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({ type, onAction, isLoading = fal
           title: "No Recent Materials",
           description: "You haven't viewed any materials recently. Start exploring to see your recent activity here.",
           actionText: "Browse Materials",
-          actionIcon: <ArrowRight01Icon size={16} />
+          actionIcon: <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={1.5} size={16} />
         };
       case 'recommendations':
         return {
@@ -36,7 +37,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({ type, onAction, isLoading = fal
           title: "No Recommendations Available",
           description: "Complete your profile by adding your department, level, and courses to get personalized material recommendations tailored to your studies.",
           actionText: "Complete Profile",
-          actionIcon: <ArrowRight01Icon size={16} />
+          actionIcon: <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={1.5} size={16} />
         };
       case 'saved':
         return {
@@ -44,7 +45,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({ type, onAction, isLoading = fal
           title: "No Saved Materials",
           description: "You haven't saved any materials yet. Start exploring and save materials you find useful.",
           actionText: "Browse Materials",
-          actionIcon: <ArrowRight01Icon size={16} />
+          actionIcon: <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={1.5} size={16} />
         };
       case 'uploads':
         return {
@@ -52,7 +53,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({ type, onAction, isLoading = fal
           title: "No Uploads Yet",
           description: "You haven't uploaded any materials yet. Share your knowledge with the community.",
           actionText: "Upload Material",
-          actionIcon: <UploadSquare01Icon size={16} />
+          actionIcon: <HugeiconsIcon icon={UploadSquare01Icon} strokeWidth={1.5} size={16} />
         };
       case 'libraries':
         return {
@@ -60,7 +61,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({ type, onAction, isLoading = fal
           title: "Your Library is Empty",
           description: "Start building your personal library by saving materials and uploading your own content.",
           actionText: "Upload Material",
-          actionIcon: <UploadSquare01Icon size={16} />
+          actionIcon: <HugeiconsIcon icon={UploadSquare01Icon} strokeWidth={1.5} size={16} />
         };
       default:
         return {
@@ -68,7 +69,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({ type, onAction, isLoading = fal
           title: "No Results Found",
           description: "Try adjusting your search or filters to find what you're looking for.",
           actionText: "Clear Filters",
-          actionIcon: <Search01Icon size={16} />
+          actionIcon: <HugeiconsIcon icon={Search01Icon} strokeWidth={1.5} size={16} />
         };
     }
   };

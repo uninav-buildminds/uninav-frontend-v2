@@ -1,12 +1,7 @@
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
-import {
-  Home01Icon,
-  FolderLibraryIcon,
-  Notification01Icon,
-  Settings01Icon,
-  Add01Icon
-} from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Add01Icon, FolderLibraryIcon, Home01Icon, Notification01Icon, Settings01Icon } from "@hugeicons/core-free-icons";
 import { UploadModal } from "@/components/modals";
 import { useAuth } from "@/hooks/useAuth";
 import { isProfileIncomplete } from "@/utils/profile.utils";
@@ -38,7 +33,7 @@ const MobileBottomNav: React.FC = () => {
         >
           {({ isActive }) => (
             <>
-              <Home01Icon size={20} className={isActive ? 'fill-current' : ''} />
+              <HugeiconsIcon icon={Home01Icon} strokeWidth={1.5} size={20} className={isActive ? 'fill-current' : ''} />
               <span className="text-xs font-medium">Home</span>
             </>
           )}
@@ -55,7 +50,7 @@ const MobileBottomNav: React.FC = () => {
         >
           {({ isActive }) => (
             <>
-              <FolderLibraryIcon size={20} className={isActive ? 'fill-current' : ''} />
+              <HugeiconsIcon icon={FolderLibraryIcon} strokeWidth={1.5} size={20} className={isActive ? 'fill-current' : ''} />
               <span className="text-xs font-medium">Libraries</span>
             </>
           )}
@@ -66,7 +61,7 @@ const MobileBottomNav: React.FC = () => {
           onClick={() => setShowUploadModal(true)}
           className="flex items-center justify-center w-12 h-12 bg-brand text-white rounded-full shadow-lg hover:bg-brand/90 transition-colors"
         >
-          <Add01Icon size={24} />
+          <HugeiconsIcon icon={Add01Icon} strokeWidth={1.5} size={24} />
         </button>
 
         {/* Notifications */}
@@ -80,7 +75,7 @@ const MobileBottomNav: React.FC = () => {
         >
           {({ isActive }) => (
             <>
-              <Notification01Icon size={20} className={isActive ? 'fill-current' : ''} />
+              <HugeiconsIcon icon={Notification01Icon} strokeWidth={1.5} size={20} className={isActive ? 'fill-current' : ''} />
               <span className="text-xs font-medium">Notifications</span>
             </>
           )}
@@ -98,7 +93,7 @@ const MobileBottomNav: React.FC = () => {
           {({ isActive }) => (
             <>
               <div className="relative">
-                <Settings01Icon size={20} className={isActive ? 'fill-current' : ''} />
+                <HugeiconsIcon icon={Settings01Icon} strokeWidth={1.5} size={20} className={isActive ? 'fill-current' : ''} />
                 {/* Profile Incomplete Badge */}
                 {profileIncomplete && (
                   <div className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-red-500 border-2 border-white shadow-md" />

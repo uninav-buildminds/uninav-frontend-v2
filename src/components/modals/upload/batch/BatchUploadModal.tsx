@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Cancel01Icon, AlertCircleIcon, File02Icon, Link01Icon, ArrowLeft01Icon } from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { AlertCircleIcon, ArrowLeft01Icon, Cancel01Icon, File02Icon, Link01Icon } from "@hugeicons/core-free-icons";
 import BatchFileUpload from "./BatchFileUpload";
 import BatchLinkUpload from "./BatchLinkUpload";
 import UploadSuccess from "../UploadSuccess";
@@ -84,7 +85,7 @@ const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                     : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 } ${isUploading ? "cursor-not-allowed opacity-50" : ""}`}
               >
-                <File02Icon size={18} />
+                <HugeiconsIcon icon={File02Icon} strokeWidth={1.5} size={18} />
                 <span>Files</span>
               </button>
               <button
@@ -96,7 +97,7 @@ const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                     : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 } ${isUploading ? "cursor-not-allowed opacity-50" : ""}`}
               >
-                <Link01Icon size={18} />
+                <HugeiconsIcon icon={Link01Icon} strokeWidth={1.5} size={18} />
                 <span>Links (CSV)</span>
               </button>
             </div>
@@ -166,7 +167,7 @@ const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
             className="flex flex-col items-center justify-center py-8 px-6 text-center"
           >
             <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-4">
-              <AlertCircleIcon size={32} className="text-red-500" />
+              <HugeiconsIcon icon={AlertCircleIcon} strokeWidth={1.5} size={32} className="text-red-500" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               Upload Failed
@@ -222,7 +223,7 @@ const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                 isUploading ? "cursor-not-allowed opacity-50" : ""
               }`}
             >
-              <Cancel01Icon size={20} className="text-gray-500" />
+              <HugeiconsIcon icon={Cancel01Icon} strokeWidth={1.5} size={20} className="text-gray-500" />
             </button>
 
             {/* Modal content */}

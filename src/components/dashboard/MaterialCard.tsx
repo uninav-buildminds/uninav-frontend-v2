@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Share08Icon, PencilEdit02Icon, Delete02Icon, FolderAddIcon } from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Delete02Icon, FolderAddIcon, PencilEdit02Icon, Share08Icon } from "@hugeicons/core-free-icons";
 import { toast } from "sonner";
 import { Material } from "../../lib/types/material.types";
 import { formatRelativeTime } from "../../lib/utils";
@@ -289,14 +290,14 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
                 className="p-1 bg-white/90 backdrop-blur-sm text-gray-600 hover:text-brand hover:bg-[#DCDFFE] rounded-md transition-colors duration-200 shadow-sm"
                 aria-label="Edit material"
               >
-                <PencilEdit02Icon size={18} />
+                <HugeiconsIcon icon={PencilEdit02Icon} strokeWidth={1.5} size={18} />
               </button>
               <button
                 onClick={handleDelete}
                 className="p-1 bg-white/90 backdrop-blur-sm text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors duration-200 shadow-sm"
                 aria-label="Delete material"
               >
-                <Delete02Icon size={18} />
+                <HugeiconsIcon icon={Delete02Icon} strokeWidth={1.5} size={18} />
               </button>
             </div>
           ) : (
@@ -379,7 +380,7 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
                     className="p-1.5 text-gray-600 hover:text-brand hover:bg-[#DCDFFE] rounded-md transition-colors duration-200"
                     aria-label="Add to folder"
                   >
-                    <FolderAddIcon size={16} />
+                    <HugeiconsIcon icon={FolderAddIcon} strokeWidth={1.5} size={16} />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -396,7 +397,7 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
                   className="p-1.5 text-gray-600 hover:text-brand hover:bg-[#DCDFFE] rounded-md transition-colors duration-200"
                   aria-label="Share"
                 >
-                  <Share08Icon size={16} />
+                  <HugeiconsIcon icon={Share08Icon} strokeWidth={1.5} size={16} />
                 </button>
               </TooltipTrigger>
               <TooltipContent>

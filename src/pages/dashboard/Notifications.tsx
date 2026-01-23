@@ -5,20 +5,8 @@ import type {
   NotificationItem,
   NotificationStatus,
 } from "@/components/notifications/types";
-import {
-  ArrowLeft01Icon,
-  Settings01Icon,
-  FilterHorizontalIcon,
-  Award02Icon,
-  ArrowRight02Icon,
-  Search01Icon,
-  CheckmarkCircle02Icon,
-  CancelCircleIcon,
-  Alert02Icon,
-  Comment01Icon,
-  NewsIcon,
-  Notification01Icon,
-} from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Alert02Icon, ArrowLeft01Icon, ArrowRight02Icon, Award02Icon, CancelCircleIcon, CheckmarkCircle02Icon, Comment01Icon, FilterHorizontalIcon, NewsIcon, Notification01Icon, Search01Icon, Settings01Icon } from "@hugeicons/core-free-icons";
 import { useNavigate, Link } from "react-router-dom";
 import {
   getNotifications,
@@ -36,7 +24,7 @@ const seedNotifications: NotificationItem[] = [
     timeLabel: "2 minutes ago",
     status: "unread",
     group: "Today",
-    icon: <CheckmarkCircle02Icon className="text-emerald-500" size={22} />,
+    icon: <HugeiconsIcon icon={CheckmarkCircle02Icon} strokeWidth={1.5} className="text-emerald-500" size={22} />,
   },
   {
     id: "n2",
@@ -46,7 +34,7 @@ const seedNotifications: NotificationItem[] = [
     timeLabel: "5 hours ago",
     status: "unread",
     group: "Today",
-    icon: <Award02Icon className="text-brand" size={22} />,
+    icon: <HugeiconsIcon icon={Award02Icon} strokeWidth={1.5} className="text-brand" size={22} />,
   },
   {
     id: "n3",
@@ -56,7 +44,7 @@ const seedNotifications: NotificationItem[] = [
     timeLabel: "4:00pm",
     status: "read",
     group: "Today",
-    icon: <CancelCircleIcon className="text-rose-500" size={22} />,
+    icon: <HugeiconsIcon icon={CancelCircleIcon} strokeWidth={1.5} className="text-rose-500" size={22} />,
   },
   {
     id: "n4",
@@ -66,7 +54,7 @@ const seedNotifications: NotificationItem[] = [
     timeLabel: "1:32pm",
     status: "read",
     group: "2 days ago",
-    icon: <Comment01Icon className="text-brand" size={22} />,
+    icon: <HugeiconsIcon icon={Comment01Icon} strokeWidth={1.5} className="text-brand" size={22} />,
   },
   {
     id: "n5",
@@ -75,7 +63,7 @@ const seedNotifications: NotificationItem[] = [
     timeLabel: "10:07am",
     status: "read",
     group: "2 days ago",
-    icon: <NewsIcon className="text-brand" size={22} />,
+    icon: <HugeiconsIcon icon={NewsIcon} strokeWidth={1.5} className="text-brand" size={22} />,
   },
   {
     id: "n6",
@@ -84,7 +72,7 @@ const seedNotifications: NotificationItem[] = [
     timeLabel: "12:00am",
     status: "unread",
     group: "2 days ago",
-    icon: <Alert02Icon className="text-amber-500" size={22} />,
+    icon: <HugeiconsIcon icon={Alert02Icon} strokeWidth={1.5} className="text-amber-500" size={22} />,
   },
 ];
 
@@ -135,15 +123,15 @@ const Notifications: React.FC = () => {
               : new Date(it.createdAt).toLocaleDateString(),
           icon:
             it.type === "material_approved" ? (
-              <CheckmarkCircle02Icon className="text-emerald-500" size={22} />
+              <HugeiconsIcon icon={CheckmarkCircle02Icon} strokeWidth={1.5} className="text-emerald-500" size={22} />
             ) : it.type === "material_rejected" ? (
-              <CancelCircleIcon className="text-rose-500" size={22} />
+              <HugeiconsIcon icon={CancelCircleIcon} strokeWidth={1.5} className="text-rose-500" size={22} />
             ) : it.type === "points_awarded" ? (
-              <Award02Icon className="text-brand" size={22} />
+              <HugeiconsIcon icon={Award02Icon} strokeWidth={1.5} className="text-brand" size={22} />
             ) : it.type === "email_verified" ? (
-              <CheckmarkCircle02Icon className="text-brand" size={22} />
+              <HugeiconsIcon icon={CheckmarkCircle02Icon} strokeWidth={1.5} className="text-brand" size={22} />
             ) : (
-              <Alert02Icon className="text-amber-500" size={22} />
+              <HugeiconsIcon icon={Alert02Icon} strokeWidth={1.5} className="text-amber-500" size={22} />
             ),
         }));
         setItems(mapped);
@@ -206,7 +194,7 @@ const Notifications: React.FC = () => {
                 onClick={() => navigate("/dashboard")}
                 className="hidden sm:inline-flex items-center gap-2 text-xs sm:text-sm text-muted-foreground hover:text-foreground"
               >
-                <ArrowLeft01Icon size={18} />
+                <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={1.5} size={18} />
                 Back to Dashboard
               </button>
 
@@ -227,7 +215,7 @@ const Notifications: React.FC = () => {
                     className="px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50 flex items-center justify-center"
                     aria-label="Settings"
                   >
-                    <Settings01Icon size={18} />
+                    <HugeiconsIcon icon={Settings01Icon} strokeWidth={1.5} size={18} />
                   </Link>
                 </div>
               </div>
@@ -245,7 +233,7 @@ const Notifications: React.FC = () => {
               <div className="mt-4 flex items-center gap-2 relative z-10">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 bg-white rounded-full border border-gray-200 px-3 py-2">
-                    <Search01Icon size={16} className="text-gray-400" />
+                    <HugeiconsIcon icon={Search01Icon} strokeWidth={1.5} size={16} className="text-gray-400" />
                     <input
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
@@ -256,7 +244,7 @@ const Notifications: React.FC = () => {
                       className="flex items-center justify-center w-8 h-8 rounded-full bg-brand text-white hover:bg-brand/90"
                       aria-label="Search"
                     >
-                      <ArrowRight02Icon size={16} />
+                      <HugeiconsIcon icon={ArrowRight02Icon} strokeWidth={1.5} size={16} />
                     </button>
                   </div>
                 </div>
@@ -267,7 +255,7 @@ const Notifications: React.FC = () => {
                     className="px-3 py-2 bg-white text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 inline-flex items-center gap-2"
                     data-open-filters
                   >
-                    <FilterHorizontalIcon size={18} />
+                    <HugeiconsIcon icon={FilterHorizontalIcon} strokeWidth={1.5} size={18} />
                     <span className="hidden sm:inline">Filter</span>
                   </button>
                   {showFilter && (
@@ -347,7 +335,7 @@ const Notifications: React.FC = () => {
           {!isLoading && grouped.length === 0 && (
             <div className="flex flex-col items-center justify-center py-8 sm:py-12 md:py-16 px-4 text-center">
               <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-gray-50 rounded-full">
-                <Notification01Icon className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-gray-400" />
+                <HugeiconsIcon icon={Notification01Icon} strokeWidth={1.5} className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-gray-400" />
               </div>
               <h3 className="text-base sm:text-lg md:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">
                 No Notifications
@@ -366,7 +354,7 @@ const Notifications: React.FC = () => {
                   }}
                   className="inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg bg-brand text-white hover:bg-brand/90 transition-colors duration-200 text-sm sm:text-base font-medium"
                 >
-                  <Search01Icon size={16} className="sm:w-4 sm:h-4" />
+                  <HugeiconsIcon icon={Search01Icon} strokeWidth={1.5} size={16} className="sm:w-4 sm:h-4" />
                   Clear Filters
                 </button>
               )}
