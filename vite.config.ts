@@ -25,7 +25,7 @@ export default defineConfig(({mode}) => ({
                     "UniNav is a collaborative university study materials platform that organizes and simplifies resource discovery for students.",
                 theme_color: "#0410A2",
                 background_color: "#ffffff",
-                display: "standalone", // Removes browser UI
+                display: "standalone",
                 scope: "/",
                 start_url: "/",
                 icons: [
@@ -111,7 +111,7 @@ export default defineConfig(({mode}) => ({
                             cacheName: 'department-cache',
                             expiration: {
                                 maxEntries: 10,
-                                maxAgeSeconds: 60 * 60 * 24 * 7 // 1 week
+                                maxAgeSeconds: 60 * 60 * 24 * 7 
                             },
                             cacheableResponse: {
                                 statuses: [0, 200]
@@ -187,22 +187,6 @@ export default defineConfig(({mode}) => ({
                         }
                     },
                     {
-                        urlPattern: mode === "development" ? /^http:\/\/localhost:3200\/user\/profile/i : /^https:\/\/uninav-backend-v2.onrender.com\/user\/profile/i,
-                        handler: "StaleWhileRevalidate",
-                        method: "GET",
-                        options: {
-                            cacheName: 'auth-cache',
-                            expiration: {
-                                maxEntries: 10,
-                                maxAgeSeconds: 60 * 60 * 24 * 7 // 1 week
-                            },
-                            cacheableResponse: {
-                                statuses: [0, 200]
-                            }
-                        }
-
-                    },
-                    {
                         urlPattern: mode === "development" ? /^http:\/\/localhost:3200\/auth\/check/i : /^https:\/\/uninav-backend-v2.onrender.com\/auth\/check/i,
                         handler: "StaleWhileRevalidate",
                         method: "GET",
@@ -210,7 +194,7 @@ export default defineConfig(({mode}) => ({
                             cacheName: 'auth-cache',
                             expiration: {
                                 maxEntries: 10,
-                                maxAgeSeconds: 60 * 60 * 24 * 7 // 1 week
+                                maxAgeSeconds: 60 * 60 * 24 * 7
                             },
                             cacheableResponse: {
                                 statuses: [0, 200]

@@ -1,62 +1,58 @@
+import React, { useState, useEffect } from 'react';
 import { AndroidIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { useEffect, useState } from "react";
+import { deferredPrompt } from '../../main';
 
 interface InstallPWAProps {
 	variant: "default" | "landscape";
 }
 
 const InstallPWA = (props: InstallPWAProps) => {
-	const [supportsPWA, setSupportsPWA] = useState(false);
-	const [promptInstall, setPromptInstall] = useState(null);
+	const [isInstallable, setIsInstallable] = useState(!!deferredPrompt);
+	const [installPrompt, setInstallPrompt] = useState(deferredPrompt);
 
 	useEffect(() => {
-		const handler = (e) => {
-			// 1. Prevent the mini-infobar from appearing on mobile
+		const handleBeforeInstallPrompt = (e) => {
 			e.preventDefault();
-
-			// 2. Save the event so it can be triggered later.
-			setPromptInstall(e);
-			setSupportsPWA(true);
+			setInstallPrompt(e);
+			setIsInstallable(true);
 		};
 
-		// 3. Listen for the 'beforeinstallprompt' event
-		window.addEventListener("beforeinstallprompt", handler);
+		// 1. Listen for the raw event (in case it happens now)
+		window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-		return () => window.removeEventListener("beforeinstallprompt", handler);
+		// 2. Listen for our custom event (in case we missed the window but caught it globally)
+		window.addEventListener('pwa-ready', () => {
+			setInstallPrompt(deferredPrompt);
+			setIsInstallable(true);
+		});
+
+		return () => {
+			window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+			window.removeEventListener('pwa-ready', handleBeforeInstallPrompt);
+		};
 	}, []);
 
-	const onClick = (evt) => {
-		evt.preventDefault();
-		if (!promptInstall) {
-			return;
-		}
+	const handleInstallClick = async () => {
+		if (!installPrompt) return;
 
-		// 4. Show the install prompt
-		promptInstall.prompt();
+		// Show the install prompt
+		installPrompt.prompt();
 
-		// 5. Wait for the user to respond to the prompt
-		promptInstall.userChoice.then((choiceResult) => {
-			if (choiceResult.outcome === "accepted") {
-				console.log("User accepted the install prompt");
-			} else {
-				console.log("User dismissed the install prompt");
-			}
-			// Clear the saved prompt since it can't be used again
-			setPromptInstall(null);
-			setSupportsPWA(false); // Hide the button
-		});
+		// Wait for the user to respond to the prompt
+		await installPrompt.userChoice;
+
+		// We've used the prompt, so we can't use it again.
+		setInstallPrompt(null);
+		setIsInstallable(false);
 	};
 
-	// Only show the button if the browser supports it and hasn't been installed yet
-	if (!supportsPWA) {
-		return null;
-	}
+	if (!isInstallable) return null;
 
 	if (props.variant == "landscape") {
 		return (
 			<button
-				onClick={onClick}
+				onClick={handleInstallClick}
 				aria-label="Install UniNav"
 				title="Install UniNav"
 				className="w-full text-sm text-white bg-brand rounded-lg px-4 py-2 flex items-center justify-center gap-2 transition-colors">
@@ -70,7 +66,7 @@ const InstallPWA = (props: InstallPWAProps) => {
 			className="flex flex-col items-center gap-1"
 			aria-label="Install UniNav"
 			title="Install UniNav"
-			onClick={onClick}>
+			onClick={handleInstallClick}>
 			<div className="rounded-2xl transition-all duration-200 hover:scale-105 hover:bg-[#DCDFFE] h-10 w-10 grid place-items-center ">
 				<HugeiconsIcon icon={AndroidIcon} size={16} className="text-gray-700" />
 			</div>
