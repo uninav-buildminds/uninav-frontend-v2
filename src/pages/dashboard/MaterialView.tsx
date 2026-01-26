@@ -576,7 +576,6 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
           url={material.resource.resourceAddress}
           title={material.label}
           showControls={true}
-          onPageChange={handlePageChange}
         />
       );
     }
