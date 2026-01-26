@@ -1,14 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Cancel01Icon,
-  Share08Icon,
-  Delete02Icon,
-  Folder03Icon,
-  Add01Icon,
-  InformationCircleIcon,
-} from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Add01Icon, Cancel01Icon, Delete02Icon, Folder03Icon, InformationCircleIcon, Share08Icon } from "@hugeicons/core-free-icons";
 import { Folder, getFolder } from "@/api/folder.api";
 import { Material } from "@/lib/types/material.types";
 import MaterialCard from "@/components/dashboard/MaterialCard";
@@ -173,7 +167,7 @@ const FolderModal: React.FC<FolderModalProps> = ({
                       className="p-2 rounded-full bg-white/10 hover:bg-brand/10 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
                       aria-label="Add material to folder"
                     >
-                      <Add01Icon size={18} className="text-brand" />
+                      <HugeiconsIcon icon={Add01Icon} strokeWidth={1.5} size={18} className="text-brand" />
                     </button>
                   )}
                   {onShare && (
@@ -182,7 +176,7 @@ const FolderModal: React.FC<FolderModalProps> = ({
                       className="p-2 rounded-full bg-white/10 hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
                       aria-label="Share folder"
                     >
-                      <Share08Icon size={18} className="text-gray-600" />
+                      <HugeiconsIcon icon={Share08Icon} strokeWidth={1.5} size={18} className="text-gray-600" />
                     </button>
                   )}
                   {onDelete && (
@@ -191,7 +185,7 @@ const FolderModal: React.FC<FolderModalProps> = ({
                       className="p-2 rounded-full bg-white/10 hover:bg-red-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                       aria-label="Delete folder"
                     >
-                      <Delete02Icon size={18} className="text-red-600" />
+                      <HugeiconsIcon icon={Delete02Icon} strokeWidth={1.5} size={18} className="text-red-600" />
                     </button>
                   )}
                   <button
@@ -199,7 +193,7 @@ const FolderModal: React.FC<FolderModalProps> = ({
                     className="p-2 rounded-full bg-white/10 hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                     aria-label="Close"
                   >
-                    <Cancel01Icon size={20} className="text-gray-500" />
+                    <HugeiconsIcon icon={Cancel01Icon} strokeWidth={1.5} size={20} className="text-gray-500" />
                   </button>
                 </div>
 
@@ -218,7 +212,7 @@ const FolderModal: React.FC<FolderModalProps> = ({
                     {/* Public folder contribution notice
                     {(folderData?.visibility === "public" || folder?.visibility === "public") && (
                       <div className="mb-3 flex items-center gap-1.5">
-                        <InformationCircleIcon size={14} className="text-gray-500 flex-shrink-0" />
+                        <HugeiconsIcon icon={InformationCircleIcon} strokeWidth={1.5} size={14} className="text-gray-500 flex-shrink-0" />
                         <p className="text-xs text-gray-600">
                           <span className="font-medium">Public:</span>{" "}
                           <span className="hidden sm:inline">
@@ -251,7 +245,7 @@ const FolderModal: React.FC<FolderModalProps> = ({
                   ) : materials.length === 0 && nestedFolders.length === 0 ? (
                     <div className="text-center py-12">
                       <div className="mb-4 p-3 sm:p-4 bg-gray-50 rounded-full inline-block">
-                        <Folder03Icon className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-gray-400" />
+                        <HugeiconsIcon icon={Folder03Icon} strokeWidth={1.5} className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-gray-400" />
                       </div>
                       <p className="text-gray-500 mb-2">This folder is empty</p>
                       <p className="text-sm text-gray-400">
@@ -299,7 +293,7 @@ const FolderModal: React.FC<FolderModalProps> = ({
                               className="absolute top-2 right-2 p-1.5 bg-white/90 backdrop-blur-sm text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors duration-200 shadow-sm opacity-0 group-hover:opacity-100 z-10"
                               aria-label="Remove from folder"
                             >
-                              <Cancel01Icon size={16} />
+                              <HugeiconsIcon icon={Cancel01Icon} strokeWidth={1.5} size={16} />
                             </button>
                           )}
                         </div>

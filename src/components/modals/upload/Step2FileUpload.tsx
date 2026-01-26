@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import { UploadSquare01Icon, ArrowLeft01Icon, File01Icon } from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowLeft01Icon, File01Icon, UploadSquare01Icon } from "@hugeicons/core-free-icons";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { uploadFileSchema, type UploadFileInput } from "@/lib/validation/upload";
@@ -340,10 +341,9 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
                     }}
                   />
                 ) : (
-                  <File01Icon
+                  <HugeiconsIcon icon={File01Icon} strokeWidth={1.5}
                     size={40}
-                    className="text-brand mx-auto sm:w-12 sm:h-12"
-                  />
+                    className="text-brand mx-auto sm:w-12 sm:h-12" />
                 )}
               </div>
 
@@ -368,10 +368,9 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
             </div>
           ) : (
             <div className="space-y-3">
-              <UploadSquare01Icon
+              <HugeiconsIcon icon={UploadSquare01Icon} strokeWidth={1.5}
                 size={40}
-                className="text-gray-400 mx-auto sm:w-12 sm:h-12"
-              />
+                className="text-gray-400 mx-auto sm:w-12 sm:h-12" />
               <div>
                 <p className="text-sm sm:text-base font-medium text-gray-900">
                   Click to Upload or Drag and Drop
@@ -467,7 +466,7 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
             onClick={onBack}
             className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2"
           >
-            <ArrowLeft01Icon size={16} />
+            <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={1.5} size={16} />
             <span>Back</span>
           </button>
         )}

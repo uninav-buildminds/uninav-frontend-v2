@@ -2,7 +2,8 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { getRecentMaterials } from "@/api/materials.api";
 import { MaterialWithLastViewed } from "./MaterialsSection";
-import { File02Icon } from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { File02Icon } from "@hugeicons/core-free-icons";
 
 interface RecentItemProps {
   material: MaterialWithLastViewed;
@@ -27,7 +28,7 @@ const RecentItem: React.FC<RecentItemProps> = ({ material, onClick }) => {
             onError={() => setImageError(true)}
           />
         ) : (
-          <File02Icon size={16} className="text-gray-400" />
+          <HugeiconsIcon icon={File02Icon} strokeWidth={1.5} size={16} className="text-gray-400" />
         )}
       </div>
 

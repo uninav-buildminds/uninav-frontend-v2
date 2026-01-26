@@ -1,4 +1,5 @@
 import React from "react";
+import { HugeiconsIcon } from "@hugeicons/react";
 import type { SettingsSectionKey, SettingsSectionDef } from "./types";
 
 interface Props {
@@ -21,7 +22,7 @@ const SettingsNav: React.FC<Props> = ({ sections, active, onChange }) => {
                 active === key ? "bg-brand text-white border-brand" : "bg-white text-gray-800 border-gray-200"
               }`}
             >
-              <Icon size={16} />
+              <HugeiconsIcon icon={Icon} strokeWidth={1.5} size={16} />
               <span className="hidden text-sm sm:hidden">{label}</span>
             </button>
           ))}
@@ -39,7 +40,7 @@ const SettingsNav: React.FC<Props> = ({ sections, active, onChange }) => {
                 active === key ? "bg-brand text-white" : "bg-white/40 text-gray-800 hover:bg-white"
               }`}
             >
-              <Icon size={18} />
+              <HugeiconsIcon icon={Icon} strokeWidth={1.5} size={18} />
               <span className="text-sm font-medium">{label}</span>
             </button>
           ))}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, ChevronRight } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Download01Icon,
   Share08Icon,
@@ -13,7 +14,7 @@ import {
   ArrowLeftDoubleIcon,
   ArrowRightDoubleIcon,
   InformationCircleIcon,
-} from "hugeicons-react";
+} from "@hugeicons/core-free-icons";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -446,10 +447,9 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
         return (
           <div className="h-full flex items-center justify-center text-gray-500">
             <div className="text-center">
-              <Alert02Icon
+              <HugeiconsIcon icon={Alert02Icon} strokeWidth={1.5}
                 size={48}
-                className="mx-auto mb-4 text-yellow-400"
-              />
+                className="mx-auto mb-4 text-yellow-400" />
               <p>Invalid Google Drive link</p>
               <p className="text-sm text-gray-600 mt-2">
                 The provided link could not be processed.
@@ -587,7 +587,7 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
     return (
       <div className="h-full flex items-center justify-center text-gray-500 bg-white rounded-lg">
         <div className="text-center">
-          <File01Icon size={48} className="mx-auto mb-4 text-gray-400" />
+          <HugeiconsIcon icon={File01Icon} strokeWidth={1.5} size={48} className="mx-auto mb-4 text-gray-400" />
           <p>Document preview not available</p>
           <Button
             onClick={handleDownload}
@@ -663,11 +663,10 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
                 className={`bg-white/90 backdrop-blur hover:bg-white border border-gray-200 h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-full shadow-lg flex-shrink-0 ${isBookmarkedMaterial ? "text-brand" : ""
                   }`}
               >
-                <Bookmark01Icon
+                <HugeiconsIcon icon={Bookmark01Icon} strokeWidth={1.5}
                   size={15}
                   className={`sm:w-4 sm:h-4 ${isBookmarkedMaterial ? "fill-current" : ""
-                    }`}
-                />
+                    }`} />
               </Button>
             )}
             <Button
@@ -676,7 +675,7 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
               onClick={handleShare}
               className="bg-white/90 backdrop-blur hover:bg-white border border-gray-200 h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-full shadow-lg flex-shrink-0"
             >
-              <Share08Icon size={15} className="sm:w-4 sm:h-4" />
+              <HugeiconsIcon icon={Share08Icon} strokeWidth={1.5} size={15} className="sm:w-4 sm:h-4" />
             </Button>
             {/* Show download button only if not read-only, not YouTube, and is either an uploaded file or GDrive material */}
             {material &&
@@ -689,7 +688,7 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
                   size="sm"
                   className="bg-brand/90 backdrop-blur text-white hover:bg-brand border-2 border-white h-8 sm:h-9 px-3 sm:px-4 rounded-full shadow-lg flex-shrink-0"
                 >
-                  <Download01Icon size={15} className="sm:w-4 sm:h-4" />
+                  <HugeiconsIcon icon={Download01Icon} strokeWidth={1.5} size={15} className="sm:w-4 sm:h-4" />
                 </Button>
               )}
           </div>
@@ -701,10 +700,9 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
             aria-label="View material information"
             title="Material Information"
           >
-            <InformationCircleIcon
+            <HugeiconsIcon icon={InformationCircleIcon} strokeWidth={1.5}
               size={16}
-              className="sm:w-4 sm:h-4 text-white"
-            />
+              className="sm:w-4 sm:h-4 text-white" />
           </button>
 
           {/* Combined Maximize & Chevron Button - Rightmost */}
@@ -720,9 +718,9 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
               }
             >
               {isFullscreen ? (
-                <MinimizeScreenIcon size={15} className="sm:w-4 sm:h-4" />
+                <HugeiconsIcon icon={MinimizeScreenIcon} strokeWidth={1.5} size={15} className="sm:w-4 sm:h-4" />
               ) : (
-                <MaximizeScreenIcon size={15} className="sm:w-4 sm:h-4" />
+                <HugeiconsIcon icon={MaximizeScreenIcon} strokeWidth={1.5} size={15} className="sm:w-4 sm:h-4" />
               )}
             </button>
 
@@ -738,11 +736,10 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
               className="flex items-center justify-center h-8 w-8 sm:h-9 sm:w-9 p-0 hover:bg-gray-50 transition-colors flex-shrink-0"
               aria-label={iconsExpanded ? "Collapse icons" : "Expand icons"}
             >
-              <ArrowRight01Icon
+              <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={1.5}
                 size={15}
                 className={`sm:w-4 sm:h-4 transition-transform duration-300 ${iconsExpanded ? "rotate-180" : ""
-                  }`}
-              />
+                  }`} />
             </button>
           </div>
         </div>
@@ -770,7 +767,7 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
                 className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 z-10 p-2 rounded-full bg-brand text-white shadow-md hover:opacity-90"
                 aria-label="Collapse side panel"
               >
-                <ArrowRightDoubleIcon size={18} />
+                <HugeiconsIcon icon={ArrowRightDoubleIcon} strokeWidth={1.5} size={18} />
               </button>
             )}
             {/* Material Information */}
@@ -934,7 +931,7 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
             className="hidden md:flex fixed right-1 sm:right-2 top-1/2 -translate-y-1/2 z-50 p-2 rounded-full bg-brand text-white shadow-md hover:opacity-90"
             aria-label="Expand side panel"
           >
-            <ArrowLeftDoubleIcon size={18} />
+            <HugeiconsIcon icon={ArrowLeftDoubleIcon} strokeWidth={1.5} size={18} />
           </button>
         )}
       </div>

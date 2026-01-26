@@ -1,16 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  ArrowLeft01Icon,
-  Search01Icon,
-  ArrowRight02Icon,
-  Rocket01Icon,
-  UploadSquare01Icon,
-  InformationCircleIcon,
-  Mail01Icon,
-  MinusSignIcon,
-  PlusSignIcon,
-} from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowLeft01Icon, ArrowRight02Icon, InformationCircleIcon, Mail01Icon, MinusSignIcon, PlusSignIcon, Rocket01Icon, Search01Icon, UploadSquare01Icon } from "@hugeicons/core-free-icons";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Helper icon components
@@ -184,7 +175,7 @@ const Help: React.FC = () => {
                 <div className="mt-6 flex justify-center relative z-10">
                   <div className="w-full max-w-xl flex items-center gap-3">
                     <div className="flex-1 flex items-center gap-2 bg-white rounded-full border border-gray-200 px-3 py-2.5">
-                      <Search01Icon size={18} className="text-gray-400" />
+                      <HugeiconsIcon icon={Search01Icon} strokeWidth={1.5} size={18} className="text-gray-400" />
                       <input
                         type="text"
                         value={searchQuery}
@@ -201,7 +192,7 @@ const Help: React.FC = () => {
                       className="inline-flex h-10 w-10 items-center justify-center rounded-full text-white shrink-0 bg-brand hover:bg-brand/90 transition-colors duration-200"
                       aria-label="Search"
                     >
-                      <ArrowRight02Icon size={18} />
+                      <HugeiconsIcon icon={ArrowRight02Icon} strokeWidth={1.5} size={18} />
                     </button>
                   </div>
                 </div>
@@ -226,7 +217,7 @@ const Help: React.FC = () => {
             <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-start gap-3 mb-4">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border border-gray-200 flex items-center justify-center bg-brand/10 flex-shrink-0">
-                  <Rocket01Icon size={20} className="sm:w-6 sm:h-6 text-brand" />
+                  <HugeiconsIcon icon={Rocket01Icon} strokeWidth={1.5} size={20} className="sm:w-6 sm:h-6 text-brand" />
                 </div>
                 <h4 className="text-base sm:text-lg font-semibold text-gray-900 pt-1">
                   Getting Started
@@ -252,7 +243,7 @@ const Help: React.FC = () => {
             <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-start gap-3 mb-4">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border border-gray-200 flex items-center justify-center bg-brand/10 flex-shrink-0">
-                  <UploadSquare01Icon size={20} className="sm:w-6 sm:h-6 text-brand" />
+                  <HugeiconsIcon icon={UploadSquare01Icon} strokeWidth={1.5} size={20} className="sm:w-6 sm:h-6 text-brand" />
                 </div>
                 <h4 className="text-base sm:text-lg font-semibold text-gray-900 pt-1">
                   Uploading Materials
@@ -278,7 +269,7 @@ const Help: React.FC = () => {
             <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-start gap-3 mb-4">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border border-gray-200 flex items-center justify-center bg-brand/10 flex-shrink-0">
-                  <InformationCircleIcon size={20} className="sm:w-6 sm:h-6 text-brand" />
+                  <HugeiconsIcon icon={InformationCircleIcon} strokeWidth={1.5} size={20} className="sm:w-6 sm:h-6 text-brand" />
                 </div>
                 <h4 className="text-base sm:text-lg font-semibold text-gray-900 pt-1">
                   Account Help
@@ -328,7 +319,7 @@ const Help: React.FC = () => {
                 <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
                   <div className="flex items-start gap-3 mb-4">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border border-gray-200 flex items-center justify-center bg-brand/10 flex-shrink-0">
-                      <Rocket01Icon size={20} className="sm:w-6 sm:h-6 text-brand" />
+                      <HugeiconsIcon icon={Rocket01Icon} strokeWidth={1.5} size={20} className="sm:w-6 sm:h-6 text-brand" />
                     </div>
                     <h4 className="text-base sm:text-lg font-semibold text-gray-900 pt-1">
                       Getting Started
@@ -356,7 +347,7 @@ const Help: React.FC = () => {
                 <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
                   <div className="flex items-start gap-3 mb-4">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border border-gray-200 flex items-center justify-center bg-brand/10 flex-shrink-0">
-                      <UploadSquare01Icon size={20} className="sm:w-6 sm:h-6 text-brand" />
+                      <HugeiconsIcon icon={UploadSquare01Icon} strokeWidth={1.5} size={20} className="sm:w-6 sm:h-6 text-brand" />
                     </div>
                     <h4 className="text-base sm:text-lg font-semibold text-gray-900 pt-1">
                       Uploading Materials
@@ -384,7 +375,7 @@ const Help: React.FC = () => {
                 <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
                   <div className="flex items-start gap-3 mb-4">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border border-gray-200 flex items-center justify-center bg-brand/10 flex-shrink-0">
-                      <InformationCircleIcon size={20} className="sm:w-6 sm:h-6 text-brand" />
+                      <HugeiconsIcon icon={InformationCircleIcon} strokeWidth={1.5} size={20} className="sm:w-6 sm:h-6 text-brand" />
                     </div>
                     <h4 className="text-base sm:text-lg font-semibold text-gray-900 pt-1">
                       Account Help
@@ -491,7 +482,7 @@ const Help: React.FC = () => {
             >
               <div className="flex items-start gap-3 mb-4">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border border-gray-200 flex items-center justify-center bg-blue-50 flex-shrink-0">
-                  <Mail01Icon size={20} className="sm:w-6 sm:h-6 text-blue-600" />
+                  <HugeiconsIcon icon={Mail01Icon} strokeWidth={1.5} size={20} className="sm:w-6 sm:h-6 text-blue-600" />
                 </div>
                 <h4 className="text-base sm:text-lg font-semibold text-gray-900 pt-1">
                   Email Support
@@ -565,7 +556,7 @@ const Help: React.FC = () => {
                 >
                   <div className="flex items-start gap-3 mb-4">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border border-gray-200 flex items-center justify-center bg-blue-50 flex-shrink-0">
-                      <Mail01Icon size={20} className="sm:w-6 sm:h-6 text-blue-600" />
+                      <HugeiconsIcon icon={Mail01Icon} strokeWidth={1.5} size={20} className="sm:w-6 sm:h-6 text-blue-600" />
                     </div>
                     <h4 className="text-base sm:text-lg font-semibold text-gray-900 pt-1">
                       Email Support
@@ -784,15 +775,13 @@ const Help: React.FC = () => {
                       transition={{ duration: 0.3, ease: "easeInOut" }}
                     >
                       {expandedFAQs.has(index) ? (
-                        <MinusSignIcon
+                        <HugeiconsIcon icon={MinusSignIcon} strokeWidth={1.5}
                           size={20}
-                          className="text-gray-600 flex-shrink-0"
-                        />
+                          className="text-gray-600 flex-shrink-0" />
                       ) : (
-                        <PlusSignIcon
+                        <HugeiconsIcon icon={PlusSignIcon} strokeWidth={1.5}
                           size={20}
-                          className="text-gray-600 flex-shrink-0"
-                        />
+                          className="text-gray-600 flex-shrink-0" />
                       )}
                     </motion.div>
                   </button>

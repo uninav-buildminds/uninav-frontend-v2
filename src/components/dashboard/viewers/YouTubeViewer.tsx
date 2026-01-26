@@ -4,7 +4,8 @@
  */
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Alert02Icon, PlayIcon } from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Alert02Icon, PlayIcon } from "@hugeicons/core-free-icons";
 import { ENV } from "@/lib/env.config";
 
 interface YouTubeViewerProps {
@@ -208,7 +209,7 @@ const YouTubeViewer: React.FC<YouTubeViewerProps> = ({
       <div className="h-full flex items-center justify-center text-gray-500 bg-white dark:bg-gray-800 rounded-lg">
         <div className="text-center max-w-md px-4">
           <div className="mb-4 flex justify-center">
-            <Alert02Icon size={48} className="text-gray-500" />
+            <HugeiconsIcon icon={Alert02Icon} strokeWidth={1.5} size={48} className="text-gray-500" />
           </div>
           <p className="text-lg font-medium mb-2">Invalid YouTube URL</p>
           <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -262,7 +263,7 @@ const YouTubeViewer: React.FC<YouTubeViewerProps> = ({
           <div className="h-full flex items-center justify-center text-white">
             <div className="text-center max-w-md px-4">
               <div className="mb-4 flex justify-center">
-                <Alert02Icon size={48} className="text-white" />
+                <HugeiconsIcon icon={Alert02Icon} strokeWidth={1.5} size={48} className="text-white" />
               </div>
               <p className="text-lg font-medium mb-2">Failed to load video</p>
               <p className="text-sm opacity-80 mb-4">
@@ -361,7 +362,7 @@ const YouTubeViewer: React.FC<YouTubeViewerProps> = ({
                     />
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/5 transition-colors flex items-center justify-center">
                       <div className="bg-red-600 rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <PlayIcon size={12} className="text-white ml-0.5" />
+                        <HugeiconsIcon icon={PlayIcon} strokeWidth={1.5} size={12} className="text-white ml-0.5" />
                       </div>
                     </div>
                     {currentVideoId === video.id && (
