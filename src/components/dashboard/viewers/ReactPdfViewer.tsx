@@ -75,16 +75,6 @@ const ReactPdfViewer: React.FC<ReactPdfViewerProps> = ({
     []
   );
 
-  // Handle document load error with detailed logging
-  const onDocumentLoadError = useCallback((error: Error) => {
-    console.error("PDF load error:", error);
-    console.error("Error details:", {
-      message: error.message,
-      name: error.name,
-      stack: error.stack,
-    });
-  }, []);
-
   // Scroll to initial page after document loads and pages render
   useEffect(() => {
     if (!numPages || !initialPage || initialPage === 1) return;
@@ -233,7 +223,6 @@ const ReactPdfViewer: React.FC<ReactPdfViewerProps> = ({
             withCredentials: false,
           }}
           onLoadSuccess={onDocumentLoadSuccess}
-          onLoadError={onDocumentLoadError}
           options={{
             cMapUrl: "https://unpkg.com/pdfjs-dist@4.10.38/cmaps/",
             cMapPacked: true,
