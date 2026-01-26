@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Cancel01Icon, PlusSignIcon } from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Cancel01Icon, PlusSignIcon } from "@hugeicons/core-free-icons";
 import { toast } from "sonner";
 import { createCourse } from "@/api/course.api";
 import { getDepartments } from "@/api/department.api";
@@ -183,12 +184,12 @@ const CreateCourseModal: React.FC<CreateCourseModalProps> = ({
               className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
               disabled={isSubmitting}
             >
-              <Cancel01Icon size={20} className="text-gray-500" />
+              <HugeiconsIcon icon={Cancel01Icon} strokeWidth={1.5} size={20} className="text-gray-500" />
             </button>
 
             <div className="flex items-center gap-3">
               <div className="p-2 bg-brand/10 rounded-lg">
-                <PlusSignIcon size={24} className="text-brand" />
+                <HugeiconsIcon icon={PlusSignIcon} strokeWidth={1.5} size={24} className="text-brand" />
               </div>
               <div>
                 <h2 className="text-xl font-semibold text-gray-900">

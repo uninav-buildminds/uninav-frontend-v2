@@ -1,14 +1,7 @@
 import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Link01Icon,
-  Cancel01Icon,
-  CheckmarkCircle02Icon,
-  Loading03Icon,
-  AlertCircleIcon,
-  FileDownloadIcon,
-  Upload01Icon,
-} from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { AlertCircleIcon, ArrowLeft01Icon, Cancel01Icon, CheckmarkCircle02Icon, FileDownloadIcon, Link01Icon, Loading03Icon, Upload01Icon } from "@hugeicons/core-free-icons";
 import { toast } from "sonner";
 import {
   BatchCreateMaterialsResponse,
@@ -31,7 +24,7 @@ import { isGDriveFolder } from "@/lib/utils/gdriveUtils";
 import {
   SelectModal,
   SelectOption,
-} from "@/components/dashboard/SearchSelectModal";
+} from "@/components/modals/shared/SearchSelectModal";
 import { getMyFolders, Folder } from "@/api/folder.api";
 import {
   extractGDriveId,
@@ -58,6 +51,7 @@ interface BatchLinkUploadProps {
   onComplete: (result: BatchCreateMaterialsResponse) => void;
   onError: (error: string) => void;
   onUploadingChange: (isUploading: boolean) => void;
+  onBack?: () => void;
 }
 
 const MAX_LINKS = 50;
@@ -66,6 +60,7 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
   onComplete,
   onError,
   onUploadingChange,
+  onBack,
 }) => {
   const [links, setLinks] = useState<BatchLinkItem[]>([]);
   const [csvInput, setCsvInput] = useState("");
@@ -472,7 +467,7 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
     if (item.isLoadingPreview) {
       return (
         <div className="w-full h-full flex items-center justify-center">
-          <Loading03Icon size={16} className="text-gray-400 animate-spin" />
+          <HugeiconsIcon icon={Loading03Icon} strokeWidth={1.5} size={16} className="text-gray-400 animate-spin" />
         </div>
       );
     }
@@ -488,7 +483,7 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
         />
       );
     }
-    return <Link01Icon size={24} className="text-gray-400" />;
+    return <HugeiconsIcon icon={Link01Icon} strokeWidth={1.5} size={24} className="text-gray-400" />;
   };
 
   const getTypeLabel = (type: MaterialTypeEnum) => {
@@ -534,7 +529,7 @@ Week 1 Lecture Notes,https://docs.google.com/document/d/abc123`;
             onClick={downloadSampleCSV}
             className="text-xs text-brand hover:text-brand/80 flex items-center gap-1"
           >
-            <FileDownloadIcon size={14} />
+            <HugeiconsIcon icon={FileDownloadIcon} strokeWidth={1.5} size={14} />
             Download Sample
           </button>
         </div>
@@ -574,7 +569,7 @@ https://drive.google.com/drive/folders/...`}
               className="hidden"
             />
             <span className="flex items-center justify-center gap-2 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer text-sm font-medium">
-              <Upload01Icon size={16} />
+              <HugeiconsIcon icon={Upload01Icon} strokeWidth={1.5} size={16} />
               Upload CSV File
             </span>
           </label>
@@ -629,10 +624,9 @@ https://drive.google.com/drive/folders/...`}
                         placeholder="Enter title..."
                       />
                       {item.isLoadingTitle && (
-                        <Loading03Icon
+                        <HugeiconsIcon icon={Loading03Icon} strokeWidth={1.5}
                           size={12}
-                          className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 animate-spin"
-                        />
+                          className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 animate-spin" />
                       )}
                     </div>
                     <div className="flex items-center gap-2 mt-1">
@@ -657,7 +651,7 @@ https://drive.google.com/drive/folders/...`}
                       onClick={() => removeLink(item.id)}
                       className="flex-shrink-0 p-1 hover:bg-gray-100 rounded transition-colors"
                     >
-                      <Cancel01Icon size={14} className="text-gray-400" />
+                      <HugeiconsIcon icon={Cancel01Icon} strokeWidth={1.5} size={14} className="text-gray-400" />
                     </button>
                   )}
                 </motion.div>
@@ -696,22 +690,34 @@ https://drive.google.com/drive/folders/...`}
         </div>
       </div>
 
-      {/* Upload Button */}
-      <button
-        onClick={handleUpload}
-        disabled={
-          isUploading ||
-          links.length === 0 ||
-          links.some((l) => l.isLoadingPreview)
-        }
-        className="w-full py-3 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-      >
-        {isUploading
-          ? "Uploading..."
-          : links.some((l) => l.isLoadingPreview)
-          ? "Loading previews..."
-          : `Upload ${links.length} Link${links.length !== 1 ? "s" : ""}`}
-      </button>
+      {/* Action Buttons */}
+      <div className="flex space-x-3 pt-3">
+        {onBack && (
+          <button
+            onClick={onBack}
+            disabled={isUploading}
+            className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={1.5} size={16} />
+            <span>Back</span>
+          </button>
+        )}
+        <button
+          onClick={handleUpload}
+          disabled={
+            isUploading ||
+            links.length === 0 ||
+            links.some((l) => l.isLoadingPreview)
+          }
+          className="flex-1 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+        >
+          {isUploading
+            ? "Uploading..."
+            : links.some((l) => l.isLoadingPreview)
+            ? "Loading previews..."
+            : `Upload ${links.length} Link${links.length !== 1 ? "s" : ""}`}
+        </button>
+      </div>
     </div>
   );
 };

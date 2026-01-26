@@ -1,16 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  UploadSquare01Icon,
-  File01Icon,
-  Cancel01Icon,
-  CheckmarkCircle02Icon,
-  Loading03Icon,
-  AlertCircleIcon,
-  Pdf01Icon,
-  PresentationBarChart01Icon,
-  FileAttachmentIcon,
-} from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { AlertCircleIcon, ArrowLeft01Icon, Cancel01Icon, CheckmarkCircle02Icon, File01Icon, FileAttachmentIcon, Loading03Icon, Pdf01Icon, PresentationBarChart01Icon, UploadSquare01Icon } from "@hugeicons/core-free-icons";
 import { toast } from "sonner";
 import {
   BatchCreateMaterialsResponse,
@@ -32,7 +23,7 @@ import { pdfjs } from "react-pdf";
 import {
   SelectModal,
   SelectOption,
-} from "@/components/dashboard/SearchSelectModal";
+} from "@/components/modals/shared/SearchSelectModal";
 import { getMyFolders, Folder } from "@/api/folder.api";
 
 // Configure PDF.js worker
@@ -55,6 +46,7 @@ interface BatchFileUploadProps {
   onComplete: (result: BatchCreateMaterialsResponse) => void;
   onError: (error: string) => void;
   onUploadingChange: (isUploading: boolean) => void;
+  onBack?: () => void;
 }
 
 const MAX_FILES = 20;
@@ -107,21 +99,22 @@ async function generatePdfThumbnail(
 // Get file icon based on type
 const getFileIcon = (file: File) => {
   if (file.type === "application/pdf") {
-    return <Pdf01Icon size={24} className="text-red-500" />;
+    return <HugeiconsIcon icon={Pdf01Icon} strokeWidth={1.5} size={24} className="text-red-500" />;
   }
   if (file.type.includes("presentation") || file.name.match(/\.pptx?$/i)) {
-    return <PresentationBarChart01Icon size={24} className="text-orange-500" />;
+    return <HugeiconsIcon icon={PresentationBarChart01Icon} strokeWidth={1.5} size={24} className="text-orange-500" />;
   }
   if (file.type.includes("word") || file.name.match(/\.docx?$/i)) {
-    return <FileAttachmentIcon size={24} className="text-blue-500" />;
+    return <HugeiconsIcon icon={FileAttachmentIcon} strokeWidth={1.5} size={24} className="text-blue-500" />;
   }
-  return <File01Icon size={24} className="text-gray-400" />;
+  return <HugeiconsIcon icon={File01Icon} strokeWidth={1.5} size={24} className="text-gray-400" />;
 };
 
 const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
   onComplete,
   onError,
   onUploadingChange,
+  onBack,
 }) => {
   const [files, setFiles] = useState<BatchFileItem[]>([]);
   const [dragActive, setDragActive] = useState(false);
@@ -353,11 +346,11 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
   const getStatusIcon = (status: BatchFileItem["status"]) => {
     switch (status) {
       case "uploading":
-        return <Loading03Icon size={16} className="text-brand animate-spin" />;
+        return <HugeiconsIcon icon={Loading03Icon} strokeWidth={1.5} size={16} className="text-brand animate-spin" />;
       case "success":
-        return <CheckmarkCircle02Icon size={16} className="text-green-500" />;
+        return <HugeiconsIcon icon={CheckmarkCircle02Icon} strokeWidth={1.5} size={16} className="text-green-500" />;
       case "error":
-        return <AlertCircleIcon size={16} className="text-red-500" />;
+        return <HugeiconsIcon icon={AlertCircleIcon} strokeWidth={1.5} size={16} className="text-red-500" />;
       default:
         return null;
     }
@@ -377,7 +370,7 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
         onDragOver={handleDrag}
         onDrop={handleDrop}
       >
-        <UploadSquare01Icon size={40} className="text-gray-400 mx-auto mb-3" />
+        <HugeiconsIcon icon={UploadSquare01Icon} strokeWidth={1.5} size={40} className="text-gray-400 mx-auto mb-3" />
         <p className="text-sm font-medium text-gray-900">
           Drag and drop files here, or click to select
         </p>
@@ -492,7 +485,7 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
                         onClick={() => removeFile(item.id)}
                         className="p-1 hover:bg-gray-100 rounded transition-colors"
                       >
-                        <Cancel01Icon size={14} className="text-gray-400" />
+                        <HugeiconsIcon icon={Cancel01Icon} strokeWidth={1.5} size={14} className="text-gray-400" />
                       </button>
                     )}
                   </div>
@@ -554,16 +547,28 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
         </div>
       )}
 
-      {/* Upload Button */}
-      <button
-        onClick={handleUpload}
-        disabled={isUploading || files.length === 0}
-        className="w-full py-3 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-      >
-        {isUploading
-          ? "Uploading..."
-          : `Upload ${files.length} File${files.length !== 1 ? "s" : ""}`}
-      </button>
+      {/* Action Buttons */}
+      <div className="flex space-x-3 pt-3">
+        {onBack && (
+          <button
+            onClick={onBack}
+            disabled={isUploading}
+            className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={1.5} size={16} />
+            <span>Back</span>
+          </button>
+        )}
+        <button
+          onClick={handleUpload}
+          disabled={isUploading || files.length === 0}
+          className="flex-1 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+        >
+          {isUploading
+            ? "Uploading..."
+            : `Upload ${files.length} File${files.length !== 1 ? "s" : ""}`}
+        </button>
+      </div>
     </div>
   );
 };

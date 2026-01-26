@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Cancel01Icon, AlertCircleIcon, File02Icon, Link01Icon, ArrowLeft01Icon } from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { AlertCircleIcon, ArrowLeft01Icon, Cancel01Icon, File02Icon, Link01Icon } from "@hugeicons/core-free-icons";
 import BatchFileUpload from "./BatchFileUpload";
 import BatchLinkUpload from "./BatchLinkUpload";
-import BatchUploadSuccess from "./BatchUploadSuccess";
+import UploadSuccess from "../UploadSuccess";
 import { BatchCreateMaterialsResponse } from "@/api/materials.api";
 
 export type BatchUploadTab = "files" | "links";
@@ -13,11 +14,13 @@ export type BatchUploadStep = "upload" | "success" | "error";
 interface BatchUploadModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onBack?: () => void; // Optional callback to go back to Step1
 }
 
 const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
   isOpen,
   onClose,
+  onBack,
 }) => {
   const [activeTab, setActiveTab] = useState<BatchUploadTab>("files");
   const [currentStep, setCurrentStep] = useState<BatchUploadStep>("upload");
@@ -53,9 +56,16 @@ const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
     switch (currentStep) {
       case "upload":
         return (
-          <div className="space-y-4">
+          <motion.div
+            key="upload"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="space-y-6"
+          >
             {/* Header */}
-            <div className="text-center space-y-1">
+            <div className="text-center space-y-1 sm:space-y-2">
               <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">
                 Batch Upload Materials
               </h2>
@@ -75,7 +85,7 @@ const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                     : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 } ${isUploading ? "cursor-not-allowed opacity-50" : ""}`}
               >
-                <File02Icon size={18} />
+                <HugeiconsIcon icon={File02Icon} strokeWidth={1.5} size={18} />
                 <span>Files</span>
               </button>
               <button
@@ -87,7 +97,7 @@ const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                     : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 } ${isUploading ? "cursor-not-allowed opacity-50" : ""}`}
               >
-                <Link01Icon size={18} />
+                <HugeiconsIcon icon={Link01Icon} strokeWidth={1.5} size={18} />
                 <span>Links (CSV)</span>
               </button>
             </div>
@@ -101,12 +111,13 @@ const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 20 }}
-                    transition={{ duration: 0.2 }}
+                    transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                   >
                     <BatchFileUpload
                       onComplete={handleUploadComplete}
                       onError={handleError}
                       onUploadingChange={setIsUploading}
+                      onBack={onBack}
                     />
                   </motion.div>
                 ) : (
@@ -115,45 +126,48 @@ const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.2 }}
+                    transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                   >
                     <BatchLinkUpload
                       onComplete={handleUploadComplete}
                       onError={handleError}
                       onUploadingChange={setIsUploading}
+                      onBack={onBack}
                     />
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
-            
-            {/* Action Buttons */}
-            <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-              <button
-                onClick={handleClose}
-                disabled={isUploading}
-                className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <ArrowLeft01Icon size={16} />
-                <span>Back</span>
-              </button>
-            </div>
-          </div>
+          </motion.div>
         );
 
       case "success":
         return (
-          <BatchUploadSuccess
-            result={uploadResult!}
-            onComplete={handleClose}
-          />
+          <motion.div
+            key="success"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <UploadSuccess
+              onComplete={handleClose}
+            />
+          </motion.div>
         );
 
       case "error":
         return (
-          <div className="flex flex-col items-center justify-center py-8 px-6 text-center">
+          <motion.div
+            key="error"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="flex flex-col items-center justify-center py-8 px-6 text-center"
+          >
             <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-4">
-              <AlertCircleIcon size={32} className="text-red-500" />
+              <HugeiconsIcon icon={AlertCircleIcon} strokeWidth={1.5} size={32} className="text-red-500" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               Upload Failed
@@ -175,7 +189,7 @@ const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                 Close
               </button>
             </div>
-          </div>
+          </motion.div>
         );
 
       default:
@@ -199,7 +213,7 @@ const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="relative w-full max-w-4xl max-h-[90vh] bg-white rounded-2xl shadow-2xl border border-gray-100 z-modal flex flex-col mx-1 sm:mx-4 md:mx-0"
+            className="relative w-full max-w-2xl max-h-[90vh] bg-white rounded-2xl shadow-2xl border border-gray-100 z-modal flex flex-col mx-1 sm:mx-4 md:mx-0"
           >
             {/* Close button */}
             <button
@@ -209,12 +223,14 @@ const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                 isUploading ? "cursor-not-allowed opacity-50" : ""
               }`}
             >
-              <Cancel01Icon size={20} className="text-gray-500" />
+              <HugeiconsIcon icon={Cancel01Icon} strokeWidth={1.5} size={20} className="text-gray-500" />
             </button>
 
             {/* Modal content */}
-            <div className="p-4 sm:p-6 pt-6 sm:pt-8 flex-1 overflow-y-auto scrollbar-hide">
-              {renderContent()}
+            <div className="p-3 sm:p-6 pt-5 sm:pt-8 flex-1 overflow-y-auto scrollbar-hide">
+              <AnimatePresence mode="wait">
+                {renderContent()}
+              </AnimatePresence>
             </div>
           </motion.div>
         </motion.div>

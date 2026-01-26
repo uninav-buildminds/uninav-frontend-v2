@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, ChevronRight } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Download01Icon,
   Share08Icon,
   Bookmark01Icon,
-  Triangle01Icon,
+  Alert02Icon,
   File01Icon,
   MaximizeScreenIcon,
   MinimizeScreenIcon,
@@ -13,7 +14,7 @@ import {
   ArrowLeftDoubleIcon,
   ArrowRightDoubleIcon,
   InformationCircleIcon,
-} from "hugeicons-react";
+} from "@hugeicons/core-free-icons";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,13 +30,12 @@ import { setRedirectPath, convertPublicToAuthPath } from "@/lib/authStorage";
 import { allocateReadingPoints } from "@/api/points.api";
 import { ResponseStatus } from "@/lib/types/response.types";
 import { ResourceTypeEnum, RestrictionEnum } from "@/lib/types/material.types";
-import ReactPdfViewer from "@/components/dashboard/viewers/ReactPdfViewer"; // Commented out - will use later
+import ReactPdfViewer from "@/components/dashboard/viewers/ReactPdfViewer";
 import GDriveFolderBrowser from "@/components/dashboard/viewers/GDriveFolderBrowser";
 import GDriveFileViewer from "@/components/dashboard/viewers/GDriveFileViewer";
 import YouTubeViewer from "@/components/dashboard/viewers/YouTubeViewer";
 import PowerPointViewer from "@/components/dashboard/viewers/PowerPointViewer";
-import MiniMaterialCard from "@/components/dashboard/MiniMaterialCard";
-import { extractGDriveId, isGDriveFolder } from "@/lib/utils/gdriveUtils";
+import { extractGDriveId } from "@/lib/utils/gdriveUtils";
 import {
   downloadGDriveFile,
   downloadAllFilesFromFolder,
@@ -46,6 +46,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import MiniMaterialCard from "@/components/dashboard/MiniMaterialCard";
 
 interface MaterialViewProps {
   isPublic?: boolean;
@@ -151,7 +152,10 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
           setMaterial(materialData);
 
           // Extract total pages from metadata if available
-          const metaData = materialData.metaData as any;
+          const metaData = materialData.metaData as
+            | { pageCount?: number; fileCount?: number }
+            | null
+            | undefined;
           if (metaData?.pageCount) {
             setTotalPages(metaData.pageCount);
           } else if (metaData?.fileCount) {
@@ -197,9 +201,11 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
           toast.error("Failed to load material");
           navigate(-1);
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Error fetching material:", error);
-        toast.error(error.message || "Failed to load material");
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to load material";
+        toast.error(errorMessage);
         navigate(-1);
       } finally {
         setLoading(false);
@@ -339,10 +345,12 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
           toast.error("Download not available for this material type");
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error downloading material:", error);
       toast.dismiss();
-      toast.error(error.message || "Failed to download material");
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to download material";
+      toast.error(errorMessage);
     }
   };
 
@@ -464,7 +472,9 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
         return (
           <div className="h-full flex items-center justify-center text-gray-500">
             <div className="text-center">
-              <Triangle01Icon
+              <HugeiconsIcon
+                icon={Alert02Icon}
+                strokeWidth={1.5}
                 size={48}
                 className="mx-auto mb-4 text-yellow-400"
               />
@@ -605,7 +615,12 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
     return (
       <div className="h-full flex items-center justify-center text-gray-500 bg-white rounded-lg">
         <div className="text-center">
-          <File01Icon size={48} className="mx-auto mb-4 text-gray-400" />
+          <HugeiconsIcon
+            icon={File01Icon}
+            strokeWidth={1.5}
+            size={48}
+            className="mx-auto mb-4 text-gray-400"
+          />
           <p>Document preview not available</p>
           <Button
             onClick={handleDownload}
@@ -619,21 +634,12 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
     );
   };
 
-  // Show controls only for non-GDrive PDFs (GDrive has its own built-in controls)
-  const showPDFControls =
-    material.type === MaterialTypeEnum.PDF && !viewingGDriveFile;
-  const showZoomControls = material.type === MaterialTypeEnum.PDF;
-
   return (
     <>
       {/* Sign-in prompt banner for public views */}
       {isPublic && (
-        <div className="bg-gradient-to-r from-brand/10 to-brand/5 border-b border-brand/20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-            <p className="text-sm text-gray-700">
-              <span className="font-medium">Viewing as guest.</span> Sign in to
-              save materials, track progress, and more.
-            </p>
+        <div className="bg-gradient-to-r from-brand/10 to-brand/5 border-b border-brand/20 relative z-10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-center">
             <Link
               to="/auth/signin"
               onClick={() => {
@@ -642,9 +648,11 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
                 const authPath = convertPublicToAuthPath(currentPath);
                 setRedirectPath(authPath);
               }}
-              className="text-sm font-medium text-brand hover:text-brand/80 transition-colors"
+              className="text-sm text-gray-700 hover:text-brand transition-colors text-center"
             >
-              Sign In
+              <span className="font-medium">Viewing as guest.</span>{" "}
+              <span className="text-brand hover:underline">Sign in</span> to
+              save materials, track progress, and more.
             </Link>
           </div>
         </div>
@@ -655,7 +663,9 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
         {/* Floating Back Button - Top Left */}
         <button
           onClick={handleBack}
-          className="fixed left-3 sm:left-4 top-3 sm:top-4 z-50 p-2 sm:p-2.5 bg-white/90 backdrop-blur hover:bg-white border border-gray-200 rounded-full shadow-lg transition-all duration-200 hover:scale-105 active:scale-95"
+          className={`fixed left-3 sm:left-4 z-50 p-2 sm:p-2.5 bg-white/90 backdrop-blur hover:bg-white border border-gray-200 rounded-full shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 ${
+            isPublic ? "top-[3.75rem] sm:top-4" : "top-3 sm:top-4"
+          }`}
           aria-label="Go back"
         >
           <ArrowLeft size={18} className="text-gray-700" />
@@ -663,7 +673,9 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
 
         {/* Floating Action Buttons - Top Right */}
         <div
-          className={`fixed top-3 sm:top-4 z-50 flex items-center gap-1.5 sm:gap-2 transition-all duration-300 ${
+          className={`fixed z-50 flex items-center gap-1.5 sm:gap-2 transition-all duration-300 ${
+            isPublic ? "top-[3.75rem] sm:top-4" : "top-3 sm:top-4"
+          } ${
             isFullscreen
               ? "right-3 sm:right-4"
               : !sidebarCollapsed
@@ -689,7 +701,9 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
                   isBookmarkedMaterial ? "text-brand" : ""
                 }`}
               >
-                <Bookmark01Icon
+                <HugeiconsIcon
+                  icon={Bookmark01Icon}
+                  strokeWidth={1.5}
                   size={15}
                   className={`sm:w-4 sm:h-4 ${
                     isBookmarkedMaterial ? "fill-current" : ""
@@ -703,7 +717,12 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
               onClick={handleShare}
               className="bg-white/90 backdrop-blur hover:bg-white border border-gray-200 h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-full shadow-lg flex-shrink-0"
             >
-              <Share08Icon size={15} className="sm:w-4 sm:h-4" />
+              <HugeiconsIcon
+                icon={Share08Icon}
+                strokeWidth={1.5}
+                size={15}
+                className="sm:w-4 sm:h-4"
+              />
             </Button>
             {/* Show download button only if not read-only, not YouTube, and is either an uploaded file or GDrive material */}
             {material &&
@@ -716,7 +735,12 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
                   size="sm"
                   className="bg-brand/90 backdrop-blur text-white hover:bg-brand border-2 border-white h-8 sm:h-9 px-3 sm:px-4 rounded-full shadow-lg flex-shrink-0"
                 >
-                  <Download01Icon size={15} className="sm:w-4 sm:h-4" />
+                  <HugeiconsIcon
+                    icon={Download01Icon}
+                    strokeWidth={1.5}
+                    size={15}
+                    className="sm:w-4 sm:h-4"
+                  />
                 </Button>
               )}
           </div>
@@ -728,7 +752,9 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
             aria-label="View material information"
             title="Material Information"
           >
-            <InformationCircleIcon
+            <HugeiconsIcon
+              icon={InformationCircleIcon}
+              strokeWidth={1.5}
               size={16}
               className="sm:w-4 sm:h-4 text-white"
             />
@@ -747,9 +773,19 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
               }
             >
               {isFullscreen ? (
-                <MinimizeScreenIcon size={15} className="sm:w-4 sm:h-4" />
+                <HugeiconsIcon
+                  icon={MinimizeScreenIcon}
+                  strokeWidth={1.5}
+                  size={15}
+                  className="sm:w-4 sm:h-4"
+                />
               ) : (
-                <MaximizeScreenIcon size={15} className="sm:w-4 sm:h-4" />
+                <HugeiconsIcon
+                  icon={MaximizeScreenIcon}
+                  strokeWidth={1.5}
+                  size={15}
+                  className="sm:w-4 sm:h-4"
+                />
               )}
             </button>
 
@@ -766,7 +802,9 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
               className="flex items-center justify-center h-8 w-8 sm:h-9 sm:w-9 p-0 hover:bg-gray-50 transition-colors flex-shrink-0"
               aria-label={iconsExpanded ? "Collapse icons" : "Expand icons"}
             >
-              <ArrowRight01Icon
+              <HugeiconsIcon
+                icon={ArrowRight01Icon}
+                strokeWidth={1.5}
                 size={15}
                 className={`sm:w-4 sm:h-4 transition-transform duration-300 ${
                   iconsExpanded ? "rotate-180" : ""
@@ -800,7 +838,11 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
                 className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 z-10 p-2 rounded-full bg-brand text-white shadow-md hover:opacity-90"
                 aria-label="Collapse side panel"
               >
-                <ArrowRightDoubleIcon size={18} />
+                <HugeiconsIcon
+                  icon={ArrowRightDoubleIcon}
+                  strokeWidth={1.5}
+                  size={18}
+                />
               </button>
             )}
             {/* Material Information */}
@@ -953,7 +995,11 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
             className="hidden md:flex fixed right-1 sm:right-2 top-1/2 -translate-y-1/2 z-50 p-2 rounded-full bg-brand text-white shadow-md hover:opacity-90"
             aria-label="Expand side panel"
           >
-            <ArrowLeftDoubleIcon size={18} />
+            <HugeiconsIcon
+              icon={ArrowLeftDoubleIcon}
+              strokeWidth={1.5}
+              size={18}
+            />
           </button>
         )}
       </div>

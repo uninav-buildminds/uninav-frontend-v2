@@ -18,7 +18,7 @@ export interface PanelData {
 export const panelData: PanelData = {
   announcement: {
     title: "Announcement",
-    content: "New features are now available! Check out the latest updates to enhance your learning experience."
+    content: "You can now batch upload files and create folders! Organize and share your notes more efficiently than ever."
   },
   recents: {
     title: "Recents",

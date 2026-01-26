@@ -5,12 +5,8 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { ZoomIn, ZoomOut, RotateCw } from "lucide-react";
-import {
-  LockIcon,
-  File01Icon,
-  Attachment01Icon,
-  Triangle01Icon,
-} from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Attachment01Icon, File01Icon, LockIcon, Triangle01Icon } from "@hugeicons/core-free-icons";
 import { toast } from "sonner";
 import { getFileMetadata, GDriveFile } from "@/api/gdrive.api";
 import { ENV } from "@/lib/env.config";
@@ -131,7 +127,7 @@ const GDriveFileViewer: React.FC<GDriveFileViewerProps> = ({
     return (
       <div className="h-full flex items-center justify-center text-gray-500 bg-white rounded-lg">
         <div className="text-center max-w-md">
-          <LockIcon size={48} className="mx-auto mb-4 text-gray-400" />
+          <HugeiconsIcon icon={LockIcon} strokeWidth={1.5} size={48} className="mx-auto mb-4 text-gray-400" />
           <p className="text-lg font-medium mb-2">Cannot Access File</p>
           <p className="text-sm text-gray-600">
             {error ||
@@ -171,7 +167,7 @@ const GDriveFileViewer: React.FC<GDriveFileViewerProps> = ({
       return (
         <div className="h-full flex items-center justify-center text-gray-500 bg-white rounded-lg">
           <div className="text-center">
-            <File01Icon size={48} className="mx-auto mb-4 text-gray-400" />
+            <HugeiconsIcon icon={File01Icon} strokeWidth={1.5} size={48} className="mx-auto mb-4 text-gray-400" />
             <p className="text-lg font-medium mb-2">{fileMetadata.name}</p>
             <p className="text-sm text-gray-600">
               This file type cannot be previewed inline.
@@ -254,10 +250,9 @@ const GDriveFileViewer: React.FC<GDriveFileViewerProps> = ({
         {imageLoadError && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-900/95">
             <div className="text-center text-white max-w-md px-4">
-              <Triangle01Icon
+              <HugeiconsIcon icon={Triangle01Icon} strokeWidth={1.5}
                 size={48}
-                className="mx-auto mb-4 text-yellow-400"
-              />
+                className="mx-auto mb-4 text-yellow-400" />
               <p className="text-lg font-medium mb-2">Failed to load image</p>
               <p className="text-sm text-gray-400">
                 The image could not be displayed. It may not be publicly
@@ -378,7 +373,7 @@ const GDriveFileViewer: React.FC<GDriveFileViewerProps> = ({
   return (
     <div className="h-full flex items-center justify-center text-gray-500 bg-white rounded-lg">
       <div className="text-center">
-        <Attachment01Icon size={48} className="mx-auto mb-4 text-gray-400" />
+        <HugeiconsIcon icon={Attachment01Icon} strokeWidth={1.5} size={48} className="mx-auto mb-4 text-gray-400" />
         <p className="text-lg font-medium mb-2">{fileMetadata.name}</p>
         <p className="text-sm text-gray-600">
           This file type cannot be previewed inline.

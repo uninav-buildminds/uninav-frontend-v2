@@ -5,12 +5,8 @@ import MetricsSection from "@/components/dashboard/MetricsSection";
 import MaterialsSection from "@/components/dashboard/MaterialsSection";
 import SearchResults from "@/components/dashboard/SearchResults";
 import { UploadModal } from "@/components/modals";
-import {
-  Award01Icon,
-  UploadSquare01Icon,
-  DownloadSquare01Icon,
-  Bookmark01Icon,
-} from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Award01Icon, Bookmark01Icon, DownloadSquare01Icon, UploadSquare01Icon } from "@hugeicons/core-free-icons";
 import {
   getMaterialRecommendations,
   getRecentMaterials,
@@ -265,14 +261,14 @@ const Overview: React.FC = () => {
 
   const metrics = [
     {
-      icon: <Award01Icon size={20} />,
+      icon: <HugeiconsIcon icon={Award01Icon} strokeWidth={1.5} size={20} />,
       title: "Your Points",
       value: pointsPercentage,
       description:
         "Earned from reading and uploading materials. Upload 3 more materials to unlock Ad‑Free Week",
     },
     {
-      icon: <DownloadSquare01Icon size={20} />,
+      icon: <HugeiconsIcon icon={DownloadSquare01Icon} strokeWidth={1.5} size={20} />,
       title: "Total Downloads",
       value: user?.downloadCount?.toString() || "0",
       description:
@@ -281,7 +277,7 @@ const Overview: React.FC = () => {
           : "You have downloaded helpful materials. You're on track to complete academic goals",
     },
     {
-      icon: <UploadSquare01Icon size={20} />,
+      icon: <HugeiconsIcon icon={UploadSquare01Icon} strokeWidth={1.5} size={20} />,
       title: "Total Uploads",
       value: user?.uploadCount?.toString() || "0",
       description:
@@ -290,7 +286,7 @@ const Overview: React.FC = () => {
           : "You have helped a lot of students. You're making a real difference",
     },
     {
-      icon: <Bookmark01Icon size={20} />,
+      icon: <HugeiconsIcon icon={Bookmark01Icon} strokeWidth={1.5} size={20} />,
       title: "Saved Materials",
       value: user?.bookmarkCount?.toString() || "0",
       description:

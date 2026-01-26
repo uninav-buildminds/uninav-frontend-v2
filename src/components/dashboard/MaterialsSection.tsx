@@ -1,11 +1,8 @@
 import Pic from "../../../public/placeholder.svg";
 import { Material } from "../../lib/types/material.types";
 import React, { useEffect, useRef, useState, useMemo } from "react";
-import {
-  ArrowRight01Icon,
-  SortingAZ02Icon,
-  ArrowLeft01Icon,
-} from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowLeft01Icon, ArrowRight01Icon, SortingAZ02Icon } from "@hugeicons/core-free-icons";
 import MaterialCard from "./MaterialCard";
 import MaterialCardSkeleton from "./MaterialCardSkeleton";
 import EmptyState from "./EmptyState";
@@ -286,7 +283,7 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
             >
               View All
-              <ArrowRight01Icon size={16} className="text-gray-500" />
+              <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={1.5} size={16} className="text-gray-500" />
             </button>
           )}
         </div>
@@ -325,7 +322,7 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
                   className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
                   aria-label="Sort materials"
                 >
-                  <SortingAZ02Icon size={18} className="text-gray-600" />
+                  <HugeiconsIcon icon={SortingAZ02Icon} strokeWidth={1.5} size={18} className="text-gray-600" />
                 </button>
 
                 {/* Sort Options Dropdown */}
@@ -392,7 +389,7 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
               >
                 View All
-                <ArrowRight01Icon size={16} className="text-gray-500" />
+                <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={1.5} size={16} className="text-gray-500" />
               </button>
             )}
           </div>
@@ -421,7 +418,7 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
                 className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
                 aria-label="Sort materials"
               >
-                <SortingAZ02Icon size={18} className="text-gray-600" />
+                <HugeiconsIcon icon={SortingAZ02Icon} strokeWidth={1.5} size={18} className="text-gray-600" />
               </button>
 
               {/* Sort Options Dropdown */}
@@ -488,7 +485,7 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
             >
               View All
-              <ArrowRight01Icon size={16} className="text-gray-500" />
+              <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={1.5} size={16} className="text-gray-500" />
             </button>
           )}
         </div>
@@ -529,7 +526,7 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
               className="absolute -left-3 sm:-left-4 top-1/2 -translate-y-1/2 z-modal p-2 bg-white/90 backdrop-blur rounded-full shadow-md border border-gray-200 hover:bg-white transition-opacity"
               aria-label="Scroll left"
             >
-              <ArrowLeft01Icon size={16} className="text-brand" />
+              <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={1.5} size={16} className="text-brand" />
             </button>
           )}
 
@@ -540,7 +537,7 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
               className="absolute -right-3 sm:-right-4 top-1/2 -translate-y-1/2 z-modal p-2 bg-white/90 backdrop-blur rounded-full shadow-md border border-gray-200 hover:bg-white transition-opacity"
               aria-label="Scroll right"
             >
-              <ArrowRight01Icon size={16} className="text-brand" />
+              <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={1.5} size={16} className="text-brand" />
             </button>
           )}
 

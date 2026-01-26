@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Cancel01Icon, AlertCircleIcon } from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { AlertCircleIcon, Cancel01Icon } from "@hugeicons/core-free-icons";
 import Step1 from "./upload/Step1";
 import Step2FileUpload from "./upload/Step2FileUpload";
 import Step2HelpfulLink from "./upload/Step2HelpfulLink";
@@ -85,13 +86,22 @@ const UploadModal: React.FC<UploadModalProps> = ({
   };
 
   const handleBatchUpload = () => {
-    // Close the regular modal and open batch upload
-    handleClose();
+    // Don't close the modal, just show batch upload on top
+    // Reset to Step1 state for when user comes back
+    setCurrentStep("type-selection");
+    setMaterialType(null);
     setShowBatchUpload(true);
   };
 
   const handleBatchUploadClose = () => {
     setShowBatchUpload(false);
+  };
+
+  const handleBatchUploadBack = () => {
+    // Close batch upload and show main modal at Step1
+    setShowBatchUpload(false);
+    setCurrentStep("type-selection");
+    setMaterialType(null);
   };
 
   const handleUploadComplete = async (data: CreateMaterialForm) => {
@@ -294,7 +304,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
         return (
           <div className="flex flex-col items-center justify-center py-8 px-6 text-center">
             <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-4">
-              <AlertCircleIcon size={32} className="text-red-500" />
+              <HugeiconsIcon icon={AlertCircleIcon} strokeWidth={1.5} size={32} className="text-red-500" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               Upload Failed
@@ -328,7 +338,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
     <>
       {createPortal(
         <AnimatePresence>
-          {isOpen && (
+          {isOpen && !showBatchUpload && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -357,7 +367,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
                   className="absolute top-2 right-2 p-2 rounded-full bg-white/10 hover:bg-gray-100 transition-colors duration-200 z-10"
                   disabled={submitting}
                 >
-                  <Cancel01Icon size={20} className="text-gray-500" />
+                  <HugeiconsIcon icon={Cancel01Icon} strokeWidth={1.5} size={20} className="text-gray-500" />
                 </button>
 
                 {/* Modal content */}
@@ -375,6 +385,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
       <BatchUploadModal
         isOpen={showBatchUpload}
         onClose={handleBatchUploadClose}
+        onBack={handleBatchUploadBack}
       />
     </>
   );

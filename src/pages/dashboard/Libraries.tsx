@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { FolderAddIcon, PreferenceHorizontalIcon } from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  FolderAddIcon,
+  PreferenceHorizontalIcon,
+} from "@hugeicons/core-free-icons";
 import PageHeader from "@/components/dashboard/PageHeader";
 import FolderCard from "@/components/dashboard/FolderCard";
 import FolderModal from "@/components/modals/FolderModal";
@@ -9,6 +13,7 @@ import { DeleteFolderModal } from "@/components/modals/DeleteFolderModal";
 import MaterialCard from "@/components/dashboard/MaterialCard";
 import { useAuth } from "@/hooks/useAuth";
 import { useBookmarks } from "@/context/bookmark/BookmarkContextProvider";
+import { useFolderContext } from "@/context/folder/FolderContextProvider";
 import { searchMaterials, deleteMaterial } from "@/api/materials.api";
 import {
   getMyFolders,
@@ -31,6 +36,7 @@ const Libraries: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { bookmarks, isLoading: bookmarksLoading } = useBookmarks();
+  const { materialIdsInFolders, refreshFolders } = useFolderContext();
 
   const [activeTab, setActiveTab] = useState<TabType>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -331,6 +337,8 @@ const Libraries: React.FC = () => {
       );
 
       loadFolders();
+      // Refresh folder context so MaterialCards update immediately
+      await refreshFolders();
 
       if (selectedFolder?.id === folder.id) {
         setShowFolderModal(false);
@@ -418,6 +426,8 @@ const Libraries: React.FC = () => {
       // Success - no toast notification
 
       loadFolders();
+      // Refresh folder context so MaterialCards update immediately
+      await refreshFolders();
 
       if (selectedFolder?.id === folderId) {
         setShowFolderModal(false);
@@ -572,17 +582,8 @@ const Libraries: React.FC = () => {
     return bCreated - aCreated;
   });
 
-  // Materials that already live inside any folder (by material id)
-  const folderMaterialIds = useMemo(() => {
-    const ids = new Set<string>();
-    folders.forEach((folder) => {
-      folder.content?.forEach((item) => {
-        if (item.contentMaterialId) ids.add(item.contentMaterialId);
-        if (item.material?.id) ids.add(item.material.id);
-      });
-    });
-    return ids;
-  }, [folders]);
+  // Use folder context for material IDs in folders (more efficient, shared across app)
+  const folderMaterialIds = materialIdsInFolders;
 
   const currentMaterials = getCurrentMaterials();
   const hasContent = folders.length > 0 || currentMaterials.length > 0;
@@ -692,7 +693,12 @@ const Libraries: React.FC = () => {
               className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
               aria-label="Filter"
             >
-              <PreferenceHorizontalIcon size={18} className="text-gray-600" />
+              <HugeiconsIcon
+                icon={PreferenceHorizontalIcon}
+                strokeWidth={1.5}
+                size={18}
+                className="text-gray-600"
+              />
             </button>
             {showFolders && (
               <button
@@ -700,7 +706,11 @@ const Libraries: React.FC = () => {
                 className="p-3 rounded-full bg-brand text-white hover:bg-brand/90 transition-colors shadow-lg hover:shadow-xl"
                 aria-label="Create folder"
               >
-                <FolderAddIcon size={18} />
+                <HugeiconsIcon
+                  icon={FolderAddIcon}
+                  strokeWidth={1.5}
+                  size={18}
+                />
               </button>
             )}
           </div>
@@ -763,22 +773,24 @@ const Libraries: React.FC = () => {
               ))}
 
             {/* Materials */}
-            {currentMaterials.map((material) => {
-              const isOwner = material.creator?.id === user?.id;
-              return (
-                <MaterialCard
-                  key={material.id}
-                  material={material}
-                  onShare={handleShare}
-                  onRead={handleRead}
-                  draggable={activeTab === "saved" || activeTab === "all"}
-                  onDragStart={handleDragStart}
-                  onEdit={isOwner ? handleEditMaterial : undefined}
-                  onDelete={isOwner ? handleDeleteMaterial : undefined}
-                  showEditDelete={isOwner}
-                />
-              );
-            })}
+            {currentMaterials.map((material) => (
+              <MaterialCard
+                key={material.id}
+                material={material}
+                onShare={handleShare}
+                onRead={handleRead}
+                draggable={activeTab === "saved" || activeTab === "all"}
+                onDragStart={handleDragStart}
+                onEdit={
+                  activeTab === "uploads" ? handleEditMaterial : undefined
+                }
+                onDelete={
+                  activeTab === "uploads" ? handleDeleteMaterial : undefined
+                }
+                showEditDelete={activeTab === "uploads"}
+                isInFolder={folderMaterialIds.has(material.id)}
+              />
+            ))}
           </div>
         )}
 
@@ -798,7 +810,11 @@ const Libraries: React.FC = () => {
                   onClick={handleCreateFolder}
                   className="inline-flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand/90"
                 >
-                  <FolderAddIcon size={18} />
+                  <HugeiconsIcon
+                    icon={FolderAddIcon}
+                    strokeWidth={1.5}
+                    size={18}
+                  />
                   Create Your First Folder
                 </button>
               )}

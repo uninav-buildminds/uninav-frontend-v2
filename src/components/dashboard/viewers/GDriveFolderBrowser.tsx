@@ -5,7 +5,8 @@
 
 import React, { useState, useEffect } from "react";
 import { ChevronRight, Loader2 } from "lucide-react";
-import { Download01Icon, LockIcon, Folder01Icon } from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Download01Icon, Folder01Icon, LockIcon } from "@hugeicons/core-free-icons";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
@@ -109,7 +110,7 @@ const GDriveFolderBrowser: React.FC<GDriveFolderBrowserProps> = ({
     return (
       <div className="h-full flex items-center justify-center text-gray-500">
         <div className="text-center max-w-md">
-          <LockIcon size={48} className="mx-auto mb-4 text-gray-400" />
+          <HugeiconsIcon icon={LockIcon} strokeWidth={1.5} size={48} className="mx-auto mb-4 text-gray-400" />
           <p className="text-lg font-medium mb-2">Access Restricted</p>
           <p className="text-sm text-gray-600 mb-4">{error}</p>
           <p className="text-xs text-gray-500">
@@ -161,7 +162,7 @@ const GDriveFolderBrowser: React.FC<GDriveFolderBrowserProps> = ({
         ) : files.length === 0 ? (
           <div className="flex items-center justify-center h-full text-gray-500">
             <div className="text-center">
-              <Folder01Icon size={48} className="mx-auto mb-2 text-gray-400" />
+              <HugeiconsIcon icon={Folder01Icon} strokeWidth={1.5} size={48} className="mx-auto mb-2 text-gray-400" />
               <p className="text-sm">This folder is empty</p>
             </div>
           </div>
@@ -208,7 +209,7 @@ const GDriveFolderBrowser: React.FC<GDriveFolderBrowserProps> = ({
                         }}
                       />
                     ) : (
-                      <IconComponent size={48} className="text-gray-400" />
+                      <HugeiconsIcon icon={IconComponent} strokeWidth={1.5} size={48} className="text-gray-400" />
                     )}
                   </div>
 
@@ -234,7 +235,7 @@ const GDriveFolderBrowser: React.FC<GDriveFolderBrowserProps> = ({
                         className="h-8 w-8 p-0"
                         title="Download"
                       >
-                        <Download01Icon size={16} />
+                        <HugeiconsIcon icon={Download01Icon} strokeWidth={1.5} size={16} />
                       </Button>
                     )}
                     {isFolder && (

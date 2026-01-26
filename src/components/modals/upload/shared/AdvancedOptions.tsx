@@ -4,12 +4,9 @@ import {
   CustomSelect,
   CustomSelectOption,
 } from "@/components/dashboard/CustomSelect";
-import {
-  Tag01Icon,
-  Download01Icon,
-  ArrowDown01Icon,
-} from "hugeicons-react";
-import { SelectModal, SelectOption } from "@/components/dashboard/SearchSelectModal";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowDown01Icon, Download01Icon, Tag01Icon } from "@hugeicons/core-free-icons";
+import { SelectModal, SelectOption } from "@/components/modals/shared/SearchSelectModal";
 import { getMyFolders, Folder } from "@/api/folder.api";
 
 interface AdvancedOptionsProps {
@@ -140,10 +137,9 @@ const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
         className="flex items-center space-x-2 text-sm text-brand hover:text-brand/80 transition-colors"
       >
         <span>Advanced options</span>
-        <ArrowDown01Icon
+        <HugeiconsIcon icon={ArrowDown01Icon} strokeWidth={1.5}
           size={16}
-          className={`transition-transform ${showAdvanced ? "rotate-180" : ""}`}
-        />
+          className={`transition-transform ${showAdvanced ? "rotate-180" : ""}`} />
       </button>
 
       {showAdvanced && (

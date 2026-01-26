@@ -26,7 +26,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from "lucide-react";
-import { Alert02Icon } from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Alert02Icon } from "@hugeicons/core-free-icons";
 
 interface AdobePDFViewerProps {
   url: string;
@@ -418,7 +419,7 @@ const AdobePDFViewer: React.FC<AdobePDFViewerProps> = ({
             <div className="h-full flex items-center justify-center text-white">
               <div className="text-center">
                 <div className="mb-4 flex justify-center">
-                  <Alert02Icon size={48} className="text-white" />
+                  <HugeiconsIcon icon={Alert02Icon} strokeWidth={1.5} size={48} className="text-white" />
                 </div>
                 <p className="text-lg font-medium mb-2">Failed to load PDF</p>
                 <p className="text-sm opacity-80">

@@ -1,22 +1,19 @@
 import React, { useState } from "react";
-import { Share08Icon, PencilEdit02Icon, Delete02Icon, MoreVerticalIcon, FolderAddIcon } from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Delete02Icon, FolderAddIcon, PencilEdit02Icon, Share08Icon } from "@hugeicons/core-free-icons";
 import { toast } from "sonner";
 import { Material } from "../../lib/types/material.types";
 import { formatRelativeTime } from "../../lib/utils";
 import { useBookmarks } from "../../context/bookmark/BookmarkContextProvider";
+import { useMaterialInFolder } from "../../hooks/useMaterialInFolder";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import Placeholder from "/placeholder.svg";
-import AddToFolderModal from "./AddToFolderModal";
+import AddToFolderModal from "@/components/modals/folder/AddToFolderModal";
 
 // Custom Bookmark Icons
 const BookmarkOutlineIcon = ({
@@ -78,6 +75,7 @@ interface MaterialCardProps {
   componentRef?: React.Ref<HTMLDivElement>; // Ref for the card container
   draggable?: boolean; // Enable drag functionality
   onDragStart?: (material: Material) => void; // Drag start handler
+  isInFolder?: boolean; // Whether the material is already in a folder (optional override, will auto-detect if not provided)
 }
 
 const MaterialCard: React.FC<MaterialCardProps> = ({
@@ -91,6 +89,7 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
   showEditDelete = false,
   draggable = false,
   onDragStart,
+  isInFolder,
 }) => {
   const { id, label, createdAt, downloads, tags, views, likes, metaData } =
     material;
@@ -99,8 +98,13 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
 
   const { isBookmarked, toggleBookmark } = useBookmarks();
   const saved = isBookmarked(id);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAddToFolderModalOpen, setIsAddToFolderModalOpen] = useState(false);
+  const { materialIdsInFolders } = useMaterialInFolder();
+  
+  // Determine if material is in a folder (use prop if provided, otherwise auto-detect)
+  const materialIsInFolder = isInFolder !== undefined 
+    ? isInFolder 
+    : materialIdsInFolders.has(id);
 
   // Extract page count or file count from metaData
   const getMetaInfo = (): string | null => {
@@ -171,12 +175,11 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
 
   const handleAddToFolder = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsMenuOpen(false);
+    if (materialIsInFolder) {
+      toast.info("This material is already in a folder");
+      return;
+    }
     setIsAddToFolderModalOpen(true);
-  };
-
-  const handleMenuClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
   };
 
   const handleDragStartEvent = (e: React.DragEvent) => {
@@ -287,22 +290,24 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
                 className="p-1 bg-white/90 backdrop-blur-sm text-gray-600 hover:text-brand hover:bg-[#DCDFFE] rounded-md transition-colors duration-200 shadow-sm"
                 aria-label="Edit material"
               >
-                <PencilEdit02Icon size={18} />
+                <HugeiconsIcon icon={PencilEdit02Icon} strokeWidth={1.5} size={18} />
               </button>
               <button
                 onClick={handleDelete}
                 className="p-1 bg-white/90 backdrop-blur-sm text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors duration-200 shadow-sm"
                 aria-label="Delete material"
               >
-                <Delete02Icon size={18} />
+                <HugeiconsIcon icon={Delete02Icon} strokeWidth={1.5} size={18} />
               </button>
             </div>
           ) : (
-            // Bookmark and Menu buttons for other materials
+            // Bookmark button for other materials
             <div className="absolute top-2 right-2 flex gap-1">
               <button
                 onClick={handleSave}
-                className="p-1 text-gray-600 hover:text-brand bg-[#DCDFFE] rounded-md transition-colors duration-200"
+                className={`p-1 text-gray-600 hover:text-brand rounded-md transition-colors duration-200 ${
+                  saved ? "bg-[#DCDFFE]" : "hover:bg-[#DCDFFE]"
+                }`}
                 aria-label={saved ? "Remove from saved" : "Save material"}
               >
                 {saved ? (
@@ -311,71 +316,38 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
                   <BookmarkOutlineIcon size={20} />
                 )}
               </button>
-              
-              {/* More Options Menu */}
-              <Popover open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-                <PopoverTrigger asChild>
-                  <button
-                    onClick={handleMenuClick}
-                    className="p-1 text-gray-600 hover:text-brand bg-white/90 backdrop-blur-sm rounded-md transition-colors duration-200 shadow-sm"
-                    aria-label="More options"
-                  >
-                    <MoreVerticalIcon size={20} />
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent 
-                  className="w-48 p-1" 
-                  align="end"
-                  onClick={handleMenuClick}
-                >
-                  <button
-                    onClick={handleAddToFolder}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
-                  >
-                    <FolderAddIcon size={16} />
-                    Add to Folder
-                  </button>
-                </PopoverContent>
-              </Popover>
             </div>
           )}
 
           {/* Tags - Bottom Left */}
           {tags && tags.length > 0 && (
-            <div className="absolute bottom-2 left-2 flex flex-wrap gap-1">
+            <div className="absolute bottom-2 left-2 flex flex-nowrap gap-1 overflow-hidden max-w-[calc(100%-1rem)]">
               {tags.slice(0, 2).map((tag, index) => (
                 <span
                   key={index}
-                  className="inline-block px-2 py-0.5 text-xs bg-[#DCDFFE] text-brand rounded-md"
+                  className="inline-block px-2 py-0.5 text-xs bg-[#DCDFFE] text-brand rounded-md truncate min-w-0 flex-shrink"
+                  title={tag}
                 >
                   {tag}
                 </span>
               ))}
               {tags.length > 3 && (
-                <span className="inline-block px-2 py-0.5 text-xs bg-[#DCDFFE] text-brand rounded-md">
+                <span className="inline-block px-2 py-0.5 text-xs bg-[#DCDFFE] text-brand rounded-md flex-shrink-0 whitespace-nowrap">
                   +{tags.length - 2}
                 </span>
               )}
             </div>
           )}
 
-          {/* Share Icon - Bottom Right */}
-          <button
-            onClick={handleShare}
-            className="absolute bottom-2 right-2 p-1.5 text-gray-600 hover:text-brand bg-white/90 backdrop-blur-sm rounded-md transition-colors duration-200 shadow-sm"
-            aria-label="Share"
-          >
-            <Share08Icon size={16} />
-          </button>
         </div>
 
         {/* Content */}
-        <div className="space-y-1">
+        <div className="space-y-1 relative">
           {/* Name */}
           <Tooltip>
             <TooltipTrigger asChild>
               <h4
-                className="font-medium text-sm text-gray-900 leading-tight truncate"
+                className="font-medium text-sm text-gray-900 leading-tight truncate pr-16"
                 title={label}
               >
                 {label}
@@ -388,13 +360,50 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
 
           {/* Metadata */}
           <div className="flex items-center justify-between">
-            <div className="text-xs text-gray-500 truncate flex-1">
+            <div className="text-xs text-gray-500 truncate flex-1 pr-16">
               {lastViewedAt
                 ? `Viewed ${formatRelativeTime(lastViewedAt)}`
                 : `${formatRelativeTime(
                     createdAt
                   )} • ${views} views • ${likes} likes`}
             </div>
+          </div>
+
+          {/* Action Icons - Bottom Right, in front of text */}
+          <div className="absolute bottom-0 right-0 flex items-center gap-1">
+            {/* Folder Icon - Only show if material is not already in a folder */}
+            {!showEditDelete && !materialIsInFolder && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={handleAddToFolder}
+                    className="p-1.5 text-gray-600 hover:text-brand hover:bg-[#DCDFFE] rounded-md transition-colors duration-200"
+                    aria-label="Add to folder"
+                  >
+                    <HugeiconsIcon icon={FolderAddIcon} strokeWidth={1.5} size={16} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Add to Folder</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+            
+            {/* Share Icon */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={handleShare}
+                  className="p-1.5 text-gray-600 hover:text-brand hover:bg-[#DCDFFE] rounded-md transition-colors duration-200"
+                  aria-label="Share"
+                >
+                  <HugeiconsIcon icon={Share08Icon} strokeWidth={1.5} size={16} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Share</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
         </div>
       </div>
