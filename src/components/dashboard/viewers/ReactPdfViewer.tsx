@@ -78,13 +78,12 @@ const ReactPdfViewer: React.FC<ReactPdfViewerProps> = ({
   // Handle document load error with detailed logging
   const onDocumentLoadError = useCallback((error: Error) => {
     console.error("PDF load error:", error);
-    console.error("PDF URL:", url);
     console.error("Error details:", {
       message: error.message,
       name: error.name,
       stack: error.stack,
     });
-  }, [url]);
+  }, []);
 
   // Scroll to initial page after document loads and pages render
   useEffect(() => {
@@ -229,16 +228,17 @@ const ReactPdfViewer: React.FC<ReactPdfViewerProps> = ({
           file={{
             url: url,
             httpHeaders: {
-              'Accept': 'application/pdf',
+              Accept: "application/pdf",
             },
             withCredentials: false,
           }}
           onLoadSuccess={onDocumentLoadSuccess}
           onLoadError={onDocumentLoadError}
           options={{
-            cMapUrl: 'https://unpkg.com/pdfjs-dist@4.10.38/cmaps/',
+            cMapUrl: "https://unpkg.com/pdfjs-dist@4.10.38/cmaps/",
             cMapPacked: true,
-            standardFontDataUrl: 'https://unpkg.com/pdfjs-dist@4.10.38/standard_fonts/',
+            standardFontDataUrl:
+              "https://unpkg.com/pdfjs-dist@4.10.38/standard_fonts/",
           }}
           loading={
             <div className="flex items-center justify-center h-full">
@@ -252,7 +252,12 @@ const ReactPdfViewer: React.FC<ReactPdfViewerProps> = ({
             <div className="flex items-center justify-center h-full text-white">
               <div className="text-center max-w-md px-4">
                 <div className="mb-4 flex justify-center">
-                  <HugeiconsIcon icon={Alert02Icon} strokeWidth={1.5} size={48} className="text-white" />
+                  <HugeiconsIcon
+                    icon={Alert02Icon}
+                    strokeWidth={1.5}
+                    size={48}
+                    className="text-white"
+                  />
                 </div>
                 <p className="text-lg font-medium mb-2">Failed to load PDF</p>
                 <p className="text-sm opacity-80">
