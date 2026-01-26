@@ -215,20 +215,8 @@ const ReactPdfViewer: React.FC<ReactPdfViewerProps> = ({
         style={{ WebkitOverflowScrolling: "touch" }}
       >
         <Document
-          file={{
-            url: url,
-            httpHeaders: {
-              Accept: "application/pdf",
-            },
-            withCredentials: false,
-          }}
+          file={url}
           onLoadSuccess={onDocumentLoadSuccess}
-          options={{
-            cMapUrl: "https://unpkg.com/pdfjs-dist@4.10.38/cmaps/",
-            cMapPacked: true,
-            standardFontDataUrl:
-              "https://unpkg.com/pdfjs-dist@4.10.38/standard_fonts/",
-          }}
           loading={
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
