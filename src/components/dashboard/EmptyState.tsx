@@ -11,7 +11,7 @@ interface EmptyStateProps {
 }
 
 type EmptyStateContent = {
-  Icon: React.ComponentType<{ className?: string }>;
+  icon: any; // Icon object from hugeicons
   title: string;
   description: string;
   actionText: string;
@@ -25,7 +25,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({ type, onAction, isLoading = fal
     switch (type) {
       case 'recent':
         return {
-          Icon: Home01Icon,
+          icon: Home01Icon,
           title: "No Recent Materials",
           description: "You haven't viewed any materials recently. Start exploring to see your recent activity here.",
           actionText: "Browse Materials",
@@ -33,7 +33,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({ type, onAction, isLoading = fal
         };
       case 'recommendations':
         return {
-          Icon: UserCircleIcon,
+          icon: UserCircleIcon,
           title: "No Recommendations Available",
           description: "Complete your profile by adding your department, level, and courses to get personalized material recommendations tailored to your studies.",
           actionText: "Complete Profile",
@@ -41,7 +41,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({ type, onAction, isLoading = fal
         };
       case 'saved':
         return {
-          Icon: Bookmark01Icon,
+          icon: Bookmark01Icon,
           title: "No Saved Materials",
           description: "You haven't saved any materials yet. Start exploring and save materials you find useful.",
           actionText: "Browse Materials",
@@ -49,7 +49,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({ type, onAction, isLoading = fal
         };
       case 'uploads':
         return {
-          Icon: UploadSquare01Icon,
+          icon: UploadSquare01Icon,
           title: "No Uploads Yet",
           description: "You haven't uploaded any materials yet. Share your knowledge with the community.",
           actionText: "Upload Material",
@@ -57,7 +57,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({ type, onAction, isLoading = fal
         };
       case 'libraries':
         return {
-          Icon: Folder01Icon,
+          icon: Folder01Icon,
           title: "Your Library is Empty",
           description: "Start building your personal library by saving materials and uploading your own content.",
           actionText: "Upload Material",
@@ -65,7 +65,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({ type, onAction, isLoading = fal
         };
       default:
         return {
-          Icon: Search01Icon,
+          icon: Search01Icon,
           title: "No Results Found",
           description: "Try adjusting your search or filters to find what you're looking for.",
           actionText: "Clear Filters",
@@ -98,7 +98,11 @@ const EmptyState: React.FC<EmptyStateProps> = ({ type, onAction, isLoading = fal
         transition={{ delay: 0.2, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
         className="mb-3 sm:mb-4 md:mb-6 p-2 sm:p-3 md:p-4 bg-gray-50 rounded-full"
       >
-        <content.Icon className="w-6 h-6 sm:w-8 sm:h-8 md:w-12 md:h-12 text-gray-400" />
+        <HugeiconsIcon 
+          icon={content.icon} 
+          className="w-6 h-6 sm:w-8 sm:h-8 md:w-12 md:h-12 text-gray-400" 
+          strokeWidth={1.5}
+        />
       </motion.div>
 
       {/* Title */}
