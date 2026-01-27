@@ -132,9 +132,9 @@ const EmptyState: React.FC<EmptyStateProps> = ({ type, onAction, isLoading = fal
           onClick={handleAction}
           disabled={isLoading}
           className={`inline-flex items-center gap-1.5 sm:gap-2 px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-lg transition-colors duration-200 text-sm sm:text-base font-medium ${
-            isLoading 
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-              : 'bg-brand text-white hover:bg-brand/90'
+            isLoading
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-red-500 text-white hover:bg-red-600'
           }`}
         >
           {isLoading ? (
