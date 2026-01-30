@@ -331,3 +331,27 @@ export async function removeNestedFolder(
     };
   }
 }
+
+/**
+ * Get folders containing a specific material
+ * @param materialId - Material ID
+ * @returns folders response or null
+ */
+export async function getFoldersByMaterial(
+  materialId: string
+): Promise<Response<Folder[]> | null> {
+  try {
+    const response = await httpClient.get(`/folders/by-material/${materialId}`);
+    if (response.data.status === "success") {
+      return response.data;
+    }
+    return null;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status || 500,
+      message:
+        error.response?.data?.message ||
+        "Failed to fetch folders containing material",
+    };
+  }
+}

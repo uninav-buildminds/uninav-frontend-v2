@@ -14,6 +14,7 @@ import {
 } from "@/api/materials.api";
 import { getUserPoints } from "@/api/points.api";
 import { Material } from "@/lib/types/material.types";
+import { Folder } from "@/api/folder.api";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
@@ -53,7 +54,7 @@ const Overview: React.FC = () => {
   // Search state - initialize from URL params
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [searchResults, setSearchResults] =
-    useState<SearchResult<Material> | null>(null);
+    useState<SearchResult<Material | Folder> | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [searchSuggestions, setSearchSuggestions] = useState<
