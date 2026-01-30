@@ -61,12 +61,12 @@ const Overview: React.FC = () => {
     SearchSuggestion[]
   >([]);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
-  const [advancedSearchEnabled, setAdvancedSearchEnabled] = useState(false);
   const [searchMetadata, setSearchMetadata] = useState<{
     total: number;
     page: number;
     totalPages: number;
     usedAdvanced: boolean;
+    isAdvancedSearch?: boolean;
   } | null>(null);
 
   const handleViewAll = (section: string) => {
@@ -101,7 +101,7 @@ const Overview: React.FC = () => {
     }
   }, []); // Run only once on mount
 
-  // Autocomplete search (lightweight - no advancedSearch, no ignorePreference)
+  // Autocomplete search (lightweight - no ignorePreference)
   const handleSearchInput = useCallback((query: string) => {
     setSearchQuery(query);
 
@@ -137,7 +137,7 @@ const Overview: React.FC = () => {
           query: query.trim(),
           limit: 5,
           page: 1,
-          // No advancedSearch, no ignorePreference for autocomplete
+          // No ignorePreference for autocomplete - let backend handle search automatically
         });
 
         if (response.status === "success" && response.data?.items) {
@@ -190,29 +190,30 @@ const Overview: React.FC = () => {
       setSearchParams({ q: query.trim() });
 
       try {
-        // Backend automatically falls back to advanced search if normal search returns no results
+        // Backend automatically handles seamless advanced search when needed
         const response = await searchMaterials({
           query: query.trim(),
           limit: 10,
           page: 1,
-          advancedSearch: advancedSearchEnabled, // Only use if user explicitly toggled it
         });
 
         if (response.status === "success" && response.data?.items) {
           setSearchResults(response.data);
-          // Get usedAdvanced from response (backend may have auto-fallback)
-          const usedAdvanced =
-            (response.data as any).usedAdvanced || advancedSearchEnabled;
+          // Get metadata from response
+          const usedAdvanced = (response.data as any).usedAdvanced || false;
+          const isAdvancedSearch = (response.data as any).isAdvancedSearch || false;
+          
           setSearchMetadata({
             total: response.data.pagination.total,
             page: response.data.pagination.page,
             totalPages: response.data.pagination.totalPages,
             usedAdvanced,
+            isAdvancedSearch,
           });
 
           // Show info if backend auto-used advanced search
-          if (usedAdvanced && !advancedSearchEnabled) {
-            toast.info("Using advanced search to find more results");
+          if (usedAdvanced && !isAdvancedSearch) {
+            toast.info("Using enhanced search to find more results");
           }
         } else {
           setSearchResults(null);
@@ -227,18 +228,8 @@ const Overview: React.FC = () => {
         setIsSearching(false);
       }
     },
-    [advancedSearchEnabled]
+    []
   );
-
-  // Toggle advanced search - re-run search with new setting
-  const toggleAdvancedSearch = useCallback(() => {
-    const newValue = !advancedSearchEnabled;
-    setAdvancedSearchEnabled(newValue);
-    // If there's an active search, re-run it with the new setting
-    if (searchQuery.trim() && isSearchActive) {
-      handleSearch(searchQuery);
-    }
-  }, [advancedSearchEnabled, searchQuery, isSearchActive, handleSearch]);
 
   // Load metrics data on component mount
   useEffect(() => {
@@ -317,8 +308,6 @@ const Overview: React.FC = () => {
               results={searchResults}
               isSearching={isSearching}
               metadata={searchMetadata}
-              advancedSearchEnabled={advancedSearchEnabled}
-              onToggleAdvancedSearch={toggleAdvancedSearch}
               onShare={handleShare}
               onRead={handleRead}
               onClearSearch={() => {

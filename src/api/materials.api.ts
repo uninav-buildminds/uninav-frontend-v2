@@ -105,8 +105,9 @@ interface MaterialSearchParams {
   type?: MaterialTypeEnum;
   tag?: string;
   reviewStatus?: ApprovalStatus;
-  advancedSearch?: boolean; // if to use a more though searching algorithm (should be used if previous didn't find any results)
+  advancedSearch?: boolean; // Force advanced search (for specific use cases)
   ignorePreference?: boolean; // if to ignore the user's preference (should be used if the user is not logged in or admin is searching on management page)
+  excludeIds?: string[]; // Material IDs to exclude from search results (for seamless advanced search)
 }
 
 export async function createMaterials(materialData: CreateMaterialForm) {
@@ -288,10 +289,23 @@ export async function getPopularMaterials(limit: number = 10): Promise<
 export async function searchMaterials(
   params: MaterialSearchParams
 ): Promise<ResponseSuccess<SearchResult<Material>>> {
-  // delete params.advancedSearch;
   try {
+    // Clean up params - remove undefined, null, and empty values
+    const cleanParams = Object.fromEntries(
+      Object.entries(params).filter(([key, value]) => {
+        // Remove undefined, null, empty strings, and empty arrays
+        if (value === undefined || value === null || value === "") {
+          return false;
+        }
+        if (Array.isArray(value) && value.length === 0) {
+          return false;
+        }
+        return true;
+      })
+    );
+
     const response = await httpClient.get("/materials", {
-      params,
+      params: cleanParams,
     });
     return response.data;
   } catch (error) {
