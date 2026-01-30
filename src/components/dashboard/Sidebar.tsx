@@ -7,6 +7,7 @@ import { LogoutModal, UploadModal } from "@/components/modals";
 import { panelData } from "@/data/panel";
 import { useAuth } from "@/hooks/useAuth";
 import RecentsList from "./RecentsList";
+import InstallPWA from "./InstallPWA";
 
 const Sidebar: React.FC = () => {
   const navigate = useNavigate();
@@ -143,7 +144,7 @@ const Sidebar: React.FC = () => {
               </nav>
               
               {/* Help icon positioned separately on the right */}
-              <div className="mt-6">
+              <div className="mt-6 flex flex-col items-center gap-4">
                 <NavLink
                   to={helpItem.to}
                   className="flex flex-col items-center gap-1"
@@ -171,6 +172,7 @@ const Sidebar: React.FC = () => {
                     </>
                   )}
                 </NavLink>
+                <InstallPWA variant="default" />
               </div>
             </div>
 
