@@ -250,6 +250,7 @@ const Overview: React.FC = () => {
     loadMetrics();
   }, []);
 
+  // Metrics cards configuration for the overview dashboard
   const metrics = [
     {
       icon: <HugeiconsIcon icon={Award01Icon} strokeWidth={1.5} size={20} />,
@@ -288,6 +289,10 @@ const Overview: React.FC = () => {
             }. Access them anytime from your bookmarks`,
     },
   ];
+
+  // Decide when to render the Recent Materials section (keep while loading, hide when fetched and empty)
+  const shouldShowRecentMaterials =
+    isLoadingRecent || (recentMaterials && recentMaterials.length > 0);
 
   return (
     <>
@@ -332,19 +337,21 @@ const Overview: React.FC = () => {
 
             {/* Content Sections */}
             <div className="mt-8 space-y-8 pb-16 md:pb-0">
-              {/* Recent Materials */}
-              <MaterialsSection
-                title="Recent Materials"
-                materials={isLoadingRecent ? [] : recentMaterials || []}
-                onViewAll={() => handleViewAll("recent materials")}
-                onFilter={() => handleFilter("recent materials")}
-                onShare={handleShare}
-                onRead={handleRead}
-                scrollStep={280}
-                preserveOrder={true}
-                isLoading={isLoadingRecent}
-                emptyStateType="recent"
-              />
+              {/* Recent Materials - only show when loading or when there are items */}
+              {shouldShowRecentMaterials && (
+                <MaterialsSection
+                  title="Recent Materials"
+                  materials={isLoadingRecent ? [] : recentMaterials || []}
+                  onViewAll={() => handleViewAll("recent materials")}
+                  onFilter={() => handleFilter("recent materials")}
+                  onShare={handleShare}
+                  onRead={handleRead}
+                  scrollStep={280}
+                  preserveOrder={true}
+                  isLoading={isLoadingRecent}
+                  emptyStateType="recent"
+                />
+              )}
 
               {/* Recommendations - Grid layout with 2 rows */}
               <MaterialsSection
