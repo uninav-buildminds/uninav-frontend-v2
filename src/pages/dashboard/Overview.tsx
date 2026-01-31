@@ -6,7 +6,12 @@ import MaterialsSection from "@/components/dashboard/MaterialsSection";
 import SearchResults from "@/components/dashboard/SearchResults";
 import { UploadModal } from "@/components/modals";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Award01Icon, Bookmark01Icon, DownloadSquare01Icon, UploadSquare01Icon } from "@hugeicons/core-free-icons";
+import {
+  Award01Icon,
+  Bookmark01Icon,
+  DownloadSquare01Icon,
+  UploadSquare01Icon,
+} from "@hugeicons/core-free-icons";
 import {
   getMaterialRecommendations,
   getRecentMaterials,
@@ -53,8 +58,9 @@ const Overview: React.FC = () => {
 
   // Search state - initialize from URL params
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
-  const [searchResults, setSearchResults] =
-    useState<SearchResult<Material | Folder> | null>(null);
+  const [searchResults, setSearchResults] = useState<SearchResult<
+    Material | Folder
+  > | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [searchSuggestions, setSearchSuggestions] = useState<
@@ -174,62 +180,60 @@ const Overview: React.FC = () => {
   }, []);
 
   // Full search - backend handles automatic fallback to advanced search
-  const handleSearch = useCallback(
-    async (query: string) => {
-      if (!query.trim()) {
-        setIsSearchActive(false);
-        setSearchResults(null);
-        setSearchMetadata(null);
-        return;
-      }
+  const handleSearch = useCallback(async (query: string) => {
+    if (!query.trim()) {
+      setIsSearchActive(false);
+      setSearchResults(null);
+      setSearchMetadata(null);
+      return;
+    }
 
-      setIsSearching(true);
-      setIsSearchActive(true);
-      setSearchQuery(query);
-      // Update URL params
-      setSearchParams({ q: query.trim() });
+    setIsSearching(true);
+    setIsSearchActive(true);
+    setSearchQuery(query);
+    // Update URL params
+    setSearchParams({ q: query.trim() });
 
-      try {
-        // Backend automatically handles seamless advanced search when needed
-        const response = await searchMaterials({
-          query: query.trim(),
-          limit: 10,
-          page: 1,
+    try {
+      // Backend automatically handles seamless advanced search when needed
+      const response = await searchMaterials({
+        query: query.trim(),
+        limit: 10,
+        page: 1,
+      });
+
+      if (response.status === "success" && response.data?.items) {
+        setSearchResults(response.data);
+        // Get metadata from response
+        const usedAdvanced = (response.data as any).usedAdvanced || false;
+        const isAdvancedSearch =
+          (response.data as any).isAdvancedSearch || false;
+
+        setSearchMetadata({
+          total: response.data.pagination.total,
+          page: response.data.pagination.page,
+          totalPages: response.data.pagination.totalPages,
+          usedAdvanced,
+          isAdvancedSearch,
         });
 
-        if (response.status === "success" && response.data?.items) {
-          setSearchResults(response.data);
-          // Get metadata from response
-          const usedAdvanced = (response.data as any).usedAdvanced || false;
-          const isAdvancedSearch = (response.data as any).isAdvancedSearch || false;
-          
-          setSearchMetadata({
-            total: response.data.pagination.total,
-            page: response.data.pagination.page,
-            totalPages: response.data.pagination.totalPages,
-            usedAdvanced,
-            isAdvancedSearch,
-          });
-
-          // Show info if backend auto-used advanced search
-          if (usedAdvanced && !isAdvancedSearch) {
-            toast.info("Using enhanced search to find more results");
-          }
-        } else {
-          setSearchResults(null);
-          setSearchMetadata(null);
+        // Show info if backend auto-used advanced search
+        if (usedAdvanced && !isAdvancedSearch) {
+          toast.info("Using enhanced search to find more results");
         }
-      } catch (error: any) {
-        console.error("Error searching materials:", error);
-        toast.error(error.message || "Search failed. Please try again.");
+      } else {
         setSearchResults(null);
         setSearchMetadata(null);
-      } finally {
-        setIsSearching(false);
       }
-    },
-    []
-  );
+    } catch (error: any) {
+      console.error("Error searching materials:", error);
+      toast.error(error.message || "Search failed. Please try again.");
+      setSearchResults(null);
+      setSearchMetadata(null);
+    } finally {
+      setIsSearching(false);
+    }
+  }, []);
 
   // Load metrics data on component mount
   useEffect(() => {
@@ -260,7 +264,13 @@ const Overview: React.FC = () => {
         "Earned from reading and uploading materials. Upload 3 more materials to unlock Ad‑Free Week",
     },
     {
-      icon: <HugeiconsIcon icon={DownloadSquare01Icon} strokeWidth={1.5} size={20} />,
+      icon: (
+        <HugeiconsIcon
+          icon={DownloadSquare01Icon}
+          strokeWidth={1.5}
+          size={20}
+        />
+      ),
       title: "Total Downloads",
       value: user?.downloadCount?.toString() || "0",
       description:
@@ -269,7 +279,9 @@ const Overview: React.FC = () => {
           : "You have downloaded helpful materials. You're on track to complete academic goals",
     },
     {
-      icon: <HugeiconsIcon icon={UploadSquare01Icon} strokeWidth={1.5} size={20} />,
+      icon: (
+        <HugeiconsIcon icon={UploadSquare01Icon} strokeWidth={1.5} size={20} />
+      ),
       title: "Total Uploads",
       value: user?.uploadCount?.toString() || "0",
       description:
@@ -353,7 +365,7 @@ const Overview: React.FC = () => {
                 />
               )}
 
-              {/* Recommendations - Grid layout with 2 rows */}
+              {/* Recommendations - Grid layout with 3 rows */}
               <MaterialsSection
                 title="Recommendations"
                 materials={
