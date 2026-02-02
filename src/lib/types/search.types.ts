@@ -1,7 +1,7 @@
 export type SearchSuggestion = {
 	id: string;
 	title: string;
-	type: "course" | "material";
+	type: "course" | "material" | "folder";
 	subtitle?: string;
 	icon?: React.ReactNode;
 }
