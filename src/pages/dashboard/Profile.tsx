@@ -116,6 +116,7 @@ const Profile: React.FC = () => {
           creatorId: userId,
           limit: 100,
           reviewStatus: ApprovalStatusEnum.APPROVED, // Only show approved materials
+          saveHistory: false, // Don't save - this is fetching user materials, not a search
         });
 
         if (materialsResponse.status === "success") {

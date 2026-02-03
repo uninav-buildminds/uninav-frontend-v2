@@ -57,6 +57,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
         const searchParams: any = {
           query: query.trim(),
           page: pageParam,
+          saveHistory: true, // Save actual user searches to history
         };
 
         // Only add excludeIds if it has valid values

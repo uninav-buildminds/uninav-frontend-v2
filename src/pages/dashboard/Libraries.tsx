@@ -102,6 +102,7 @@ const Libraries: React.FC = () => {
       const response = await searchMaterials({
         creatorId: user.id,
         limit: 100,
+        saveHistory: false, // Don't save - this is fetching user uploads, not a search
       });
 
       const uploads =

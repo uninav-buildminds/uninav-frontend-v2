@@ -143,6 +143,7 @@ const Overview: React.FC = () => {
           query: query.trim(),
           limit: 5,
           page: 1,
+          saveHistory: false, // Don't save autocomplete queries to history
           // No ignorePreference for autocomplete - let backend handle search automatically
         });
 
@@ -200,6 +201,7 @@ const Overview: React.FC = () => {
         query: query.trim(),
         limit: 10,
         page: 1,
+        saveHistory: true, // Save actual user searches to history
       });
 
       if (response.status === "success" && response.data?.items) {

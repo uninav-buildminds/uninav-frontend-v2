@@ -65,6 +65,7 @@ const HeroSection: React.FC = () => {
         limit: 5,
         page: 1,
         ignorePreference: true,
+        saveHistory: false, // Don't save autocomplete queries to history
       });
       const items =
         res.status === ResponseStatus.SUCCESS ? res.data.items : [];

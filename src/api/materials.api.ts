@@ -108,6 +108,7 @@ interface MaterialSearchParams {
   advancedSearch?: boolean; // Force advanced search (for specific use cases)
   ignorePreference?: boolean; // if to ignore the user's preference (should be used if the user is not logged in or admin is searching on management page)
   excludeIds?: string[]; // Material IDs to exclude from search results (for seamless advanced search)
+  saveHistory?: boolean; // Whether to save this search to history (false for autocomplete, true for explicit user searches)
 }
 
 export async function createMaterials(materialData: CreateMaterialForm) {

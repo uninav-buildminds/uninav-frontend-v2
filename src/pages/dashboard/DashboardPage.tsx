@@ -13,7 +13,7 @@ const DashboardPage: React.FC = () => {
     error,
   } = useQuery({
     queryKey: ["materials"],
-    queryFn: () => searchMaterials({ page: 1, limit: 50 }),
+    queryFn: () => searchMaterials({ page: 1, limit: 50, saveHistory: false }), // Don't save initial page load
   });
 
   if (isLoading) {
