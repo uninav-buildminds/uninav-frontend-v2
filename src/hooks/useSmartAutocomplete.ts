@@ -119,16 +119,12 @@ export function useSmartAutocomplete(
     // 2. Check if query starts with a course code prefix
     const coursePrefix = extractCourseCodePrefix(upperQuery);
     if (coursePrefix) {
-      const departments = COURSE_CODE_PREFIXES[coursePrefix] || [];
-      
-      // If user typed just the prefix (e.g., "MAT"), suggest completing it
+      // If user typed just the prefix (e.g., "MAT"), suggest the course code
       if (upperQuery === coursePrefix) {
-        departments.forEach((dept) => {
-          results.push({
-            suggestion: `${coursePrefix} - ${dept}`,
-            type: 'course',
-            confidence: 0.8,
-          });
+        results.push({
+          suggestion: coursePrefix,
+          type: 'course',
+          confidence: 0.85,
         });
       } else {
         // User has typed beyond prefix, help complete the number part
@@ -142,14 +138,14 @@ export function useSmartAutocomplete(
               ''
             ),
             type: 'course',
-            confidence: 0.7,
+            confidence: 0.8,
           });
         }
       }
     }
 
-    // 3. Check if query matches a department name
-    const departmentMatch = matchesDepartment(normalizedQuery);
+    // 3. Check if query matches a department name (only if no course code match)
+    const departmentMatch = !coursePrefix ? matchesDepartment(normalizedQuery) : null;
     if (departmentMatch && !historyMatches.length) {
       results.push({
         suggestion: departmentMatch,
@@ -161,15 +157,15 @@ export function useSmartAutocomplete(
       const prefixes = getCourseCodePrefixesForDepartment(departmentMatch);
       prefixes.slice(0, 2).forEach((prefix) => {
         results.push({
-          suggestion: `${prefix} - ${departmentMatch}`,
+          suggestion: prefix,
           type: 'course',
-          confidence: 0.6,
+          confidence: 0.7,
         });
       });
     }
 
     // 4. Partial department name matches
-    if (!departmentMatch && normalizedQuery.length >= 3) {
+    if (!coursePrefix && !departmentMatch && normalizedQuery.length >= 3) {
       for (const [fullName, aliases] of Object.entries(DEPARTMENT_NAMES)) {
         if (
           fullName.toLowerCase().includes(normalizedQuery.toLowerCase()) ||
