@@ -1,5 +1,5 @@
 import React from "react";
-import SearchBar from "../shared/SearchBar";
+import SmartSearchBar from "../shared/SmartSearchBar";
 import { SearchSuggestion } from "@/lib/types/search.types";
 
 interface DashboardHeaderProps {
@@ -12,6 +12,7 @@ interface DashboardHeaderProps {
   onSearch?: (query: string) => void;
   onSearchInput?: (query: string) => void;
   isLoadingSuggestions?: boolean;
+  enableSmartAutocomplete?: boolean;
 }
 
 const DashboardHeader: React.FC<DashboardHeaderProps> = ({
@@ -24,6 +25,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   onSearch,
   onSearchInput,
   isLoadingSuggestions = false,
+  enableSmartAutocomplete = true,
 }) => {
   // Default content for dashboard overview
   const defaultTitle = `Welcome back, ${firstName}! 👋`;
@@ -48,7 +50,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             {/* Search */}
             {showSearch && (
               <div className="mt-6 flex justify-center relative z-[1030]">
-                <SearchBar
+                <SmartSearchBar
                   className="w-full max-w-xl"
                   placeholder={searchPlaceholder}
                   suggestions={searchSuggestions}
@@ -58,6 +60,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                     ((query) => console.log("Dashboard search:", query))
                   }
                   onInputChange={onSearchInput}
+                  enableSmartAutocomplete={enableSmartAutocomplete}
                 />
               </div>
             )}
