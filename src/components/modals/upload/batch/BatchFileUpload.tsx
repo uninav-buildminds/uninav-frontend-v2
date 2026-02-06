@@ -1,7 +1,18 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { AlertCircleIcon, ArrowLeft01Icon, Cancel01Icon, CheckmarkCircle02Icon, File01Icon, FileAttachmentIcon, Loading03Icon, Pdf01Icon, PresentationBarChart01Icon, UploadSquare01Icon } from "@hugeicons/core-free-icons";
+import {
+  AlertCircleIcon,
+  ArrowLeft01Icon,
+  Cancel01Icon,
+  CheckmarkCircle02Icon,
+  File01Icon,
+  FileAttachmentIcon,
+  Loading03Icon,
+  Pdf01Icon,
+  PresentationBarChart01Icon,
+  UploadSquare01Icon,
+} from "@hugeicons/core-free-icons";
 import { toast } from "sonner";
 import {
   BatchCreateMaterialsResponse,
@@ -99,15 +110,43 @@ async function generatePdfThumbnail(
 // Get file icon based on type
 const getFileIcon = (file: File) => {
   if (file.type === "application/pdf") {
-    return <HugeiconsIcon icon={Pdf01Icon} strokeWidth={1.5} size={24} className="text-red-500" />;
+    return (
+      <HugeiconsIcon
+        icon={Pdf01Icon}
+        strokeWidth={1.5}
+        size={24}
+        className="text-red-500"
+      />
+    );
   }
   if (file.type.includes("presentation") || file.name.match(/\.pptx?$/i)) {
-    return <HugeiconsIcon icon={PresentationBarChart01Icon} strokeWidth={1.5} size={24} className="text-orange-500" />;
+    return (
+      <HugeiconsIcon
+        icon={PresentationBarChart01Icon}
+        strokeWidth={1.5}
+        size={24}
+        className="text-orange-500"
+      />
+    );
   }
   if (file.type.includes("word") || file.name.match(/\.docx?$/i)) {
-    return <HugeiconsIcon icon={FileAttachmentIcon} strokeWidth={1.5} size={24} className="text-blue-500" />;
+    return (
+      <HugeiconsIcon
+        icon={FileAttachmentIcon}
+        strokeWidth={1.5}
+        size={24}
+        className="text-blue-500"
+      />
+    );
   }
-  return <HugeiconsIcon icon={File01Icon} strokeWidth={1.5} size={24} className="text-gray-400" />;
+  return (
+    <HugeiconsIcon
+      icon={File01Icon}
+      strokeWidth={1.5}
+      size={24}
+      className="text-gray-400"
+    />
+  );
 };
 
 const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
@@ -265,7 +304,7 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
       const supportedFiles = fileList.filter((file) =>
         file.name.match(/\.(pdf|pptx?|docx?)$/i)
       );
-      
+
       if (supportedFiles.length === 0) {
         toast.error("No supported files found in the selected folder");
       } else if (supportedFiles.length < fileList.length) {
@@ -274,11 +313,11 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
           { duration: 3000 }
         );
       }
-      
+
       if (supportedFiles.length > 0) {
         handleFiles(supportedFiles);
       }
-      
+
       e.target.value = ""; // Reset input
     }
   };
@@ -371,11 +410,32 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
   const getStatusIcon = (status: BatchFileItem["status"]) => {
     switch (status) {
       case "uploading":
-        return <HugeiconsIcon icon={Loading03Icon} strokeWidth={1.5} size={16} className="text-brand animate-spin" />;
+        return (
+          <HugeiconsIcon
+            icon={Loading03Icon}
+            strokeWidth={1.5}
+            size={16}
+            className="text-brand animate-spin"
+          />
+        );
       case "success":
-        return <HugeiconsIcon icon={CheckmarkCircle02Icon} strokeWidth={1.5} size={16} className="text-green-500" />;
+        return (
+          <HugeiconsIcon
+            icon={CheckmarkCircle02Icon}
+            strokeWidth={1.5}
+            size={16}
+            className="text-green-500"
+          />
+        );
       case "error":
-        return <HugeiconsIcon icon={AlertCircleIcon} strokeWidth={1.5} size={16} className="text-red-500" />;
+        return (
+          <HugeiconsIcon
+            icon={AlertCircleIcon}
+            strokeWidth={1.5}
+            size={16}
+            className="text-red-500"
+          />
+        );
       default:
         return null;
     }
@@ -395,7 +455,12 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
         onDragOver={handleDrag}
         onDrop={handleDrop}
       >
-        <HugeiconsIcon icon={UploadSquare01Icon} strokeWidth={1.5} size={40} className="text-gray-400 mx-auto mb-3" />
+        <HugeiconsIcon
+          icon={UploadSquare01Icon}
+          strokeWidth={1.5}
+          size={40}
+          className="text-gray-400 mx-auto mb-3"
+        />
         <p className="text-sm font-medium text-gray-900">
           Drag and drop files here, or click to select
         </p>
@@ -528,7 +593,12 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
                         onClick={() => removeFile(item.id)}
                         className="p-1 hover:bg-gray-100 rounded transition-colors"
                       >
-                        <HugeiconsIcon icon={Cancel01Icon} strokeWidth={1.5} size={14} className="text-gray-400" />
+                        <HugeiconsIcon
+                          icon={Cancel01Icon}
+                          strokeWidth={1.5}
+                          size={14}
+                          className="text-gray-400"
+                        />
                       </button>
                     )}
                   </div>

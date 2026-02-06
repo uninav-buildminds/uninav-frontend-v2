@@ -1,15 +1,25 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { ArrowLeft01Icon, File01Icon, UploadSquare01Icon } from "@hugeicons/core-free-icons";
+import {
+  ArrowLeft01Icon,
+  File01Icon,
+  UploadSquare01Icon,
+} from "@hugeicons/core-free-icons";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { uploadFileSchema, type UploadFileInput } from "@/lib/validation/upload";
+import {
+  uploadFileSchema,
+  type UploadFileInput,
+} from "@/lib/validation/upload";
 import { toast } from "sonner";
 import HeaderStepper from "./shared/HeaderStepper";
 import { Previewer } from "@/components/Preview/doc_viewer";
 import AdvancedOptions from "./shared/AdvancedOptions";
-import { inferMaterialType, generateDefaultTitle } from "@/lib/utils/inferMaterialType";
+import {
+  inferMaterialType,
+  generateDefaultTitle,
+} from "@/lib/utils/inferMaterialType";
 import { CreateMaterialFileForm } from "@/api/materials.api";
 import {
   VisibilityEnum,
@@ -163,7 +173,7 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
   const handleFolderInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const fileList = Array.from(e.target.files);
-      
+
       if (fileList.length === 0) {
         toast.error("No files found in the selected folder");
         return;
@@ -179,7 +189,7 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
           { duration: 5000 }
         );
       }
-      
+
       // Reset input
       e.target.value = "";
     }
@@ -367,9 +377,12 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
                     }}
                   />
                 ) : (
-                  <HugeiconsIcon icon={File01Icon} strokeWidth={1.5}
+                  <HugeiconsIcon
+                    icon={File01Icon}
+                    strokeWidth={1.5}
                     size={40}
-                    className="text-brand mx-auto sm:w-12 sm:h-12" />
+                    className="text-brand mx-auto sm:w-12 sm:h-12"
+                  />
                 )}
               </div>
 
@@ -394,9 +407,12 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
             </div>
           ) : (
             <div className="space-y-3">
-              <HugeiconsIcon icon={UploadSquare01Icon} strokeWidth={1.5}
+              <HugeiconsIcon
+                icon={UploadSquare01Icon}
+                strokeWidth={1.5}
                 size={40}
-                className="text-gray-400 mx-auto sm:w-12 sm:h-12" />
+                className="text-gray-400 mx-auto sm:w-12 sm:h-12"
+              />
               <div>
                 <p className="text-sm sm:text-base font-medium text-gray-900">
                   Click to Upload or Drag and Drop
