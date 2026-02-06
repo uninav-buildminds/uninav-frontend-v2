@@ -129,6 +129,7 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
   } | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const folderInputRef = useRef<HTMLInputElement>(null);
 
   const generateId = () => Math.random().toString(36).substring(2, 9);
 
@@ -254,6 +255,30 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       handleFiles(e.target.files);
+      e.target.value = ""; // Reset input
+    }
+  };
+
+  const handleFolderInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const fileList = Array.from(e.target.files);
+      const supportedFiles = fileList.filter((file) =>
+        file.name.match(/\.(pdf|pptx?|docx?)$/i)
+      );
+      
+      if (supportedFiles.length === 0) {
+        toast.error("No supported files found in the selected folder");
+      } else if (supportedFiles.length < fileList.length) {
+        toast.info(
+          `Found ${supportedFiles.length} supported file(s) out of ${fileList.length} total files`,
+          { duration: 3000 }
+        );
+      }
+      
+      if (supportedFiles.length > 0) {
+        handleFiles(supportedFiles);
+      }
+      
       e.target.value = ""; // Reset input
     }
   };
@@ -385,13 +410,31 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
           onChange={handleFileInput}
           className="hidden"
         />
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          disabled={isUploading}
-          className="mt-4 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors disabled:opacity-50"
-        >
-          Select Files
-        </button>
+        <input
+          ref={folderInputRef}
+          type="file"
+          // @ts-ignore - webkitdirectory is not in the standard but widely supported
+          webkitdirectory=""
+          directory=""
+          onChange={handleFolderInput}
+          className="hidden"
+        />
+        <div className="mt-4 flex gap-2 flex-wrap justify-center">
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+            className="px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors disabled:opacity-50"
+          >
+            Select Files
+          </button>
+          <button
+            onClick={() => folderInputRef.current?.click()}
+            disabled={isUploading}
+            className="px-4 py-2 bg-brand/10 text-brand border border-brand rounded-lg hover:bg-brand/20 transition-colors disabled:opacity-50"
+          >
+            Select Folder
+          </button>
+        </div>
       </div>
 
       {/* Files Grid - Horizontal Layout */}

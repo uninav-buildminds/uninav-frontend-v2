@@ -286,6 +286,9 @@ export async function getPopularMaterials(limit: number = 10): Promise<
   }
 }
 
+import { searchFolders } from "./folder.api";
+import { Folder } from "./folder.api";
+
 // Search materials with pagination and filtering
 export async function searchMaterials(
   params: MaterialSearchParams
@@ -316,6 +319,107 @@ export async function searchMaterials(
       message:
         error.response?.data?.message ||
         "Searching materials failed. Please try again.",
+    };
+  }
+}
+
+// Combined search for both materials and folders
+export async function searchMaterialsAndFolders(
+  params: MaterialSearchParams & { includeFolders?: boolean }
+): Promise<ResponseSuccess<SearchResult<Material | Folder>>> {
+  try {
+    const {
+      query,
+      page = 1,
+      limit = 10,
+      includeFolders = true,
+      ...otherParams
+    } = params;
+
+    if (!query || query.trim().length < 3) {
+      return {
+        status: "success" as const,
+        message: "Search query too short",
+        data: {
+          items: [],
+          pagination: {
+            total: 0,
+            page: 1,
+            pageSize: limit,
+            totalPages: 0,
+            hasMore: false,
+            hasPrev: false,
+          },
+        },
+      };
+    }
+
+    const promises = [searchMaterials({ query, page, limit, ...otherParams })];
+
+    // Only search folders when needed and query is long enough
+    if (includeFolders && query.trim().length >= 3) {
+      promises.push(
+        searchFolders({ query: query.trim(), page, limit: Math.min(limit, 5) }) // Limit folders to max 5 per page
+      );
+    }
+
+    const [materialsResponse, foldersResponse] = await Promise.all(
+      promises.length === 2 ? promises : [promises[0], Promise.resolve(null)]
+    );
+
+    const materials = materialsResponse.data?.items || [];
+    const folders = foldersResponse?.data?.items || [];
+
+    // Merge results: materials first, then folders
+    const mergedItems: (Material | Folder)[] = [
+      ...materials,
+      ...folders.map((folder) => ({ ...folder, _type: "folder" as const })),
+    ];
+
+    // Calculate combined pagination
+    const materialsPagination = materialsResponse.data?.pagination;
+    const foldersPagination = foldersResponse?.data?.pagination;
+
+    const combinedPagination = {
+      total:
+        (materialsPagination?.total || 0) + (foldersPagination?.total || 0),
+      page,
+      pageSize: limit,
+      totalPages: Math.max(
+        materialsPagination?.totalPages || 0,
+        foldersPagination?.totalPages || 0
+      ),
+      hasMore:
+        materialsPagination?.hasMore ||
+        false ||
+        foldersPagination?.hasMore ||
+        false,
+      hasPrev: page > 1,
+      // Additional metadata for folder handling
+      _materialsHasMore: materialsPagination?.hasMore || false,
+      _foldersHasMore: foldersPagination?.hasMore || false,
+    };
+
+    const result: SearchResult<Material | Folder> = {
+      items: mergedItems,
+      pagination: combinedPagination,
+      // Preserve search metadata from materials search
+      usedAdvanced: (materialsResponse.data as any)?.usedAdvanced,
+      isAdvancedSearch: (materialsResponse.data as any)?.isAdvancedSearch,
+    };
+
+    return {
+      status: "success" as const,
+      message: "Combined search completed successfully",
+      data: result,
+    };
+  } catch (error) {
+    console.error("Error in combined search:", error);
+    throw {
+      statusCode: error.response?.status || 500,
+      message:
+        error.response?.data?.message ||
+        "Combined search failed. Please try again.",
     };
   }
 }

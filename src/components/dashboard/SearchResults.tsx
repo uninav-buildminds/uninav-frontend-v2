@@ -1,18 +1,20 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import MaterialCard from "./MaterialCard";
+import FolderCard from "./FolderCard";
 import MaterialCardSkeleton from "./MaterialCardSkeleton";
 import { Material } from "@/lib/types/material.types";
+import { Folder } from "@/api/folder.api";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Search01Icon, UploadSquare01Icon } from "@hugeicons/core-free-icons";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { searchMaterials } from "@/api/materials.api";
+import { searchMaterialsAndFolders } from "@/api/materials.api";
 import { SearchResult } from "@/lib/types/search.types";
 import { useInView } from "react-intersection-observer";
 
 interface SearchResultsProps {
   query: string;
-  results: SearchResult<Material>;
+  results: SearchResult<Material | Folder>;
   isSearching: boolean;
   metadata: {
     total: number;
@@ -23,6 +25,7 @@ interface SearchResultsProps {
   } | null;
   onShare?: (id: string) => void;
   onRead?: (slug: string) => void;
+  onFolderClick?: (slug: string) => void;
   onClearSearch: () => void;
   onUpload?: () => void;
 }
@@ -34,9 +37,13 @@ const SearchResults: React.FC<SearchResultsProps> = ({
   metadata,
   onShare,
   onRead,
+  onFolderClick,
   onClearSearch,
   onUpload,
 }) => {
+  // Track folder fetch state to stop fetching when folders run out
+  const [foldersFetchComplete, setFoldersFetchComplete] = useState(false);
+
   // Track all material IDs to avoid duplicates
   const allMaterialIdsRef = useRef<string[]>([]);
 
@@ -58,6 +65,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
           query: query.trim(),
           page: pageParam,
           saveHistory: true, // Save actual user searches to history
+          includeFolders: !foldersFetchComplete, // Only fetch folders if not complete
         };
 
         // Only add excludeIds if it has valid values
@@ -65,13 +73,21 @@ const SearchResults: React.FC<SearchResultsProps> = ({
           searchParams.excludeIds = excludeIds;
         }
 
-        const response = await searchMaterials(searchParams);
+        const response = await searchMaterialsAndFolders(searchParams);
 
-        // Update the material IDs ref with new materials
+        // Check if folders fetch is complete
+        const foldersHasMore = (response.data?.pagination as any)
+          ?._foldersHasMore;
+        if (foldersHasMore === false) {
+          setFoldersFetchComplete(true);
+        }
+
+        // Update the material IDs ref with new materials (excluding folders)
         if (response.data?.items) {
-          response.data.items.forEach((material: Material) => {
-            if (!allMaterialIdsRef.current.includes(material.id)) {
-              allMaterialIdsRef.current.push(material.id);
+          response.data.items.forEach((item: Material | Folder) => {
+            const isFolder = "_type" in item && item._type === "folder";
+            if (!isFolder && !allMaterialIdsRef.current.includes(item.id)) {
+              allMaterialIdsRef.current.push(item.id);
             }
           });
         }
@@ -103,12 +119,26 @@ const SearchResults: React.FC<SearchResultsProps> = ({
       },
     });
 
-  // Initialize the ref with initial results
+  // Initialize the ref with initial results (materials only)
   useEffect(() => {
     if (results?.items) {
-      allMaterialIdsRef.current = results.items.map((item) => item.id);
+      allMaterialIdsRef.current = results.items
+        .filter((item) => !("_type" in item && item._type === "folder"))
+        .map((item) => item.id);
+
+      // Check initial folder state
+      const initialFoldersHasMore = (results.pagination as any)
+        ?._foldersHasMore;
+      if (initialFoldersHasMore === false) {
+        setFoldersFetchComplete(true);
+      }
     }
   }, [results]);
+
+  // Reset folder fetch state when query changes
+  useEffect(() => {
+    setFoldersFetchComplete(false);
+  }, [query]);
 
   useEffect(() => {
     if (!hasNextPage || isFetchingNextPage) return;
@@ -218,27 +248,39 @@ const SearchResults: React.FC<SearchResultsProps> = ({
               const atLastPage = i === data.pages.length - 1;
               return (
                 <React.Fragment key={i}>
-                  {page.items.map((material, index) => {
+                  {page.items.map((item, index) => {
                     const atLastElement =
                       atLastPage && index === page.items.length - 1;
+                    const isFolder = "_type" in item && item._type === "folder";
 
                     return (
                       <motion.div
-                        key={material.id}
+                        key={`${isFolder ? "folder" : "material"}-${item.id}`}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{
                           delay: index * 0.05,
                         }}
                       >
-                        <MaterialCard
-                          material={material}
-                          onShare={onShare}
-                          onRead={onRead}
-                          componentRef={
-                            atLastElement ? infiniteScrollTriggerRef : null
-                          }
-                        />
+                        {isFolder ? (
+                          <FolderCard
+                            folder={item as Folder}
+                            onClick={() => {
+                              // Navigate to folder view
+                              onFolderClick?.(item.slug);
+                            }}
+                            materialCount={(item as any).materialCount || 0}
+                          />
+                        ) : (
+                          <MaterialCard
+                            material={item as Material}
+                            onShare={onShare}
+                            onRead={onRead}
+                            componentRef={
+                              atLastElement ? infiniteScrollTriggerRef : null
+                            }
+                          />
+                        )}
                       </motion.div>
                     );
                   })}

@@ -15,7 +15,7 @@ import {
 import {
   getMaterialRecommendations,
   getRecentMaterials,
-  searchMaterials,
+  searchMaterialsAndFolders,
 } from "@/api/materials.api";
 import { getUserPoints } from "@/api/points.api";
 import { Material } from "@/lib/types/material.types";
@@ -95,6 +95,10 @@ const Overview: React.FC = () => {
     navigate(`/dashboard/material/${slug}`);
   };
 
+  const handleFolderClick = (slug: string) => {
+    navigate(`/dashboard/folder/${slug}`);
+  };
+
   // Debounce timer ref
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -139,25 +143,32 @@ const Overview: React.FC = () => {
     // Debounce the API call (300ms)
     debounceTimerRef.current = setTimeout(async () => {
       try {
-        const response = await searchMaterials({
+        const response = await searchMaterialsAndFolders({
           query: query.trim(),
           limit: 5,
           page: 1,
           saveHistory: false, // Don't save autocomplete queries to history
+          includeFolders: true, // Include folders in autocomplete
           // No ignorePreference for autocomplete - let backend handle search automatically
         });
 
         if (response.status === "success" && response.data?.items) {
           const suggestions = response.data.items
             .slice(0, 5)
-            .map((material: Material) => ({
-              id: material.id,
-              title: material.label,
-              type: "material" as SearchSuggestion["type"],
-              subtitle:
-                material.targetCourse?.courseCode ||
-                material.description?.slice(0, 50),
-            }));
+            .map((item: Material | Folder) => {
+              const isFolder = "_type" in item && item._type === "folder";
+              return {
+                id: item.id,
+                title: item.label,
+                type: (isFolder
+                  ? "folder"
+                  : "material") as SearchSuggestion["type"],
+                subtitle: isFolder
+                  ? `${(item as any).materialCount || 0} materials`
+                  : (item as Material).targetCourse?.courseCode ||
+                    (item as Material).description?.slice(0, 50),
+              };
+            });
           setSearchSuggestions(suggestions);
         } else {
           setSearchSuggestions([]);
@@ -197,11 +208,12 @@ const Overview: React.FC = () => {
 
     try {
       // Backend automatically handles seamless advanced search when needed
-      const response = await searchMaterials({
+      const response = await searchMaterialsAndFolders({
         query: query.trim(),
         limit: 10,
         page: 1,
         saveHistory: true, // Save actual user searches to history
+        includeFolders: true, // Include folders in main search
       });
 
       if (response.status === "success" && response.data?.items) {
@@ -329,6 +341,7 @@ const Overview: React.FC = () => {
               metadata={searchMetadata}
               onShare={handleShare}
               onRead={handleRead}
+              onFolderClick={handleFolderClick}
               onClearSearch={() => {
                 setSearchQuery("");
                 setIsSearchActive(false);

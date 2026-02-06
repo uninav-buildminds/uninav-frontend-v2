@@ -49,6 +49,7 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
   const [folderId, setFolderId] = useState<string>(propFolderId || "");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const folderInputRef = useRef<HTMLInputElement>(null);
   const previewUploadInputRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -156,6 +157,31 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       handleFile(e.target.files[0]);
+    }
+  };
+
+  const handleFolderInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const fileList = Array.from(e.target.files);
+      
+      if (fileList.length === 0) {
+        toast.error("No files found in the selected folder");
+        return;
+      }
+
+      if (fileList.length === 1) {
+        // Single file in folder, handle normally
+        handleFile(fileList[0]);
+      } else {
+        // Multiple files - suggest batch upload
+        toast.error(
+          `Selected folder contains ${fileList.length} files. Please use Batch Upload for multiple files.`,
+          { duration: 5000 }
+        );
+      }
+      
+      // Reset input
+      e.target.value = "";
     }
   };
 
@@ -389,13 +415,30 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
             onChange={handleFileInput}
             className="hidden"
           />
+          <input
+            ref={folderInputRef}
+            type="file"
+            // @ts-ignore - webkitdirectory is not in the standard but widely supported
+            webkitdirectory=""
+            directory=""
+            onChange={handleFolderInput}
+            className="hidden"
+          />
 
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="mt-4 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors"
-          >
-            Choose File
-          </button>
+          <div className="mt-4 flex gap-2 flex-wrap justify-center">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors"
+            >
+              Choose File
+            </button>
+            <button
+              onClick={() => folderInputRef.current?.click()}
+              className="px-4 py-2 bg-brand/10 text-brand border border-brand rounded-lg hover:bg-brand/20 transition-colors"
+            >
+              Choose Folder
+            </button>
+          </div>
         </div>
       </div>
 

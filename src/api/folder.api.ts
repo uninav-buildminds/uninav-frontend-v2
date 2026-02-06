@@ -333,6 +333,47 @@ export async function removeNestedFolder(
 }
 
 /**
+ * Search folders by query
+ * @param params - Search parameters
+ * @returns search results response or null
+ */
+export async function searchFolders(params: {
+  query: string;
+  page?: number;
+  limit?: number;
+}): Promise<Response<{
+  items: Folder[];
+  pagination: {
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+    hasMore: boolean;
+    hasPrev: boolean;
+  };
+}> | null> {
+  try {
+    const searchParams = new URLSearchParams();
+    searchParams.append("query", params.query);
+    if (params.page) searchParams.append("page", params.page.toString());
+    if (params.limit) searchParams.append("limit", params.limit.toString());
+
+    const response = await httpClient.get(
+      `/folders/search?${searchParams.toString()}`
+    );
+    if (response.data.status === "success") {
+      return response.data;
+    }
+    return null;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status || 500,
+      message: error.response?.data?.message || "Failed to search folders",
+    };
+  }
+}
+
+/**
  * Get folders containing a specific material
  * @param materialId - Material ID
  * @returns folders response or null
