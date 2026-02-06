@@ -2,17 +2,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import {
-  Download01Icon,
-  Share08Icon,
-  Bookmark01Icon,
-  Alert02Icon,
-  File01Icon,
-  MaximizeScreenIcon,
-  MinimizeScreenIcon,
-  ArrowRight01Icon,
-  ArrowLeftDoubleIcon,
-  ArrowRightDoubleIcon,
-  InformationCircleIcon,
+  Download01Icon, Share08Icon, Bookmark01Icon, Alert02Icon, File01Icon, MaximizeScreenIcon,
+  MinimizeScreenIcon, ArrowRight01Icon, ArrowLeftDoubleIcon, ArrowRightDoubleIcon, InformationCircleIcon
 } from "hugeicons-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -650,8 +641,8 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
           {/* Collapsible Icons Container - Slides out to the right when expanded */}
           <div
             className={`flex items-center gap-1.5 sm:gap-2 transition-all duration-500 ease-in-out ${iconsExpanded
-                ? "translate-x-0 opacity-100"
-                : "translate-x-full opacity-0 pointer-events-none"
+              ? "translate-x-0 opacity-100"
+              : "translate-x-full opacity-0 pointer-events-none"
               }`}
           >
             {/* Bookmark button - only show for authenticated users */}
