@@ -1,12 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import {
-  ArrowLeft01Icon,
-  Folder03Icon,
-  Share08Icon,
-  Add01Icon,
-  InformationCircleIcon,
-} from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Add01Icon, ArrowLeft01Icon, Folder03Icon, InformationCircleIcon, Share08Icon } from "@hugeicons/core-free-icons";
 import PageHeader from "@/components/dashboard/PageHeader";
 import FolderCard from "@/components/dashboard/FolderCard";
 import MaterialCard from "@/components/dashboard/MaterialCard";
@@ -153,7 +148,7 @@ const FolderView: React.FC<FolderViewProps> = ({ isPublic = false }) => {
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="text-center">
           <div className="mb-4 p-3 bg-gray-50 rounded-full inline-block">
-            <Folder03Icon className="w-12 h-12 text-gray-400" />
+            <HugeiconsIcon icon={Folder03Icon} strokeWidth={1.5} className="w-12 h-12 text-gray-400" />
           </div>
           <h2 className="text-xl font-semibold text-gray-900 mb-2">
             {error || "Folder not found"}
@@ -167,7 +162,7 @@ const FolderView: React.FC<FolderViewProps> = ({ isPublic = false }) => {
             onClick={handleBack}
             className="inline-flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors"
           >
-            <ArrowLeft01Icon size={18} />
+            <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={1.5} size={18} />
             {isPublic ? "Back to Home" : "Back to Libraries"}
           </button>
         </div>
@@ -208,7 +203,7 @@ const FolderView: React.FC<FolderViewProps> = ({ isPublic = false }) => {
             onClick={handleBack}
             className="inline-flex items-center gap-2 text-gray-600 hover:text-brand transition-colors"
           >
-            <ArrowLeft01Icon size={20} />
+            <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={1.5} size={20} />
             <span className="text-sm font-medium">
               {isPublic ? "Back to Home" : "Back to Libraries"}
             </span>
@@ -222,7 +217,7 @@ const FolderView: React.FC<FolderViewProps> = ({ isPublic = false }) => {
               onClick={handleShare}
               className="inline-flex items-center gap-2"
             >
-              <Share08Icon size={16} />
+              <HugeiconsIcon icon={Share08Icon} strokeWidth={1.5} size={16} />
               <span className="hidden sm:inline">Share</span>
             </Button>
           )}
@@ -240,7 +235,7 @@ const FolderView: React.FC<FolderViewProps> = ({ isPublic = false }) => {
                 size="sm"
                 className="inline-flex items-center gap-2 bg-brand hover:bg-brand/90 text-white"
               >
-                <Add01Icon size={16} />
+                <HugeiconsIcon icon={Add01Icon} strokeWidth={1.5} size={16} />
                 <span className="hidden sm:inline">Add Material</span>
               </Button>
             )}
@@ -251,10 +246,9 @@ const FolderView: React.FC<FolderViewProps> = ({ isPublic = false }) => {
           {/* Public folder contribution notice */}
           {folder.visibility === "public" && (
             <div className="mb-3 flex items-center gap-1.5">
-              <InformationCircleIcon
+              <HugeiconsIcon icon={InformationCircleIcon} strokeWidth={1.5}
                 size={14}
-                className="text-gray-500 flex-shrink-0"
-              />
+                className="text-gray-500 flex-shrink-0" />
               <p className="text-xs text-gray-600">
                 <span className="font-medium">Public:</span>{" "}
                 <span className="hidden sm:inline">
@@ -320,7 +314,7 @@ const FolderView: React.FC<FolderViewProps> = ({ isPublic = false }) => {
         ) : (
           <div className="text-center py-12">
             <div className="mb-4 p-3 sm:p-4 bg-gray-50 rounded-full inline-block">
-              <Folder03Icon className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-gray-400" />
+              <HugeiconsIcon icon={Folder03Icon} strokeWidth={1.5} className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-gray-400" />
             </div>
             <p className="text-gray-500 mb-2">This folder is empty</p>
             <p className="text-sm text-gray-400">

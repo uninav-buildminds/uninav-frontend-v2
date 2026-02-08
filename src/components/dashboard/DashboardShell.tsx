@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Cancel01Icon, ArrowRight02Icon, UserCircleIcon } from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowRight02Icon, Cancel01Icon, UserCircleIcon } from "@hugeicons/core-free-icons";
 import Sidebar from "./Sidebar";
 import MobileBottomNav from "./MobileBottomNav";
 import MobileMenuButton from "./MobileMenuButton";
 import MobilePanel from "./MobilePanel";
+import PWAInstallBanner from "./PWAInstallBanner";
 import { useFullscreen } from "@/context/FullscreenContext";
 import { useAuth } from "@/hooks/useAuth";
 import { isProfileIncomplete } from "@/utils/profile.utils";
@@ -80,12 +82,12 @@ const DashboardShell: React.FC = () => {
                 className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-white border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors flex items-center justify-center z-10"
                 aria-label="Dismiss"
               >
-                <Cancel01Icon size={12} className="text-gray-400" />
+                <HugeiconsIcon icon={Cancel01Icon} strokeWidth={1.5} size={12} className="text-gray-400" />
               </button>
               <div className="rounded-lg bg-white border border-gray-200 p-3 shadow-md hover:shadow-lg transition-shadow">
                 <div className="flex items-center gap-2">
                 <div className="flex-shrink-0 w-6 h-6 rounded-full bg-brand/10 flex items-center justify-center">
-                  <UserCircleIcon size={14} className="text-brand" />
+                  <HugeiconsIcon icon={UserCircleIcon} strokeWidth={1.5} size={14} className="text-brand" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-medium text-gray-900 mb-1">
@@ -95,7 +97,7 @@ const DashboardShell: React.FC = () => {
                     Add your department & level to get personalized recommendations
                   </p>
                 </div>
-                  <ArrowRight02Icon size={14} className="text-brand flex-shrink-0" />
+                  <HugeiconsIcon icon={ArrowRight02Icon} strokeWidth={1.5} size={14} className="text-brand flex-shrink-0" />
                 </div>
               </div>
             </div>
@@ -155,6 +157,11 @@ const DashboardShell: React.FC = () => {
           onConfirmLogout={handleConfirmLogout}
           onCancelLogout={handleCancelLogout}
         />
+      )}
+
+      {/* PWA Install Banner - shows after profile is complete */}
+      {!isFullscreen && !isMaterialView && (
+        <PWAInstallBanner canShow={!profileIncomplete} />
       )}
     </div>
   );

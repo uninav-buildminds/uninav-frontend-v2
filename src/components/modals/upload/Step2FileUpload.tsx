@@ -1,14 +1,25 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import { UploadSquare01Icon, ArrowLeft01Icon, File01Icon } from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  ArrowLeft01Icon,
+  File01Icon,
+  UploadSquare01Icon,
+} from "@hugeicons/core-free-icons";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { uploadFileSchema, type UploadFileInput } from "@/lib/validation/upload";
+import {
+  uploadFileSchema,
+  type UploadFileInput,
+} from "@/lib/validation/upload";
 import { toast } from "sonner";
 import HeaderStepper from "./shared/HeaderStepper";
 import { Previewer } from "@/components/Preview/doc_viewer";
 import AdvancedOptions from "./shared/AdvancedOptions";
-import { inferMaterialType, generateDefaultTitle } from "@/lib/utils/inferMaterialType";
+import {
+  inferMaterialType,
+  generateDefaultTitle,
+} from "@/lib/utils/inferMaterialType";
 import { CreateMaterialFileForm } from "@/api/materials.api";
 import {
   VisibilityEnum,
@@ -48,6 +59,7 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
   const [folderId, setFolderId] = useState<string>(propFolderId || "");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const folderInputRef = useRef<HTMLInputElement>(null);
   const previewUploadInputRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -155,6 +167,31 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       handleFile(e.target.files[0]);
+    }
+  };
+
+  const handleFolderInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const fileList = Array.from(e.target.files);
+
+      if (fileList.length === 0) {
+        toast.error("No files found in the selected folder");
+        return;
+      }
+
+      if (fileList.length === 1) {
+        // Single file in folder, handle normally
+        handleFile(fileList[0]);
+      } else {
+        // Multiple files - suggest batch upload
+        toast.error(
+          `Selected folder contains ${fileList.length} files. Please use Batch Upload for multiple files.`,
+          { duration: 5000 }
+        );
+      }
+
+      // Reset input
+      e.target.value = "";
     }
   };
 
@@ -340,7 +377,9 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
                     }}
                   />
                 ) : (
-                  <File01Icon
+                  <HugeiconsIcon
+                    icon={File01Icon}
+                    strokeWidth={1.5}
                     size={40}
                     className="text-brand mx-auto sm:w-12 sm:h-12"
                   />
@@ -368,7 +407,9 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
             </div>
           ) : (
             <div className="space-y-3">
-              <UploadSquare01Icon
+              <HugeiconsIcon
+                icon={UploadSquare01Icon}
+                strokeWidth={1.5}
                 size={40}
                 className="text-gray-400 mx-auto sm:w-12 sm:h-12"
               />
@@ -390,13 +431,30 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
             onChange={handleFileInput}
             className="hidden"
           />
+          <input
+            ref={folderInputRef}
+            type="file"
+            // @ts-ignore - webkitdirectory is not in the standard but widely supported
+            webkitdirectory=""
+            directory=""
+            onChange={handleFolderInput}
+            className="hidden"
+          />
 
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="mt-4 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors"
-          >
-            Choose File
-          </button>
+          <div className="mt-4 flex gap-2 flex-wrap justify-center">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors"
+            >
+              Choose File
+            </button>
+            <button
+              onClick={() => folderInputRef.current?.click()}
+              className="px-4 py-2 bg-brand/10 text-brand border border-brand rounded-lg hover:bg-brand/20 transition-colors"
+            >
+              Choose Folder
+            </button>
+          </div>
         </div>
       </div>
 
@@ -467,7 +525,7 @@ const Step2FileUpload: React.FC<Step2FileUploadProps> = ({
             onClick={onBack}
             className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2"
           >
-            <ArrowLeft01Icon size={16} />
+            <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={1.5} size={16} />
             <span>Back</span>
           </button>
         )}

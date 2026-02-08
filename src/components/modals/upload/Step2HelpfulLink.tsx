@@ -1,13 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import {
-  Link01Icon,
-  ArrowLeft01Icon,
-  Tag01Icon,
-  Download01Icon,
-  ArrowDown01Icon,
-  Alert02Icon,
-} from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Alert02Icon, ArrowDown01Icon, ArrowLeft01Icon, Download01Icon, Link01Icon, Tag01Icon } from "@hugeicons/core-free-icons";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -462,7 +456,7 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
               className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors"
             />
             <div className="absolute right-3 top-1/2 -translate-y-1/2">
-              <Link01Icon size={16} className="text-gray-400" />
+              <HugeiconsIcon icon={Link01Icon} strokeWidth={1.5} size={16} className="text-gray-400" />
             </div>
           </div>
           {errors.url && (
@@ -497,7 +491,7 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
               <div className="flex items-center justify-center p-6 bg-yellow-50 rounded-lg border-2 border-dashed border-yellow-300">
                 <div className="text-center">
                   <div className="mb-2 flex justify-center">
-                    <Alert02Icon size={32} className="text-yellow-600" />
+                    <HugeiconsIcon icon={Alert02Icon} strokeWidth={1.5} size={32} className="text-yellow-600" />
                   </div>
                   <p className="text-sm text-yellow-700 font-medium">
                     Invalid URL format
@@ -580,10 +574,9 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
                 ) : (
                   <div className="flex items-center justify-center p-6 bg-white rounded-lg border-2 border-dashed border-gray-300">
                     <div className="text-center">
-                      <Link01Icon
+                      <HugeiconsIcon icon={Link01Icon} strokeWidth={1.5}
                         size={32}
-                        className="text-gray-400 mx-auto mb-2"
-                      />
+                        className="text-gray-400 mx-auto mb-2" />
                       <p className="text-sm text-gray-600 font-medium">
                         {getUrlHostname(watchedValues.url)}
                       </p>
@@ -666,7 +659,7 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
             onClick={onBack}
             className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2"
           >
-            <ArrowLeft01Icon size={16} />
+            <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={1.5} size={16} />
             <span>Back</span>
           </button>
         )}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import MaterialsLayout from "@/components/dashboard/MaterialsLayout";
 import GridMaterialsSection from "@/components/dashboard/GridMaterialsSection";
 import { getMaterialRecommendations } from "@/api/materials.api";
@@ -7,6 +8,7 @@ import { toast } from "sonner";
 import { mapRecommendationToMaterial } from "@/components/dashboard/MaterialsSection";
 
 const Recommendations: React.FC = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [allMaterials, setAllMaterials] = useState<Material[]>([]);
   const [filteredMaterials, setFilteredMaterials] = useState<Material[]>([]);
@@ -72,8 +74,8 @@ const Recommendations: React.FC = () => {
     console.log(`Share material ${materialId}`);
   };
 
-  const handleRead = (materialId: string) => {
-    console.log(`Read material ${materialId}`);
+  const handleRead = (slug: string) => {
+    navigate(`/dashboard/material/${slug}`);
   };
 
   return (

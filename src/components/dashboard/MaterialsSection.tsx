@@ -1,11 +1,12 @@
 import Pic from "../../../public/placeholder.svg";
 import { Material } from "../../lib/types/material.types";
 import React, { useEffect, useRef, useState, useMemo } from "react";
+import { HugeiconsIcon } from "@hugeicons/react";
 import {
+  ArrowLeft01Icon,
   ArrowRight01Icon,
   SortingAZ02Icon,
-  ArrowLeft01Icon,
-} from "hugeicons-react";
+} from "@hugeicons/core-free-icons";
 import MaterialCard from "./MaterialCard";
 import MaterialCardSkeleton from "./MaterialCardSkeleton";
 import EmptyState from "./EmptyState";
@@ -115,7 +116,7 @@ type MaterialsSectionProps = {
     | "uploads";
   onEmptyStateAction?: () => void;
   isLoading?: boolean;
-  layout?: "rail" | "grid"; // rail = horizontal scroll, grid = 2-row grid
+  layout?: "rail" | "grid"; // rail = horizontal scroll, grid = 3-row grid
   onEdit?: (material: Material) => void; // For user uploads - edit material
   onDelete?: (id: string) => void; // For user uploads - delete material
   showEditDelete?: boolean; // Show edit/delete actions on cards
@@ -232,12 +233,12 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
     updateScrollButtons();
     const onResize = () => updateScrollButtons();
     window.addEventListener("resize", onResize);
-    
+
     // Re-check when materials change (with small delay to ensure DOM has updated)
     const timer = setTimeout(() => {
       updateScrollButtons();
     }, 100);
-    
+
     return () => {
       window.removeEventListener("resize", onResize);
       clearTimeout(timer);
@@ -267,11 +268,11 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
 
   // Combine loading states
   const isActuallyLoading = loading || isLoading;
-  
+
   if (error) {
     return <div className="py-8 text-center text-red-500">{error}</div>;
   }
-  
+
   // Show skeletons when loading
   if (isActuallyLoading) {
     const skeletonCount = layout === "grid" ? 8 : 5;
@@ -286,11 +287,16 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
             >
               View All
-              <ArrowRight01Icon size={16} className="text-gray-500" />
+              <HugeiconsIcon
+                icon={ArrowRight01Icon}
+                strokeWidth={1.5}
+                size={16}
+                className="text-gray-500"
+              />
             </button>
           )}
         </div>
-        
+
         {/* Skeleton Grid/Rail */}
         {layout === "grid" ? (
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -308,7 +314,7 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
       </section>
     );
   }
-  
+
   // Only show empty state when NOT loading AND no materials
   if (!sortedMaterials || sortedMaterials.length === 0) {
     return (
@@ -325,7 +331,12 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
                   className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
                   aria-label="Sort materials"
                 >
-                  <SortingAZ02Icon size={18} className="text-gray-600" />
+                  <HugeiconsIcon
+                    icon={SortingAZ02Icon}
+                    strokeWidth={1.5}
+                    size={18}
+                    className="text-gray-600"
+                  />
                 </button>
 
                 {/* Sort Options Dropdown */}
@@ -392,7 +403,12 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
               >
                 View All
-                <ArrowRight01Icon size={16} className="text-gray-500" />
+                <HugeiconsIcon
+                  icon={ArrowRight01Icon}
+                  strokeWidth={1.5}
+                  size={16}
+                  className="text-gray-500"
+                />
               </button>
             )}
           </div>
@@ -421,7 +437,12 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
                 className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
                 aria-label="Sort materials"
               >
-                <SortingAZ02Icon size={18} className="text-gray-600" />
+                <HugeiconsIcon
+                  icon={SortingAZ02Icon}
+                  strokeWidth={1.5}
+                  size={18}
+                  className="text-gray-600"
+                />
               </button>
 
               {/* Sort Options Dropdown */}
@@ -488,17 +509,22 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
             >
               View All
-              <ArrowRight01Icon size={16} className="text-gray-500" />
+              <HugeiconsIcon
+                icon={ArrowRight01Icon}
+                strokeWidth={1.5}
+                size={16}
+                className="text-gray-500"
+              />
             </button>
           )}
         </div>
       </div>
 
-      {/* Materials display - either rail (horizontal scroll) or grid (2 rows) */}
+      {/* Materials display - either rail (horizontal scroll) or grid (3 rows) */}
       {layout === "grid" ? (
-        // Grid layout - 2 rows with responsive columns
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 grid-rows-2">
-          {sortedMaterials.slice(0, 12).map((material) => (
+        // Grid layout - 3 rows with responsive columns
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 grid-rows-3">
+          {sortedMaterials.slice(0, 18).map((material) => (
             <MaterialCard
               key={material.id}
               material={material}
@@ -529,7 +555,12 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
               className="absolute -left-3 sm:-left-4 top-1/2 -translate-y-1/2 z-modal p-2 bg-white/90 backdrop-blur rounded-full shadow-md border border-gray-200 hover:bg-white transition-opacity"
               aria-label="Scroll left"
             >
-              <ArrowLeft01Icon size={16} className="text-brand" />
+              <HugeiconsIcon
+                icon={ArrowLeft01Icon}
+                strokeWidth={1.5}
+                size={16}
+                className="text-brand"
+              />
             </button>
           )}
 
@@ -540,7 +571,12 @@ const MaterialsSection: React.FC<MaterialsSectionProps> = ({
               className="absolute -right-3 sm:-right-4 top-1/2 -translate-y-1/2 z-modal p-2 bg-white/90 backdrop-blur rounded-full shadow-md border border-gray-200 hover:bg-white transition-opacity"
               aria-label="Scroll right"
             >
-              <ArrowRight01Icon size={16} className="text-brand" />
+              <HugeiconsIcon
+                icon={ArrowRight01Icon}
+                strokeWidth={1.5}
+                size={16}
+                className="text-brand"
+              />
             </button>
           )}
 

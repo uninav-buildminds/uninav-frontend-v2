@@ -14,7 +14,8 @@ import React, { useState, useCallback, useEffect, useRef } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import { Button } from "@/components/ui/button";
 import { ZoomIn, ZoomOut } from "lucide-react";
-import { Alert02Icon } from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Alert02Icon } from "@hugeicons/core-free-icons";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
@@ -228,7 +229,12 @@ const ReactPdfViewer: React.FC<ReactPdfViewerProps> = ({
             <div className="flex items-center justify-center h-full text-white">
               <div className="text-center max-w-md px-4">
                 <div className="mb-4 flex justify-center">
-                  <Alert02Icon size={48} className="text-white" />
+                  <HugeiconsIcon
+                    icon={Alert02Icon}
+                    strokeWidth={1.5}
+                    size={48}
+                    className="text-white"
+                  />
                 </div>
                 <p className="text-lg font-medium mb-2">Failed to load PDF</p>
                 <p className="text-sm opacity-80">

@@ -1,7 +1,8 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Logout01Icon, Cancel01Icon, Alert02Icon } from 'hugeicons-react';
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Alert02Icon, Cancel01Icon, Logout01Icon } from "@hugeicons/core-free-icons";
 
 interface LogoutModalProps {
   isOpen: boolean;
@@ -45,7 +46,7 @@ export const LogoutModal: React.FC<LogoutModalProps> = ({
               onClick={onClose}
               className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200 z-10"
             >
-              <Cancel01Icon size={20} className="text-gray-500" />
+              <HugeiconsIcon icon={Cancel01Icon} strokeWidth={1.5} size={20} className="text-gray-500" />
             </button>
 
             {/* Modal content */}
@@ -53,7 +54,7 @@ export const LogoutModal: React.FC<LogoutModalProps> = ({
               {/* Icon */}
               <div className="flex justify-center mb-4">
                 <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center">
-                  <Alert02Icon size={32} className="text-red-500" />
+                  <HugeiconsIcon icon={Alert02Icon} strokeWidth={1.5} size={32} className="text-red-500" />
                 </div>
               </div>
 
@@ -80,7 +81,7 @@ export const LogoutModal: React.FC<LogoutModalProps> = ({
                   onClick={onConfirm}
                   className="flex-1 px-4 py-3 text-white bg-red-500 rounded-xl hover:bg-red-600 transition-colors duration-200 font-medium flex items-center justify-center gap-2"
                 >
-                  <Logout01Icon size={18} />
+                  <HugeiconsIcon icon={Logout01Icon} strokeWidth={1.5} size={18} />
                   Logout
                 </button>
               </div>

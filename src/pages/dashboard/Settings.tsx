@@ -1,15 +1,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import {
-  ArrowLeft01Icon,
-  Settings01Icon,
-  FolderLibraryIcon,
-  Notification01Icon,
-  SquareLock02Icon,
-  Database01Icon,
-  ArrowRight02Icon,
-  Search01Icon,
-} from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowLeft01Icon, ArrowRight02Icon, Database01Icon, FolderLibraryIcon, Notification01Icon, Search01Icon, Settings01Icon, SquareLock02Icon } from "@hugeicons/core-free-icons";
 import SettingsNav from "@/components/settings/SettingsNav";
 import SettingsPanel from "@/components/settings/SettingsPanel";
 import type { SettingsSectionKey } from "@/components/settings/types";
@@ -77,7 +69,7 @@ const SettingsPage: React.FC = () => {
                     onClick={handleBackToList}
                     className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
                 >
-                  <ArrowLeft01Icon size={18} />
+                  <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={1.5} size={18} />
                     Back
                 </button>
               </div>
@@ -102,7 +94,7 @@ const SettingsPage: React.FC = () => {
 
               <div className="max-w-6xl mx-auto w-full relative z-10 mt-6 flex justify-center">
                 <div className="flex items-center gap-2 bg-white rounded-full border border-gray-200 px-3 py-2 w-full max-w-xl">
-                  <Search01Icon size={16} className="text-gray-400" />
+                  <HugeiconsIcon icon={Search01Icon} strokeWidth={1.5} size={16} className="text-gray-400" />
                   <input
                     placeholder="Search settings..."
                     className="w-full bg-transparent outline-none text-sm"
@@ -137,7 +129,7 @@ const SettingsPage: React.FC = () => {
                     className="flex items-center justify-center w-8 h-8 rounded-full bg-brand text-white hover:bg-brand/90"
                     aria-label="Search"
                   >
-                    <ArrowRight02Icon size={16} />
+                    <HugeiconsIcon icon={ArrowRight02Icon} strokeWidth={1.5} size={16} />
                   </button>
                 </div>
               </div>
@@ -158,9 +150,11 @@ const SettingsPage: React.FC = () => {
                     onClick={() => handleSectionClick(key)}
                     className="w-full flex items-center gap-3 px-4 py-4 hover:bg-gray-50 transition-colors"
                   >
-                    <Icon 
-                      size={20} 
-                      className={active === key ? "text-brand" : "text-gray-600"} 
+                    <HugeiconsIcon
+                      icon={Icon}
+                      strokeWidth={1.5}
+                      size={20}
+                      className={active === key ? "text-brand" : "text-gray-600"}
                     />
                     <span className={`flex-1 text-left text-sm font-medium ${
                       active === key ? "text-brand" : "text-gray-900"

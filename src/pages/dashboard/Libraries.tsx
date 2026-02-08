@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { FolderAddIcon, PreferenceHorizontalIcon } from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  FolderAddIcon,
+  PreferenceHorizontalIcon,
+} from "@hugeicons/core-free-icons";
 import PageHeader from "@/components/dashboard/PageHeader";
 import FolderCard from "@/components/dashboard/FolderCard";
 import FolderModal from "@/components/modals/FolderModal";
@@ -98,6 +102,7 @@ const Libraries: React.FC = () => {
       const response = await searchMaterials({
         creatorId: user.id,
         limit: 100,
+        saveHistory: false, // Don't save - this is fetching user uploads, not a search
       });
 
       const uploads =
@@ -689,7 +694,12 @@ const Libraries: React.FC = () => {
               className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
               aria-label="Filter"
             >
-              <PreferenceHorizontalIcon size={18} className="text-gray-600" />
+              <HugeiconsIcon
+                icon={PreferenceHorizontalIcon}
+                strokeWidth={1.5}
+                size={18}
+                className="text-gray-600"
+              />
             </button>
             {showFolders && (
               <button
@@ -697,7 +707,11 @@ const Libraries: React.FC = () => {
                 className="p-3 rounded-full bg-brand text-white hover:bg-brand/90 transition-colors shadow-lg hover:shadow-xl"
                 aria-label="Create folder"
               >
-                <FolderAddIcon size={18} />
+                <HugeiconsIcon
+                  icon={FolderAddIcon}
+                  strokeWidth={1.5}
+                  size={18}
+                />
               </button>
             )}
           </div>
@@ -797,7 +811,11 @@ const Libraries: React.FC = () => {
                   onClick={handleCreateFolder}
                   className="inline-flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand/90"
                 >
-                  <FolderAddIcon size={18} />
+                  <HugeiconsIcon
+                    icon={FolderAddIcon}
+                    strokeWidth={1.5}
+                    size={18}
+                  />
                   Create Your First Folder
                 </button>
               )}

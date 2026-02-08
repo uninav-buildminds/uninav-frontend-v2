@@ -9,7 +9,8 @@ import {
   MenubarTrigger,
 } from "./ui/menubar";
 import AuthContext from "@/context/authentication/AuthContext";
-import { ArrowRight01Icon } from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowRight01Icon } from "@hugeicons/core-free-icons";
 
 const ChevronDownIcon = () => (
   <svg
@@ -192,7 +193,7 @@ const Header: React.FC = () => {
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     <span>Dashboard</span>
-                    <ArrowRight01Icon size={18} />
+                    <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={1.5} size={18} />
                   </a>
                 </>
               )}

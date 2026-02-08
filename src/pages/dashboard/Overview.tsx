@@ -5,19 +5,21 @@ import MetricsSection from "@/components/dashboard/MetricsSection";
 import MaterialsSection from "@/components/dashboard/MaterialsSection";
 import SearchResults from "@/components/dashboard/SearchResults";
 import { UploadModal } from "@/components/modals";
+import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Award01Icon,
-  UploadSquare01Icon,
-  DownloadSquare01Icon,
   Bookmark01Icon,
-} from "hugeicons-react";
+  DownloadSquare01Icon,
+  UploadSquare01Icon,
+} from "@hugeicons/core-free-icons";
 import {
   getMaterialRecommendations,
   getRecentMaterials,
-  searchMaterials,
+  searchMaterialsAndFolders,
 } from "@/api/materials.api";
 import { getUserPoints } from "@/api/points.api";
 import { Material } from "@/lib/types/material.types";
+import { Folder } from "@/api/folder.api";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
@@ -56,20 +58,21 @@ const Overview: React.FC = () => {
 
   // Search state - initialize from URL params
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
-  const [searchResults, setSearchResults] =
-    useState<SearchResult<Material> | null>(null);
+  const [searchResults, setSearchResults] = useState<SearchResult<
+    Material | Folder
+  > | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [searchSuggestions, setSearchSuggestions] = useState<
     SearchSuggestion[]
   >([]);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
-  const [advancedSearchEnabled, setAdvancedSearchEnabled] = useState(false);
   const [searchMetadata, setSearchMetadata] = useState<{
     total: number;
     page: number;
     totalPages: number;
     usedAdvanced: boolean;
+    isAdvancedSearch?: boolean;
   } | null>(null);
 
   const handleViewAll = (section: string) => {
@@ -92,6 +95,10 @@ const Overview: React.FC = () => {
     navigate(`/dashboard/material/${slug}`);
   };
 
+  const handleFolderClick = (slug: string) => {
+    navigate(`/dashboard/folder/${slug}`);
+  };
+
   // Debounce timer ref
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -104,7 +111,7 @@ const Overview: React.FC = () => {
     }
   }, []); // Run only once on mount
 
-  // Autocomplete search (lightweight - no advancedSearch, no ignorePreference)
+  // Autocomplete search (lightweight - no ignorePreference)
   const handleSearchInput = useCallback((query: string) => {
     setSearchQuery(query);
 
@@ -136,24 +143,32 @@ const Overview: React.FC = () => {
     // Debounce the API call (300ms)
     debounceTimerRef.current = setTimeout(async () => {
       try {
-        const response = await searchMaterials({
+        const response = await searchMaterialsAndFolders({
           query: query.trim(),
           limit: 5,
           page: 1,
-          // No advancedSearch, no ignorePreference for autocomplete
+          saveHistory: false, // Don't save autocomplete queries to history
+          includeFolders: true, // Include folders in autocomplete
+          // No ignorePreference for autocomplete - let backend handle search automatically
         });
 
         if (response.status === "success" && response.data?.items) {
           const suggestions = response.data.items
             .slice(0, 5)
-            .map((material: Material) => ({
-              id: material.id,
-              title: material.label,
-              type: "material" as SearchSuggestion["type"],
-              subtitle:
-                material.targetCourse?.courseCode ||
-                material.description?.slice(0, 50),
-            }));
+            .map((item: Material | Folder) => {
+              const isFolder = "_type" in item && item._type === "folder";
+              return {
+                id: item.id,
+                title: item.label,
+                type: (isFolder
+                  ? "folder"
+                  : "material") as SearchSuggestion["type"],
+                subtitle: isFolder
+                  ? `${(item as any).materialCount || 0} materials`
+                  : (item as Material).targetCourse?.courseCode ||
+                    (item as Material).description?.slice(0, 50),
+              };
+            });
           setSearchSuggestions(suggestions);
         } else {
           setSearchSuggestions([]);
@@ -177,71 +192,62 @@ const Overview: React.FC = () => {
   }, []);
 
   // Full search - backend handles automatic fallback to advanced search
-  const handleSearch = useCallback(
-    async (query: string) => {
-      if (!query.trim()) {
-        setIsSearchActive(false);
-        setSearchResults(null);
-        setSearchMetadata(null);
-        return;
-      }
+  const handleSearch = useCallback(async (query: string) => {
+    if (!query.trim()) {
+      setIsSearchActive(false);
+      setSearchResults(null);
+      setSearchMetadata(null);
+      return;
+    }
 
-      setIsSearching(true);
-      setIsSearchActive(true);
-      setSearchQuery(query);
-      // Update URL params
-      setSearchParams({ q: query.trim() });
+    setIsSearching(true);
+    setIsSearchActive(true);
+    setSearchQuery(query);
+    // Update URL params
+    setSearchParams({ q: query.trim() });
 
-      try {
-        // Backend automatically falls back to advanced search if normal search returns no results
-        const response = await searchMaterials({
-          query: query.trim(),
-          limit: 10,
-          page: 1,
-          advancedSearch: advancedSearchEnabled, // Only use if user explicitly toggled it
+    try {
+      // Backend automatically handles seamless advanced search when needed
+      const response = await searchMaterialsAndFolders({
+        query: query.trim(),
+        limit: 10,
+        page: 1,
+        saveHistory: true, // Save actual user searches to history
+        includeFolders: true, // Include folders in main search
+      });
+
+      if (response.status === "success" && response.data?.items) {
+        setSearchResults(response.data);
+        // Get metadata from response
+        const usedAdvanced = (response.data as any).usedAdvanced || false;
+        const isAdvancedSearch =
+          (response.data as any).isAdvancedSearch || false;
+
+        setSearchMetadata({
+          total: response.data.pagination.total,
+          page: response.data.pagination.page,
+          totalPages: response.data.pagination.totalPages,
+          usedAdvanced,
+          isAdvancedSearch,
         });
 
-        if (response.status === "success" && response.data?.items) {
-          setSearchResults(response.data);
-          // Get usedAdvanced from response (backend may have auto-fallback)
-          const usedAdvanced =
-            (response.data as any).usedAdvanced || advancedSearchEnabled;
-          setSearchMetadata({
-            total: response.data.pagination.total,
-            page: response.data.pagination.page,
-            totalPages: response.data.pagination.totalPages,
-            usedAdvanced,
-          });
-
-          // Show info if backend auto-used advanced search
-          if (usedAdvanced && !advancedSearchEnabled) {
-            toast.info("Using advanced search to find more results");
-          }
-        } else {
-          setSearchResults(null);
-          setSearchMetadata(null);
+        // Show info if backend auto-used advanced search
+        if (usedAdvanced && !isAdvancedSearch) {
+          toast.info("Using enhanced search to find more results");
         }
-      } catch (error: any) {
-        console.error("Error searching materials:", error);
-        toast.error(error.message || "Search failed. Please try again.");
+      } else {
         setSearchResults(null);
         setSearchMetadata(null);
-      } finally {
-        setIsSearching(false);
       }
-    },
-    [advancedSearchEnabled]
-  );
-
-  // Toggle advanced search - re-run search with new setting
-  const toggleAdvancedSearch = useCallback(() => {
-    const newValue = !advancedSearchEnabled;
-    setAdvancedSearchEnabled(newValue);
-    // If there's an active search, re-run it with the new setting
-    if (searchQuery.trim() && isSearchActive) {
-      handleSearch(searchQuery);
+    } catch (error: any) {
+      console.error("Error searching materials:", error);
+      toast.error(error.message || "Search failed. Please try again.");
+      setSearchResults(null);
+      setSearchMetadata(null);
+    } finally {
+      setIsSearching(false);
     }
-  }, [advancedSearchEnabled, searchQuery, isSearchActive, handleSearch]);
+  }, []);
 
   // Load metrics data on component mount
   useEffect(() => {
@@ -262,16 +268,23 @@ const Overview: React.FC = () => {
     loadMetrics();
   }, []);
 
+  // Metrics cards configuration for the overview dashboard
   const metrics = [
     {
-      icon: <Award01Icon size={20} />,
+      icon: <HugeiconsIcon icon={Award01Icon} strokeWidth={1.5} size={20} />,
       title: "Your Points",
       value: pointsPercentage,
       description:
         "Earned from reading and uploading materials. Upload 3 more materials to unlock Ad‑Free Week",
     },
     {
-      icon: <DownloadSquare01Icon size={20} />,
+      icon: (
+        <HugeiconsIcon
+          icon={DownloadSquare01Icon}
+          strokeWidth={1.5}
+          size={20}
+        />
+      ),
       title: "Total Downloads",
       value: user?.downloadCount?.toString() || "0",
       description:
@@ -280,7 +293,9 @@ const Overview: React.FC = () => {
           : "You have downloaded helpful materials. You're on track to complete academic goals",
     },
     {
-      icon: <UploadSquare01Icon size={20} />,
+      icon: (
+        <HugeiconsIcon icon={UploadSquare01Icon} strokeWidth={1.5} size={20} />
+      ),
       title: "Total Uploads",
       value: user?.uploadCount?.toString() || "0",
       description:
@@ -289,7 +304,7 @@ const Overview: React.FC = () => {
           : "You have helped a lot of students. You're making a real difference",
     },
     {
-      icon: <Bookmark01Icon size={20} />,
+      icon: <HugeiconsIcon icon={Bookmark01Icon} strokeWidth={1.5} size={20} />,
       title: "Saved Materials",
       value: user?.bookmarkCount?.toString() || "0",
       description:
@@ -300,6 +315,10 @@ const Overview: React.FC = () => {
             }. Access them anytime from your bookmarks`,
     },
   ];
+
+  // Decide when to render the Recent Materials section (keep while loading, hide when fetched and empty)
+  const shouldShowRecentMaterials =
+    isLoadingRecent || (recentMaterials && recentMaterials.length > 0);
 
   return (
     <>
@@ -320,10 +339,9 @@ const Overview: React.FC = () => {
               results={searchResults}
               isSearching={isSearching}
               metadata={searchMetadata}
-              advancedSearchEnabled={advancedSearchEnabled}
-              onToggleAdvancedSearch={toggleAdvancedSearch}
               onShare={handleShare}
               onRead={handleRead}
+              onFolderClick={handleFolderClick}
               onClearSearch={() => {
                 setSearchQuery("");
                 setIsSearchActive(false);
@@ -346,21 +364,23 @@ const Overview: React.FC = () => {
 
             {/* Content Sections */}
             <div className="mt-8 space-y-8 pb-16 md:pb-0">
-              {/* Recent Materials */}
-              <MaterialsSection
-                title="Recent Materials"
-                materials={isLoadingRecent ? [] : recentMaterials || []}
-                onViewAll={() => handleViewAll("recent materials")}
-                onFilter={() => handleFilter("recent materials")}
-                onShare={handleShare}
-                onRead={handleRead}
-                scrollStep={280}
-                preserveOrder={true}
-                isLoading={isLoadingRecent}
-                emptyStateType="recent"
-              />
+              {/* Recent Materials - only show when loading or when there are items */}
+              {shouldShowRecentMaterials && (
+                <MaterialsSection
+                  title="Recent Materials"
+                  materials={isLoadingRecent ? [] : recentMaterials || []}
+                  onViewAll={() => handleViewAll("recent materials")}
+                  onFilter={() => handleFilter("recent materials")}
+                  onShare={handleShare}
+                  onRead={handleRead}
+                  scrollStep={280}
+                  preserveOrder={true}
+                  isLoading={isLoadingRecent}
+                  emptyStateType="recent"
+                />
+              )}
 
-              {/* Recommendations - Grid layout with 2 rows */}
+              {/* Recommendations - Grid layout with 3 rows */}
               <MaterialsSection
                 title="Recommendations"
                 materials={

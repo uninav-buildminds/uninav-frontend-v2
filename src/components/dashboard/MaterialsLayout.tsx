@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft01Icon } from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
 import PageHeader from "./PageHeader";
 
 interface MaterialsLayoutProps {
@@ -45,7 +46,7 @@ const MaterialsLayout: React.FC<MaterialsLayoutProps> = ({
             className="md:hidden fixed left-3 sm:left-4 top-3 sm:top-4 z-50 p-2 sm:p-2.5 bg-white/90 backdrop-blur hover:bg-white border border-gray-200 rounded-full shadow-lg transition-all duration-200 hover:scale-105 active:scale-95"
             aria-label="Go back"
           >
-            <ArrowLeft01Icon size={18} className="text-gray-700" />
+            <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={1.5} size={18} className="text-gray-700" />
           </button>
           {/* Desktop: Inline button in header area */}
           <div className="hidden md:block absolute left-4 sm:left-6 top-16 sm:top-20 z-10">
@@ -53,7 +54,7 @@ const MaterialsLayout: React.FC<MaterialsLayoutProps> = ({
               onClick={handleBack}
               className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              <ArrowLeft01Icon size={18} />
+              <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={1.5} size={18} />
               <span>Back</span>
             </button>
           </div>

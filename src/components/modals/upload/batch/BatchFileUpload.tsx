@@ -1,17 +1,18 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { HugeiconsIcon } from "@hugeicons/react";
 import {
-  UploadSquare01Icon,
-  File01Icon,
+  AlertCircleIcon,
+  ArrowLeft01Icon,
   Cancel01Icon,
   CheckmarkCircle02Icon,
+  File01Icon,
+  FileAttachmentIcon,
   Loading03Icon,
-  AlertCircleIcon,
   Pdf01Icon,
   PresentationBarChart01Icon,
-  FileAttachmentIcon,
-  ArrowLeft01Icon,
-} from "hugeicons-react";
+  UploadSquare01Icon,
+} from "@hugeicons/core-free-icons";
 import { toast } from "sonner";
 import {
   BatchCreateMaterialsResponse,
@@ -109,15 +110,43 @@ async function generatePdfThumbnail(
 // Get file icon based on type
 const getFileIcon = (file: File) => {
   if (file.type === "application/pdf") {
-    return <Pdf01Icon size={24} className="text-red-500" />;
+    return (
+      <HugeiconsIcon
+        icon={Pdf01Icon}
+        strokeWidth={1.5}
+        size={24}
+        className="text-red-500"
+      />
+    );
   }
   if (file.type.includes("presentation") || file.name.match(/\.pptx?$/i)) {
-    return <PresentationBarChart01Icon size={24} className="text-orange-500" />;
+    return (
+      <HugeiconsIcon
+        icon={PresentationBarChart01Icon}
+        strokeWidth={1.5}
+        size={24}
+        className="text-orange-500"
+      />
+    );
   }
   if (file.type.includes("word") || file.name.match(/\.docx?$/i)) {
-    return <FileAttachmentIcon size={24} className="text-blue-500" />;
+    return (
+      <HugeiconsIcon
+        icon={FileAttachmentIcon}
+        strokeWidth={1.5}
+        size={24}
+        className="text-blue-500"
+      />
+    );
   }
-  return <File01Icon size={24} className="text-gray-400" />;
+  return (
+    <HugeiconsIcon
+      icon={File01Icon}
+      strokeWidth={1.5}
+      size={24}
+      className="text-gray-400"
+    />
+  );
 };
 
 const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
@@ -139,6 +168,7 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
   } | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const folderInputRef = useRef<HTMLInputElement>(null);
 
   const generateId = () => Math.random().toString(36).substring(2, 9);
 
@@ -268,6 +298,30 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
     }
   };
 
+  const handleFolderInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const fileList = Array.from(e.target.files);
+      const supportedFiles = fileList.filter((file) =>
+        file.name.match(/\.(pdf|pptx?|docx?)$/i)
+      );
+
+      if (supportedFiles.length === 0) {
+        toast.error("No supported files found in the selected folder");
+      } else if (supportedFiles.length < fileList.length) {
+        toast.info(
+          `Found ${supportedFiles.length} supported file(s) out of ${fileList.length} total files`,
+          { duration: 3000 }
+        );
+      }
+
+      if (supportedFiles.length > 0) {
+        handleFiles(supportedFiles);
+      }
+
+      e.target.value = ""; // Reset input
+    }
+  };
+
   const updateFileTitle = (id: string, title: string) => {
     setFiles((prev) => prev.map((f) => (f.id === id ? { ...f, title } : f)));
   };
@@ -356,11 +410,32 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
   const getStatusIcon = (status: BatchFileItem["status"]) => {
     switch (status) {
       case "uploading":
-        return <Loading03Icon size={16} className="text-brand animate-spin" />;
+        return (
+          <HugeiconsIcon
+            icon={Loading03Icon}
+            strokeWidth={1.5}
+            size={16}
+            className="text-brand animate-spin"
+          />
+        );
       case "success":
-        return <CheckmarkCircle02Icon size={16} className="text-green-500" />;
+        return (
+          <HugeiconsIcon
+            icon={CheckmarkCircle02Icon}
+            strokeWidth={1.5}
+            size={16}
+            className="text-green-500"
+          />
+        );
       case "error":
-        return <AlertCircleIcon size={16} className="text-red-500" />;
+        return (
+          <HugeiconsIcon
+            icon={AlertCircleIcon}
+            strokeWidth={1.5}
+            size={16}
+            className="text-red-500"
+          />
+        );
       default:
         return null;
     }
@@ -380,7 +455,12 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
         onDragOver={handleDrag}
         onDrop={handleDrop}
       >
-        <UploadSquare01Icon size={40} className="text-gray-400 mx-auto mb-3" />
+        <HugeiconsIcon
+          icon={UploadSquare01Icon}
+          strokeWidth={1.5}
+          size={40}
+          className="text-gray-400 mx-auto mb-3"
+        />
         <p className="text-sm font-medium text-gray-900">
           Drag and drop files here, or click to select
         </p>
@@ -395,13 +475,31 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
           onChange={handleFileInput}
           className="hidden"
         />
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          disabled={isUploading}
-          className="mt-4 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors disabled:opacity-50"
-        >
-          Select Files
-        </button>
+        <input
+          ref={folderInputRef}
+          type="file"
+          // @ts-ignore - webkitdirectory is not in the standard but widely supported
+          webkitdirectory=""
+          directory=""
+          onChange={handleFolderInput}
+          className="hidden"
+        />
+        <div className="mt-4 flex gap-2 flex-wrap justify-center">
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+            className="px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors disabled:opacity-50"
+          >
+            Select Files
+          </button>
+          <button
+            onClick={() => folderInputRef.current?.click()}
+            disabled={isUploading}
+            className="px-4 py-2 bg-brand/10 text-brand border border-brand rounded-lg hover:bg-brand/20 transition-colors disabled:opacity-50"
+          >
+            Select Folder
+          </button>
+        </div>
       </div>
 
       {/* Files Grid - Horizontal Layout */}
@@ -495,7 +593,12 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
                         onClick={() => removeFile(item.id)}
                         className="p-1 hover:bg-gray-100 rounded transition-colors"
                       >
-                        <Cancel01Icon size={14} className="text-gray-400" />
+                        <HugeiconsIcon
+                          icon={Cancel01Icon}
+                          strokeWidth={1.5}
+                          size={14}
+                          className="text-gray-400"
+                        />
                       </button>
                     )}
                   </div>
@@ -565,7 +668,7 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
             disabled={isUploading}
             className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <ArrowLeft01Icon size={16} />
+            <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={1.5} size={16} />
             <span>Back</span>
           </button>
         )}

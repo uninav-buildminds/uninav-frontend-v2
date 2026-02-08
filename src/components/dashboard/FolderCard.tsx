@@ -1,11 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-import {
-  MoreVerticalIcon,
-  Share08Icon,
-  PencilEdit02Icon,
-  Delete02Icon,
-  FolderAddIcon,
-} from "hugeicons-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Delete02Icon, FolderAddIcon, MoreVerticalIcon, PencilEdit02Icon, Share08Icon } from "@hugeicons/core-free-icons";
 import { Folder } from "@/api/folder.api";
 import {
   DropdownMenu,
@@ -169,7 +164,7 @@ const FolderCard: React.FC<FolderCardProps> = ({
                     aria-label="Folder options"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <MoreVerticalIcon size={16} />
+                    <HugeiconsIcon icon={MoreVerticalIcon} strokeWidth={1.5} size={16} />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
@@ -181,7 +176,7 @@ const FolderCard: React.FC<FolderCardProps> = ({
                     onClick={handleAddToFolderClick}
                     className="flex items-center gap-2 cursor-pointer"
                   >
-                    <FolderAddIcon size={16} />
+                    <HugeiconsIcon icon={FolderAddIcon} strokeWidth={1.5} size={16} />
                     Add to Folder
                   </DropdownMenuItem>
                   {onEdit && (
@@ -192,7 +187,7 @@ const FolderCard: React.FC<FolderCardProps> = ({
                       }}
                       className="flex items-center gap-2 cursor-pointer"
                     >
-                      <PencilEdit02Icon size={16} />
+                      <HugeiconsIcon icon={PencilEdit02Icon} strokeWidth={1.5} size={16} />
                       Edit Name
                     </DropdownMenuItem>
                   )}
@@ -204,7 +199,7 @@ const FolderCard: React.FC<FolderCardProps> = ({
                       }}
                       className="flex items-center gap-2 cursor-pointer"
                     >
-                      <Share08Icon size={16} />
+                      <HugeiconsIcon icon={Share08Icon} strokeWidth={1.5} size={16} />
                       Share Folder
                     </DropdownMenuItem>
                   )}
@@ -216,7 +211,7 @@ const FolderCard: React.FC<FolderCardProps> = ({
                       }}
                       className="flex items-center gap-2 cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
                     >
-                      <Delete02Icon size={16} />
+                      <HugeiconsIcon icon={Delete02Icon} strokeWidth={1.5} size={16} />
                       Delete Folder
                     </DropdownMenuItem>
                   )}
