@@ -9,6 +9,7 @@ import {
   InformationCircleIcon,
 } from "@hugeicons/core-free-icons";
 import { deferredPrompt } from "../../main";
+import {usePostHog} from "@posthog/react";
 
 // ── Platform detection helpers ────────────────────────────────────────────
 
@@ -72,6 +73,7 @@ const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ canShow }) => {
     (Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> }) | null
   >(null);
   const [isInstallable, setIsInstallable] = useState(false);
+  const postHog = usePostHog();
 
   const isIOS = getIsIOS();
   const isAndroid = getIsAndroid();
@@ -147,12 +149,13 @@ const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ canShow }) => {
     const choice = await installPrompt.userChoice;
     if (choice.outcome === "accepted") {
       setVisible(false);
+      postHog?.capture("pwa_installed");
       // Clear dismissal so the banner doesn't come back
       localStorage.removeItem(DISMISS_KEY);
     }
     setInstallPrompt(null);
     setIsInstallable(false);
-  }, [installPrompt]);
+  }, [installPrompt, postHog]);
 
   const handleShowIOSGuide = useCallback(() => {
     setShowIOSGuide((prev) => !prev);

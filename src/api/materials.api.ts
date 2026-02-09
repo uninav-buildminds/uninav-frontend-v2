@@ -354,18 +354,24 @@ export async function searchMaterialsAndFolders(
       };
     }
 
-    const promises = [searchMaterials({ query, page, limit, ...otherParams })];
+    // First fetch materials, then (optionally) fetch folders sequentially
+    const materialsResponse = await searchMaterials({
+      query,
+      page,
+      limit,
+      ...otherParams,
+    });
+
+    let foldersResponse: ResponseSuccess<SearchResult<Folder>> | null = null;
 
     // Only search folders when needed and query is long enough
     if (includeFolders && query.trim().length >= 3) {
-      promises.push(
-        searchFolders({ query: query.trim(), page, limit: Math.min(limit, 5) }) // Limit folders to max 5 per page
-      );
+      foldersResponse = await searchFolders({
+        query: query.trim(),
+        page,
+        limit: Math.min(limit, 5), // Limit folders to max 5 per page
+      });
     }
-
-    const [materialsResponse, foldersResponse] = await Promise.all(
-      promises.length === 2 ? promises : [promises[0], Promise.resolve(null)]
-    );
 
     const materials = materialsResponse.data?.items || [];
     const folders = foldersResponse?.data?.items || [];

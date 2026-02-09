@@ -14,7 +14,8 @@ import { useInView } from "react-intersection-observer";
 
 interface SearchResultsProps {
   query: string;
-  results: SearchResult<Material | Folder>;
+  // Full search results for the initial page; null while first page is loading or on error
+  results: SearchResult<Material | Folder> | null;
   isSearching: boolean;
   metadata: {
     total: number;
@@ -28,6 +29,10 @@ interface SearchResultsProps {
   onFolderClick?: (slug: string) => void;
   onClearSearch: () => void;
   onUpload?: () => void;
+  // Optional error message for failed searches
+  error?: string | null;
+  // Optional retry handler so users can easily retry a failed search
+  onRetry?: () => void;
 }
 
 const SearchResults: React.FC<SearchResultsProps> = ({
@@ -40,6 +45,8 @@ const SearchResults: React.FC<SearchResultsProps> = ({
   onFolderClick,
   onClearSearch,
   onUpload,
+  error,
+  onRetry,
 }) => {
   // Track folder fetch state to stop fetching when folders run out
   const [foldersFetchComplete, setFoldersFetchComplete] = useState(false);
@@ -50,6 +57,9 @@ const SearchResults: React.FC<SearchResultsProps> = ({
   const { entry, ref: infiniteScrollTriggerRef } = useInView({
     threshold: 0.25,
   });
+
+  // Track whether we have an initial page of results to seed the infinite query
+  const hasInitialResults = !!results;
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteQuery({
@@ -94,8 +104,13 @@ const SearchResults: React.FC<SearchResultsProps> = ({
 
         return response.data;
       },
-      initialPageParam: results.pagination.page,
-      initialData: { pages: [results], pageParams: [results.pagination.page] },
+      // When there are no initial results yet (first search still in-flight or error),
+      // avoid seeding the infinite query and let it stay idle.
+      initialPageParam: hasInitialResults ? results.pagination.page : 1,
+      initialData: hasInitialResults
+        ? { pages: [results], pageParams: [results.pagination.page] }
+        : undefined,
+      enabled: hasInitialResults,
       getNextPageParam: (lastPage, allPages) => {
         // Continue if there are more pages
         if (lastPage.pagination.hasMore) {
@@ -154,7 +169,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
 
   // Calculate total items across all pages
   const totalItemsShown =
-    data?.pages.reduce((total, page) => total + page.items.length, 0) || 0;
+    data?.pages?.reduce((total, page) => total + page.items.length, 0) || 0;
 
   return (
     <div className="min-h-[60vh]">
@@ -188,8 +203,40 @@ const SearchResults: React.FC<SearchResultsProps> = ({
         </div>
       )}
 
+      {/* Error State */}
+      {!isSearching && error && (
+        <div className="flex items-center justify-center py-8">
+          <div className="max-w-md w-full rounded-2xl border border-red-100 bg-red-50 px-4 py-5 sm:px-6 sm:py-6 text-center shadow-sm">
+            <p className="text-sm sm:text-base font-medium text-red-700 mb-2">
+              We couldn't complete your search
+            </p>
+            <p className="text-xs sm:text-sm text-red-600 mb-4">
+              {error}
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
+              {onRetry && (
+                <button
+                  type="button"
+                  onClick={onRetry}
+                  className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg bg-brand text-white hover:bg-brand/90 transition-colors duration-200"
+                >
+                  Try again
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={onClearSearch}
+                className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 transition-colors duration-200"
+              >
+                Clear search
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Empty State */}
-      {!isSearching && totalItemsShown === 0 && (
+      {!isSearching && !error && totalItemsShown === 0 && hasInitialResults && (
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
