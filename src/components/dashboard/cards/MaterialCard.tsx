@@ -2,10 +2,10 @@ import React, { useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Delete02Icon, FolderAddIcon, PencilEdit02Icon, Share08Icon } from "@hugeicons/core-free-icons";
 import { toast } from "sonner";
-import { Material } from "../../lib/types/material.types";
-import { formatRelativeTime } from "../../lib/utils";
-import { useBookmarks } from "../../context/bookmark/BookmarkContextProvider";
-import { useMaterialInFolder } from "../../hooks/useMaterialInFolder";
+import { Material } from "@/lib/types/material.types";
+import { formatRelativeTime } from "@/lib/utils";
+import { useBookmarks } from "@/context/bookmark/BookmarkContextProvider";
+import { useMaterialInFolder } from "@/hooks/useMaterialInFolder";
 import {
   Tooltip,
   TooltipContent,

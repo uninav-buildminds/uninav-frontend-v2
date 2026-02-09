@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Add01Icon, FolderLibraryIcon, HelpCircleIcon, Home01Icon, Logout01Icon, Notification01Icon, Settings01Icon, SidebarLeft01Icon, SidebarLeftIcon, UserGroupIcon } from "@hugeicons/core-free-icons";
-import UserRail from "./UserRail";
+import UserRail from "../user/UserRail";
 import { LogoutModal, UploadModal } from "@/components/modals";
 import { panelData } from "@/data/panel";
 import { useAuth } from "@/hooks/useAuth";
-import RecentsList from "./RecentsList";
+import RecentsList from "../lists/RecentsList";
 
 const Sidebar: React.FC = () => {
   const navigate = useNavigate();

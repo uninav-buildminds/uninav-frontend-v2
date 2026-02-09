@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import DashboardHeader from "@/components/dashboard/DashboardHeader";
-import MetricsSection from "@/components/dashboard/MetricsSection";
-import MaterialsSection from "@/components/dashboard/MaterialsSection";
-import SearchResults from "@/components/dashboard/SearchResults";
+import DashboardHeader from "@/components/dashboard/ui/DashboardHeader";
+import MetricsSection from "@/components/dashboard/sections/MetricsSection";
+import MaterialsSection from "@/components/dashboard/sections/MaterialsSection";
+import SearchResults from "@/components/dashboard/ui/SearchResults";
 import { UploadModal } from "@/components/modals";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {

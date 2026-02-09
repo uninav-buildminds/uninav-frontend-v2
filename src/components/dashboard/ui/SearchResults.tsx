@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import MaterialCard from "./MaterialCard";
-import FolderCard from "./FolderCard";
-import MaterialCardSkeleton from "./MaterialCardSkeleton";
+import MaterialCard from "../cards/MaterialCard";
+import FolderCard from "../cards/FolderCard";
+import MaterialCardSkeleton from "../cards/MaterialCardSkeleton";
 import { Material } from "@/lib/types/material.types";
 import { Folder } from "@/api/folder.api";
 import { HugeiconsIcon } from "@hugeicons/react";

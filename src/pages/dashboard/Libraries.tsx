@@ -5,12 +5,12 @@ import {
   FolderAddIcon,
   PreferenceHorizontalIcon,
 } from "@hugeicons/core-free-icons";
-import PageHeader from "@/components/dashboard/PageHeader";
-import FolderCard from "@/components/dashboard/FolderCard";
+import PageHeader from "@/components/dashboard/ui/PageHeader";
+import FolderCard from "@/components/dashboard/cards/FolderCard";
 import FolderModal from "@/components/modals/FolderModal";
 import CreateFolderModal from "@/components/modals/CreateFolderModal";
 import { DeleteFolderModal } from "@/components/modals/DeleteFolderModal";
-import MaterialCard from "@/components/dashboard/MaterialCard";
+import MaterialCard from "@/components/dashboard/cards/MaterialCard";
 import { useAuth } from "@/hooks/useAuth";
 import { useBookmarks } from "@/context/bookmark/BookmarkContextProvider";
 import { useFolderContext } from "@/context/folder/FolderContextProvider";

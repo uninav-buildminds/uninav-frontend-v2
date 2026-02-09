@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import {
   CustomSelect,
   CustomSelectOption,
-} from "@/components/dashboard/CustomSelect";
+} from "@/components/dashboard/ui/CustomSelect";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowDown01Icon, Download01Icon, Tag01Icon } from "@hugeicons/core-free-icons";
 import { SelectModal, SelectOption } from "@/components/modals/shared/SearchSelectModal";

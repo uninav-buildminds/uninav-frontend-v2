@@ -7,7 +7,7 @@ import { LogoutModal } from "@/components/modals";
 import { panelData } from "@/data/panel";
 import { useAuth } from "@/hooks/useAuth";
 import { isProfileIncomplete } from "@/utils/profile.utils";
-import RecentsList from "./RecentsList";
+import RecentsList from "../lists/RecentsList";
 
 interface MobilePanelProps {
   isOpen: boolean;

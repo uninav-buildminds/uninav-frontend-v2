@@ -1,5 +1,5 @@
 import Pic from "../../../public/placeholder.svg";
-import { Material } from "../../lib/types/material.types";
+import { Material } from "@/lib/types/material.types";
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
@@ -7,9 +7,9 @@ import {
   ArrowRight01Icon,
   SortingAZ02Icon,
 } from "@hugeicons/core-free-icons";
-import MaterialCard from "./MaterialCard";
-import MaterialCardSkeleton from "./MaterialCardSkeleton";
-import EmptyState from "./EmptyState";
+import MaterialCard from "../cards/MaterialCard";
+import MaterialCardSkeleton from "../cards/MaterialCardSkeleton";
+import EmptyState from "../ui/EmptyState";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Extended Material type for recent materials that includes lastViewedAt

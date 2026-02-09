@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import MetricCard from "./MetricCard";
+import MetricCard from "../cards/MetricCard";
 import { motion } from "framer-motion";
 
 interface Metric {

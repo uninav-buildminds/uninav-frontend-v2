@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import MaterialsLayout from "@/components/dashboard/MaterialsLayout";
-import GridMaterialsSection from "@/components/dashboard/GridMaterialsSection";
+import MaterialsLayout from "@/components/dashboard/layout/MaterialsLayout";
+import GridMaterialsSection from "@/components/dashboard/sections/GridMaterialsSection";
 import { getRecentMaterials } from "@/api/materials.api";
 import { Material } from "@/lib/types/material.types";
-import { MaterialWithLastViewed } from "@/components/dashboard/MaterialsSection";
+import { MaterialWithLastViewed } from "@/components/dashboard/sections/MaterialsSection";
 import { toast } from "sonner";
 
 const RecentMaterials: React.FC = () => {

@@ -2,7 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
-import PageHeader from "./PageHeader";
+import PageHeader from "../ui/PageHeader";
 
 interface MaterialsLayoutProps {
   title: string;
