@@ -7,7 +7,6 @@ import { LogoutModal, UploadModal } from "@/components/modals";
 import { panelData } from "@/data/panel";
 import { useAuth } from "@/hooks/useAuth";
 import RecentsList from "./RecentsList";
-import InstallPWA from "./InstallPWA";
 
 const Sidebar: React.FC = () => {
   const navigate = useNavigate();
@@ -172,7 +171,6 @@ const Sidebar: React.FC = () => {
                     </>
                   )}
                 </NavLink>
-                <InstallPWA variant="default" />
               </div>
             </div>
 
