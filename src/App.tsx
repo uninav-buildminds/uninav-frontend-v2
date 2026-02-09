@@ -50,7 +50,6 @@ import ScrollToTop from "./components/ScrollToTop";
 import {PostHogProvider} from '@posthog/react'
 
 const queryClient = new QueryClient();
-import {Analytics} from "@vercel/analytics/react";
 
 const App = () => {
     return (
@@ -265,7 +264,6 @@ const App = () => {
                         </BrowserRouter>
                     </TooltipProvider>
                 </QueryClientProvider>
-                <Analytics/>
             </PostHogProvider>
         </>
     );
