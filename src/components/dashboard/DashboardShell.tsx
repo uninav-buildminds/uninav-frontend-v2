@@ -7,6 +7,7 @@ import Sidebar from "./Sidebar";
 import MobileBottomNav from "./MobileBottomNav";
 import MobileMenuButton from "./MobileMenuButton";
 import MobilePanel from "./MobilePanel";
+import PWAInstallBanner from "./PWAInstallBanner";
 import { useFullscreen } from "@/context/FullscreenContext";
 import { useAuth } from "@/hooks/useAuth";
 import { isProfileIncomplete } from "@/utils/profile.utils";
@@ -156,6 +157,11 @@ const DashboardShell: React.FC = () => {
           onConfirmLogout={handleConfirmLogout}
           onCancelLogout={handleCancelLogout}
         />
+      )}
+
+      {/* PWA Install Banner - shows after profile is complete */}
+      {!isFullscreen && !isMaterialView && (
+        <PWAInstallBanner canShow={!profileIncomplete} />
       )}
     </div>
   );
