@@ -142,7 +142,7 @@ const Overview: React.FC = () => {
     // Set loading state immediately for better UX
     setIsLoadingSuggestions(true);
 
-    // Debounce the API call (300ms)
+    // Debounce the API call (slightly longer to reduce network load)
     debounceTimerRef.current = setTimeout(async () => {
       try {
         const response = await searchMaterialsAndFolders({
@@ -181,7 +181,7 @@ const Overview: React.FC = () => {
       } finally {
         setIsLoadingSuggestions(false);
       }
-    }, 300);
+    }, 450);
   }, []);
 
   // Cleanup debounce timer on unmount

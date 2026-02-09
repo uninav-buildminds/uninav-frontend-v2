@@ -108,7 +108,7 @@ const SmartSearchBar: React.FC<SmartSearchBarProps> = ({
         // Debounce API calls for non-empty input (300ms)
         debounceTimerRef.current = setTimeout(() => {
           onInputChange?.(value);
-        }, 300);
+        }, 450);
       }
     },
     [onInputChange]
