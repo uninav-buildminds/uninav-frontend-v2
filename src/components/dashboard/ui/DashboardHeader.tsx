@@ -13,6 +13,7 @@ interface DashboardHeaderProps {
   onSearchInput?: (query: string) => void;
   isLoadingSuggestions?: boolean;
   enableSmartAutocomplete?: boolean;
+  searchValue?: string;
 }
 
 const DashboardHeader: React.FC<DashboardHeaderProps> = ({
@@ -26,6 +27,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   onSearchInput,
   isLoadingSuggestions = false,
   enableSmartAutocomplete = true,
+  searchValue,
 }) => {
   // Default content for dashboard overview
   const defaultTitle = `Welcome back, ${firstName}! 👋`;
@@ -55,6 +57,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                   placeholder={searchPlaceholder}
                   suggestions={searchSuggestions}
                   isLoading={isLoadingSuggestions}
+                  value={searchValue}
                   onSearch={
                     onSearch ||
                     ((query) => console.log("Dashboard search:", query))

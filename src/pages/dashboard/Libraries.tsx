@@ -29,12 +29,14 @@ import { getRecentMaterials, type RecentMaterial } from "@/api/materials.api";
 import { toast } from "sonner";
 import { ResponseStatus } from "@/lib/types/response.types";
 import { UploadModal } from "@/components/modals";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 type TabType = "all" | "saved" | "uploads";
 
 const Libraries: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const { bookmarks, isLoading: bookmarksLoading } = useBookmarks();
   const { materialIdsInFolders, refreshFolders } = useFolderContext();
 
@@ -43,15 +45,32 @@ const Libraries: React.FC = () => {
 
   // Materials
   const [savedMaterials, setSavedMaterials] = useState<Material[]>([]);
-  const [userUploads, setUserUploads] = useState<Material[]>([]);
   const [filteredSavedMaterials, setFilteredSavedMaterials] = useState<
     Material[]
   >([]);
   const [filteredUploads, setFilteredUploads] = useState<Material[]>([]);
 
   // Folders
-  const [folders, setFolders] = useState<Folder[]>([]);
-  const [isLoadingFolders, setIsLoadingFolders] = useState(false);
+  const {
+    data: foldersData,
+    isLoading: isLoadingFolders,
+    error: foldersError,
+  } = useQuery({
+    queryKey: ["library", "folders"],
+    queryFn: async () => {
+      const response = await getMyFolders();
+      // getMyFolders returns a Response<Folder[]> | null
+      if (response && response.status === ResponseStatus.SUCCESS) {
+        return response.data ?? [];
+      }
+      return [];
+    },
+  });
+
+  const folders: Folder[] = useMemo(
+    () => (Array.isArray(foldersData) ? foldersData : []),
+    [foldersData]
+  );
   const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
   const [selectedFolder, setSelectedFolder] = useState<Folder | null>(null);
   const [showFolderModal, setShowFolderModal] = useState(false);
@@ -67,7 +86,6 @@ const Libraries: React.FC = () => {
 
   // Uploads
   const [showUploadModal, setShowUploadModal] = useState(false);
-  const [isLoadingUploads, setIsLoadingUploads] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);
 
@@ -87,67 +105,39 @@ const Libraries: React.FC = () => {
     setFilteredSavedMaterials(materials);
   };
 
-  // Fetch user's uploaded materials
-  const fetchUserUploads = async () => {
-    if (!user?.id) {
-      setUserUploads([]);
-      setFilteredUploads([]);
-      return;
-    }
-
-    setIsLoadingUploads(true);
-    setError(null);
-
-    try {
+  // Fetch user's uploaded materials with React Query for caching
+  const {
+    data: userUploadsData,
+    isLoading: isLoadingUploads,
+    error: uploadsError,
+  } = useQuery({
+    queryKey: ["library", "uploads", user?.id],
+    enabled: !!user?.id,
+    queryFn: async () => {
       const response = await searchMaterials({
-        creatorId: user.id,
+        creatorId: user!.id,
         limit: 100,
         saveHistory: false, // Don't save - this is fetching user uploads, not a search
       });
 
-      const uploads =
-        response.status === ResponseStatus.SUCCESS
-          ? response.data.items || []
-          : [];
-
-      setUserUploads(uploads);
-      setFilteredUploads(uploads);
-    } catch (err: unknown) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to fetch user uploads";
-      setError(errorMessage);
-      console.error("Error fetching user uploads:", errorMessage);
-    } finally {
-      setIsLoadingUploads(false);
-    }
-  };
-
-  // Load folders
-  const loadFolders = async () => {
-    setIsLoadingFolders(true);
-    try {
-      const response = await getMyFolders();
-      if (response && response.status === "success" && response.data) {
-        // Response.data is already an array for folders
-        const foldersData = Array.isArray(response.data) ? response.data : [];
-        setFolders(foldersData);
-        if (selectedFolder) {
-          const updatedFolder = foldersData.find(
-            (f: Folder) => f.id === selectedFolder.id
-          );
-          if (updatedFolder) {
-            setSelectedFolder(updatedFolder);
-          }
-        }
+      if (response.status === ResponseStatus.SUCCESS) {
+        return response.data.items || [];
       }
-    } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to load folders";
-      console.error("Error loading folders:", errorMessage);
-    } finally {
-      setIsLoadingFolders(false);
+
+      return [];
+    },
+  });
+
+  // When folders data changes (including refetches), keep selectedFolder in sync
+  useEffect(() => {
+    if (selectedFolder && folders.length > 0) {
+      const updatedFolder = folders.find((f: Folder) => f.id === selectedFolder.id);
+      if (updatedFolder) {
+        setSelectedFolder(updatedFolder);
+      }
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [folders]);
 
   // Load recent materials to get lastViewedAt
   const loadRecentMaterials = async () => {
@@ -170,7 +160,7 @@ const Libraries: React.FC = () => {
   // Search suggestions
   const searchSuggestions = [
     ...savedMaterials.map((material) => material.label),
-    ...userUploads.map((material) => material.label),
+    ...(userUploadsData ?? []).map((material: Material) => material.label),
   ].filter(Boolean);
 
   const handleSearch = (query: string) => {
@@ -178,7 +168,7 @@ const Libraries: React.FC = () => {
 
     if (query.trim() === "") {
       setFilteredSavedMaterials(savedMaterials);
-      setFilteredUploads(userUploads);
+      setFilteredUploads((userUploadsData ?? []) as Material[]);
     } else {
       const filteredSaved = savedMaterials.filter(
         (material) =>
@@ -190,7 +180,7 @@ const Libraries: React.FC = () => {
       );
       setFilteredSavedMaterials(filteredSaved);
 
-      const filteredUpload = userUploads.filter(
+      const filteredUpload = (userUploadsData ?? []).filter(
         (material) =>
           material.label.toLowerCase().includes(query.toLowerCase()) ||
           material.description?.toLowerCase().includes(query.toLowerCase()) ||
@@ -208,8 +198,9 @@ const Libraries: React.FC = () => {
   };
 
   const handleFolderCreated = (folder: Folder) => {
-    setFolders((prev) => [folder, ...prev]);
     setShowCreateFolderModal(false);
+    // Invalidate folder list so new folder appears in cached/query data
+    queryClient.invalidateQueries({ queryKey: ["library", "folders"] });
   };
 
   const handleFolderClick = async (folder: Folder) => {
@@ -239,9 +230,8 @@ const Libraries: React.FC = () => {
     updateFolder(folderId, { label: newName.trim() })
       .then((response) => {
         if (response && response.status === "success" && response.data) {
-          setFolders((prev) =>
-            prev.map((f) => (f.id === folderId ? response.data : f))
-          );
+          // Refetch folders so cache stays in sync
+          queryClient.invalidateQueries({ queryKey: ["library", "folders"] });
           if (selectedFolder?.id === folderId) {
             setSelectedFolder(response.data);
           }
@@ -272,7 +262,8 @@ const Libraries: React.FC = () => {
 
     try {
       await deleteFolder(folderToDelete.id);
-      setFolders((prev) => prev.filter((f) => f.id !== folderToDelete.id));
+      // Invalidate folders so cache is refreshed after deletion
+      queryClient.invalidateQueries({ queryKey: ["library", "folders"] });
       if (selectedFolder?.id === folderToDelete.id) {
         setShowFolderModal(false);
         setSelectedFolder(null);
@@ -337,8 +328,8 @@ const Libraries: React.FC = () => {
         prev.filter((m) => m.id !== draggedMaterial.id)
       );
 
-      loadFolders();
-      // Refresh folder context so MaterialCards update immediately
+      // Refresh cached folders and folder context so MaterialCards update immediately
+      await queryClient.invalidateQueries({ queryKey: ["library", "folders"] });
       await refreshFolders();
 
       if (selectedFolder?.id === folder.id) {
@@ -392,7 +383,7 @@ const Libraries: React.FC = () => {
         prev.filter((m) => m.id !== draggedMaterial.id)
       );
 
-      loadFolders();
+      await queryClient.invalidateQueries({ queryKey: ["library", "folders"] });
 
       if (selectedFolder?.id === folder.id) {
         setShowFolderModal(false);
@@ -426,7 +417,7 @@ const Libraries: React.FC = () => {
       await removeMaterialFromFolder(folderId, materialId);
       // Success - no toast notification
 
-      loadFolders();
+      await queryClient.invalidateQueries({ queryKey: ["library", "folders"] });
       // Refresh folder context so MaterialCards update immediately
       await refreshFolders();
 
@@ -481,11 +472,11 @@ const Libraries: React.FC = () => {
   };
 
   const handleCreateComplete = (material: Material) => {
-    setUserUploads((prev) => [material, ...prev]);
-    setFilteredUploads((prev) => [material, ...prev]);
+    // Invalidate uploads so new material appears in cached/query data
+    queryClient.invalidateQueries({
+      queryKey: ["library", "uploads", user?.id],
+    });
     setActiveTab("uploads");
-    // Sync with server to ensure the latest data (e.g., moderation updates)
-    void fetchUserUploads();
   };
 
   const handleDeleteMaterial = async (id: string) => {
@@ -496,8 +487,11 @@ const Libraries: React.FC = () => {
         onClick: async () => {
           try {
             await deleteMaterial(id);
-            setUserUploads((prev) => prev.filter((m) => m.id !== id));
+            // Optimistically update filtered uploads; query cache will be refreshed separately
             setFilteredUploads((prev) => prev.filter((m) => m.id !== id));
+            await queryClient.invalidateQueries({
+              queryKey: ["library", "uploads", user?.id],
+            });
             toast.success("Material deleted successfully");
           } catch (error: unknown) {
             const errorMessage =
@@ -518,7 +512,9 @@ const Libraries: React.FC = () => {
   const handleEditComplete = async () => {
     toast.success("Material updated successfully");
     setEditingMaterial(null);
-    await fetchUserUploads();
+    await queryClient.invalidateQueries({
+      queryKey: ["library", "uploads", user?.id],
+    });
   };
 
   const handleModalClose = () => {
@@ -593,13 +589,6 @@ const Libraries: React.FC = () => {
 
   // Effects
   useEffect(() => {
-    if (user?.id) {
-      fetchUserUploads();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
-
-  useEffect(() => {
     if (!bookmarksLoading && bookmarks) {
       fetchSavedMaterials();
     }
@@ -607,7 +596,6 @@ const Libraries: React.FC = () => {
   }, [bookmarks, bookmarksLoading]);
 
   useEffect(() => {
-    loadFolders();
     loadRecentMaterials();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -615,12 +603,12 @@ const Libraries: React.FC = () => {
   useEffect(() => {
     if (searchQuery.trim() === "") {
       setFilteredSavedMaterials(savedMaterials);
-      setFilteredUploads(userUploads);
+      setFilteredUploads((userUploadsData ?? []) as Material[]);
     } else {
       handleSearch(searchQuery);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [savedMaterials, userUploads, searchQuery]);
+  }, [savedMaterials, userUploadsData, searchQuery]);
 
   return (
     <>
@@ -633,16 +621,30 @@ const Libraries: React.FC = () => {
       />
       <div className="p-4 sm:p-6">
         {/* Error Display */}
-        {error && (
+        {(error || uploadsError || foldersError) && (
           <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-700 text-sm">{error}</p>
+            <p className="text-red-700 text-sm">
+              {error ||
+                (uploadsError instanceof Error
+                  ? uploadsError.message
+                  : "") ||
+                (foldersError instanceof Error
+                  ? foldersError.message
+                  : "") ||
+                "Something went wrong while loading your libraries."}
+            </p>
             <button
               onClick={() => {
                 setError(null);
                 if (user?.id) {
-                  fetchUserUploads();
-                  fetchSavedMaterials();
+                  queryClient.invalidateQueries({
+                    queryKey: ["library", "uploads", user.id],
+                  });
                 }
+                queryClient.invalidateQueries({
+                  queryKey: ["library", "folders"],
+                });
+                fetchSavedMaterials();
               }}
               className="mt-2 text-red-600 hover:text-red-800 text-sm underline"
             >

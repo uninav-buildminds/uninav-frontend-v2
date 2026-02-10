@@ -5,47 +5,47 @@ import GridMaterialsSection from "@/components/dashboard/sections/GridMaterialsS
 import { getMaterialRecommendations } from "@/api/materials.api";
 import { Material } from "@/lib/types/material.types";
 import { toast } from "sonner";
-import { mapRecommendationToMaterial } from "@/components/dashboard/sections/MaterialsSection";
+import { mapRecommendationToMaterial } from "@/components/dashboard/sections/GridMaterialsSection";
+import { useQuery } from "@tanstack/react-query";
 
 const Recommendations: React.FC = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
-  const [allMaterials, setAllMaterials] = useState<Material[]>([]);
   const [filteredMaterials, setFilteredMaterials] = useState<Material[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch recommendations on component mount
+  const {
+    data: allMaterials = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["recommendations", "materials"],
+    queryFn: async () => {
+      const response = await getMaterialRecommendations({
+        limit: 50, // Get more recommendations for the dedicated page
+        ignorePreference: false, // Use user preferences for personalized recommendations
+      });
+
+      return response.data.items;
+    },
+  });
+
   useEffect(() => {
-    const loadRecommendations = async () => {
-      try {
-        setIsLoading(true);
-        const data = await getMaterialRecommendations({
-          limit: 50, // Get more recommendations for the dedicated page
-          ignorePreference: false, // Use user preferences for personalized recommendations
-        });
+    if (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to load recommendations";
+      console.error("Error fetching recommendations:", error);
+      toast.error(message);
+    }
+  }, [error]);
 
-        // Handle API response
-        let materials: Material[] = [];
-        if (Array.isArray(data)) {
-          materials = data;
-        } else if (data?.data?.items) {
-          materials = data.data.items.map(mapRecommendationToMaterial);
-        }
-
-        setAllMaterials(materials);
-        setFilteredMaterials(materials);
-      } catch (error: any) {
-        console.error("Error fetching recommendations:", error);
-        toast.error(error.message || "Failed to load recommendations");
-        setAllMaterials([]);
-        setFilteredMaterials([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadRecommendations();
-  }, []);
+  useEffect(() => {
+    // Sync filtered list with fetched data when not actively searching
+    if (!searchQuery.trim()) {
+      setFilteredMaterials(allMaterials);
+    }
+  }, [allMaterials, searchQuery]);
 
   // Search suggestions based on material names
   const searchSuggestions = allMaterials
