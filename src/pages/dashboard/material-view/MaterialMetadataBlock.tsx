@@ -119,8 +119,6 @@ const MaterialMetadataBlock: React.FC<MaterialMetadataBlockProps> = ({
         onFlag={onFlag}
         onLike={onLike}
         onDislike={onDislike}
-        likeCount={material.likes ?? 0}
-        dislikeCount={0}
         variant={variant}
       />
     </>

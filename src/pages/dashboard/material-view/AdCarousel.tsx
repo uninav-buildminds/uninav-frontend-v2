@@ -67,7 +67,7 @@ const AdCarousel: React.FC<AdCarouselProps> = ({
               type="button"
               onClick={goPrev}
               disabled={currentIndex === 0}
-              className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 p-1.5 rounded-full bg-white/90 shadow border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:pointer-events-none"
+              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 p-1.5 rounded-full bg-white/90 border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:pointer-events-none"
               aria-label="Previous slide"
               style={{ marginRight: "8px" }}
             >
@@ -77,7 +77,7 @@ const AdCarousel: React.FC<AdCarouselProps> = ({
               type="button"
               onClick={goNext}
               disabled={currentIndex === AD_SLIDES.length - 1}
-              className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 p-1.5 rounded-full bg-white/90 shadow border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:pointer-events-none"
+              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-1.5 rounded-full bg-white/90 border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:pointer-events-none"
               aria-label="Next slide"
               style={{ marginLeft: "8px" }}
             >

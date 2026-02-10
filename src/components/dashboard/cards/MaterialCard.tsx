@@ -91,7 +91,8 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
   onDragStart,
   isInFolder,
 }) => {
-  const { id, label, createdAt, downloads, tags, views, metaData } = material;
+  const { id, label, createdAt, downloads, tags, views, likes, metaData } =
+    material;
 
   const previewImage = material.previewUrl;
 
@@ -105,19 +106,20 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
     ? isInFolder 
     : materialIdsInFolders.has(id);
 
-  // Extract page count (document) or material count (collection) from metaData
+  // Extract page count or file count from metaData
   const getMetaInfo = (): string | null => {
     if (!metaData) return null;
 
+    // metaData can be a JSON object with pageCount or fileCount
     if (typeof metaData === "object") {
-      if ("pageCount" in metaData && metaData.pageCount != null) {
+      if ("pageCount" in metaData && metaData.pageCount) {
         return `${metaData.pageCount} ${
           metaData.pageCount === 1 ? "page" : "pages"
         }`;
       }
-      if ("fileCount" in metaData && metaData.fileCount != null) {
+      if ("fileCount" in metaData && metaData.fileCount) {
         return `${metaData.fileCount} ${
-          metaData.fileCount === 1 ? "material" : "materials"
+          metaData.fileCount === 1 ? "file" : "files"
         }`;
       }
     }
@@ -361,7 +363,9 @@ const MaterialCard: React.FC<MaterialCardProps> = ({
             <div className="text-xs text-gray-500 truncate flex-1 pr-16">
               {lastViewedAt
                 ? `Viewed ${formatRelativeTime(lastViewedAt)}`
-                : `${formatRelativeTime(createdAt)} • ${views} views • ${metaInfo ?? "—"}`}
+                : `${formatRelativeTime(
+                    createdAt
+                  )} • ${views} views • ${likes} likes`}
             </div>
           </div>
 

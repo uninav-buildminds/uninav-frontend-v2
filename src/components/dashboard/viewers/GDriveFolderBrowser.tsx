@@ -6,7 +6,11 @@
 import React, { useState, useEffect } from "react";
 import { ChevronRight, Loader2 } from "lucide-react";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Download01Icon, Folder01Icon, LockIcon } from "@hugeicons/core-free-icons";
+import {
+  Download01Icon,
+  Folder01Icon,
+  LockIcon,
+} from "@hugeicons/core-free-icons";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
@@ -219,8 +223,24 @@ const GDriveFolderBrowser: React.FC<GDriveFolderBrowserProps> = ({
                       {file.name}
                     </p>
                     {file.size && (
-                      <p className="text-xs text-gray-500">
-                        {formatFileSize(parseInt(file.size))}
+                      <p className="text-xs text-gray-500 flex items-center gap-1">
+                        <span>{formatFileSize(parseInt(file.size))}</span>
+                        <span className="w-1 h-1 rounded-full bg-gray-400" />
+                        {/* Approximate page count based on file size until backend provides exact metadata */}
+                        {(() => {
+                          const bytes = parseInt(file.size);
+                          const kb = bytes / 1024;
+                          // Rough estimate: ~50KB per page
+                          const pages = Math.max(
+                            1,
+                            Math.round(kb / 50) || 1
+                          );
+                          return (
+                            <span>
+                              {pages} {pages === 1 ? "page" : "pages"}
+                            </span>
+                          );
+                        })()}
                       </p>
                     )}
                   </div>

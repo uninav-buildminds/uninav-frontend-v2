@@ -27,10 +27,6 @@ interface MaterialFeedbackActionsProps {
   onFlag: () => void;
   onLike: () => void;
   onDislike: () => void;
-  /** Placeholder until backend implements; default 0 */
-  likeCount?: number;
-  /** Placeholder until backend implements; default 0 */
-  dislikeCount?: number;
   variant?: "compact" | "normal";
 }
 
@@ -84,73 +80,121 @@ const MaterialFeedbackActions: React.FC<MaterialFeedbackActionsProps> = ({
   onFlag,
   onLike,
   onDislike,
-  likeCount = 0,
-  dislikeCount = 0,
   variant = "compact",
 }) => {
-  const [feedback, setFeedback] = useState<"like" | "dislike" | null>(() => getStoredFeedback(materialId));
+  const [feedback, setFeedback] = useState<"like" | "dislike" | null>(() =>
+    getStoredFeedback(materialId)
+  );
+  const [likeCount, setLikeCount] = useState(0);
+  const [dislikeCount, setDislikeCount] = useState(0);
   const padding = variant === "compact" ? "p-1.5" : "p-2";
   const iconClass = "size-5";
-  const textSize = variant === "compact" ? "text-[10px]" : "text-xs";
 
   useEffect(() => {
     setFeedback(getStoredFeedback(materialId));
   }, [materialId]);
 
   const handleLike = () => {
-    const next = feedback === "like" ? null : "like";
-    setFeedback(next);
-    setStoredFeedback(materialId, next);
+    if (feedback === "like") {
+      // toggle off like
+      setFeedback(null);
+      setStoredFeedback(materialId, null);
+      setLikeCount((c) => Math.max(0, c - 1));
+    } else if (feedback === "dislike") {
+      // switch from dislike to like
+      setFeedback("like");
+      setStoredFeedback(materialId, "like");
+      setDislikeCount((c) => Math.max(0, c - 1));
+      setLikeCount((c) => c + 1);
+    } else {
+      // no feedback -> like
+      setFeedback("like");
+      setStoredFeedback(materialId, "like");
+      setLikeCount((c) => c + 1);
+    }
     onLike();
   };
 
   const handleDislike = () => {
-    const next = feedback === "dislike" ? null : "dislike";
-    setFeedback(next);
-    setStoredFeedback(materialId, next);
+    if (feedback === "dislike") {
+      // toggle off dislike
+      setFeedback(null);
+      setStoredFeedback(materialId, null);
+      setDislikeCount((c) => Math.max(0, c - 1));
+    } else if (feedback === "like") {
+      // switch from like to dislike
+      setFeedback("dislike");
+      setStoredFeedback(materialId, "dislike");
+      setLikeCount((c) => Math.max(0, c - 1));
+      setDislikeCount((c) => c + 1);
+    } else {
+      // no feedback -> dislike
+      setFeedback("dislike");
+      setStoredFeedback(materialId, "dislike");
+      setDislikeCount((c) => c + 1);
+    }
     onDislike();
   };
 
   return (
-    <div
-      className={`flex items-center justify-between gap-2 pt-2 mt-2 border-t border-gray-100 ${
-        variant === "normal" ? "gap-2 pt-3 mt-3 border-gray-200" : "gap-1"
-      }`}
-    >
-      <button
-        type="button"
-        onClick={onFlag}
-        className={`${padding} text-gray-500 hover:text-brand hover:bg-brand/10 rounded-md transition-colors outline-none focus:ring-0 flex flex-col items-center gap-0.5`}
-        aria-label="Report material"
+    <div className="pt-2 mt-2 border-t border-gray-100">
+      <div
+        className={`flex items-center justify-between ${
+          variant === "normal" ? "gap-4 pt-1 mt-1" : "gap-3"
+        }`}
       >
-        <FlagOutlineIcon className={iconClass} />
-      </button>
-      <button
-        type="button"
-        onClick={handleLike}
-        className={`${padding} text-gray-500 hover:text-brand hover:bg-brand/10 rounded-md transition-colors outline-none focus:ring-0 flex flex-col items-center gap-0.5 ${feedback === "like" ? "text-brand" : ""}`}
-        aria-label="Like"
-      >
-        {feedback === "like" ? (
-          <LikeFilledIcon className={iconClass} />
-        ) : (
-          <LikeOutlineIcon className={iconClass} />
-        )}
-        <span className={`${textSize} font-medium text-gray-600 tabular-nums`}>{likeCount}</span>
-      </button>
-      <button
-        type="button"
-        onClick={handleDislike}
-        className={`${padding} text-gray-500 hover:text-brand hover:bg-brand/10 rounded-md transition-colors outline-none focus:ring-0 flex flex-col items-center gap-0.5 ${feedback === "dislike" ? "text-brand" : ""}`}
-        aria-label="Dislike"
-      >
-        {feedback === "dislike" ? (
-          <DislikeFilledIcon className={iconClass} />
-        ) : (
-          <DislikeOutlineIcon className={iconClass} />
-        )}
-        <span className={`${textSize} font-medium text-gray-600 tabular-nums`}>{dislikeCount}</span>
-      </button>
+        {/* Flag - no count for now */}
+        <button
+          type="button"
+          onClick={onFlag}
+          className={`${padding} text-gray-500 hover:text-brand hover:bg-brand/10 rounded-full transition-colors outline-none focus:ring-0`}
+          aria-label="Report material"
+        >
+          <FlagOutlineIcon className={iconClass} />
+        </button>
+
+        {/* Like with count to the right */}
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={handleLike}
+            className={`${padding} text-gray-500 hover:text-brand hover:bg-brand/10 rounded-full transition-colors outline-none focus:ring-0 ${
+              feedback === "like" ? "text-brand" : ""
+            }`}
+            aria-label="Like"
+          >
+            {feedback === "like" ? (
+              <LikeFilledIcon className={iconClass} />
+            ) : (
+              <LikeOutlineIcon className={iconClass} />
+            )}
+          </button>
+          <span className="text-[10px] text-gray-500 min-w-[1ch] text-left">
+            {likeCount}
+          </span>
+        </div>
+
+        {/* Dislike with count to the right */}
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={handleDislike}
+            className={`${padding} text-gray-500 hover:text-brand hover:bg-brand/10 rounded-full transition-colors outline-none focus:ring-0 ${
+              feedback === "dislike" ? "text-brand" : ""
+            }`}
+            aria-label="Dislike"
+          >
+            {feedback === "dislike" ? (
+              <DislikeFilledIcon className={iconClass} />
+            ) : (
+              <DislikeOutlineIcon className={iconClass} />
+            )}
+          </button>
+          <span className="text-[10px] text-gray-500 min-w-[1ch] text-left">
+            {dislikeCount}
+          </span>
+        </div>
+      </div>
     </div>
   );
 };

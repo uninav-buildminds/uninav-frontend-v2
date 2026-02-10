@@ -332,7 +332,6 @@ const Overview: React.FC = () => {
         showSearch={true}
         searchSuggestions={searchSuggestions}
         isLoadingSuggestions={isLoadingSuggestions}
-        searchValue={searchQuery}
         onSearch={handleSearch}
         onSearchInput={handleSearchInput}
       />

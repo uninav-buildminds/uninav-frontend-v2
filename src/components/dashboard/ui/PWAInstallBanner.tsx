@@ -8,12 +8,8 @@ import {
   SmartPhone01Icon,
   InformationCircleIcon,
 } from "@hugeicons/core-free-icons";
-import { usePostHog } from "@posthog/react";
-
-// Read from window to avoid importing @/main (would cause "Cannot access 'App' before initialization")
-function getDeferredPrompt(): unknown {
-  return (window as { __DEFERRED_PROMPT__?: unknown }).__DEFERRED_PROMPT__;
-}
+import { deferredPrompt } from "@/main";
+import {usePostHog} from "@posthog/react";
 
 // ── Platform detection helpers ────────────────────────────────────────────
 
@@ -84,24 +80,26 @@ const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ canShow }) => {
   const isSafari = getIsSafari();
   const isStandalone = getIsStandalone();
 
-  // Listen for the native install prompt (use window / events only — do not import from main.tsx)
+  // Listen for the native install prompt
   useEffect(() => {
-    const prompt = getDeferredPrompt();
-    if (prompt) {
-      setInstallPrompt(prompt as typeof installPrompt);
+    // Check if we already have a deferred prompt from main.tsx
+    if (deferredPrompt) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setInstallPrompt(deferredPrompt as any);
       setIsInstallable(true);
     }
 
     const handleBeforeInstall = (e: Event) => {
       e.preventDefault();
-      setInstallPrompt(e as typeof installPrompt);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setInstallPrompt(e as any);
       setIsInstallable(true);
     };
 
     const handlePWAReady = () => {
-      const prompt = getDeferredPrompt();
-      if (prompt) {
-        setInstallPrompt(prompt as typeof installPrompt);
+      if (deferredPrompt) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        setInstallPrompt(deferredPrompt as any);
         setIsInstallable(true);
       }
     };
