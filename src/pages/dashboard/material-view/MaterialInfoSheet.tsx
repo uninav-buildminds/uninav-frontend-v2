@@ -43,7 +43,7 @@ const MaterialInfoSheet: React.FC<MaterialInfoSheetProps> = ({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="h-[85vh] overflow-y-auto rounded-t-2xl"
+        className="h-[75vh] overflow-y-auto rounded-t-2xl"
       >
         <SheetHeader>
           <SheetTitle>Material Information</SheetTitle>
