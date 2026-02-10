@@ -21,7 +21,7 @@ const Sidebar: React.FC = () => {
     { to: "/dashboard/libraries", label: "Libraries", icon: FolderLibraryIcon },
     {
       to: "/dashboard/notifications",
-      label: "Notifications",
+      label: "Alerts",
       icon: Notification01Icon,
     },
     { to: "/dashboard/settings", label: "Settings", icon: Settings01Icon },

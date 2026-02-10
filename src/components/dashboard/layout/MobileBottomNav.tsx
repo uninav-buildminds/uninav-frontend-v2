@@ -14,7 +14,7 @@ const MobileBottomNav: React.FC = () => {
   const navItems = [
     { to: "/dashboard", label: "Home", icon: Home01Icon },
     { to: "/dashboard/libraries", label: "Folder", icon: FolderLibraryIcon },
-    { to: "/dashboard/notifications", label: "Notifications", icon: Notification01Icon },
+    { to: "/dashboard/notifications", label: "Alerts", icon: Notification01Icon },
     { to: "/dashboard/settings", label: "Settings", icon: Settings01Icon },
   ];
 
@@ -76,7 +76,7 @@ const MobileBottomNav: React.FC = () => {
           {({ isActive }) => (
             <>
               <HugeiconsIcon icon={Notification01Icon} strokeWidth={1.5} size={20} className={isActive ? 'fill-current' : ''} />
-              <span className="text-xs font-medium">Notifications</span>
+              <span className="text-xs font-medium">Alerts</span>
             </>
           )}
         </NavLink>

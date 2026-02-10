@@ -27,6 +27,10 @@ interface MaterialFeedbackActionsProps {
   onFlag: () => void;
   onLike: () => void;
   onDislike: () => void;
+  /** Placeholder until backend implements; default 0 */
+  likeCount?: number;
+  /** Placeholder until backend implements; default 0 */
+  dislikeCount?: number;
   variant?: "compact" | "normal";
 }
 
@@ -80,11 +84,14 @@ const MaterialFeedbackActions: React.FC<MaterialFeedbackActionsProps> = ({
   onFlag,
   onLike,
   onDislike,
+  likeCount = 0,
+  dislikeCount = 0,
   variant = "compact",
 }) => {
   const [feedback, setFeedback] = useState<"like" | "dislike" | null>(() => getStoredFeedback(materialId));
   const padding = variant === "compact" ? "p-1.5" : "p-2";
   const iconClass = "size-5";
+  const textSize = variant === "compact" ? "text-[10px]" : "text-xs";
 
   useEffect(() => {
     setFeedback(getStoredFeedback(materialId));
@@ -113,7 +120,7 @@ const MaterialFeedbackActions: React.FC<MaterialFeedbackActionsProps> = ({
       <button
         type="button"
         onClick={onFlag}
-        className={`${padding} text-gray-500 hover:text-brand hover:bg-brand/10 rounded-full transition-colors outline-none focus:ring-0`}
+        className={`${padding} text-gray-500 hover:text-brand hover:bg-brand/10 rounded-md transition-colors outline-none focus:ring-0 flex flex-col items-center gap-0.5`}
         aria-label="Report material"
       >
         <FlagOutlineIcon className={iconClass} />
@@ -121,7 +128,7 @@ const MaterialFeedbackActions: React.FC<MaterialFeedbackActionsProps> = ({
       <button
         type="button"
         onClick={handleLike}
-        className={`${padding} text-gray-500 hover:text-brand hover:bg-brand/10 rounded-full transition-colors outline-none focus:ring-0 ${feedback === "like" ? "text-brand" : ""}`}
+        className={`${padding} text-gray-500 hover:text-brand hover:bg-brand/10 rounded-md transition-colors outline-none focus:ring-0 flex flex-col items-center gap-0.5 ${feedback === "like" ? "text-brand" : ""}`}
         aria-label="Like"
       >
         {feedback === "like" ? (
@@ -129,11 +136,12 @@ const MaterialFeedbackActions: React.FC<MaterialFeedbackActionsProps> = ({
         ) : (
           <LikeOutlineIcon className={iconClass} />
         )}
+        <span className={`${textSize} font-medium text-gray-600 tabular-nums`}>{likeCount}</span>
       </button>
       <button
         type="button"
         onClick={handleDislike}
-        className={`${padding} text-gray-500 hover:text-brand hover:bg-brand/10 rounded-full transition-colors outline-none focus:ring-0 ${feedback === "dislike" ? "text-brand" : ""}`}
+        className={`${padding} text-gray-500 hover:text-brand hover:bg-brand/10 rounded-md transition-colors outline-none focus:ring-0 flex flex-col items-center gap-0.5 ${feedback === "dislike" ? "text-brand" : ""}`}
         aria-label="Dislike"
       >
         {feedback === "dislike" ? (
@@ -141,6 +149,7 @@ const MaterialFeedbackActions: React.FC<MaterialFeedbackActionsProps> = ({
         ) : (
           <DislikeOutlineIcon className={iconClass} />
         )}
+        <span className={`${textSize} font-medium text-gray-600 tabular-nums`}>{dislikeCount}</span>
       </button>
     </div>
   );
