@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Add01Icon, FolderLibraryIcon, Home01Icon, Notification01Icon, Settings01Icon } from "@hugeicons/core-free-icons";
+import { Add01Icon, FolderLibraryIcon, Home01Icon, Settings01Icon, UserGroup02Icon } from "@hugeicons/core-free-icons";
 import { UploadModal } from "@/components/modals";
 import { useAuth } from "@/hooks/useAuth";
 import { isProfileIncomplete } from "@/utils/profile.utils";
@@ -13,8 +13,8 @@ const MobileBottomNav: React.FC = () => {
   
   const navItems = [
     { to: "/dashboard", label: "Home", icon: Home01Icon },
-    { to: "/dashboard/libraries", label: "Folder", icon: FolderLibraryIcon },
-    { to: "/dashboard/notifications", label: "Alerts", icon: Notification01Icon },
+    { to: "/dashboard/libraries", label: "Libraries", icon: FolderLibraryIcon },
+    { to: "/dashboard/clubs", label: "Clubs", icon: UserGroup02Icon },
     { to: "/dashboard/settings", label: "Settings", icon: Settings01Icon },
   ];
 
@@ -39,7 +39,7 @@ const MobileBottomNav: React.FC = () => {
           )}
         </NavLink>
 
-        {/* Libraries (Folder) */}
+        {/* Libraries */}
         <NavLink 
           to="/dashboard/libraries" 
           className={({ isActive }) => 
@@ -64,9 +64,9 @@ const MobileBottomNav: React.FC = () => {
           <HugeiconsIcon icon={Add01Icon} strokeWidth={1.5} size={24} />
         </button>
 
-        {/* Notifications */}
+        {/* Clubs */}
         <NavLink 
-          to="/dashboard/notifications" 
+          to="/dashboard/clubs" 
           className={({ isActive }) => 
             `flex flex-col items-center gap-1 py-2 px-3 rounded-lg transition-colors ${
               isActive ? 'text-brand' : 'text-gray-600'
@@ -75,8 +75,8 @@ const MobileBottomNav: React.FC = () => {
         >
           {({ isActive }) => (
             <>
-              <HugeiconsIcon icon={Notification01Icon} strokeWidth={1.5} size={20} className={isActive ? 'fill-current' : ''} />
-              <span className="text-xs font-medium">Alerts</span>
+              <HugeiconsIcon icon={UserGroup02Icon} strokeWidth={1.5} size={20} className={isActive ? 'fill-current' : ''} />
+              <span className="text-xs font-medium">Clubs</span>
             </>
           )}
         </NavLink>

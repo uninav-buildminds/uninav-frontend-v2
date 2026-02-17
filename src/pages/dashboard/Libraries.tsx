@@ -631,7 +631,7 @@ const Libraries: React.FC = () => {
         searchSuggestions={searchSuggestions}
         onSearch={handleSearch}
       />
-      <div className="p-4 sm:p-6">
+      <div className="p-4 pb-24 sm:p-6 sm:pb-6">
         {/* Error Display */}
         {error && (
           <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">

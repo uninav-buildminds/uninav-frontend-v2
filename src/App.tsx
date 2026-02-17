@@ -22,6 +22,7 @@ import Overview from "./pages/dashboard/Overview";
 import Libraries from "./pages/dashboard/Libraries";
 import RecentMaterials from "./pages/dashboard/RecentMaterials";
 import Recommendations from "./pages/dashboard/Recommendations";
+import Clubs from "./pages/dashboard/Clubs";
 import Notifications from "./pages/dashboard/Notifications";
 import SettingsPage from "./pages/dashboard/Settings";
 import MaterialView from "./pages/dashboard/MaterialView";
@@ -97,6 +98,7 @@ const App = () => {
 
                                                             {/* Dashboard Sub-routes */}
                                                             <Route path="libraries" element={<Libraries/>}/>
+                                                            <Route path="clubs" element={<Clubs/>}/>
                                                             <Route path="recent" element={<RecentMaterials/>}/>
                                                             <Route
                                                                 path="recommendations"

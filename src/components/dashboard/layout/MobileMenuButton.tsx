@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Cancel01Icon, HelpCircleIcon, Menu01Icon } from "@hugeicons/core-free-icons";
+import { Cancel01Icon, HelpCircleIcon, Menu01Icon, Notification01Icon } from "@hugeicons/core-free-icons";
 import { useNavigate } from "react-router-dom";
 
 interface MobileMenuButtonProps {
@@ -70,13 +70,22 @@ const MobileMenuButton: React.FC<MobileMenuButtonProps> = ({ isOpen, onClick, di
         </button>
         
         {isScrolled && (
-          <button
-            onClick={() => navigate('/dashboard/help')}
-            className="p-3 hover:bg-gray-50 transition-colors"
-            aria-label="Help"
-          >
-            <HugeiconsIcon icon={HelpCircleIcon} strokeWidth={1.5} size={20} className="text-gray-700" />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => navigate('/dashboard/help')}
+              className="p-3 hover:bg-gray-50 transition-colors rounded-lg"
+              aria-label="Help"
+            >
+              <HugeiconsIcon icon={HelpCircleIcon} strokeWidth={1.5} size={20} className="text-gray-700" />
+            </button>
+            <button
+              onClick={() => navigate('/dashboard/notifications')}
+              className="p-3 hover:bg-gray-50 transition-colors rounded-lg"
+              aria-label="Alerts"
+            >
+              <HugeiconsIcon icon={Notification01Icon} strokeWidth={1.5} size={20} className="text-gray-700" />
+            </button>
+          </div>
         )}
       </div>
     </div>

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Add01Icon, FolderLibraryIcon, HelpCircleIcon, Home01Icon, Logout01Icon, Notification01Icon, Settings01Icon, SidebarLeft01Icon, SidebarLeftIcon, UserGroupIcon } from "@hugeicons/core-free-icons";
+import { Add01Icon, UserGroup02Icon, FolderLibraryIcon, HelpCircleIcon, Home01Icon, Logout01Icon, Notification01Icon, Settings01Icon, SidebarLeft01Icon, SidebarLeftIcon, UserGroupIcon } from "@hugeicons/core-free-icons";
 import UserRail from "../user/UserRail";
 import { LogoutModal, UploadModal } from "@/components/modals";
 import { panelData } from "@/data/panel";
@@ -19,6 +19,7 @@ const Sidebar: React.FC = () => {
   const baseNavItems = [
     { to: "/dashboard", label: "Overview", icon: Home01Icon },
     { to: "/dashboard/libraries", label: "Libraries", icon: FolderLibraryIcon },
+    { to: "/dashboard/clubs", label: "Clubs", icon: UserGroup02Icon },
     {
       to: "/dashboard/notifications",
       label: "Alerts",
