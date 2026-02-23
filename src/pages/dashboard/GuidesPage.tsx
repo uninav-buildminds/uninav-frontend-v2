@@ -194,10 +194,6 @@ const GuidesPage: React.FC = () => {
       subtitle="Step-by-step guides to help you get the most out of UniNav."
     >
       <div className="max-w-4xl mx-auto px-2 sm:px-4 md:px-0 pb-10">
-        <p className="text-sm text-gray-600 mb-6 text-center md:text-left">
-          Step-by-step guides to help you navigate UniNav’s features, workflows,
-          and best practices.
-        </p>
         {renderContent()}
       </div>
     </MaterialsLayout>
