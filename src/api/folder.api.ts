@@ -91,6 +91,29 @@ export async function getMyFolders(): Promise<Response<Folder[]> | null> {
 }
 
 /**
+ * Get material IDs that are in any of the current user's folders (for list UIs)
+ * @returns array of material IDs or null
+ */
+export async function getFolderMaterialIds(): Promise<
+  Response<{ materialIds: string[] }> | null
+> {
+  try {
+    const response = await httpClient.get("/folders/material-ids");
+    if (response.data.status === "success") {
+      return response.data;
+    }
+    return null;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status || 500,
+      message:
+        error.response?.data?.message ||
+        "Failed to fetch material IDs in folders",
+    };
+  }
+}
+
+/**
  * Get current user's folders with pagination
  * @param params - Pagination parameters
  * @returns paginated folders response or null

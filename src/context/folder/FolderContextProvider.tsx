@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
-import { getMyFolders, getFolder, type Folder } from "@/api/folder.api";
+import { getMyFolders, getFolderMaterialIds, type Folder } from "@/api/folder.api";
 import { useAuth } from "@/hooks/useAuth";
 
 interface FolderContextType {
@@ -16,60 +16,41 @@ export const FolderProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const { user } = useAuth();
   const [folders, setFolders] = useState<Folder[]>([]);
+  const [materialIdsList, setMaterialIdsList] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Create a Set of material IDs that are in folders
-  const materialIdsInFolders = useMemo(() => {
-    const ids = new Set<string>();
-    folders.forEach((folder) => {
-      folder.content?.forEach((item) => {
-        if (item.contentMaterialId) {
-          ids.add(item.contentMaterialId);
-        }
-        if (item.material?.id) {
-          ids.add(item.material.id);
-        }
-      });
-    });
-    return ids;
-  }, [folders]);
+  const materialIdsInFolders = useMemo(
+    () => new Set<string>(materialIdsList),
+    [materialIdsList]
+  );
 
   const fetchFolders = async () => {
     if (!user) {
       setFolders([]);
+      setMaterialIdsList([]);
       setIsLoading(false);
       return;
     }
 
     setIsLoading(true);
     try {
-      const response = await getMyFolders();
-      if (response && response.status === "success" && response.data) {
-        // Fetch full folder details with content for each folder
-        // getMyFolders() might not include content, so we fetch each folder individually to ensure we have content
-        const foldersWithContent = await Promise.all(
-          response.data.map(async (folder: Folder) => {
-            try {
-              // Always fetch full folder details to get content
-              // This ensures we have accurate material IDs in folders
-              const fullFolderResponse = await getFolder(folder.id);
-              if (fullFolderResponse && fullFolderResponse.status === "success" && fullFolderResponse.data) {
-                return fullFolderResponse.data;
-              }
-              // Fallback to original folder if fetch fails
-              return folder;
-            } catch (error) {
-              console.error(`Error fetching folder ${folder.id} details:`, error);
-              // Fallback to original folder if fetch fails
-              return folder;
-            }
-          })
-        );
-        setFolders(foldersWithContent);
+      const [foldersRes, idsRes] = await Promise.all([
+        getMyFolders(),
+        getFolderMaterialIds(),
+      ]);
+
+      if (foldersRes && foldersRes.status === "success" && foldersRes.data) {
+        const foldersData = Array.isArray(foldersRes.data) ? foldersRes.data : [];
+        setFolders(foldersData);
+      }
+
+      if (idsRes && idsRes.status === "success" && idsRes.data?.materialIds) {
+        setMaterialIdsList(idsRes.data.materialIds);
+      } else {
+        setMaterialIdsList([]);
       }
     } catch (error) {
       console.error("Error fetching folders:", error);
-      // Silently fail - don't block the UI
     } finally {
       setIsLoading(false);
     }

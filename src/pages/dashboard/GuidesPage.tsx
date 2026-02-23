@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import MaterialsLayout from "@/components/dashboard/layout/MaterialsLayout";
 import { getGuides } from "@/api/materials.api";
@@ -189,10 +189,24 @@ const GuidesPage: React.FC = () => {
       onSearch={handleSearch}
       searchPlaceholder="Search guides..."
       searchSuggestions={searchSuggestions}
-      showBackButton
-      backTo="/"
+      showBackButton={false}
       subtitle="Step-by-step guides to help you get the most out of UniNav."
     >
+      {/* Floating UniNav logo – click to go home; z-fixed so it sits above PageHeader (z-sticky) */}
+      <Link
+        to="/"
+        className="fixed left-3 sm:left-4 top-3 sm:top-4 z-fixed flex items-center gap-1.5 sm:gap-2 px-2.5 py-2 sm:px-3 sm:py-2.5 bg-white/90 backdrop-blur hover:bg-white border border-gray-200 rounded-full shadow-lg transition-all duration-200 hover:scale-105 active:scale-95"
+        aria-label="Go to UniNav home"
+      >
+        <img
+          src="/assets/logo.svg"
+          alt=""
+          className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0"
+        />
+        <span className="text-sm sm:text-base font-semibold text-brand hidden sm:inline">
+          UniNav
+        </span>
+      </Link>
       <div className="max-w-4xl mx-auto px-2 sm:px-4 md:px-0 pb-10">
         {renderContent()}
       </div>

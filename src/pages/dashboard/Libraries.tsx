@@ -29,6 +29,7 @@ import { toast } from "sonner";
 import { ResponseStatus } from "@/lib/types/response.types";
 import { UploadModal } from "@/components/modals";
 import { getBookmarksPaginated } from "@/api/user.api";
+import { Button } from "@/components/ui/button";
 
 type TabType = "all" | "saved" | "uploads";
 
@@ -778,7 +779,7 @@ const Libraries: React.FC = () => {
         searchSuggestions={searchSuggestions}
         onSearch={handleSearch}
       />
-      <div className="p-4 sm:p-6">
+      <div className="p-4 sm:p-6 pb-24 md:pb-6">
         {/* Error Display */}
         {error && (
           <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -944,35 +945,25 @@ const Libraries: React.FC = () => {
           </div>
         )}
 
-        {/* Load more */}
+        {/* Load more – extra bottom padding keeps this above mobile footer nav */}
         {hasContent && shouldShowLoadMore && (
-          <div className="mt-10 flex justify-center">
-            <button
+          <div className="mt-10 flex justify-center pb-2">
+            <Button
               type="button"
               onClick={handleLoadMore}
               disabled={isLoadingMore}
-              className="w-12 h-12 rounded-full bg-white border border-brand/20 shadow-sm hover:shadow-md hover:border-brand/30 transition-all flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed"
+              className="bg-brand text-white hover:bg-brand/90 px-6 py-2.5 font-medium rounded-lg shadow-sm"
               aria-label="Load more"
             >
               {isLoadingMore ? (
-                <div className="w-5 h-5 border-2 border-brand border-t-transparent rounded-full animate-spin" />
+                <span className="flex items-center gap-2">
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Loading…
+                </span>
               ) : (
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="text-brand"
-                >
-                  <path d="M12 5v14" />
-                  <path d="m19 12-7 7-7-7" />
-                </svg>
+                "Load More"
               )}
-            </button>
+            </Button>
           </div>
         )}
 
