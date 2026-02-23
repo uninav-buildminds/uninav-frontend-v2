@@ -96,6 +96,7 @@ export async function materialPreview(
   }
 }
 
+// Search parameters for material queries
 interface MaterialSearchParams {
   page?: number;
   limit?: number;
@@ -111,6 +112,7 @@ interface MaterialSearchParams {
   saveHistory?: boolean; // Whether to save this search to history (false for autocomplete, true for explicit user searches)
 }
 
+// Create a single material (file or link)
 export async function createMaterials(materialData: CreateMaterialForm) {
   const formData = new FormData();
 
@@ -208,6 +210,7 @@ export async function createMaterials(materialData: CreateMaterialForm) {
   }
 }
 
+// Fetch recommended materials for the current user
 export async function getMaterialRecommendations(
   params: MaterialRecommendation
 ): Promise<
@@ -241,6 +244,7 @@ export interface RecentMaterial extends Material {
   lastViewedAt: string;
 }
 
+// Fetch recently viewed materials for the current user
 export async function getRecentMaterials(): Promise<
   ResponseSuccess<{
     items: RecentMaterial[];
@@ -266,6 +270,7 @@ export async function getRecentMaterials(): Promise<
   }
 }
 
+// Fetch popular materials by engagement
 export async function getPopularMaterials(limit: number = 10): Promise<
   Response<{
     items: Material[];
@@ -321,6 +326,16 @@ export async function searchMaterials(
         "Searching materials failed. Please try again.",
     };
   }
+}
+
+// Fetch guide-type materials only
+export async function getGuides(
+  params: Omit<MaterialSearchParams, "type"> = {}
+): Promise<ResponseSuccess<SearchResult<Material>>> {
+  return searchMaterials({
+    ...params,
+    type: MaterialTypeEnum.GUIDE,
+  });
 }
 
 // Combined search for both materials and folders

@@ -44,6 +44,7 @@ import {FolderProvider} from "./context/folder/FolderContextProvider";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import Help from "./pages/dashboard/Help";
 import Profile from "./pages/dashboard/Profile";
+import GuidesPage from "./pages/dashboard/GuidesPage";
 import PublicFolderView from "./pages/public/PublicFolderView";
 import PublicMaterialView from "./pages/public/PublicMaterialView";
 import ScrollToTop from "./components/ScrollToTop";
@@ -241,6 +242,9 @@ const App = () => {
                                                             path="/auth/password/success"
                                                             element={<ResetSuccess/>}
                                                         />
+
+                                                        {/* Public Guides Route - no authentication required */}
+                                                        <Route path="/guides" element={<GuidesPage/>}/>
 
                                                         {/* Public View Routes - No authentication required */}
                                                         <Route

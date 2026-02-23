@@ -69,13 +69,46 @@ const MaterialViewerArea: React.FC<MaterialViewerAreaProps> = ({
     );
   }
 
+  // Use same GDrive viewers for GDRIVE and for GUIDE when resource is a GDrive URL
   if (
-    material.type === MaterialTypeEnum.GDRIVE &&
+    (material.type === MaterialTypeEnum.GDRIVE ||
+      material.type === MaterialTypeEnum.GUIDE) &&
     material.resource?.resourceAddress
   ) {
     const gdriveId = extractGDriveId(material.resource.resourceAddress);
 
-    if (!gdriveId) {
+    if (gdriveId) {
+      if (gdriveId.type === "folder") {
+        return (
+          <GDriveFolderBrowser
+            folderId={gdriveId.id}
+            folderName={material.label}
+            onViewFile={onViewGDriveFile}
+          />
+        );
+      }
+
+      return (
+        <GDriveFileViewer
+          fileId={gdriveId.id}
+          mimeType={
+            gdriveId.type === "doc"
+              ? "application/vnd.google-apps.document"
+              : gdriveId.type === "sheet"
+                ? "application/vnd.google-apps.spreadsheet"
+                : gdriveId.type === "presentation"
+                  ? "application/vnd.google-apps.presentation"
+                  : undefined
+          }
+          zoom={zoom}
+          onZoomIn={onZoomIn}
+          onZoomOut={onZoomOut}
+        />
+      );
+    }
+
+    // Invalid GDrive URL only for GDRIVE type; GUIDE with non-GDrive URL falls through to iframe
+    if (material.type === MaterialTypeEnum.GDRIVE) {
       return (
         <div className="h-full flex items-center justify-center text-gray-500">
           <div className="text-center">
@@ -93,34 +126,6 @@ const MaterialViewerArea: React.FC<MaterialViewerAreaProps> = ({
         </div>
       );
     }
-
-    if (gdriveId.type === "folder") {
-      return (
-        <GDriveFolderBrowser
-          folderId={gdriveId.id}
-          folderName={material.label}
-          onViewFile={onViewGDriveFile}
-        />
-      );
-    }
-
-    return (
-      <GDriveFileViewer
-        fileId={gdriveId.id}
-        mimeType={
-          gdriveId.type === "doc"
-            ? "application/vnd.google-apps.document"
-            : gdriveId.type === "sheet"
-            ? "application/vnd.google-apps.spreadsheet"
-            : gdriveId.type === "presentation"
-            ? "application/vnd.google-apps.presentation"
-            : undefined
-        }
-        zoom={zoom}
-        onZoomIn={onZoomIn}
-        onZoomOut={onZoomOut}
-      />
-    );
   }
 
   if (

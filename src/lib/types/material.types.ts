@@ -18,6 +18,7 @@ export enum MaterialTypeEnum {
   IMAGE = "image", // image files
   VIDEO = "video", // video files/links
   ARTICLE = "article", // articles
+  GUIDE = "guide", // in-product guides
   OTHER = "other", // other types
 }
 

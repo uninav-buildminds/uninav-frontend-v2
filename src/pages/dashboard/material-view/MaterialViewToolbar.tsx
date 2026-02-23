@@ -53,7 +53,8 @@ const MaterialViewToolbar: React.FC<MaterialViewToolbarProps> = ({
     material.restriction !== RestrictionEnum.READONLY &&
     material.type !== MaterialTypeEnum.YOUTUBE &&
     (material.resource?.resourceType === ResourceTypeEnum.UPLOAD ||
-      material.type === MaterialTypeEnum.GDRIVE);
+      material.type === MaterialTypeEnum.GDRIVE ||
+      material.type === MaterialTypeEnum.GUIDE);
 
   return (
     <>
