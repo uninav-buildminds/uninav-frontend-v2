@@ -8,8 +8,8 @@ import {
   SmartPhone01Icon,
   InformationCircleIcon,
 } from "@hugeicons/core-free-icons";
-import { deferredPrompt } from "@/main";
-import {usePostHog} from "@posthog/react";
+import { deferredPrompt } from "@/pwa";
+import { usePostHog } from "@posthog/react";
 
 // ── Platform detection helpers ────────────────────────────────────────────
 
