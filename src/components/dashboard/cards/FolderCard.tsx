@@ -16,7 +16,10 @@ interface FolderCardProps {
   onShare?: () => void;
   onEdit?: (folderId: string, newName: string) => void;
   onDelete?: (folderId: string) => void;
+  /** Number of materials in this folder */
   materialCount?: number;
+  /** Number of nested (sub) folders */
+  folderCount?: number;
   isRenaming?: boolean;
 }
 
@@ -27,6 +30,7 @@ const FolderCard: React.FC<FolderCardProps> = ({
   onEdit,
   onDelete,
   materialCount = 0,
+  folderCount = 0,
   isRenaming = false,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -153,7 +157,13 @@ const FolderCard: React.FC<FolderCardProps> = ({
           {/* Metadata and Action Icons - Matching MaterialCard */}
           <div className="flex items-center justify-between">
             <div className="text-xs text-gray-500 truncate flex-1">
-              {materialCount} {materialCount === 1 ? "material" : "materials"}
+              {folderCount > 0 && materialCount > 0
+                ? `${folderCount} ${folderCount === 1 ? "folder" : "folders"} • ${materialCount} ${materialCount === 1 ? "material" : "materials"}`
+                : folderCount > 0
+                  ? `${folderCount} ${folderCount === 1 ? "folder" : "folders"}`
+                  : materialCount > 0
+                    ? `${materialCount} ${materialCount === 1 ? "material" : "materials"}`
+                    : "Empty"}
             </div>
             {/* Action Icons - Menu */}
             <div className="flex items-center gap-1 ml-2 relative z-[60]">

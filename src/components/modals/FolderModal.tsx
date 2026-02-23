@@ -272,6 +272,13 @@ const FolderModal: React.FC<FolderModalProps> = ({
                                   (item) => item.contentMaterialId
                                 ).length || 0
                           }
+                          folderCount={
+                            typeof nestedFolder.nestedFolderCount === "number"
+                              ? nestedFolder.nestedFolderCount
+                              : nestedFolder.content?.filter(
+                                  (item) => item.contentFolderId
+                                ).length || 0
+                          }
                         />
                       ))}
 

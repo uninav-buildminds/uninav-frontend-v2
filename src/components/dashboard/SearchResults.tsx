@@ -315,6 +315,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                               onFolderClick?.(item.slug);
                             }}
                             materialCount={(item as any).materialCount || 0}
+                            folderCount={(item as any).nestedFolderCount ?? 0}
                           />
                         ) : (
                           <MaterialCard

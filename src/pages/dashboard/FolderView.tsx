@@ -114,6 +114,14 @@ const FolderView: React.FC<FolderViewProps> = ({ isPublic = false }) => {
     return folder.content?.filter((item) => item.contentMaterialId).length || 0;
   };
 
+  /** Number of nested (sub) folders; uses API count or content array */
+  const getFolderCount = (folder: Folder): number => {
+    if (typeof folder.nestedFolderCount === "number") {
+      return folder.nestedFolderCount;
+    }
+    return folder.content?.filter((item) => item.contentFolderId).length || 0;
+  };
+
   const handleAddMaterial = () => {
     // Check if user is authenticated
     if (!user) {
@@ -299,6 +307,7 @@ const FolderView: React.FC<FolderViewProps> = ({ isPublic = false }) => {
                 folder={nestedFolder}
                 onClick={() => handleFolderClick(nestedFolder.slug)}
                 materialCount={getFolderMaterialCount(nestedFolder)}
+                folderCount={getFolderCount(nestedFolder)}
               />
             ))}
 

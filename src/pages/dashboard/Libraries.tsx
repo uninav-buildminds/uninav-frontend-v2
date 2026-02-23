@@ -464,6 +464,14 @@ const Libraries: React.FC = () => {
     return folder.content?.filter((item) => item.contentMaterialId).length || 0;
   };
 
+  /** Number of nested (sub) folders; uses API count or content array */
+  const getFolderCount = (folder: Folder): number => {
+    if (typeof folder.nestedFolderCount === "number") {
+      return folder.nestedFolderCount;
+    }
+    return folder.content?.filter((item) => item.contentFolderId).length || 0;
+  };
+
   // Material handlers
   const handleRead = (slug: string) => {
     navigate(`/dashboard/material/${slug}`);
@@ -768,6 +776,7 @@ const Libraries: React.FC = () => {
                     onEdit={handleEditFolder}
                     onDelete={handleDeleteFolder}
                     materialCount={getFolderMaterialCount(folder)}
+                    folderCount={getFolderCount(folder)}
                     isRenaming={renamingFolderId === folder.id}
                   />
                 </div>
