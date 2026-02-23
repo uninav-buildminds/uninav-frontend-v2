@@ -8,5 +8,6 @@ export interface Bookmark {
   createdAt: string;
   updatedAt: string;
 
-  material: Material; //always present when you fetch all bookmarks
+  // Material is present when bookmarks are fetched with includeMaterial=true
+  material?: Material;
 }

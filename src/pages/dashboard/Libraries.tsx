@@ -12,11 +12,10 @@ import CreateFolderModal from "@/components/modals/CreateFolderModal";
 import { DeleteFolderModal } from "@/components/modals/DeleteFolderModal";
 import MaterialCard from "@/components/dashboard/cards/MaterialCard";
 import { useAuth } from "@/hooks/useAuth";
-import { useBookmarks } from "@/context/bookmark/BookmarkContextProvider";
 import { useFolderContext } from "@/context/folder/FolderContextProvider";
 import { searchMaterials, deleteMaterial } from "@/api/materials.api";
 import {
-  getMyFolders,
+  getMyFoldersPaginated,
   addMaterialToFolder,
   updateFolder,
   deleteFolder,
@@ -29,14 +28,16 @@ import { getRecentMaterials, type RecentMaterial } from "@/api/materials.api";
 import { toast } from "sonner";
 import { ResponseStatus } from "@/lib/types/response.types";
 import { UploadModal } from "@/components/modals";
+import { getBookmarksPaginated } from "@/api/user.api";
 
 type TabType = "all" | "saved" | "uploads";
 
 const Libraries: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { bookmarks, isLoading: bookmarksLoading } = useBookmarks();
   const { materialIdsInFolders, refreshFolders } = useFolderContext();
+
+  const PAGE_SIZE = 10;
 
   const [activeTab, setActiveTab] = useState<TabType>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -49,9 +50,21 @@ const Libraries: React.FC = () => {
   >([]);
   const [filteredUploads, setFilteredUploads] = useState<Material[]>([]);
 
+  // Saved materials pagination
+  const [savedPage, setSavedPage] = useState(1);
+  const [savedHasMore, setSavedHasMore] = useState(true);
+  const [isLoadingSaved, setIsLoadingSaved] = useState(false);
+
+  // Uploads pagination
+  const [uploadsPage, setUploadsPage] = useState(1);
+  const [uploadsHasMore, setUploadsHasMore] = useState(true);
+
   // Folders
   const [folders, setFolders] = useState<Folder[]>([]);
   const [isLoadingFolders, setIsLoadingFolders] = useState(false);
+  const [foldersPage, setFoldersPage] = useState(1);
+  const [foldersHasMore, setFoldersHasMore] = useState(true);
+  const [isLoadingMoreFolders, setIsLoadingMoreFolders] = useState(false);
   const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
   const [selectedFolder, setSelectedFolder] = useState<Folder | null>(null);
   const [showFolderModal, setShowFolderModal] = useState(false);
@@ -71,27 +84,82 @@ const Libraries: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);
 
-  // Extract materials from bookmarks
-  const fetchSavedMaterials = () => {
-    if (!bookmarks.length) {
+  // Merge materials by id to keep pagination append stable
+  const mergeUniqueMaterials = (prev: Material[], next: Material[]): Material[] => {
+    const seen = new Set(prev.map((m) => m.id));
+    const merged = [...prev];
+    next.forEach((m) => {
+      if (!seen.has(m.id)) {
+        seen.add(m.id);
+        merged.push(m);
+      }
+    });
+    return merged;
+  };
+
+  // Merge folders by id to keep pagination append stable
+  const mergeUniqueFolders = (prev: Folder[], next: Folder[]): Folder[] => {
+    const seen = new Set(prev.map((f) => f.id));
+    const merged = [...prev];
+    next.forEach((f) => {
+      if (!seen.has(f.id)) {
+        seen.add(f.id);
+        merged.push(f);
+      }
+    });
+    return merged;
+  };
+
+  // Fetch one page of saved materials (bookmarks) and append/replace in state
+  const loadSavedMaterialsPage = async (
+    pageToLoad: number,
+    mode: "replace" | "append"
+  ) => {
+    if (!user?.id) {
       setSavedMaterials([]);
       setFilteredSavedMaterials([]);
+      setSavedHasMore(false);
       return;
     }
 
-    const materials = bookmarks
-      .filter((bookmark) => bookmark.materialId && bookmark.material)
-      .map((bookmark) => bookmark.material);
+    setIsLoadingSaved(true);
+    setError(null);
 
-    setSavedMaterials(materials);
-    setFilteredSavedMaterials(materials);
+    try {
+      const result = await getBookmarksPaginated({
+        page: pageToLoad,
+        limit: PAGE_SIZE,
+        includeMaterial: true,
+      });
+
+      const items = (result.items || [])
+        .map((b) => b.material)
+        .filter((m): m is Material => Boolean(m));
+
+      setSavedMaterials((prev) =>
+        mode === "append" ? mergeUniqueMaterials(prev, items) : items
+      );
+      setSavedPage(pageToLoad);
+      setSavedHasMore(Boolean(result.pagination?.hasMore));
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to fetch saved materials";
+      setError(errorMessage);
+      console.error("Error fetching saved materials:", errorMessage);
+    } finally {
+      setIsLoadingSaved(false);
+    }
   };
 
-  // Fetch user's uploaded materials
-  const fetchUserUploads = async () => {
+  // Fetch one page of user uploads and append/replace in state
+  const loadUploadsPage = async (
+    pageToLoad: number,
+    mode: "replace" | "append"
+  ) => {
     if (!user?.id) {
       setUserUploads([]);
       setFilteredUploads([]);
+      setUploadsHasMore(false);
       return;
     }
 
@@ -101,7 +169,8 @@ const Libraries: React.FC = () => {
     try {
       const response = await searchMaterials({
         creatorId: user.id,
-        limit: 100,
+        page: pageToLoad,
+        limit: PAGE_SIZE,
         saveHistory: false, // Don't save - this is fetching user uploads, not a search
       });
 
@@ -110,8 +179,11 @@ const Libraries: React.FC = () => {
           ? response.data.items || []
           : [];
 
-      setUserUploads(uploads);
-      setFilteredUploads(uploads);
+      setUserUploads((prev) =>
+        mode === "append" ? mergeUniqueMaterials(prev, uploads) : uploads
+      );
+      setUploadsPage(pageToLoad);
+      setUploadsHasMore(Boolean(response.data.pagination?.hasMore));
     } catch (err: unknown) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to fetch user uploads";
@@ -122,19 +194,40 @@ const Libraries: React.FC = () => {
     }
   };
 
-  // Load folders
-  const loadFolders = async () => {
-    setIsLoadingFolders(true);
+  // Fetch one page of folders and append/replace in state
+  const loadFoldersPage = async (
+    pageToLoad: number,
+    mode: "replace" | "append"
+  ) => {
+    if (!user?.id) {
+      setFolders([]);
+      setFoldersHasMore(false);
+      return;
+    }
+
+    if (mode === "append") {
+      setIsLoadingMoreFolders(true);
+    } else {
+      setIsLoadingFolders(true);
+    }
+
     try {
-      const response = await getMyFolders();
+      const response = await getMyFoldersPaginated({
+        page: pageToLoad,
+        limit: PAGE_SIZE,
+      });
+
       if (response && response.status === "success" && response.data) {
-        // Response.data is already an array for folders
-        const foldersData = Array.isArray(response.data) ? response.data : [];
-        setFolders(foldersData);
-        if (selectedFolder) {
-          const updatedFolder = foldersData.find(
-            (f: Folder) => f.id === selectedFolder.id
-          );
+        const items = response.data.items || [];
+
+        setFolders((prev) =>
+          mode === "append" ? mergeUniqueFolders(prev, items) : items
+        );
+        setFoldersPage(pageToLoad);
+        setFoldersHasMore(Boolean(response.data.pagination?.hasMore));
+
+        if (selectedFolder && mode !== "append") {
+          const updatedFolder = items.find((f: Folder) => f.id === selectedFolder.id);
           if (updatedFolder) {
             setSelectedFolder(updatedFolder);
           }
@@ -146,7 +239,26 @@ const Libraries: React.FC = () => {
       console.error("Error loading folders:", errorMessage);
     } finally {
       setIsLoadingFolders(false);
+      setIsLoadingMoreFolders(false);
     }
+  };
+
+  // Reset folder pagination and reload the first page
+  const reloadFolders = async () => {
+    setFoldersHasMore(true);
+    await loadFoldersPage(1, "replace");
+  };
+
+  // Reset uploads pagination and reload the first page
+  const reloadUploads = async () => {
+    setUploadsHasMore(true);
+    await loadUploadsPage(1, "replace");
+  };
+
+  // Reset saved materials pagination and reload the first page
+  const reloadSavedMaterials = async () => {
+    setSavedHasMore(true);
+    await loadSavedMaterialsPage(1, "replace");
   };
 
   // Load recent materials to get lastViewedAt
@@ -337,7 +449,7 @@ const Libraries: React.FC = () => {
         prev.filter((m) => m.id !== draggedMaterial.id)
       );
 
-      loadFolders();
+      void reloadFolders();
       // Refresh folder context so MaterialCards update immediately
       await refreshFolders();
 
@@ -392,7 +504,7 @@ const Libraries: React.FC = () => {
         prev.filter((m) => m.id !== draggedMaterial.id)
       );
 
-      loadFolders();
+      void reloadFolders();
 
       if (selectedFolder?.id === folder.id) {
         setShowFolderModal(false);
@@ -426,7 +538,7 @@ const Libraries: React.FC = () => {
       await removeMaterialFromFolder(folderId, materialId);
       // Success - no toast notification
 
-      loadFolders();
+      void reloadFolders();
       // Refresh folder context so MaterialCards update immediately
       await refreshFolders();
 
@@ -493,7 +605,7 @@ const Libraries: React.FC = () => {
     setFilteredUploads((prev) => [material, ...prev]);
     setActiveTab("uploads");
     // Sync with server to ensure the latest data (e.g., moderation updates)
-    void fetchUserUploads();
+    void reloadUploads();
   };
 
   const handleDeleteMaterial = async (id: string) => {
@@ -526,7 +638,7 @@ const Libraries: React.FC = () => {
   const handleEditComplete = async () => {
     toast.success("Material updated successfully");
     setEditingMaterial(null);
-    await fetchUserUploads();
+    await reloadUploads();
   };
 
   const handleModalClose = () => {
@@ -599,23 +711,50 @@ const Libraries: React.FC = () => {
   const showFolders =
     activeTab === "all" || activeTab === "saved" || activeTab === "uploads";
 
+  const materialsHasMore =
+    activeTab === "saved"
+      ? savedHasMore
+      : activeTab === "uploads"
+        ? uploadsHasMore
+        : savedHasMore || uploadsHasMore;
+
+  const shouldShowLoadMore = foldersHasMore || materialsHasMore;
+  const isLoadingMore =
+    isLoadingMoreFolders || isLoadingSaved || isLoadingUploads || isLoadingFolders;
+
+  // Load the next page for folders and/or materials (depending on hasMore)
+  const handleLoadMore = async () => {
+    if (isLoadingMore) return;
+
+    const tasks: Promise<void>[] = [];
+
+    if (foldersHasMore) {
+      tasks.push(loadFoldersPage(foldersPage + 1, "append"));
+    }
+
+    if (activeTab === "saved") {
+      if (savedHasMore) tasks.push(loadSavedMaterialsPage(savedPage + 1, "append"));
+    } else if (activeTab === "uploads") {
+      if (uploadsHasMore) tasks.push(loadUploadsPage(uploadsPage + 1, "append"));
+    } else {
+      if (savedHasMore) tasks.push(loadSavedMaterialsPage(savedPage + 1, "append"));
+      if (uploadsHasMore) tasks.push(loadUploadsPage(uploadsPage + 1, "append"));
+    }
+
+    await Promise.all(tasks);
+  };
+
   // Effects
   useEffect(() => {
     if (user?.id) {
-      fetchUserUploads();
+      void reloadFolders();
+      void reloadSavedMaterials();
+      void reloadUploads();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   useEffect(() => {
-    if (!bookmarksLoading && bookmarks) {
-      fetchSavedMaterials();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bookmarks, bookmarksLoading]);
-
-  useEffect(() => {
-    loadFolders();
     loadRecentMaterials();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -648,8 +787,9 @@ const Libraries: React.FC = () => {
               onClick={() => {
                 setError(null);
                 if (user?.id) {
-                  fetchUserUploads();
-                  fetchSavedMaterials();
+                  void reloadFolders();
+                  void reloadSavedMaterials();
+                  void reloadUploads();
                 }
               }}
               className="mt-2 text-red-600 hover:text-red-800 text-sm underline"
@@ -804,9 +944,41 @@ const Libraries: React.FC = () => {
           </div>
         )}
 
+        {/* Load more */}
+        {hasContent && shouldShowLoadMore && (
+          <div className="mt-10 flex justify-center">
+            <button
+              type="button"
+              onClick={handleLoadMore}
+              disabled={isLoadingMore}
+              className="w-12 h-12 rounded-full bg-white border border-brand/20 shadow-sm hover:shadow-md hover:border-brand/30 transition-all flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed"
+              aria-label="Load more"
+            >
+              {isLoadingMore ? (
+                <div className="w-5 h-5 border-2 border-brand border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-brand"
+                >
+                  <path d="M12 5v14" />
+                  <path d="m19 12-7 7-7-7" />
+                </svg>
+              )}
+            </button>
+          </div>
+        )}
+
         {/* Empty State */}
         {!hasContent &&
-          !bookmarksLoading &&
+          !isLoadingSaved &&
           !isLoadingUploads &&
           !isLoadingFolders && (
             <div className="text-center py-12">

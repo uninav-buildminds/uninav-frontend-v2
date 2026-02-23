@@ -8,7 +8,7 @@ import React, {
 import { Bookmark } from "@/lib/types/bookmark.types";
 import { BookmarkContextType } from "./BookmarkContext";
 import {
-  getAllBookmarks,
+  getBookmarksLite,
   createBookmark,
   deleteBookmark,
 } from "@/api/user.api";
@@ -41,7 +41,7 @@ export const BookmarkProvider: React.FC<BookmarkProviderProps> = ({
     setError(null);
 
     try {
-      const bookmarksData = await getAllBookmarks();
+      const bookmarksData = await getBookmarksLite();
       setBookmarks(bookmarksData || []);
     } catch (err: any) {
       setError(err.message || "Failed to fetch bookmarks");
