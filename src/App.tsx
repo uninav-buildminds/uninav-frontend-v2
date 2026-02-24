@@ -4,8 +4,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ENV } from "@/lib/env.config";
-import { Analytics } from "@vercel/analytics/react";
-import { PostHogProvider } from "@posthog/react";
 import Index from "./pages/Index";
 import SignupForm from "./pages/auth/signup/SignupForm";
 import RequestEmailVerification from "./pages/auth/verification/RequestEmailVerification";
@@ -38,6 +36,7 @@ import MaterialsReviewPage from "./pages/management/materials-review";
 import UserManagementPage from "./pages/management/user-management";
 import ErrorReportsPage from "./pages/management/error-reports";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import { PostHogProvider } from "@posthog/react";
 import AuthContextProvider from "./context/authentication/AuthContextProvider";
 import { BookmarkProvider } from "./context/bookmark/BookmarkContextProvider";
 import { DepartmentProvider } from "./context/department/DepartmentContextProvider";
@@ -305,7 +304,6 @@ const App = () => {
           </TooltipProvider>
         </QueryClientProvider>
       </PostHogProvider>
-      <Analytics />
     </>
   );
 };

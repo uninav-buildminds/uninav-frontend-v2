@@ -31,7 +31,7 @@ const Sidebar: React.FC = () => {
   const baseNavItems = [
     { to: "/dashboard", label: "Overview", icon: Home01Icon },
     { to: "/dashboard/libraries", label: "Libraries", icon: FolderLibraryIcon },
-    { to: "/dashboard/clubs", label: "Clubs", icon: UserMultipleIcon },
+    // { to: "/dashboard/clubs", label: "Clubs", icon: UserMultipleIcon },
     {
       to: "/dashboard/notifications",
       label: "Notifications",
