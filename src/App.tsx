@@ -47,6 +47,13 @@ import Profile from "./pages/dashboard/Profile";
 import PublicFolderView from "./pages/public/PublicFolderView";
 import PublicMaterialView from "./pages/public/PublicMaterialView";
 import ScrollToTop from "./components/ScrollToTop";
+import ClubsFeed from "./pages/dashboard/ClubsFeed";
+import ClubDetail from "./pages/dashboard/ClubDetail";
+import MyClubs from "./pages/dashboard/MyClubs";
+import AdminClubs from "./pages/management/AdminClubs";
+import AdminFlags from "./pages/management/AdminFlags";
+import AdminRequests from "./pages/management/AdminRequests";
+import PublicClubsFeed from "./pages/public/PublicClubsFeed";
 const queryClient = new QueryClient();
 import { Analytics } from "@vercel/analytics/react";
 
@@ -66,185 +73,208 @@ const App = () => {
                   <BookmarkProvider>
                     <FolderProvider>
                       <FullscreenProvider>
-                      <Routes>
-                        <Route path="/" element={<Index />} />
+                        <Routes>
+                          <Route path="/" element={<Index />} />
 
-                        <Route
-                          path="/dashboard-batch"
-                          element={<DashboardPage />}
-                        />
-                        {/* Dashboard Routes - Nested */}
-                        <Route
-                          path="/dashboard"
-                          element={
-                            <ProtectedRoute>
-                              <DashboardLayout />
-                            </ProtectedRoute>
-                          }
-                        >
-                          {/* Dashboard Index - Overview */}
-                          <Route index element={<Overview />} />
-
-                          {/* Dashboard Sub-routes */}
-                          <Route path="libraries" element={<Libraries />} />
-                          <Route path="recent" element={<RecentMaterials />} />
                           <Route
-                            path="recommendations"
-                            element={<Recommendations />}
+                            path="/dashboard-batch"
+                            element={<DashboardPage />}
+                          />
+                          {/* Dashboard Routes - Nested */}
+                          <Route
+                            path="/dashboard"
+                            element={
+                              <ProtectedRoute>
+                                <DashboardLayout />
+                              </ProtectedRoute>
+                            }
+                          >
+                            {/* Dashboard Index - Overview */}
+                            <Route index element={<Overview />} />
+
+                            {/* Dashboard Sub-routes */}
+                            <Route path="libraries" element={<Libraries />} />
+                            <Route
+                              path="recent"
+                              element={<RecentMaterials />}
+                            />
+                            <Route
+                              path="recommendations"
+                              element={<Recommendations />}
+                            />
+                            <Route
+                              path="notifications"
+                              element={<Notifications />}
+                            />
+                            <Route path="settings" element={<SettingsPage />} />
+                            <Route path="help" element={<Help />} />
+
+                            {/* Profile View */}
+                            <Route
+                              path="profile/:userId"
+                              element={<Profile />}
+                            />
+
+                            {/* Material View */}
+                            <Route
+                              path="material/:slug"
+                              element={<MaterialView />}
+                            />
+
+                            {/* Folder View */}
+                            <Route
+                              path="folder/:slug"
+                              element={<FolderView />}
+                            />
+
+                            {/* Club Routes */}
+                            <Route path="clubs" element={<ClubsFeed />} />
+                            <Route path="clubs/:id" element={<ClubDetail />} />
+                            <Route path="clubs/my" element={<MyClubs />} />
+                          </Route>
+
+                          {/* Management Routes */}
+                          <Route
+                            path="/management"
+                            element={
+                              <ProtectedRoute>
+                                <ManagementLayout />
+                              </ProtectedRoute>
+                            }
+                          >
+                            {/* Management Dashboard - Default route */}
+                            <Route index element={<ManagementDashboard />} />
+
+                            {/* Management Sub-routes */}
+                            <Route
+                              path="courses"
+                              element={<CourseManagement />}
+                            />
+                            <Route
+                              path="courses-review"
+                              element={<CoursesReviewPage />}
+                            />
+                            <Route
+                              path="dlc-review"
+                              element={<DLCReviewPage />}
+                            />
+                            <Route
+                              path="blogs-review"
+                              element={<BlogsReviewPage />}
+                            />
+                            <Route
+                              path="materials-review"
+                              element={<MaterialsReviewPage />}
+                            />
+                            <Route
+                              path="user-management"
+                              element={<UserManagementPage />}
+                            />
+                            <Route
+                              path="error-reports"
+                              element={<ErrorReportsPage />}
+                            />
+
+                            {/* Club Management Routes */}
+                            <Route path="clubs" element={<AdminClubs />} />
+                            <Route
+                              path="clubs/flags"
+                              element={<AdminFlags />}
+                            />
+                            <Route
+                              path="clubs/requests"
+                              element={<AdminRequests />}
+                            />
+                            {/* Future routes can be added here */}
+                            {/* <Route path="materials" element={<MaterialsManagement />} /> */}
+                            {/* <Route path="blogs" element={<BlogsManagement />} /> */}
+                            {/* <Route path="users" element={<UsersManagement />} /> */}
+                          </Route>
+
+                          {/* Auth - Signup */}
+                          <Route
+                            path="/auth/signup"
+                            element={
+                              <AuthRedirect>
+                                <SignupForm />
+                              </AuthRedirect>
+                            }
                           />
                           <Route
-                            path="notifications"
-                            element={<Notifications />}
-                          />
-                          <Route path="settings" element={<SettingsPage />} />
-                          <Route path="help" element={<Help />} />
-
-                          {/* Profile View */}
-                          <Route path="profile/:userId" element={<Profile />} />
-
-                          {/* Material View */}
-                          <Route
-                            path="material/:slug"
-                            element={<MaterialView />}
-                          />
-
-                          {/* Folder View */}
-                          <Route
-                            path="folder/:slug"
-                            element={<FolderView />}
-                          />
-                        </Route>
-
-                        {/* Management Routes */}
-                        <Route
-                          path="/management"
-                          element={
-                            <ProtectedRoute>
-                              <ManagementLayout />
-                            </ProtectedRoute>
-                          }
-                        >
-                          {/* Management Dashboard - Default route */}
-                          <Route index element={<ManagementDashboard />} />
-
-                          {/* Management Sub-routes */}
-                          <Route
-                            path="courses"
-                            element={<CourseManagement />}
+                            path="/auth/signup/verify"
+                            element={
+                              <AuthRedirect>
+                                <RequestEmailVerification />
+                              </AuthRedirect>
+                            }
                           />
                           <Route
-                            path="courses-review"
-                            element={<CoursesReviewPage />}
+                            path="/auth/signup/profile"
+                            element={
+                              <ProtectedRoute>
+                                <ProfileSetup />
+                              </ProtectedRoute>
+                            }
                           />
                           <Route
-                            path="dlc-review"
-                            element={<DLCReviewPage />}
+                            path="/auth/signup/success"
+                            element={
+                              <ProtectedRoute>
+                                <SignupSuccess />
+                              </ProtectedRoute>
+                            }
+                          />
+
+                          {/* Auth - Signin */}
+                          <Route
+                            path="/auth/signin"
+                            element={
+                              <AuthRedirect>
+                                <SigninForm />
+                              </AuthRedirect>
+                            }
                           />
                           <Route
-                            path="blogs-review"
-                            element={<BlogsReviewPage />}
+                            path="/auth/verify-email"
+                            element={
+                              <AuthRedirect>
+                                <ProcessEmailVerification />
+                              </AuthRedirect>
+                            }
+                          />
+
+                          {/* Auth - Password Reset */}
+                          <Route
+                            path="/auth/password/forgot"
+                            element={<RequestReset />}
                           />
                           <Route
-                            path="materials-review"
-                            element={<MaterialsReviewPage />}
+                            path="/auth/password/check-inbox"
+                            element={<CheckInbox />}
                           />
                           <Route
-                            path="user-management"
-                            element={<UserManagementPage />}
+                            path="/auth/reset-password"
+                            element={<NewPassword />}
                           />
                           <Route
-                            path="error-reports"
-                            element={<ErrorReportsPage />}
+                            path="/auth/password/success"
+                            element={<ResetSuccess />}
                           />
-                          {/* Future routes can be added here */}
-                          {/* <Route path="materials" element={<MaterialsManagement />} /> */}
-                          {/* <Route path="blogs" element={<BlogsManagement />} /> */}
-                          {/* <Route path="users" element={<UsersManagement />} /> */}
-                        </Route>
 
-                        {/* Auth - Signup */}
-                        <Route
-                          path="/auth/signup"
-                          element={
-                            <AuthRedirect>
-                              <SignupForm />
-                            </AuthRedirect>
-                          }
-                        />
-                        <Route
-                          path="/auth/signup/verify"
-                          element={
-                            <AuthRedirect>
-                              <RequestEmailVerification />
-                            </AuthRedirect>
-                          }
-                        />
-                        <Route
-                          path="/auth/signup/profile"
-                          element={
-                            <ProtectedRoute>
-                              <ProfileSetup />
-                            </ProtectedRoute>
-                          }
-                        />
-                        <Route
-                          path="/auth/signup/success"
-                          element={
-                            <ProtectedRoute>
-                              <SignupSuccess />
-                            </ProtectedRoute>
-                          }
-                        />
+                          {/* Public View Routes - No authentication required */}
+                          <Route
+                            path="/view/folder/:slug"
+                            element={<PublicFolderView />}
+                          />
+                          <Route
+                            path="/view/material/:slug"
+                            element={<PublicMaterialView />}
+                          />
+                          <Route path="/clubs" element={<PublicClubsFeed />} />
 
-                        {/* Auth - Signin */}
-                        <Route
-                          path="/auth/signin"
-                          element={
-                            <AuthRedirect>
-                              <SigninForm />
-                            </AuthRedirect>
-                          }
-                        />
-                        <Route
-                          path="/auth/verify-email"
-                          element={
-                            <AuthRedirect>
-                              <ProcessEmailVerification />
-                            </AuthRedirect>
-                          }
-                        />
-
-                        {/* Auth - Password Reset */}
-                        <Route
-                          path="/auth/password/forgot"
-                          element={<RequestReset />}
-                        />
-                        <Route
-                          path="/auth/password/check-inbox"
-                          element={<CheckInbox />}
-                        />
-                        <Route
-                          path="/auth/reset-password"
-                          element={<NewPassword />}
-                        />
-                        <Route
-                          path="/auth/password/success"
-                          element={<ResetSuccess />}
-                        />
-
-                        {/* Public View Routes - No authentication required */}
-                        <Route
-                          path="/view/folder/:slug"
-                          element={<PublicFolderView />}
-                        />
-                        <Route
-                          path="/view/material/:slug"
-                          element={<PublicMaterialView />}
-                        />
-
-                        {/* 404 - Catch all unmatched routes */}
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
+                          {/* 404 - Catch all unmatched routes */}
+                          <Route path="*" element={<NotFound />} />
+                        </Routes>
                       </FullscreenProvider>
                     </FolderProvider>
                   </BookmarkProvider>

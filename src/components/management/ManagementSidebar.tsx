@@ -18,6 +18,9 @@ import {
   ChevronLeft,
   ChevronRight,
   AlertTriangle,
+  UsersRound,
+  Flag,
+  MessageSquare,
 } from "lucide-react";
 import { UserRole } from "@/lib/types/response.types";
 // import LogoIcon from "/assets/logo.svg";
@@ -73,6 +76,24 @@ const navigationItems = [
     icon: AlertTriangle,
     description: "View and manage error reports from users",
   },
+  {
+    title: "Clubs",
+    path: "/management/clubs",
+    icon: UsersRound,
+    description: "Manage all clubs, statuses, and analytics",
+  },
+  {
+    title: "Flagged Clubs",
+    path: "/management/clubs/flags",
+    icon: Flag,
+    description: "Review clubs reported by users",
+  },
+  {
+    title: "Club Requests",
+    path: "/management/clubs/requests",
+    icon: MessageSquare,
+    description: "View and respond to club requests from students",
+  },
   // {
   //   title: "Adverts Review",
   //   path: "/management/adverts",
@@ -107,14 +128,14 @@ const ManagementSidebar: React.FC = () => {
 
   // Filter navigation items based on user role
   const filteredNavigationItems = navigationItems.filter(
-    (item) => !item.adminOnly || user?.role === UserRole.ADMIN
+    (item) => !item.adminOnly || user?.role === UserRole.ADMIN,
   );
 
   return (
     <div
       className={cn(
         "bg-white border-r border-gray-200 flex flex-col h-screen sticky top-0 transition-all duration-300",
-        isCollapsed ? "w-16" : "w-64"
+        isCollapsed ? "w-16" : "w-64",
       )}
     >
       {/* Header */}
@@ -124,13 +145,13 @@ const ManagementSidebar: React.FC = () => {
         <div
           className={cn(
             "flex items-center",
-            isCollapsed ? "justify-center mb-3" : "justify-between mb-4"
+            isCollapsed ? "justify-center mb-3" : "justify-between mb-4",
           )}
         >
           <div
             className={cn(
               "flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity",
-              isCollapsed ? "justify-center" : ""
+              isCollapsed ? "justify-center" : "",
             )}
             onClick={handleLogoClick}
           >
@@ -194,7 +215,7 @@ const ManagementSidebar: React.FC = () => {
                 isActive
                   ? "bg-blue-100 text-blue-700 border border-blue-200"
                   : "text-gray-700 hover:bg-gray-100 hover:text-gray-900",
-                isCollapsed ? "justify-center px-2 py-3" : ""
+                isCollapsed ? "justify-center px-2 py-3" : "",
               )
             }
             title={isCollapsed ? item.title : undefined}
@@ -207,7 +228,7 @@ const ManagementSidebar: React.FC = () => {
                     "transition-colors",
                     isActive
                       ? "text-blue-700"
-                      : "text-gray-500 group-hover:text-gray-700"
+                      : "text-gray-500 group-hover:text-gray-700",
                   )}
                 />
                 {!isCollapsed && <span className="truncate">{item.title}</span>}
