@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ENV } from "@/lib/env.config";
+import { Analytics } from "@vercel/analytics/react";
+import { PostHogProvider } from "@posthog/react";
 import Index from "./pages/Index";
 import SignupForm from "./pages/auth/signup/SignupForm";
 import RequestEmailVerification from "./pages/auth/verification/RequestEmailVerification";
@@ -54,236 +56,255 @@ import AdminClubs from "./pages/management/AdminClubs";
 import AdminFlags from "./pages/management/AdminFlags";
 import AdminRequests from "./pages/management/AdminRequests";
 import PublicClubsFeed from "./pages/public/PublicClubsFeed";
+
 const queryClient = new QueryClient();
-import { Analytics } from "@vercel/analytics/react";
 
 const App = () => {
   return (
     <>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
+      <PostHogProvider
+        apiKey={import.meta.env.VITE_PUBLIC_POSTHOG_KEY}
+        options={{
+          api_host: import.meta.env.VITE_PUBLIC_POSTHOG_HOST,
+          defaults: "2025-05-24",
+          capture_exceptions: true,
+          debug: import.meta.env.MODE === "development",
+        }}
+      >
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
 
-          <BrowserRouter>
-            <ScrollToTop />
-            <GoogleOAuthProvider clientId={ENV.GOOGLE_CLIENT_ID}>
-              <AuthContextProvider>
-                <DepartmentProvider>
-                  <BookmarkProvider>
-                    <FolderProvider>
-                      <FullscreenProvider>
-                        <Routes>
-                          <Route path="/" element={<Index />} />
+            <BrowserRouter>
+              <ScrollToTop />
+              <GoogleOAuthProvider clientId={ENV.GOOGLE_CLIENT_ID}>
+                <AuthContextProvider>
+                  <DepartmentProvider>
+                    <BookmarkProvider>
+                      <FolderProvider>
+                        <FullscreenProvider>
+                          <Routes>
+                            <Route path="/" element={<Index />} />
 
-                          <Route
-                            path="/dashboard-batch"
-                            element={<DashboardPage />}
-                          />
-                          {/* Dashboard Routes - Nested */}
-                          <Route
-                            path="/dashboard"
-                            element={
-                              <ProtectedRoute>
-                                <DashboardLayout />
-                              </ProtectedRoute>
-                            }
-                          >
-                            {/* Dashboard Index - Overview */}
-                            <Route index element={<Overview />} />
-
-                            {/* Dashboard Sub-routes */}
-                            <Route path="libraries" element={<Libraries />} />
                             <Route
-                              path="recent"
-                              element={<RecentMaterials />}
+                              path="/dashboard-batch"
+                              element={<DashboardPage />}
+                            />
+                            {/* Dashboard Routes - Nested */}
+                            <Route
+                              path="/dashboard"
+                              element={
+                                <ProtectedRoute>
+                                  <DashboardLayout />
+                                </ProtectedRoute>
+                              }
+                            >
+                              {/* Dashboard Index - Overview */}
+                              <Route index element={<Overview />} />
+
+                              {/* Dashboard Sub-routes */}
+                              <Route path="libraries" element={<Libraries />} />
+                              <Route
+                                path="recent"
+                                element={<RecentMaterials />}
+                              />
+                              <Route
+                                path="recommendations"
+                                element={<Recommendations />}
+                              />
+                              <Route
+                                path="notifications"
+                                element={<Notifications />}
+                              />
+                              <Route
+                                path="settings"
+                                element={<SettingsPage />}
+                              />
+                              <Route path="help" element={<Help />} />
+
+                              {/* Profile View */}
+                              <Route
+                                path="profile/:userId"
+                                element={<Profile />}
+                              />
+
+                              {/* Material View */}
+                              <Route
+                                path="material/:slug"
+                                element={<MaterialView />}
+                              />
+
+                              {/* Folder View */}
+                              <Route
+                                path="folder/:slug"
+                                element={<FolderView />}
+                              />
+
+                              {/* Club Routes */}
+                              <Route path="clubs" element={<ClubsFeed />} />
+                              <Route
+                                path="clubs/:id"
+                                element={<ClubDetail />}
+                              />
+                              <Route path="clubs/my" element={<MyClubs />} />
+                            </Route>
+
+                            {/* Management Routes */}
+                            <Route
+                              path="/management"
+                              element={
+                                <ProtectedRoute>
+                                  <ManagementLayout />
+                                </ProtectedRoute>
+                              }
+                            >
+                              {/* Management Dashboard - Default route */}
+                              <Route index element={<ManagementDashboard />} />
+
+                              {/* Management Sub-routes */}
+                              <Route
+                                path="courses"
+                                element={<CourseManagement />}
+                              />
+                              <Route
+                                path="courses-review"
+                                element={<CoursesReviewPage />}
+                              />
+                              <Route
+                                path="dlc-review"
+                                element={<DLCReviewPage />}
+                              />
+                              <Route
+                                path="blogs-review"
+                                element={<BlogsReviewPage />}
+                              />
+                              <Route
+                                path="materials-review"
+                                element={<MaterialsReviewPage />}
+                              />
+                              <Route
+                                path="user-management"
+                                element={<UserManagementPage />}
+                              />
+                              <Route
+                                path="error-reports"
+                                element={<ErrorReportsPage />}
+                              />
+
+                              {/* Club Management Routes */}
+                              <Route path="clubs" element={<AdminClubs />} />
+                              <Route
+                                path="clubs/flags"
+                                element={<AdminFlags />}
+                              />
+                              <Route
+                                path="clubs/requests"
+                                element={<AdminRequests />}
+                              />
+                              {/* Future routes can be added here */}
+                              {/* <Route path="materials" element={<MaterialsManagement />} /> */}
+                              {/* <Route path="blogs" element={<BlogsManagement />} /> */}
+                              {/* <Route path="users" element={<UsersManagement />} /> */}
+                            </Route>
+
+                            {/* Auth - Signup */}
+                            <Route
+                              path="/auth/signup"
+                              element={
+                                <AuthRedirect>
+                                  <SignupForm />
+                                </AuthRedirect>
+                              }
                             />
                             <Route
-                              path="recommendations"
-                              element={<Recommendations />}
+                              path="/auth/signup/verify"
+                              element={
+                                <AuthRedirect>
+                                  <RequestEmailVerification />
+                                </AuthRedirect>
+                              }
                             />
                             <Route
-                              path="notifications"
-                              element={<Notifications />}
+                              path="/auth/signup/profile"
+                              element={
+                                <ProtectedRoute>
+                                  <ProfileSetup />
+                                </ProtectedRoute>
+                              }
                             />
-                            <Route path="settings" element={<SettingsPage />} />
-                            <Route path="help" element={<Help />} />
-
-                            {/* Profile View */}
                             <Route
-                              path="profile/:userId"
-                              element={<Profile />}
-                            />
-
-                            {/* Material View */}
-                            <Route
-                              path="material/:slug"
-                              element={<MaterialView />}
-                            />
-
-                            {/* Folder View */}
-                            <Route
-                              path="folder/:slug"
-                              element={<FolderView />}
+                              path="/auth/signup/success"
+                              element={
+                                <ProtectedRoute>
+                                  <SignupSuccess />
+                                </ProtectedRoute>
+                              }
                             />
 
-                            {/* Club Routes */}
-                            <Route path="clubs" element={<ClubsFeed />} />
-                            <Route path="clubs/:id" element={<ClubDetail />} />
-                            <Route path="clubs/my" element={<MyClubs />} />
-                          </Route>
-
-                          {/* Management Routes */}
-                          <Route
-                            path="/management"
-                            element={
-                              <ProtectedRoute>
-                                <ManagementLayout />
-                              </ProtectedRoute>
-                            }
-                          >
-                            {/* Management Dashboard - Default route */}
-                            <Route index element={<ManagementDashboard />} />
-
-                            {/* Management Sub-routes */}
+                            {/* Auth - Signin */}
                             <Route
-                              path="courses"
-                              element={<CourseManagement />}
+                              path="/auth/signin"
+                              element={
+                                <AuthRedirect>
+                                  <SigninForm />
+                                </AuthRedirect>
+                              }
                             />
                             <Route
-                              path="courses-review"
-                              element={<CoursesReviewPage />}
-                            />
-                            <Route
-                              path="dlc-review"
-                              element={<DLCReviewPage />}
-                            />
-                            <Route
-                              path="blogs-review"
-                              element={<BlogsReviewPage />}
-                            />
-                            <Route
-                              path="materials-review"
-                              element={<MaterialsReviewPage />}
-                            />
-                            <Route
-                              path="user-management"
-                              element={<UserManagementPage />}
-                            />
-                            <Route
-                              path="error-reports"
-                              element={<ErrorReportsPage />}
+                              path="/auth/verify-email"
+                              element={
+                                <AuthRedirect>
+                                  <ProcessEmailVerification />
+                                </AuthRedirect>
+                              }
                             />
 
-                            {/* Club Management Routes */}
-                            <Route path="clubs" element={<AdminClubs />} />
+                            {/* Auth - Password Reset */}
                             <Route
-                              path="clubs/flags"
-                              element={<AdminFlags />}
+                              path="/auth/password/forgot"
+                              element={<RequestReset />}
                             />
                             <Route
-                              path="clubs/requests"
-                              element={<AdminRequests />}
+                              path="/auth/password/check-inbox"
+                              element={<CheckInbox />}
                             />
-                            {/* Future routes can be added here */}
-                            {/* <Route path="materials" element={<MaterialsManagement />} /> */}
-                            {/* <Route path="blogs" element={<BlogsManagement />} /> */}
-                            {/* <Route path="users" element={<UsersManagement />} /> */}
-                          </Route>
+                            <Route
+                              path="/auth/reset-password"
+                              element={<NewPassword />}
+                            />
+                            <Route
+                              path="/auth/password/success"
+                              element={<ResetSuccess />}
+                            />
 
-                          {/* Auth - Signup */}
-                          <Route
-                            path="/auth/signup"
-                            element={
-                              <AuthRedirect>
-                                <SignupForm />
-                              </AuthRedirect>
-                            }
-                          />
-                          <Route
-                            path="/auth/signup/verify"
-                            element={
-                              <AuthRedirect>
-                                <RequestEmailVerification />
-                              </AuthRedirect>
-                            }
-                          />
-                          <Route
-                            path="/auth/signup/profile"
-                            element={
-                              <ProtectedRoute>
-                                <ProfileSetup />
-                              </ProtectedRoute>
-                            }
-                          />
-                          <Route
-                            path="/auth/signup/success"
-                            element={
-                              <ProtectedRoute>
-                                <SignupSuccess />
-                              </ProtectedRoute>
-                            }
-                          />
+                            {/* Public View Routes - No authentication required */}
+                            <Route
+                              path="/view/folder/:slug"
+                              element={<PublicFolderView />}
+                            />
+                            <Route
+                              path="/view/material/:slug"
+                              element={<PublicMaterialView />}
+                            />
+                            <Route
+                              path="/clubs"
+                              element={<PublicClubsFeed />}
+                            />
 
-                          {/* Auth - Signin */}
-                          <Route
-                            path="/auth/signin"
-                            element={
-                              <AuthRedirect>
-                                <SigninForm />
-                              </AuthRedirect>
-                            }
-                          />
-                          <Route
-                            path="/auth/verify-email"
-                            element={
-                              <AuthRedirect>
-                                <ProcessEmailVerification />
-                              </AuthRedirect>
-                            }
-                          />
-
-                          {/* Auth - Password Reset */}
-                          <Route
-                            path="/auth/password/forgot"
-                            element={<RequestReset />}
-                          />
-                          <Route
-                            path="/auth/password/check-inbox"
-                            element={<CheckInbox />}
-                          />
-                          <Route
-                            path="/auth/reset-password"
-                            element={<NewPassword />}
-                          />
-                          <Route
-                            path="/auth/password/success"
-                            element={<ResetSuccess />}
-                          />
-
-                          {/* Public View Routes - No authentication required */}
-                          <Route
-                            path="/view/folder/:slug"
-                            element={<PublicFolderView />}
-                          />
-                          <Route
-                            path="/view/material/:slug"
-                            element={<PublicMaterialView />}
-                          />
-                          <Route path="/clubs" element={<PublicClubsFeed />} />
-
-                          {/* 404 - Catch all unmatched routes */}
-                          <Route path="*" element={<NotFound />} />
-                        </Routes>
-                      </FullscreenProvider>
-                    </FolderProvider>
-                  </BookmarkProvider>
-                </DepartmentProvider>
-              </AuthContextProvider>
-            </GoogleOAuthProvider>
-          </BrowserRouter>
-        </TooltipProvider>
-      </QueryClientProvider>
+                            {/* 404 - Catch all unmatched routes */}
+                            <Route path="*" element={<NotFound />} />
+                          </Routes>
+                        </FullscreenProvider>
+                      </FolderProvider>
+                    </BookmarkProvider>
+                  </DepartmentProvider>
+                </AuthContextProvider>
+              </GoogleOAuthProvider>
+            </BrowserRouter>
+          </TooltipProvider>
+        </QueryClientProvider>
+      </PostHogProvider>
       <Analytics />
     </>
   );
