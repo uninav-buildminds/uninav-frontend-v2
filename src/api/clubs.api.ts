@@ -10,6 +10,27 @@ import {
   GetClubsParams,
   UpdateClubDto,
 } from "@/lib/types/club.types";
+import {
+  mockCreateClub,
+  mockDeleteClub,
+  mockExportClubAnalytics,
+  mockFlagClub,
+  mockGetClubAnalytics,
+  mockGetClubById,
+  mockGetClubFlags,
+  mockGetClubRequests,
+  mockGetClubs,
+  mockRequestClub,
+  mockResolveFlag,
+  mockTrackClubClick,
+  mockUpdateClub,
+  mockUpdateClubRequest,
+  mockUpdateClubStatus,
+} from "@/api/mock/clubs.mock";
+
+const USE_CLUBS_MOCK =
+  import.meta.env.VITE_CLUBS_MOCK === "true" ||
+  import.meta.env.VITE_CLUBS_MOCK === "1";
 
 // ── Club CRUD ──────────────────────────────────────────────────────────
 
@@ -17,6 +38,7 @@ import {
 export async function getClubs(
   params: GetClubsParams = {},
 ): Promise<PaginatedResponse<Club>> {
+  if (USE_CLUBS_MOCK) return mockGetClubs(params);
   try {
     const query = new URLSearchParams();
     if (params.page) query.set("page", String(params.page));
@@ -40,6 +62,7 @@ export async function getClubs(
 
 /** Fetch a single club by ID */
 export async function getClubById(id: string): Promise<Response<Club>> {
+  if (USE_CLUBS_MOCK) return mockGetClubById(id);
   try {
     const response = await httpClient.get(`/clubs/${id}`);
     return response.data;
@@ -53,6 +76,7 @@ export async function getClubById(id: string): Promise<Response<Club>> {
 
 /** Create a new club (authenticated) */
 export async function createClub(dto: CreateClubDto): Promise<Response<Club>> {
+  if (USE_CLUBS_MOCK) return mockCreateClub(dto);
   try {
     const formData = new FormData();
     formData.append("name", dto.name);
@@ -82,6 +106,7 @@ export async function updateClub(
   id: string,
   dto: UpdateClubDto,
 ): Promise<Response<Club>> {
+  if (USE_CLUBS_MOCK) return mockUpdateClub(id, dto);
   try {
     const formData = new FormData();
     if (dto.name) formData.append("name", dto.name);
@@ -110,6 +135,7 @@ export async function updateClub(
 
 /** Delete a club (organizer or admin) */
 export async function deleteClub(id: string): Promise<Response<void>> {
+  if (USE_CLUBS_MOCK) return mockDeleteClub(id);
   try {
     const response = await httpClient.delete(`/clubs/${id}`);
     return response.data;
@@ -127,6 +153,7 @@ export async function deleteClub(id: string): Promise<Response<void>> {
 export async function trackClubClick(
   id: string,
 ): Promise<Response<{ externalLink: string }>> {
+  if (USE_CLUBS_MOCK) return mockTrackClubClick(id);
   try {
     const response = await httpClient.post(`/clubs/${id}/click`);
     return response.data;
@@ -144,6 +171,7 @@ export async function trackClubClick(
 export async function getClubAnalytics(
   id: string,
 ): Promise<Response<ClubAnalytics>> {
+  if (USE_CLUBS_MOCK) return mockGetClubAnalytics(id);
   try {
     const response = await httpClient.get(`/clubs/${id}/analytics`);
     return response.data;
@@ -157,6 +185,7 @@ export async function getClubAnalytics(
 
 /** Export club analytics as CSV blob */
 export async function exportClubAnalytics(id: string): Promise<Blob> {
+  if (USE_CLUBS_MOCK) return mockExportClubAnalytics(id);
   try {
     const response = await httpClient.get(`/clubs/${id}/analytics/export`, {
       responseType: "blob",
@@ -177,6 +206,7 @@ export async function flagClub(
   clubId: string,
   reason: string,
 ): Promise<Response<ClubFlag>> {
+  if (USE_CLUBS_MOCK) return mockFlagClub(clubId, reason);
   try {
     const response = await httpClient.post(`/clubs/${clubId}/flag`, { reason });
     return response.data;
@@ -192,6 +222,7 @@ export async function flagClub(
 export async function getClubFlags(
   params: { page?: number; limit?: number; status?: string } = {},
 ): Promise<PaginatedResponse<ClubFlag>> {
+  if (USE_CLUBS_MOCK) return mockGetClubFlags(params);
   try {
     const query = new URLSearchParams();
     if (params.page) query.set("page", String(params.page));
@@ -213,6 +244,7 @@ export async function resolveFlag(
   flagId: string,
   action: "approve" | "hide" | "dismiss",
 ): Promise<Response<ClubFlag>> {
+  if (USE_CLUBS_MOCK) return mockResolveFlag(flagId, action);
   try {
     const response = await httpClient.patch(`/clubs/flags/${flagId}`, {
       action,
@@ -233,6 +265,7 @@ export async function updateClubStatus(
   id: string,
   status: ClubStatusEnum,
 ): Promise<Response<Club>> {
+  if (USE_CLUBS_MOCK) return mockUpdateClubStatus(id, status);
   try {
     const response = await httpClient.patch(`/clubs/${id}/status`, { status });
     return response.data;
@@ -252,6 +285,7 @@ export async function requestClub(data: {
   interest: string;
   message?: string;
 }): Promise<Response<ClubRequest>> {
+  if (USE_CLUBS_MOCK) return mockRequestClub(data);
   try {
     const response = await httpClient.post("/clubs/requests", data);
     return response.data;
@@ -267,6 +301,7 @@ export async function requestClub(data: {
 export async function getClubRequests(
   params: { page?: number; limit?: number; status?: string } = {},
 ): Promise<PaginatedResponse<ClubRequest>> {
+  if (USE_CLUBS_MOCK) return mockGetClubRequests(params);
   try {
     const query = new URLSearchParams();
     if (params.page) query.set("page", String(params.page));
@@ -290,6 +325,7 @@ export async function updateClubRequest(
   requestId: string,
   status: "fulfilled" | "dismissed",
 ): Promise<Response<ClubRequest>> {
+  if (USE_CLUBS_MOCK) return mockUpdateClubRequest(requestId, status);
   try {
     const response = await httpClient.patch(`/clubs/requests/${requestId}`, {
       status,
