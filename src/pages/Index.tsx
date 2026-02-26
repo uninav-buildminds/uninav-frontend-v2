@@ -25,7 +25,7 @@ const Index = () => {
 
   // Instant redirect if localStorage says logged in
   if (shouldRedirect && !authInitializing) {
-    const redirectPath = getRedirectPath() || "/dashboard";
+    const redirectPath = getRedirectPath() || "/home";
     clearRedirectPath(); // Clear redirect path after using it
     return <Navigate to={redirectPath} replace />;
   }
@@ -41,7 +41,7 @@ const Index = () => {
 
   // If user is authenticated, redirect to stored path or dashboard
   if (user) {
-    const redirectPath = getRedirectPath() || "/dashboard";
+    const redirectPath = getRedirectPath() || "/home";
     clearRedirectPath(); // Clear redirect path after using it
     return <Navigate to={redirectPath} replace />;
   }

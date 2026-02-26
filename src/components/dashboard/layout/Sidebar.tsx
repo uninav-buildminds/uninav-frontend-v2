@@ -1,8 +1,20 @@
 import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Add01Icon, FolderLibraryIcon, HelpCircleIcon, Home01Icon, Logout01Icon, Notification01Icon, Settings01Icon, SidebarLeft01Icon, SidebarLeftIcon, UserGroupIcon } from "@hugeicons/core-free-icons";
-import UserRail from "../user/UserRail";
+import {
+  Add01Icon,
+  FolderLibraryIcon,
+  HelpCircleIcon,
+  Home01Icon,
+  Logout01Icon,
+  Notification01Icon,
+  Settings01Icon,
+  SidebarLeft01Icon,
+  SidebarLeftIcon,
+  UserGroupIcon,
+  UserMultipleIcon,
+} from "@hugeicons/core-free-icons";
+import { UserRail } from "@/components/dashboard/user";
 import { LogoutModal, UploadModal } from "@/components/modals";
 import { panelData } from "@/data/panel";
 import { useAuth } from "@/hooks/useAuth";
@@ -28,7 +40,11 @@ const Sidebar: React.FC = () => {
   ];
 
   // Help item (separate for right positioning)
-  const helpItem = { to: "/dashboard/help", label: "Help", icon: HelpCircleIcon };
+  const helpItem = {
+    to: "/dashboard/help",
+    label: "Help",
+    icon: HelpCircleIcon,
+  };
 
   // Add management item for admin/moderator users
   const navItems =
@@ -86,13 +102,19 @@ const Sidebar: React.FC = () => {
                 aria-label="Toggle sidebar panel"
               >
                 {showPanel ? (
-                  <HugeiconsIcon icon={SidebarLeft01Icon} strokeWidth={1.5}
+                  <HugeiconsIcon
+                    icon={SidebarLeft01Icon}
+                    strokeWidth={1.5}
                     size={22}
-                    className="text-gray-700 transition-opacity duration-200" />
+                    className="text-gray-700 transition-opacity duration-200"
+                  />
                 ) : (
-                  <HugeiconsIcon icon={SidebarLeftIcon} strokeWidth={1.5}
+                  <HugeiconsIcon
+                    icon={SidebarLeftIcon}
+                    strokeWidth={1.5}
                     size={22}
-                    className="text-gray-700 transition-opacity duration-200" />
+                    className="text-gray-700 transition-opacity duration-200"
+                  />
                 )}
               </button>
 
@@ -125,7 +147,11 @@ const Sidebar: React.FC = () => {
                               : "text-gray-700 hover:bg-[#DCDFFE]"
                           }`}
                         >
-                          <HugeiconsIcon icon={Icon} strokeWidth={1.5} size={18} />
+                          <HugeiconsIcon
+                            icon={Icon}
+                            strokeWidth={1.5}
+                            size={18}
+                          />
                         </div>
                         <span
                           className={`text-[11px] transition-colors ${
@@ -141,7 +167,7 @@ const Sidebar: React.FC = () => {
                   </NavLink>
                 ))}
               </nav>
-              
+
               {/* Help icon positioned separately on the right */}
               <div className="mt-6 flex flex-col items-center gap-4">
                 <NavLink
@@ -157,13 +183,15 @@ const Sidebar: React.FC = () => {
                             : "text-gray-700 hover:bg-[#DCDFFE]"
                         }`}
                       >
-                        <HugeiconsIcon icon={HelpCircleIcon} strokeWidth={1.5} size={18} />
+                        <HugeiconsIcon
+                          icon={HelpCircleIcon}
+                          strokeWidth={1.5}
+                          size={18}
+                        />
                       </div>
                       <span
                         className={`text-[11px] transition-colors ${
-                          isActive
-                            ? "text-brand font-medium"
-                            : "text-gray-700"
+                          isActive ? "text-brand font-medium" : "text-gray-700"
                         }`}
                       >
                         {helpItem.label}
@@ -241,7 +269,12 @@ const Sidebar: React.FC = () => {
                   onClick={handleLogout}
                   className="text-xs text-white bg-red-600 hover:bg-red-700 rounded-md px-3 py-1 flex items-center gap-1"
                 >
-                  <HugeiconsIcon icon={Logout01Icon} strokeWidth={1.5} size={14} /> Logout
+                  <HugeiconsIcon
+                    icon={Logout01Icon}
+                    strokeWidth={1.5}
+                    size={14}
+                  />{" "}
+                  Logout
                 </button>
               </div>
             </div>
