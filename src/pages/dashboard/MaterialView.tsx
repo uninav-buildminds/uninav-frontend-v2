@@ -46,7 +46,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import MiniMaterialCard from "@/components/dashboard/MiniMaterialCard";
+import MiniMaterialCard from "./MiniMaterialCard";
 
 interface MaterialViewProps {
   isPublic?: boolean;
@@ -70,7 +70,7 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
     mimeType: string;
   } | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(
-    typeof window !== "undefined" && window.innerWidth < 768 // Hide sidebar on mobile by default
+    typeof window !== "undefined" && window.innerWidth < 768, // Hide sidebar on mobile by default
   );
   const [iconsExpanded, setIconsExpanded] = useState(false);
   const [infoSheetOpen, setInfoSheetOpen] = useState(false);
@@ -84,7 +84,7 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
       "ontouchstart" in window || navigator.maxTouchPoints > 0;
     const isMobileUA =
       /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-        navigator.userAgent
+        navigator.userAgent,
       );
 
     return isTouchDevice && isMobileUA;
@@ -168,7 +168,7 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
           // Fetch related materials from folders containing this material
           try {
             const foldersResponse = await getFoldersByMaterial(
-              response.data.id
+              response.data.id,
             );
             if (foldersResponse?.status === ResponseStatus.SUCCESS) {
               // Extract all materials from folders, excluding current material
@@ -278,72 +278,77 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
         await trackMaterialDownload(material.id);
       }
 
-      // Handle Google Drive downloads (already works well)
-      if (material.type === MaterialTypeEnum.GDRIVE) {
+      // Handle Google Drive downloads (and guides that point to GDrive URLs)
+      const isGDriveOrGuideWithGDrive =
+        material.type === MaterialTypeEnum.GDRIVE ||
+        material.type === MaterialTypeEnum.GUIDE;
+      if (isGDriveOrGuideWithGDrive && material.resource?.resourceAddress) {
         const gdriveId = extractGDriveId(material.resource.resourceAddress);
 
-        if (!gdriveId) {
+        if (gdriveId) {
+          // If it's a folder, download all files
+          if (gdriveId.type === "folder") {
+            toast.loading("Downloading files from folder...");
+            const count = await downloadAllFilesFromFolder(gdriveId.id);
+            toast.success(`Started downloading ${count} file(s) from folder`);
+          } else {
+            // Single file from GDrive
+            toast.loading("Downloading file...");
+            await downloadGDriveFile(gdriveId.id, material.label);
+            toast.success("Download started!");
+          }
+          return;
+        }
+        if (material.type === MaterialTypeEnum.GDRIVE) {
           toast.error("Invalid Google Drive link");
           return;
         }
+      }
 
-        // If it's a folder, download all files
-        if (gdriveId.type === "folder") {
-          toast.loading("Downloading files from folder...");
-          const count = await downloadAllFilesFromFolder(gdriveId.id);
-          toast.success(`Started downloading ${count} file(s) from folder`);
-        } else {
-          // Single file from GDrive
-          toast.loading("Downloading file...");
-          await downloadGDriveFile(gdriveId.id, material.label);
+      // Handle regular uploaded files - fetch as blob to force download
+      if (material.resource?.resourceType === ResourceTypeEnum.UPLOAD) {
+        toast.loading("Preparing download...");
+
+        try {
+          // Fetch the file as a blob
+          const response = await fetch(material.resource.resourceAddress);
+
+          if (!response.ok) {
+            throw new Error("Failed to fetch file");
+          }
+
+          const blob = await response.blob();
+
+          // Create a blob URL and trigger download
+          const blobUrl = window.URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = blobUrl;
+          link.download = material.label;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+
+          // Clean up the blob URL after a short delay
+          setTimeout(() => window.URL.revokeObjectURL(blobUrl), 100);
+
+          toast.dismiss();
+          toast.success("Download started!");
+        } catch (fetchError) {
+          console.error("Fetch failed, trying direct download:", fetchError);
+          toast.dismiss();
+
+          // Fallback to direct link if fetch fails (e.g., CORS issues)
+          const link = document.createElement("a");
+          link.href = material.resource.resourceAddress;
+          link.download = material.label;
+          link.target = "_blank";
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
           toast.success("Download started!");
         }
       } else {
-        // Handle regular uploaded files - fetch as blob to force download
-        if (material.resource.resourceType === ResourceTypeEnum.UPLOAD) {
-          toast.loading("Preparing download...");
-
-          try {
-            // Fetch the file as a blob
-            const response = await fetch(material.resource.resourceAddress);
-
-            if (!response.ok) {
-              throw new Error("Failed to fetch file");
-            }
-
-            const blob = await response.blob();
-
-            // Create a blob URL and trigger download
-            const blobUrl = window.URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = blobUrl;
-            link.download = material.label;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-
-            // Clean up the blob URL after a short delay
-            setTimeout(() => window.URL.revokeObjectURL(blobUrl), 100);
-
-            toast.dismiss();
-            toast.success("Download started!");
-          } catch (fetchError) {
-            console.error("Fetch failed, trying direct download:", fetchError);
-            toast.dismiss();
-
-            // Fallback to direct link if fetch fails (e.g., CORS issues)
-            const link = document.createElement("a");
-            link.href = material.resource.resourceAddress;
-            link.download = material.label;
-            link.target = "_blank";
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            toast.success("Download started!");
-          }
-        } else {
-          toast.error("Download not available for this material type");
-        }
+        toast.error("Download not available for this material type");
       }
     } catch (error: unknown) {
       console.error("Error downloading material:", error);
@@ -375,7 +380,7 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
     if (material) {
       toggleBookmark(material.id);
       toast.success(
-        isBookmarked(material.id) ? "Removed from saved" : "Added to saved"
+        isBookmarked(material.id) ? "Removed from saved" : "Added to saved",
       );
     }
   };
@@ -461,14 +466,48 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
       );
     }
 
-    // Handle Google Drive materials
+    // Handle Google Drive materials (and guides that point to GDrive URLs — use same viewers)
     if (
-      material.type === MaterialTypeEnum.GDRIVE &&
+      (material.type === MaterialTypeEnum.GDRIVE ||
+        material.type === MaterialTypeEnum.GUIDE) &&
       material.resource?.resourceAddress
     ) {
       const gdriveId = extractGDriveId(material.resource.resourceAddress);
 
-      if (!gdriveId) {
+      if (gdriveId) {
+        // Check if it's a folder
+        if (gdriveId.type === "folder") {
+          return (
+            <GDriveFolderBrowser
+              folderId={gdriveId.id}
+              folderName={material.label}
+              onViewFile={handleViewGDriveFile}
+            />
+          );
+        }
+
+        // Single file from GDrive
+        return (
+          <GDriveFileViewer
+            fileId={gdriveId.id}
+            mimeType={
+              gdriveId.type === "doc"
+                ? "application/vnd.google-apps.document"
+                : gdriveId.type === "sheet"
+                  ? "application/vnd.google-apps.spreadsheet"
+                  : gdriveId.type === "presentation"
+                    ? "application/vnd.google-apps.presentation"
+                    : undefined
+            }
+            zoom={zoom}
+            onZoomIn={handleZoomIn}
+            onZoomOut={handleZoomOut}
+          />
+        );
+      }
+
+      // Invalid GDrive URL only for GDRIVE type; GUIDE with non-GDrive URL falls through to iframe
+      if (material.type === MaterialTypeEnum.GDRIVE) {
         return (
           <div className="h-full flex items-center justify-center text-gray-500">
             <div className="text-center">
@@ -486,36 +525,6 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
           </div>
         );
       }
-
-      // Check if it's a folder
-      if (gdriveId.type === "folder") {
-        return (
-          <GDriveFolderBrowser
-            folderId={gdriveId.id}
-            folderName={material.label}
-            onViewFile={handleViewGDriveFile}
-          />
-        );
-      }
-
-      // Single file from GDrive
-      return (
-        <GDriveFileViewer
-          fileId={gdriveId.id}
-          mimeType={
-            gdriveId.type === "doc"
-              ? "application/vnd.google-apps.document"
-              : gdriveId.type === "sheet"
-              ? "application/vnd.google-apps.spreadsheet"
-              : gdriveId.type === "presentation"
-              ? "application/vnd.google-apps.presentation"
-              : undefined
-          }
-          zoom={zoom}
-          onZoomIn={handleZoomIn}
-          onZoomOut={handleZoomOut}
-        />
-      );
     }
 
     // Handle YouTube videos
@@ -678,8 +687,8 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
             isFullscreen
               ? "right-3 sm:right-4"
               : !sidebarCollapsed
-              ? "right-3 sm:right-4 md:right-[calc(288px+0.5rem)]"
-              : "right-3 sm:right-4"
+                ? "right-3 sm:right-4 md:right-[calc(288px+0.5rem)]"
+                : "right-3 sm:right-4"
           }`}
         >
           {/* Collapsible Icons Container - Slides out to the right when expanded */}
@@ -723,12 +732,13 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
                 className="sm:w-4 sm:h-4"
               />
             </Button>
-            {/* Show download button only if not read-only, not YouTube, and is either an uploaded file or GDrive material */}
+            {/* Show download button only if not read-only, not YouTube, and is either an uploaded file or GDrive/guide material */}
             {material &&
               material.restriction !== RestrictionEnum.READONLY &&
               material.type !== MaterialTypeEnum.YOUTUBE &&
               (material.resource?.resourceType === ResourceTypeEnum.UPLOAD ||
-                material.type === MaterialTypeEnum.GDRIVE) && (
+                material.type === MaterialTypeEnum.GDRIVE ||
+                material.type === MaterialTypeEnum.GUIDE) && (
                 <Button
                   onClick={handleDownload}
                   size="sm"
@@ -1147,7 +1157,7 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
                         material={relatedMaterial}
                         onClick={() => {
                           navigate(
-                            `/dashboard/material/${relatedMaterial.slug}`
+                            `/dashboard/material/${relatedMaterial.slug}`,
                           );
                           setInfoSheetOpen(false);
                         }}

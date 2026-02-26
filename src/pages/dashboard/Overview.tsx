@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import DashboardHeader from "@/components/dashboard/DashboardHeader";
-import MetricsSection from "@/components/dashboard/MetricsSection";
-import MaterialsSection from "@/components/dashboard/MaterialsSection";
-import SearchResults from "@/components/dashboard/SearchResults";
+import DashboardHeader from "@/components/dashboard/ui/DashboardHeader";
+import MetricsSection from "@/components/dashboard/sections/MetricsSection";
+import MaterialsSection from "@/components/dashboard/sections/MaterialsSection";
+import SearchResults from "@/components/dashboard/ui/SearchResults";
 import { UploadModal } from "@/components/modals";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
@@ -74,6 +74,7 @@ const Overview: React.FC = () => {
     usedAdvanced: boolean;
     isAdvancedSearch?: boolean;
   } | null>(null);
+  const [searchError, setSearchError] = useState<string | null>(null);
 
   const handleViewAll = (section: string) => {
     if (section === "recent materials") {
@@ -121,6 +122,7 @@ const Overview: React.FC = () => {
       setSearchResults(null);
       setSearchSuggestions([]);
       setSearchMetadata(null);
+      setSearchError(null);
       setIsLoadingSuggestions(false);
       // Clear URL params
       setSearchParams({});
@@ -140,7 +142,7 @@ const Overview: React.FC = () => {
     // Set loading state immediately for better UX
     setIsLoadingSuggestions(true);
 
-    // Debounce the API call (300ms)
+    // Debounce the API call (slightly longer to reduce network load)
     debounceTimerRef.current = setTimeout(async () => {
       try {
         const response = await searchMaterialsAndFolders({
@@ -179,7 +181,7 @@ const Overview: React.FC = () => {
       } finally {
         setIsLoadingSuggestions(false);
       }
-    }, 300);
+    }, 450);
   }, []);
 
   // Cleanup debounce timer on unmount
@@ -197,12 +199,14 @@ const Overview: React.FC = () => {
       setIsSearchActive(false);
       setSearchResults(null);
       setSearchMetadata(null);
+      setSearchError(null);
       return;
     }
 
     setIsSearching(true);
     setIsSearchActive(true);
     setSearchQuery(query);
+    setSearchError(null);
     // Update URL params
     setSearchParams({ q: query.trim() });
 
@@ -244,6 +248,7 @@ const Overview: React.FC = () => {
       toast.error(error.message || "Search failed. Please try again.");
       setSearchResults(null);
       setSearchMetadata(null);
+      setSearchError(error.message || "Search failed. Please try again.");
     } finally {
       setIsSearching(false);
     }
@@ -331,8 +336,8 @@ const Overview: React.FC = () => {
         onSearchInput={handleSearchInput}
       />
       <div className="p-4 sm:p-6">
-        {/* Show search results when searching, otherwise show default content */}
-        {isSearchActive && searchResults != null ? (
+        {/* Show search results view whenever search is active (even while loading) */}
+        {isSearchActive ? (
           <>
             <SearchResults
               query={searchQuery}
@@ -347,10 +352,13 @@ const Overview: React.FC = () => {
                 setIsSearchActive(false);
                 setSearchResults(null);
                 setSearchMetadata(null);
+                setSearchError(null);
                 // Clear URL params
                 setSearchParams({});
               }}
               onUpload={() => setShowUploadModal(true)}
+              error={searchError}
+              onRetry={() => handleSearch(searchQuery)}
             />
             <UploadModal
               isOpen={showUploadModal}

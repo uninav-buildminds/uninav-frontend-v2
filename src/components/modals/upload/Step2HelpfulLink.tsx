@@ -39,6 +39,8 @@ import {
   RestrictionEnum,
   Material,
 } from "@/lib/types/material.types";
+import { useAuth } from "@/hooks/useAuth";
+import { UserRole } from "@/lib/types/response.types";
 import { SelectCourse } from "./shared/SelectCourse";
 import { countGDriveUrlFiles } from "@/lib/utils/pageCounter";
 
@@ -77,6 +79,10 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
   const [fileCount, setFileCount] = useState<number | undefined>(undefined);
   const [isCountingFiles, setIsCountingFiles] = useState(false);
   const [folderId, setFolderId] = useState<string>(propFolderId || "");
+  const [publishAsGuide, setPublishAsGuide] = useState(false);
+
+  const { user } = useAuth();
+  const isAdmin = user?.role === UserRole.ADMIN;
 
   // Helper function to safely get hostname from URL
   const getUrlHostname = (url: string): string => {
@@ -139,6 +145,10 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
 
       if (editingMaterial.targetCourseId) {
         setTargetCourseId(editingMaterial.targetCourseId);
+      }
+
+      if (editingMaterial.type === MaterialTypeEnum.GUIDE) {
+        setPublishAsGuide(true);
       }
     }
   }, [isEditMode, editingMaterial, setValue]);
@@ -395,6 +405,10 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
       ? MaterialTypeEnum.YOUTUBE
       : inferMaterialType(data.url);
 
+    // Decide final material type, allowing admins to explicitly mark guides
+    const finalType =
+      publishAsGuide && isAdmin ? MaterialTypeEnum.GUIDE : inferredType;
+
     // Generate preview URL if possible
     const previewUrl = generatePreviewUrl(data.url);
     const finalPreview = customPreviewFile || previewUrl || undefined;
@@ -402,7 +416,7 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
     const formData: CreateMaterialLinkForm = {
       materialTitle: data.materialTitle,
       description: data.description || "",
-      type: inferredType,
+      type: finalType,
       classification: classification || "",
       visibility: data.visibility,
       accessRestrictions: data.accessRestrictions,
@@ -618,6 +632,32 @@ const Step2HelpfulLink: React.FC<Step2HelpfulLinkProps> = ({
             Be descriptive so everyone knows what's inside.
           </p>
         </div>
+
+        {isAdmin && (
+          <div className="mt-2 flex items-center justify-between rounded-lg border border-dashed border-brand/40 bg-brand/5 px-3 py-2">
+            <div className="flex flex-col">
+              <span className="text-xs font-semibold text-brand">
+                Publish as Guide
+              </span>
+              <span className="text-[11px] text-gray-500">
+                Mark this link as a guide so it appears in the guides experience.
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setPublishAsGuide((prev) => !prev)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                publishAsGuide ? "bg-brand" : "bg-gray-300"
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                  publishAsGuide ? "translate-x-5" : "translate-x-1"
+                }`}
+              />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Target Course Selection */}

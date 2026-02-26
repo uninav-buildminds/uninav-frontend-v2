@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import MaterialsLayout from "@/components/dashboard/MaterialsLayout";
-import GridMaterialsSection from "@/components/dashboard/GridMaterialsSection";
+import MaterialsLayout from "@/components/dashboard/layout/MaterialsLayout";
+import GridMaterialsSection from "@/components/dashboard/sections/GridMaterialsSection";
 import { getMaterialRecommendations } from "@/api/materials.api";
 import { Material } from "@/lib/types/material.types";
 import { toast } from "sonner";
-import { mapRecommendationToMaterial } from "@/components/dashboard/MaterialsSection";
+import { mapRecommendationToMaterial } from "@/components/dashboard/sections/MaterialsSection";
 
 const Recommendations: React.FC = () => {
   const navigate = useNavigate();

@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import MaterialCard from "./MaterialCard";
-import FolderCard from "./FolderCard";
-import MaterialCardSkeleton from "./MaterialCardSkeleton";
+import MaterialCard from "../cards/MaterialCard";
+import FolderCard from "../cards/FolderCard";
+import MaterialCardSkeleton from "../cards/MaterialCardSkeleton";
 import { Material } from "@/lib/types/material.types";
 import { Folder } from "@/api/folder.api";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -210,7 +210,9 @@ const SearchResults: React.FC<SearchResultsProps> = ({
             <p className="text-sm sm:text-base font-medium text-red-700 mb-2">
               We couldn't complete your search
             </p>
-            <p className="text-xs sm:text-sm text-red-600 mb-4">{error}</p>
+            <p className="text-xs sm:text-sm text-red-600 mb-4">
+              {error}
+            </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
               {onRetry && (
                 <button

@@ -32,3 +32,4 @@ package-lock.json
 
 # Generated service worker files
 dev-dist
+.worktree

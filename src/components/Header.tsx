@@ -74,6 +74,9 @@ const Header: React.FC = () => {
           <a href="#faqs" className="hover:text-brand transition-colors">
             FAQs
           </a>
+          <a href="/guides" className="hover:text-brand transition-colors">
+            Guides
+          </a>
         </nav>
 
         {/* Desktop Actions */}

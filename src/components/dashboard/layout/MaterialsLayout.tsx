@@ -2,7 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
-import PageHeader from "./PageHeader";
+import PageHeader from "../ui/PageHeader";
 
 interface MaterialsLayoutProps {
   title: string;
@@ -13,6 +13,7 @@ interface MaterialsLayoutProps {
   searchSuggestions?: string[];
   showBackButton?: boolean;
   backTo?: string;
+  subtitle?: string;
 }
 
 const MaterialsLayout: React.FC<MaterialsLayoutProps> = ({
@@ -24,6 +25,7 @@ const MaterialsLayout: React.FC<MaterialsLayoutProps> = ({
   searchSuggestions = [],
   showBackButton = false,
   backTo,
+  subtitle = "Browse and manage your materials",
 }) => {
   const navigate = useNavigate();
 
@@ -62,7 +64,7 @@ const MaterialsLayout: React.FC<MaterialsLayoutProps> = ({
       )}
       <PageHeader
         title={title}
-        subtitle="Browse and manage your materials"
+        subtitle={subtitle}
         searchPlaceholder={searchPlaceholder}
         searchSuggestions={searchSuggestions}
         onSearch={onSearch}

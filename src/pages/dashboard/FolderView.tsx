@@ -2,9 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Add01Icon, ArrowLeft01Icon, Folder03Icon, InformationCircleIcon, Share08Icon } from "@hugeicons/core-free-icons";
-import PageHeader from "@/components/dashboard/PageHeader";
-import FolderCard from "@/components/dashboard/FolderCard";
-import MaterialCard from "@/components/dashboard/MaterialCard";
+import PageHeader from "@/components/dashboard/ui/PageHeader";
+import FolderCard from "@/components/dashboard/cards/FolderCard";
+import MaterialCard from "@/components/dashboard/cards/MaterialCard";
 import { getFolderBySlug, type Folder } from "@/api/folder.api";
 import { Material } from "@/lib/types/material.types";
 import { toast } from "sonner";
@@ -112,6 +112,14 @@ const FolderView: React.FC<FolderViewProps> = ({ isPublic = false }) => {
       return folder.materialCount;
     }
     return folder.content?.filter((item) => item.contentMaterialId).length || 0;
+  };
+
+  /** Number of nested (sub) folders; uses API count or content array */
+  const getFolderCount = (folder: Folder): number => {
+    if (typeof folder.nestedFolderCount === "number") {
+      return folder.nestedFolderCount;
+    }
+    return folder.content?.filter((item) => item.contentFolderId).length || 0;
   };
 
   const handleAddMaterial = () => {
@@ -299,6 +307,7 @@ const FolderView: React.FC<FolderViewProps> = ({ isPublic = false }) => {
                 folder={nestedFolder}
                 onClick={() => handleFolderClick(nestedFolder.slug)}
                 materialCount={getFolderMaterialCount(nestedFolder)}
+                folderCount={getFolderCount(nestedFolder)}
               />
             ))}
 

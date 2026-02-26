@@ -1,5 +1,5 @@
 import React from "react";
-import SmartSearchBar from "../shared/SmartSearchBar";
+import SmartSearchBar from "@/components/shared/SmartSearchBar";
 import { SearchSuggestion } from "@/lib/types/search.types";
 
 interface DashboardHeaderProps {

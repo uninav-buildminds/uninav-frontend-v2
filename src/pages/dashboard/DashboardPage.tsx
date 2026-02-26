@@ -1,9 +1,9 @@
-import MaterialCard from "@/components/dashboard/MaterialCard";
+import MaterialCard from "@/components/dashboard/cards/MaterialCard";
 import { useAuth } from "@/hooks/useAuth";
 import { searchMaterials } from "@/api/materials.api";
 import type { Material } from "@/lib/types/material.types";
 import { useQuery } from "@tanstack/react-query";
-import MaterialPlaceholder from "@/components/dashboard/MaterialPlaceholder";
+import MaterialPlaceholder from "@/components/dashboard/ui/MaterialPlaceholder";
 import BatchPreviewUpdater from "@/components/dashboard/admin/BatchPreviewUpdater";
 
 const DashboardPage: React.FC = () => {

@@ -6,6 +6,7 @@ import {
   AddBookmarkDto,
 } from "@/lib/types/user.types";
 import { Bookmark } from "@/lib/types/bookmark.types";
+import { SearchResult } from "@/lib/types/search.types";
 
 export interface FetchAllUsersResponse {
   data: UserProfile[];
@@ -133,6 +134,52 @@ export async function createBookmark(
 export async function getAllBookmarks(): Promise<Bookmark[] | null> {
   try {
     const response = await httpClient.get("/user/bookmarks");
+    return response.data.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status || 500,
+      message: error.response?.data?.message || "Failed to fetch bookmarks",
+    };
+  }
+}
+
+/**
+ * Get bookmarks with pagination (optionally including material relation)
+ * @returns bookmarks items + pagination
+ */
+export async function getBookmarksPaginated(params: {
+  page?: number;
+  limit?: number;
+  includeMaterial?: boolean;
+}): Promise<SearchResult<Bookmark>> {
+  const { page = 1, limit = 10, includeMaterial = true } = params;
+  try {
+    const searchParams = new URLSearchParams();
+    searchParams.set("page", String(page));
+    searchParams.set("limit", String(limit));
+    searchParams.set("includeMaterial", includeMaterial ? "true" : "false");
+
+    const response = await httpClient.get(
+      `/user/bookmarks?${searchParams.toString()}`
+    );
+    return response.data.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error.response?.status || 500,
+      message: error.response?.data?.message || "Failed to fetch bookmarks",
+    };
+  }
+}
+
+/**
+ * Get all bookmark IDs (without material payload)
+ * @returns array of bookmarks (material field omitted)
+ */
+export async function getBookmarksLite(): Promise<Bookmark[] | null> {
+  try {
+    const response = await httpClient.get(
+      "/user/bookmarks?includeMaterial=false"
+    );
     return response.data.data;
   } catch (error: any) {
     throw {

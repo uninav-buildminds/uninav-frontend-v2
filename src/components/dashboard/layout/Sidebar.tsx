@@ -18,7 +18,7 @@ import UserRail from "./UserRail";
 import { LogoutModal, UploadModal } from "@/components/modals";
 import { panelData } from "@/data/panel";
 import { useAuth } from "@/hooks/useAuth";
-import RecentsList from "./RecentsList";
+import RecentsList from "../lists/RecentsList";
 
 const Sidebar: React.FC = () => {
   const navigate = useNavigate();
@@ -34,7 +34,7 @@ const Sidebar: React.FC = () => {
     // { to: "/dashboard/clubs", label: "Clubs", icon: UserMultipleIcon },
     {
       to: "/dashboard/notifications",
-      label: "Notifications",
+      label: "Alerts",
       icon: Notification01Icon,
     },
     { to: "/dashboard/settings", label: "Settings", icon: Settings01Icon },
