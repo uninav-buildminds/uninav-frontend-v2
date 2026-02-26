@@ -14,7 +14,7 @@ import {
   UserGroupIcon,
   UserMultipleIcon,
 } from "@hugeicons/core-free-icons";
-import UserRail from "./UserRail";
+import { UserRail } from "@/components/dashboard/user";
 import { LogoutModal, UploadModal } from "@/components/modals";
 import { panelData } from "@/data/panel";
 import { useAuth } from "@/hooks/useAuth";
@@ -31,7 +31,6 @@ const Sidebar: React.FC = () => {
   const baseNavItems = [
     { to: "/dashboard", label: "Overview", icon: Home01Icon },
     { to: "/dashboard/libraries", label: "Libraries", icon: FolderLibraryIcon },
-    // { to: "/dashboard/clubs", label: "Clubs", icon: UserMultipleIcon },
     {
       to: "/dashboard/notifications",
       label: "Alerts",

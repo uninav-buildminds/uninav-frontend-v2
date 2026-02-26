@@ -9,7 +9,7 @@ const SignupSuccess: React.FC = () => {
   
   const handleNavigate = () => {
     // Check for stored redirect path, fallback to dashboard
-    const redirectPath = getRedirectPath() || "/dashboard";
+    const redirectPath = getRedirectPath() || "/home";
     clearRedirectPath(); // Clear redirect path after using it
     navigate(redirectPath);
   };

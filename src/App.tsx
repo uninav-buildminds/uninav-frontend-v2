@@ -36,10 +36,7 @@ import MaterialsReviewPage from "./pages/management/materials-review";
 import UserManagementPage from "./pages/management/user-management";
 import ErrorReportsPage from "./pages/management/error-reports";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-<<<<<<< HEAD
 import { PostHogProvider } from "@posthog/react";
-=======
->>>>>>> dev
 import AuthContextProvider from "./context/authentication/AuthContextProvider";
 import { BookmarkProvider } from "./context/bookmark/BookmarkContextProvider";
 import { DepartmentProvider } from "./context/department/DepartmentContextProvider";
@@ -52,13 +49,14 @@ import GuidesPage from "./pages/dashboard/GuidesPage";
 import PublicFolderView from "./pages/public/PublicFolderView";
 import PublicMaterialView from "./pages/public/PublicMaterialView";
 import ScrollToTop from "./components/ScrollToTop";
+import SubdomainRouter from "./components/SubdomainRouter";
 import ClubsFeed from "./pages/dashboard/ClubsFeed";
 import ClubDetail from "./pages/dashboard/ClubDetail";
 import MyClubs from "./pages/dashboard/MyClubs";
 import AdminClubs from "./pages/management/AdminClubs";
 import AdminFlags from "./pages/management/AdminFlags";
 import AdminRequests from "./pages/management/AdminRequests";
-import PublicClubsFeed from "./pages/public/PublicClubsFeed";
+import HomePage from "./pages/home/HomePage";
 
 const queryClient = new QueryClient();
 
@@ -87,6 +85,7 @@ const App = () => {
                     <BookmarkProvider>
                       <FolderProvider>
                         <FullscreenProvider>
+                          <SubdomainRouter />
                           <Routes>
                             <Route path="/" element={<Index />} />
 
@@ -145,6 +144,16 @@ const App = () => {
                               />
                             </Route>
 
+                            {/* Home Hub Route */}
+                            <Route
+                              path="/home"
+                              element={
+                                <ProtectedRoute>
+                                  <HomePage />
+                                </ProtectedRoute>
+                              }
+                            />
+
                             {/* Management Routes */}
                             <Route
                               path="/management"
@@ -185,6 +194,19 @@ const App = () => {
                               <Route
                                 path="error-reports"
                                 element={<ErrorReportsPage />}
+                              />
+                              {/* Admin Clubs */}
+                              <Route
+                                path="clubs"
+                                element={<AdminClubs />}
+                              />
+                              <Route
+                                path="clubs/flags"
+                                element={<AdminFlags />}
+                              />
+                              <Route
+                                path="clubs/requests"
+                                element={<AdminRequests />}
                               />
                               {/* Future routes can be added here */}
                               {/* <Route path="materials" element={<MaterialsManagement />} /> */}
@@ -274,9 +296,19 @@ const App = () => {
                               path="/view/material/:slug"
                               element={<PublicMaterialView />}
                             />
+                            {/* Clubs Routes */}
+                            <Route path="/clubs" element={<ClubsFeed />} />
                             <Route
-                              path="/clubs"
-                              element={<PublicClubsFeed />}
+                              path="/clubs/:id"
+                              element={<ClubDetail />}
+                            />
+                            <Route
+                              path="/clubs/my"
+                              element={
+                                <ProtectedRoute>
+                                  <MyClubs />
+                                </ProtectedRoute>
+                              }
                             />
 
                             {/* 404 - Catch all unmatched routes */}

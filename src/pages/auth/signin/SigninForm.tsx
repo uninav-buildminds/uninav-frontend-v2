@@ -10,7 +10,7 @@ import LoadingButton from "@/components/auth/LoadingButton";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signinSchema, type SigninInput } from "@/lib/validation/auth";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { API_BASE_URL } from "@/lib/utils";
 import { toast } from "sonner";
 import AuthContext from "@/context/authentication/AuthContext";
@@ -18,6 +18,7 @@ import { getRedirectPath, clearRedirectPath } from "@/lib/authStorage";
 
 const SigninForm: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const {
     register,
     handleSubmit,
@@ -35,8 +36,11 @@ const SigninForm: React.FC = () => {
 
     try {
       await logIn(data.email, data.password);
-      // Check for stored redirect path, fallback to dashboard
-      const redirectPath = getRedirectPath() || "/dashboard";
+      // URL ?redirect= takes priority; must be an internal path starting with /
+      const urlParams = new URLSearchParams(location.search);
+      const urlRedirect = urlParams.get("redirect");
+      const safeRedirect = urlRedirect?.startsWith("/") ? urlRedirect : null;
+      const redirectPath = safeRedirect || getRedirectPath() || "/home";
       clearRedirectPath(); // Clear redirect path after using it
       navigate(redirectPath);
     } catch (error) {

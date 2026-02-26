@@ -23,7 +23,7 @@ interface AuthRedirectProps {
  */
 export const AuthRedirect = ({
   children,
-  routePath = "/dashboard",
+  routePath = "/home",
 }: AuthRedirectProps) => {
   // Check localStorage first for instant redirect
   const localStorageAuthState = getAuthState();

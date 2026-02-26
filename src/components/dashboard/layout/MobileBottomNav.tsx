@@ -87,7 +87,7 @@ const MobileBottomNav: React.FC = () => {
 
         {/* Notifications */}
         <NavLink
-          to="/dashboard/clubs"
+          to="/clubs"
           className={({ isActive }) =>
             `flex flex-col items-center gap-1 py-2 px-3 rounded-lg transition-colors ${
               isActive ? "text-brand" : "text-gray-600"

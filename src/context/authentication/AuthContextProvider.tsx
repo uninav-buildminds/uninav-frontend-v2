@@ -98,7 +98,7 @@ export default function AuthContextProvider({children}: AuthContextProviderProps
                 credentialResponse,
                 () => {
                     setAuthState(true);
-                    const redirectPath = getRedirectPath() || "/dashboard";
+                    const redirectPath = getRedirectPath() || "/home";
                     clearRedirectPath();
                     navigate(redirectPath);
                     window.location.reload();
