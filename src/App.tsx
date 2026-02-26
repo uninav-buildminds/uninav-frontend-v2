@@ -50,6 +50,7 @@ import PublicFolderView from "./pages/public/PublicFolderView";
 import PublicMaterialView from "./pages/public/PublicMaterialView";
 import ScrollToTop from "./components/ScrollToTop";
 import SubdomainRouter from "./components/SubdomainRouter";
+import SessionTracker from "./components/SessionTracker";
 import ClubsFeed from "./pages/dashboard/ClubsFeed";
 import ClubDetail from "./pages/dashboard/ClubDetail";
 import MyClubs from "./pages/dashboard/MyClubs";
@@ -86,6 +87,7 @@ const App = () => {
                       <FolderProvider>
                         <FullscreenProvider>
                           <SubdomainRouter />
+                          <SessionTracker />
                           <Routes>
                             <Route path="/" element={<Index />} />
 
