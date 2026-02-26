@@ -33,7 +33,7 @@ const ClubsFeed: React.FC = () => {
   // Filter state — synced to URL
   const [search, setSearch] = useState(searchParams.get("q") || "");
   const [activeInterest, setActiveInterest] = useState(
-    searchParams.get("interest") || "",
+    searchParams.get("interest") || ""
   );
   const [page, setPage] = useState(1);
 
@@ -96,7 +96,7 @@ const ClubsFeed: React.FC = () => {
         },
       });
     },
-    [clickMutation],
+    [clickMutation]
   );
 
   const handlePostClub = (dto: CreateClubDto) => {
@@ -127,20 +127,12 @@ const ClubsFeed: React.FC = () => {
         <div className="bg-gradient-to-br from-[theme(colors.dashboard.gradientFrom)] to-[theme(colors.dashboard.gradientTo)]">
           <div className="px-2 sm:px-4 pt-16 sm:pt-20 pb-6 sm:pb-8">
             <div className="max-w-5xl mx-auto text-center">
-              <div className="inline-flex items-center gap-2 bg-brand/10 text-brand text-xs font-semibold px-3 py-1 rounded-full mb-3">
-                <HugeiconsIcon
-                  icon={UserGroupIcon}
-                  strokeWidth={1.5}
-                  size={14}
-                />
-                Discover Clubs
-              </div>
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-foreground">
                 Find Your Community
               </h2>
               <p className="text-xs sm:text-sm text-muted-foreground mt-1 max-w-lg mx-auto">
                 Discover clubs, communities, and student organizations across
-                campus. Join with a single click.
+                campus.
               </p>
 
               {/* Search + filters */}
@@ -164,7 +156,9 @@ const ClubsFeed: React.FC = () => {
         <div className="flex items-center justify-between mb-6">
           <p className="text-sm text-gray-500">
             {pagination
-              ? `${pagination.totalItems} club${pagination.totalItems !== 1 ? "s" : ""} found`
+              ? `${pagination.totalItems} club${
+                  pagination.totalItems !== 1 ? "s" : ""
+                } found`
               : "\u00A0"}
           </p>
           <div className="flex items-center gap-2">
@@ -203,8 +197,8 @@ const ClubsFeed: React.FC = () => {
                     setActiveInterest("");
                   }
                 : user
-                  ? () => setShowPostModal(true)
-                  : undefined
+                ? () => setShowPostModal(true)
+                : undefined
             }
           />
         ) : (

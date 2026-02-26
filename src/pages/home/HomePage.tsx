@@ -7,7 +7,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import {
   BookOpen01Icon,
   UserMultipleIcon,
-  Mp301Icon,
+  Route01Icon,
   Logout01Icon,
   ArrowRight01Icon,
 } from "@hugeicons/core-free-icons";
@@ -34,7 +34,7 @@ const TOOLS = [
     name: "Guides",
     description: "Step-by-step academic guides to help you get the most out of UniNav.",
     href: "/guides",
-    icon: Mp301Icon,
+    icon: Route01Icon,
     label: "Browse Guides",
   },
 ];
@@ -42,7 +42,7 @@ const TOOLS = [
 const TOOL_ICON_MAP: Record<string, typeof BookOpen01Icon> = {
   Materials: BookOpen01Icon,
   Clubs: UserMultipleIcon,
-  Guides: Mp301Icon,
+  Guides: Route01Icon,
 };
 
 const containerVariants: Variants = {
