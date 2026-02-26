@@ -86,7 +86,10 @@ const Libraries: React.FC = () => {
   const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);
 
   // Merge materials by id to keep pagination append stable
-  const mergeUniqueMaterials = (prev: Material[], next: Material[]): Material[] => {
+  const mergeUniqueMaterials = (
+    prev: Material[],
+    next: Material[]
+  ): Material[] => {
     const seen = new Set(prev.map((m) => m.id));
     const merged = [...prev];
     next.forEach((m) => {
@@ -114,7 +117,8 @@ const Libraries: React.FC = () => {
   // Fetch one page of saved materials (bookmarks) and append/replace in state
   const loadSavedMaterialsPage = async (
     pageToLoad: number,
-    mode: "replace" | "append"
+    mode: "replace" | "append",
+    search?: string
   ) => {
     if (!user?.id) {
       setSavedMaterials([]);
@@ -131,6 +135,7 @@ const Libraries: React.FC = () => {
         page: pageToLoad,
         limit: PAGE_SIZE,
         includeMaterial: true,
+        query: search,
       });
 
       const items = (result.items || [])
@@ -138,6 +143,10 @@ const Libraries: React.FC = () => {
         .filter((m): m is Material => Boolean(m));
 
       setSavedMaterials((prev) =>
+        mode === "append" ? mergeUniqueMaterials(prev, items) : items
+      );
+      // When using backend search, filtered and unfiltered are the same
+      setFilteredSavedMaterials((prev) =>
         mode === "append" ? mergeUniqueMaterials(prev, items) : items
       );
       setSavedPage(pageToLoad);
@@ -155,7 +164,8 @@ const Libraries: React.FC = () => {
   // Fetch one page of user uploads and append/replace in state
   const loadUploadsPage = async (
     pageToLoad: number,
-    mode: "replace" | "append"
+    mode: "replace" | "append",
+    search?: string
   ) => {
     if (!user?.id) {
       setUserUploads([]);
@@ -173,6 +183,7 @@ const Libraries: React.FC = () => {
         page: pageToLoad,
         limit: PAGE_SIZE,
         saveHistory: false, // Don't save - this is fetching user uploads, not a search
+        query: search,
       });
 
       const uploads =
@@ -181,6 +192,10 @@ const Libraries: React.FC = () => {
           : [];
 
       setUserUploads((prev) =>
+        mode === "append" ? mergeUniqueMaterials(prev, uploads) : uploads
+      );
+      // When using backend search, filtered and unfiltered are the same
+      setFilteredUploads((prev) =>
         mode === "append" ? mergeUniqueMaterials(prev, uploads) : uploads
       );
       setUploadsPage(pageToLoad);
@@ -228,7 +243,9 @@ const Libraries: React.FC = () => {
         setFoldersHasMore(Boolean(response.data.pagination?.hasMore));
 
         if (selectedFolder && mode !== "append") {
-          const updatedFolder = items.find((f: Folder) => f.id === selectedFolder.id);
+          const updatedFolder = items.find(
+            (f: Folder) => f.id === selectedFolder.id
+          );
           if (updatedFolder) {
             setSelectedFolder(updatedFolder);
           }
@@ -251,15 +268,15 @@ const Libraries: React.FC = () => {
   };
 
   // Reset uploads pagination and reload the first page
-  const reloadUploads = async () => {
+  const reloadUploads = async (search?: string) => {
     setUploadsHasMore(true);
-    await loadUploadsPage(1, "replace");
+    await loadUploadsPage(1, "replace", search);
   };
 
   // Reset saved materials pagination and reload the first page
-  const reloadSavedMaterials = async () => {
+  const reloadSavedMaterials = async (search?: string) => {
     setSavedHasMore(true);
-    await loadSavedMaterialsPage(1, "replace");
+    await loadSavedMaterialsPage(1, "replace", search);
   };
 
   // Load recent materials to get lastViewedAt
@@ -289,30 +306,16 @@ const Libraries: React.FC = () => {
   const handleSearch = (query: string) => {
     setSearchQuery(query);
 
-    if (query.trim() === "") {
-      setFilteredSavedMaterials(savedMaterials);
-      setFilteredUploads(userUploads);
-    } else {
-      const filteredSaved = savedMaterials.filter(
-        (material) =>
-          material.label.toLowerCase().includes(query.toLowerCase()) ||
-          material.description?.toLowerCase().includes(query.toLowerCase()) ||
-          material.tags?.some((tag) =>
-            tag.toLowerCase().includes(query.toLowerCase())
-          )
-      );
-      setFilteredSavedMaterials(filteredSaved);
+    // Reset pagination and fetch from backend with search query
+    setSavedPage(1);
+    setUploadsPage(1);
+    setSavedHasMore(true);
+    setUploadsHasMore(true);
 
-      const filteredUpload = userUploads.filter(
-        (material) =>
-          material.label.toLowerCase().includes(query.toLowerCase()) ||
-          material.description?.toLowerCase().includes(query.toLowerCase()) ||
-          material.tags?.some((tag) =>
-            tag.toLowerCase().includes(query.toLowerCase())
-          )
-      );
-      setFilteredUploads(filteredUpload);
-    }
+    // Fetch with the new search query
+    const searchTerm = query.trim() || undefined;
+    void reloadSavedMaterials(searchTerm);
+    void reloadUploads(searchTerm);
   };
 
   // Folder handlers
@@ -716,30 +719,38 @@ const Libraries: React.FC = () => {
     activeTab === "saved"
       ? savedHasMore
       : activeTab === "uploads"
-        ? uploadsHasMore
-        : savedHasMore || uploadsHasMore;
+      ? uploadsHasMore
+      : savedHasMore || uploadsHasMore;
 
   const shouldShowLoadMore = foldersHasMore || materialsHasMore;
   const isLoadingMore =
-    isLoadingMoreFolders || isLoadingSaved || isLoadingUploads || isLoadingFolders;
+    isLoadingMoreFolders ||
+    isLoadingSaved ||
+    isLoadingUploads ||
+    isLoadingFolders;
 
   // Load the next page for folders and/or materials (depending on hasMore)
   const handleLoadMore = async () => {
     if (isLoadingMore) return;
 
     const tasks: Promise<void>[] = [];
+    const searchTerm = searchQuery.trim() || undefined;
 
     if (foldersHasMore) {
       tasks.push(loadFoldersPage(foldersPage + 1, "append"));
     }
 
     if (activeTab === "saved") {
-      if (savedHasMore) tasks.push(loadSavedMaterialsPage(savedPage + 1, "append"));
+      if (savedHasMore)
+        tasks.push(loadSavedMaterialsPage(savedPage + 1, "append", searchTerm));
     } else if (activeTab === "uploads") {
-      if (uploadsHasMore) tasks.push(loadUploadsPage(uploadsPage + 1, "append"));
+      if (uploadsHasMore)
+        tasks.push(loadUploadsPage(uploadsPage + 1, "append", searchTerm));
     } else {
-      if (savedHasMore) tasks.push(loadSavedMaterialsPage(savedPage + 1, "append"));
-      if (uploadsHasMore) tasks.push(loadUploadsPage(uploadsPage + 1, "append"));
+      if (savedHasMore)
+        tasks.push(loadSavedMaterialsPage(savedPage + 1, "append", searchTerm));
+      if (uploadsHasMore)
+        tasks.push(loadUploadsPage(uploadsPage + 1, "append", searchTerm));
     }
 
     await Promise.all(tasks);
@@ -759,16 +770,6 @@ const Libraries: React.FC = () => {
     loadRecentMaterials();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    if (searchQuery.trim() === "") {
-      setFilteredSavedMaterials(savedMaterials);
-      setFilteredUploads(userUploads);
-    } else {
-      handleSearch(searchQuery);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [savedMaterials, userUploads, searchQuery]);
 
   return (
     <>
