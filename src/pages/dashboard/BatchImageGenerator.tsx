@@ -6,14 +6,21 @@ import { useQuery } from "@tanstack/react-query";
 import MaterialPlaceholder from "@/components/dashboard/ui/MaterialPlaceholder";
 import BatchPreviewUpdater from "@/components/dashboard/admin/BatchPreviewUpdater";
 
-const DashboardPage: React.FC = () => {
+const BatchImageGenerator: React.FC = () => {
   const {
     data: materialsData,
     isLoading,
     error,
   } = useQuery({
     queryKey: ["materials"],
-    queryFn: () => searchMaterials({ page: 1, limit: 50, saveHistory: false }), // Don't save initial page load
+    queryFn: () =>
+      searchMaterials({
+        page: 1,
+        limit: 50,
+        saveHistory: false,
+        sortBy: "createdAt",
+        sortOrder: "desc",
+      }),
   });
 
   if (isLoading) {
@@ -44,4 +51,4 @@ const DashboardPage: React.FC = () => {
   );
 };
 
-export default DashboardPage;
+export default BatchImageGenerator;

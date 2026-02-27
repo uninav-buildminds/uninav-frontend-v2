@@ -120,19 +120,10 @@ export default defineConfig(({mode}) => ({
                         }
                     },
                     {
+                        // Never cache user-specific bookmark data — must reflect current session
                         urlPattern: mode === "development" ? /^http:\/\/localhost:3200\/user\/bookmarks\/.*/i : /^https:\/\/uninav-backend-v2.onrender.com\/user\/bookmarks\/.*/i,
-                        handler: "StaleWhileRevalidate",
-                        method: "GET",
-                        options: {
-                            cacheName: 'bookmarks-cache',
-                            expiration: {
-                                maxEntries: 10,
-                                maxAgeSeconds: 60 * 60 * 24 * 14 // 2 weeks
-                            },
-                            cacheableResponse: {
-                                statuses: [0, 200]
-                            }
-                        }
+                        handler: "NetworkOnly",
+                        method: "GET"
                     },
                     // Don't cache requests for generating download links
                     {
@@ -188,19 +179,10 @@ export default defineConfig(({mode}) => ({
                         }
                     },
                     {
+                        // Never cache auth check — must always verify live session with the server
                         urlPattern: mode === "development" ? /^http:\/\/localhost:3200\/auth\/check/i : /^https:\/\/uninav-backend-v2.onrender.com\/auth\/check/i,
-                        handler: "StaleWhileRevalidate",
-                        method: "GET",
-                        options: {
-                            cacheName: 'auth-cache',
-                            expiration: {
-                                maxEntries: 10,
-                                maxAgeSeconds: 60 * 60 * 24 * 7
-                            },
-                            cacheableResponse: {
-                                statuses: [0, 200]
-                            }
-                        }
+                        handler: "NetworkOnly",
+                        method: "GET"
                     }
                 ]
             },

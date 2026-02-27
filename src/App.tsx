@@ -42,7 +42,7 @@ import { BookmarkProvider } from "./context/bookmark/BookmarkContextProvider";
 import { DepartmentProvider } from "./context/department/DepartmentContextProvider";
 import { FullscreenProvider } from "./context/FullscreenContext";
 import { FolderProvider } from "./context/folder/FolderContextProvider";
-import DashboardPage from "./pages/dashboard/DashboardPage";
+import BatchImageGenerator from "./pages/dashboard/BatchImageGenerator";
 import Help from "./pages/dashboard/Help";
 import Profile from "./pages/dashboard/Profile";
 import GuidesPage from "./pages/dashboard/GuidesPage";
@@ -93,7 +93,7 @@ const App = () => {
 
                             <Route
                               path="/dashboard-batch"
-                              element={<DashboardPage />}
+                              element={<BatchImageGenerator />}
                             />
                             {/* Dashboard Routes - Nested */}
                             <Route
@@ -198,10 +198,7 @@ const App = () => {
                                 element={<ErrorReportsPage />}
                               />
                               {/* Admin Clubs */}
-                              <Route
-                                path="clubs"
-                                element={<AdminClubs />}
-                              />
+                              <Route path="clubs" element={<AdminClubs />} />
                               <Route
                                 path="clubs/flags"
                                 element={<AdminFlags />}
@@ -300,10 +297,7 @@ const App = () => {
                             />
                             {/* Clubs Routes */}
                             <Route path="/clubs" element={<ClubsFeed />} />
-                            <Route
-                              path="/clubs/:id"
-                              element={<ClubDetail />}
-                            />
+                            <Route path="/clubs/:id" element={<ClubDetail />} />
                             <Route
                               path="/clubs/my"
                               element={

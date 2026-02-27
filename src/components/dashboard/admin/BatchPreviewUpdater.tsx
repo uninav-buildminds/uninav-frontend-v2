@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import {
   runBatchPreviewUpdate,
   BatchUpdateProgress,
+  BatchSearchOptions,
 } from "@/lib/batch-preview-updater";
 import { Button } from "@/components/ui/button";
 import { RocketIcon } from "lucide-react";
@@ -19,8 +20,13 @@ const BatchPreviewUpdater: React.FC = () => {
     currentTask: "Ready to start.",
   });
 
+  const [options, setOptions] = useState<BatchSearchOptions>({
+    sortBy: "createdAt",
+    sortOrder: "desc",
+  });
+
   const handleStartUpdate = () => {
-    runBatchPreviewUpdate(setProgress);
+    runBatchPreviewUpdate(setProgress, options);
   };
 
   const isRunning = progress.status === "running";
@@ -32,6 +38,77 @@ const BatchPreviewUpdater: React.FC = () => {
         This tool will scan all existing PDF and Google Drive materials and
         generate missing preview images. This process can take a long time.
       </p>
+
+      <div className="flex flex-wrap gap-4 mb-4">
+        <div className="flex flex-col gap-1">
+          <label className="text-xs font-medium text-gray-600">Sort By</label>
+          <select
+            className="border rounded px-2 py-1 text-sm bg-white"
+            value={options.sortBy ?? "createdAt"}
+            disabled={isRunning}
+            onChange={(e) =>
+              setOptions((o) => ({
+                ...o,
+                sortBy: e.target.value as BatchSearchOptions["sortBy"],
+              }))
+            }
+          >
+            <option value="createdAt">Created At</option>
+            <option value="label">Label</option>
+            <option value="downloads">Downloads</option>
+          </select>
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <label className="text-xs font-medium text-gray-600">Sort Order</label>
+          <select
+            className="border rounded px-2 py-1 text-sm bg-white"
+            value={options.sortOrder ?? "desc"}
+            disabled={isRunning}
+            onChange={(e) =>
+              setOptions((o) => ({
+                ...o,
+                sortOrder: e.target.value as BatchSearchOptions["sortOrder"],
+              }))
+            }
+          >
+            <option value="desc">Descending</option>
+            <option value="asc">Ascending</option>
+          </select>
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <label className="text-xs font-medium text-gray-600">Creator ID (optional)</label>
+          <input
+            className="border rounded px-2 py-1 text-sm bg-white"
+            placeholder="e.g. user-uuid"
+            value={options.creatorId ?? ""}
+            disabled={isRunning}
+            onChange={(e) =>
+              setOptions((o) => ({
+                ...o,
+                creatorId: e.target.value || undefined,
+              }))
+            }
+          />
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <label className="text-xs font-medium text-gray-600">Course ID (optional)</label>
+          <input
+            className="border rounded px-2 py-1 text-sm bg-white"
+            placeholder="e.g. course-uuid"
+            value={options.courseId ?? ""}
+            disabled={isRunning}
+            onChange={(e) =>
+              setOptions((o) => ({
+                ...o,
+                courseId: e.target.value || undefined,
+              }))
+            }
+          />
+        </div>
+      </div>
 
       <Button onClick={handleStartUpdate} disabled={isRunning} className="mb-4">
         {isRunning ? (
