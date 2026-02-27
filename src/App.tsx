@@ -305,7 +305,7 @@ const App = () => {
                                 </ProtectedRoute>
                               }
                             />
-                            <Route path="/clubs/:id" element={<ClubDetail />} />
+                            <Route path="/clubs/:slug" element={<ClubDetail />} />
 
                             {/* 404 - Catch all unmatched routes */}
                             <Route path="*" element={<NotFound />} />

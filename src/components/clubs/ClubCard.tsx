@@ -20,13 +20,13 @@ const ClubCard: React.FC<ClubCardProps> = ({ club, onJoin, isAuthenticated }) =>
   const navigate = useNavigate();
 
   const handleCardClick = () => {
-    navigate(`/clubs/${club.id}`);
+    navigate(`/clubs/${club.slug}`);
   };
 
   const handleJoin = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!isAuthenticated) {
-      navigate(`/auth/signin?redirect=/clubs/${club.id}`);
+      navigate(`/auth/signin?redirect=/clubs/${club.slug}`);
       return;
     }
     onJoin?.(club);

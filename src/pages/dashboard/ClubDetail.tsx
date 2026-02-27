@@ -14,7 +14,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { useAuth } from "@/hooks/useAuth";
 import {
-  useClub,
+  useClubBySlug,
   useTrackClubClick,
   useFlagClub,
   useRequestClub,
@@ -24,11 +24,11 @@ import { formatRelativeTime } from "@/lib/utils";
 import { toast } from "sonner";
 
 const ClubDetail: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const { data: club, isLoading } = useClub(id);
+  const { data: club, isLoading } = useClubBySlug(slug);
   const clickMutation = useTrackClubClick();
   const flagMutation = useFlagClub();
   const requestMutation = useRequestClub();
@@ -39,7 +39,7 @@ const ClubDetail: React.FC = () => {
   const handleJoin = useCallback(() => {
     if (!club) return;
     if (!user) {
-      navigate(`/auth/signin?redirect=/clubs/${club.id}`);
+      navigate(`/auth/signin?redirect=/clubs/${club.slug}`);
       return;
     }
     clickMutation.mutate(club.id, {
@@ -76,7 +76,7 @@ const ClubDetail: React.FC = () => {
 
   const handleShare = () => {
     if (!club) return;
-    const url = `${window.location.origin}/clubs/${club.id}`;
+    const url = `${window.location.origin}/clubs/${club.slug}`;
     navigator.clipboard.writeText(url);
     toast.success("Link copied to clipboard");
   };

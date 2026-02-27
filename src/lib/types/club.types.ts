@@ -19,6 +19,7 @@ export enum ClubTargetingEnum {
 
 export interface Club {
   id: string;
+  slug: string;
   name: string;
   description: string;
   imageUrl?: string | null;
@@ -38,7 +39,6 @@ export interface Club {
     UserProfile,
     "id" | "firstName" | "lastName" | "profilePicture" | "department"
   >;
-  /** Only present when the backend includes it (e.g. mock or future enriched endpoint) */
   clickCount?: number;
   createdAt: string;
   updatedAt: string;
@@ -77,6 +77,7 @@ export interface ClubAnalytics {
     clicks: number;
   }[];
   clickTrend: { date: string; clicks: number }[];
+  joinTrend: { date: string; joins: number }[];
 }
 
 // ── Request & Flag ─────────────────────────────────────────────────────

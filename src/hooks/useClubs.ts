@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getClubs,
   getClubById,
+  getClubBySlug,
   createClub,
   updateClub,
   deleteClub,
@@ -41,6 +42,15 @@ export function useClub(id: string | undefined) {
     queryKey: ["club", id],
     queryFn: () => getClubById(id!),
     enabled: !!id,
+    select: (res) => (res.status === "success" ? res.data : null),
+  });
+}
+
+export function useClubBySlug(slug: string | undefined) {
+  return useQuery({
+    queryKey: ["club", "slug", slug],
+    queryFn: () => getClubBySlug(slug!),
+    enabled: !!slug,
     select: (res) => (res.status === "success" ? res.data : null),
   });
 }

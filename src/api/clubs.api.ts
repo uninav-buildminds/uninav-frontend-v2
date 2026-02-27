@@ -74,6 +74,20 @@ export async function getClubById(id: string): Promise<Response<Club>> {
   }
 }
 
+/** Fetch a single club by slug */
+export async function getClubBySlug(slug: string): Promise<Response<Club>> {
+  if (USE_CLUBS_MOCK) return mockGetClubById(slug);
+  try {
+    const response = await httpClient.get(`/clubs/slug/${slug}`);
+    return response.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error?.status || 500,
+      message: error?.data?.message || "Failed to fetch club",
+    };
+  }
+}
+
 /** Create a new club (authenticated) */
 export async function createClub(dto: CreateClubDto): Promise<Response<Club>> {
   if (USE_CLUBS_MOCK) return mockCreateClub(dto);
