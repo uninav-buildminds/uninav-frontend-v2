@@ -92,7 +92,7 @@ const MyClubs: React.FC = () => {
           <div className="px-2 sm:px-4 pt-16 sm:pt-20 pb-6 sm:pb-8">
             <div className="max-w-4xl mx-auto">
               <button
-                onClick={() => navigate("/dashboard/clubs")}
+                onClick={() => navigate("/clubs")}
                 className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4"
               >
                 <HugeiconsIcon
@@ -172,13 +172,13 @@ const MyClubs: React.FC = () => {
                 key={club.id}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
+                className="bg-white rounded-2xl border border-gray-100 shadow-sm"
               >
                 <div className="p-5 flex items-start gap-4">
                   {/* Club image */}
                   <div
                     className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-brand/5 flex items-center justify-center cursor-pointer"
-                    onClick={() => navigate(`/dashboard/clubs/${club.id}`)}
+                    onClick={() => navigate(`/clubs/${club.id}`)}
                   >
                     {club.imageUrl ? (
                       <img
@@ -199,7 +199,7 @@ const MyClubs: React.FC = () => {
                   {/* Info */}
                   <div
                     className="flex-1 min-w-0 cursor-pointer"
-                    onClick={() => navigate(`/dashboard/clubs/${club.id}`)}
+                    onClick={() => navigate(`/clubs/${club.id}`)}
                   >
                     <h3 className="text-base font-semibold text-gray-900 truncate">
                       {club.name}

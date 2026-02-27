@@ -2,7 +2,11 @@ import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Cancel01Icon, UserGroupIcon } from "@hugeicons/core-free-icons";
+import {
+  Cancel01Icon,
+  UserGroupIcon,
+  ArrowDown01Icon,
+} from "@hugeicons/core-free-icons";
 import { CLUB_INTERESTS } from "@/data/clubs.constants";
 
 interface RequestClubModalProps {
@@ -25,6 +29,12 @@ const RequestClubModal: React.FC<RequestClubModalProps> = ({
   const [name, setName] = useState("");
   const [interest, setInterest] = useState("");
   const [message, setMessage] = useState("");
+  const [interestSearch, setInterestSearch] = useState("");
+  const [interestOpen, setInterestOpen] = useState(false);
+
+  const filteredInterests = CLUB_INTERESTS.filter((i) =>
+    i.toLowerCase().includes(interestSearch.toLowerCase()),
+  );
 
   const handleSubmit = () => {
     if (!name.trim() || !interest) return;
@@ -109,18 +119,69 @@ const RequestClubModal: React.FC<RequestClubModalProps> = ({
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">
                     Related Interest <span className="text-red-400">*</span>
                   </label>
-                  <select
-                    value={interest}
-                    onChange={(e) => setInterest(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand/40 transition-all"
-                  >
-                    <option value="">Select interest...</option>
-                    {CLUB_INTERESTS.map((i) => (
-                      <option key={i} value={i}>
-                        {i}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    {/* Trigger */}
+                    <button
+                      type="button"
+                      onClick={() => setInterestOpen((v) => !v)}
+                      className="w-full flex items-center justify-between px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-left hover:border-brand/40 transition-colors focus:outline-none focus:ring-2 focus:ring-brand/20"
+                    >
+                      <span className={interest ? "text-gray-900" : "text-gray-400"}>
+                        {interest || "Select interest…"}
+                      </span>
+                      <HugeiconsIcon
+                        icon={ArrowDown01Icon}
+                        strokeWidth={1.5}
+                        size={16}
+                        className={`text-gray-400 transition-transform flex-shrink-0 ${interestOpen ? "rotate-180" : ""}`}
+                      />
+                    </button>
+
+                    {/* Dropdown */}
+                    {interestOpen && (
+                      <div className="absolute z-10 mt-1 w-full border border-gray-200 rounded-xl overflow-hidden shadow-md bg-white">
+                        {/* Search */}
+                        <div className="px-3 py-2 border-b border-gray-100">
+                          <input
+                            type="text"
+                            value={interestSearch}
+                            onChange={(e) => setInterestSearch(e.target.value)}
+                            placeholder="Search interests…"
+                            className="w-full text-sm bg-transparent focus:outline-none placeholder:text-gray-400"
+                            autoFocus
+                          />
+                        </div>
+
+                        {/* List */}
+                        <div className="max-h-48 overflow-y-auto scroll-surface">
+                          {filteredInterests.length === 0 ? (
+                            <p className="px-3 py-4 text-sm text-gray-400 text-center">
+                              No interests found
+                            </p>
+                          ) : (
+                            filteredInterests.map((i) => (
+                              <button
+                                key={i}
+                                type="button"
+                                onClick={() => {
+                                  setInterest(i);
+                                  setInterestOpen(false);
+                                  setInterestSearch("");
+                                }}
+                                className={`w-full text-left px-3.5 py-2 text-sm transition-colors ${
+                                  interest === i
+                                    ? "bg-brand/8 text-brand font-medium"
+                                    : "text-gray-700 hover:bg-gray-50"
+                                }`}
+                              >
+                                {i}
+                              </button>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Message */}

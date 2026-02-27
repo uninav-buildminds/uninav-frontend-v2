@@ -295,9 +295,8 @@ const App = () => {
                               path="/view/material/:slug"
                               element={<PublicMaterialView />}
                             />
-                            {/* Clubs Routes */}
+                            {/* Clubs Routes — static paths must precede :id */}
                             <Route path="/clubs" element={<ClubsFeed />} />
-                            <Route path="/clubs/:id" element={<ClubDetail />} />
                             <Route
                               path="/clubs/my"
                               element={
@@ -306,6 +305,7 @@ const App = () => {
                                 </ProtectedRoute>
                               }
                             />
+                            <Route path="/clubs/:id" element={<ClubDetail />} />
 
                             {/* 404 - Catch all unmatched routes */}
                             <Route path="*" element={<NotFound />} />

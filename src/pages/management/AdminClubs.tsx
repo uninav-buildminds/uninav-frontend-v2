@@ -147,7 +147,7 @@ const AdminClubs: React.FC = () => {
                   >
                     <td className="py-3 px-4">
                       <button
-                        onClick={() => navigate(`/dashboard/clubs/${club.id}`)}
+                        onClick={() => navigate(`/clubs/${club.id}`)}
                         className="text-left"
                       >
                         <p className="font-medium text-gray-900 hover:text-brand transition-colors truncate max-w-[200px]">

@@ -13,17 +13,22 @@ import { useNavigate } from "react-router-dom";
 interface ClubCardProps {
   club: Club;
   onJoin?: (club: Club) => void;
+  isAuthenticated?: boolean;
 }
 
-const ClubCard: React.FC<ClubCardProps> = ({ club, onJoin }) => {
+const ClubCard: React.FC<ClubCardProps> = ({ club, onJoin, isAuthenticated }) => {
   const navigate = useNavigate();
 
   const handleCardClick = () => {
-    navigate(`/dashboard/clubs/${club.id}`);
+    navigate(`/clubs/${club.id}`);
   };
 
   const handleJoin = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!isAuthenticated) {
+      navigate(`/auth/signin?redirect=/clubs/${club.id}`);
+      return;
+    }
     onJoin?.(club);
   };
 
@@ -36,23 +41,25 @@ const ClubCard: React.FC<ClubCardProps> = ({ club, onJoin }) => {
       className="group cursor-pointer bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden"
     >
       {/* Banner / Image */}
-      <div className="relative h-32 sm:h-36 bg-gradient-to-br from-brand/10 to-brand/5 overflow-hidden">
-        {club.bannerUrl || club.imageUrl ? (
+      <div className="relative h-36 sm:h-40 bg-gradient-to-br from-brand/10 to-brand/5 overflow-hidden">
+        {club.imageUrl ? (
           <img
-            src={club.bannerUrl || club.imageUrl}
+            src={club.imageUrl}
             alt={club.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).style.display = "none";
+            }}
           />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <HugeiconsIcon
-              icon={UserGroupIcon}
-              strokeWidth={1}
-              size={48}
-              className="text-brand/30"
-            />
-          </div>
-        )}
+        ) : null}
+        <div className="w-full h-full flex items-center justify-center absolute inset-0 -z-0">
+          <HugeiconsIcon
+            icon={UserGroupIcon}
+            strokeWidth={1}
+            size={48}
+            className="text-brand/30"
+          />
+        </div>
 
         {/* Click count badge */}
         <div className="absolute top-3 right-3 flex items-center gap-1 bg-white/90 backdrop-blur-sm rounded-full px-2.5 py-1 text-xs text-gray-600 shadow-sm">
@@ -64,9 +71,9 @@ const ClubCard: React.FC<ClubCardProps> = ({ club, onJoin }) => {
       {/* Body */}
       <div className="p-4">
         {/* Tags pills */}
-        {club.interests.length > 0 && (
+        {(club.interests?.length ?? 0) > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-2.5">
-            {club.interests.slice(0, 3).map((tag) => (
+            {club.interests!.slice(0, 3).map((tag) => (
               <span
                 key={tag}
                 className="inline-block text-[11px] font-medium px-2 py-0.5 rounded-full bg-brand/8 text-brand"
@@ -74,9 +81,9 @@ const ClubCard: React.FC<ClubCardProps> = ({ club, onJoin }) => {
                 {tag}
               </span>
             ))}
-            {club.interests.length > 3 && (
+            {club.interests!.length > 3 && (
               <span className="inline-block text-[11px] font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">
-                +{club.interests.length - 3}
+                +{club.interests!.length - 3}
               </span>
             )}
           </div>
@@ -86,7 +93,7 @@ const ClubCard: React.FC<ClubCardProps> = ({ club, onJoin }) => {
         <h3 className="text-base font-semibold text-gray-900 line-clamp-1 group-hover:text-brand transition-colors">
           {club.name}
         </h3>
-        <p className="text-sm text-gray-500 mt-1 line-clamp-2 leading-relaxed">
+        <p className="text-sm text-gray-500 mt-1 line-clamp-3 leading-relaxed">
           {club.description}
         </p>
 

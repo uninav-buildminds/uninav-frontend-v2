@@ -8,6 +8,8 @@ import {
   Link04Icon,
   Image01Icon,
   Target01Icon,
+  ArrowDown01Icon,
+  Tick01Icon,
 } from "@hugeicons/core-free-icons";
 import {
   Club,
@@ -16,7 +18,9 @@ import {
   UpdateClubDto,
 } from "@/lib/types/club.types";
 import { CLUB_INTERESTS } from "@/data/clubs.constants";
-import { useDepartments } from "@/hooks/useDepartments";
+import { getAllFaculties } from "@/api/faculty.api";
+import { Faculty } from "@/lib/types/faculty.types";
+import { ResponseStatus } from "@/lib/types/response.types";
 
 interface PostClubModalProps {
   isOpen: boolean;
@@ -35,7 +39,17 @@ const PostClubModal: React.FC<PostClubModalProps> = ({
   editingClub = null,
 }) => {
   const isEditMode = !!editingClub;
-  const { departments } = useDepartments();
+
+  // Faculty/department data for the targeting picker
+  const [faculties, setFaculties] = useState<Faculty[]>([]);
+  const [deptSearch, setDeptSearch] = useState("");
+  const [deptPickerOpen, setDeptPickerOpen] = useState(false);
+
+  useEffect(() => {
+    getAllFaculties().then((res) => {
+      if (res?.status === ResponseStatus.SUCCESS) setFaculties(res.data);
+    });
+  }, []);
 
   // Form state
   const [name, setName] = useState("");
@@ -60,8 +74,15 @@ const PostClubModal: React.FC<PostClubModalProps> = ({
       setSelectedInterests(editingClub.interests || []);
       setTags(editingClub.tags || []);
       setTargeting(editingClub.targeting);
-      setTargetDeptIds(editingClub.targetDepartmentIds || []);
+      setTargetDeptIds(
+        editingClub.targetDepartments?.map((td) => td.departmentId) ?? [],
+      );
+      // Show existing image as preview but clear any previously selected file
+      // so the old image is only replaced if the user explicitly picks a new one
+      setImageFile(null);
       setImagePreview(editingClub.imageUrl || null);
+      setDeptSearch("");
+      setDeptPickerOpen(false);
     } else if (isOpen) {
       resetForm();
     }
@@ -78,6 +99,8 @@ const PostClubModal: React.FC<PostClubModalProps> = ({
     setTargetDeptIds([]);
     setImageFile(null);
     setImagePreview(null);
+    setDeptSearch("");
+    setDeptPickerOpen(false);
   };
 
   const toggleInterest = (interest: string) => {
@@ -277,7 +300,11 @@ const PostClubModal: React.FC<PostClubModalProps> = ({
                     )}
                     <div>
                       <span className="text-sm font-medium text-gray-700">
-                        {imageFile ? imageFile.name : "Upload image"}
+                        {imageFile
+                          ? imageFile.name
+                          : imagePreview
+                            ? "Click to replace image"
+                            : "Upload image"}
                       </span>
                       <p className="text-xs text-gray-400">
                         PNG, JPG up to 2MB
@@ -297,7 +324,7 @@ const PostClubModal: React.FC<PostClubModalProps> = ({
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">
                     Interests <span className="text-red-400">*</span>{" "}
                     <span className="text-xs text-gray-400 font-normal">
-                      Pick up to 5
+                      Pick 1–5
                     </span>
                   </label>
                   <div className="flex flex-wrap gap-2 max-h-36 overflow-y-auto scroll-surface">
@@ -375,7 +402,13 @@ const PostClubModal: React.FC<PostClubModalProps> = ({
                       <button
                         key={v}
                         type="button"
-                        onClick={() => setTargeting(v)}
+                        onClick={() => {
+                          setTargeting(v);
+                          if (v === ClubTargetingEnum.PUBLIC) {
+                            setDeptPickerOpen(false);
+                            setDeptSearch("");
+                          }
+                        }}
                         className={`text-xs font-medium py-2 rounded-xl transition-colors border ${
                           targeting === v
                             ? "bg-brand text-white border-brand"
@@ -387,24 +420,133 @@ const PostClubModal: React.FC<PostClubModalProps> = ({
                     ))}
                   </div>
 
-                  {targeting !== ClubTargetingEnum.PUBLIC && departments && (
-                    <div className="mt-3 max-h-32 overflow-y-auto scroll-surface border border-gray-100 rounded-xl p-2 space-y-1">
-                      {Object.values(departments).map((dept) => (
-                        <label
-                          key={dept.id}
-                          className="flex items-center gap-2 py-1 px-2 rounded-lg hover:bg-gray-50 cursor-pointer"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={targetDeptIds.includes(dept.id)}
-                            onChange={() => toggleDept(dept.id)}
-                            className="rounded border-gray-300 text-brand focus:ring-brand/30"
-                          />
-                          <span className="text-xs text-gray-700">
-                            {dept.name}
-                          </span>
-                        </label>
-                      ))}
+                  {targeting !== ClubTargetingEnum.PUBLIC && (
+                    <div className="mt-3 space-y-2">
+                      {/* Trigger button */}
+                      <button
+                        type="button"
+                        onClick={() => setDeptPickerOpen((v) => !v)}
+                        className="w-full flex items-center justify-between px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-left hover:border-brand/40 transition-colors focus:outline-none focus:ring-2 focus:ring-brand/20"
+                      >
+                        <span className="text-gray-500">
+                          {targetDeptIds.length === 0
+                            ? "Search and select departments…"
+                            : `${targetDeptIds.length} department${targetDeptIds.length !== 1 ? "s" : ""} selected`}
+                        </span>
+                        <HugeiconsIcon
+                          icon={ArrowDown01Icon}
+                          strokeWidth={1.5}
+                          size={16}
+                          className={`text-gray-400 transition-transform ${deptPickerOpen ? "rotate-180" : ""}`}
+                        />
+                      </button>
+
+                      {/* Inline dropdown */}
+                      {deptPickerOpen && (
+                        <div className="border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                          {/* Search input */}
+                          <div className="px-3 py-2 border-b border-gray-100">
+                            <input
+                              type="text"
+                              value={deptSearch}
+                              onChange={(e) => setDeptSearch(e.target.value)}
+                              placeholder="Search departments…"
+                              className="w-full text-sm bg-transparent focus:outline-none placeholder:text-gray-400"
+                              autoFocus
+                            />
+                          </div>
+
+                          {/* List grouped by faculty */}
+                          <div className="max-h-48 overflow-y-auto scroll-surface">
+                            {faculties.map((faculty) => {
+                              const filtered = (faculty.departments ?? []).filter(
+                                (d) =>
+                                  d.name.toLowerCase().includes(deptSearch.toLowerCase()) ||
+                                  faculty.name.toLowerCase().includes(deptSearch.toLowerCase()),
+                              );
+                              if (filtered.length === 0) return null;
+                              return (
+                                <div key={faculty.id}>
+                                  <p className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+                                    {faculty.name}
+                                  </p>
+                                  {filtered.map((dept) => {
+                                    const selected = targetDeptIds.includes(dept.id);
+                                    return (
+                                      <button
+                                        key={dept.id}
+                                        type="button"
+                                        onClick={() => toggleDept(dept.id)}
+                                        className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left transition-colors ${
+                                          selected
+                                            ? "bg-brand/5 text-brand"
+                                            : "text-gray-700 hover:bg-gray-50"
+                                        }`}
+                                      >
+                                        <span
+                                          className={`w-4 h-4 flex-shrink-0 rounded border flex items-center justify-center transition-colors ${
+                                            selected
+                                              ? "bg-brand border-brand"
+                                              : "border-gray-300"
+                                          }`}
+                                        >
+                                          {selected && (
+                                            <HugeiconsIcon
+                                              icon={Tick01Icon}
+                                              strokeWidth={2}
+                                              size={10}
+                                              className="text-white"
+                                            />
+                                          )}
+                                        </span>
+                                        <span className="truncate">{dept.name}</span>
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              );
+                            })}
+                            {faculties.every(
+                              (f) =>
+                                !(f.departments ?? []).some(
+                                  (d) =>
+                                    d.name.toLowerCase().includes(deptSearch.toLowerCase()) ||
+                                    f.name.toLowerCase().includes(deptSearch.toLowerCase()),
+                                ),
+                            ) && (
+                              <p className="px-3 py-4 text-sm text-gray-400 text-center">
+                                No departments found
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Selected chips */}
+                      {targetDeptIds.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5">
+                          {targetDeptIds.map((id) => {
+                            const dept = faculties
+                              .flatMap((f) => f.departments ?? [])
+                              .find((d) => d.id === id);
+                            return (
+                              <span
+                                key={id}
+                                className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-brand/8 text-brand"
+                              >
+                                {dept?.name ?? id}
+                                <button
+                                  type="button"
+                                  onClick={() => toggleDept(id)}
+                                  className="hover:text-brand/60 leading-none"
+                                >
+                                  ×
+                                </button>
+                              </span>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

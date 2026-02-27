@@ -6,6 +6,7 @@ import {
   Add01Icon,
   UserGroupIcon,
   Search01Icon,
+  DashboardSquare02Icon,
 } from "@hugeicons/core-free-icons";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -153,29 +154,45 @@ const ClubsFeed: React.FC = () => {
       {/* Content */}
       <div className="max-w-5xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
         {/* Action bar */}
-        <div className="flex items-center justify-between mb-6">
-          <p className="text-sm text-gray-500">
+        <div className="flex items-center justify-between mb-6 gap-2">
+          <p className="text-sm text-gray-500 shrink-0">
             {pagination
               ? `${pagination.totalItems} club${
                   pagination.totalItems !== 1 ? "s" : ""
                 } found`
               : "\u00A0"}
           </p>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap justify-end">
             <button
               onClick={() => setShowRequestModal(true)}
-              className="text-xs font-medium text-gray-600 hover:text-brand px-3 py-2 rounded-xl hover:bg-gray-50 transition-colors border border-gray-200"
+              className="text-xs font-medium text-gray-600 hover:text-brand px-3 py-2 rounded-xl hover:bg-gray-50 transition-colors border border-gray-200 whitespace-nowrap"
             >
-              Request a Club
+              <span className="hidden sm:inline">Request a Club</span>
+              <span className="sm:hidden">Request</span>
             </button>
             {user && (
-              <button
-                onClick={() => setShowPostModal(true)}
-                className="inline-flex items-center gap-1.5 text-xs font-medium text-white bg-brand px-4 py-2 rounded-xl hover:bg-brand/90 transition-colors shadow-sm"
-              >
-                <HugeiconsIcon icon={Add01Icon} strokeWidth={1.5} size={14} />
-                Post Club
-              </button>
+              <>
+                <button
+                  onClick={() => navigate("/clubs/my")}
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-700 border border-gray-200 px-3 py-2 rounded-xl hover:bg-gray-50 transition-colors whitespace-nowrap"
+                  title="Manage clubs you've posted"
+                >
+                  <HugeiconsIcon
+                    icon={DashboardSquare02Icon}
+                    strokeWidth={1.5}
+                    size={14}
+                  />
+                  <span className="hidden sm:inline">Manage Clubs</span>
+                </button>
+                <button
+                  onClick={() => setShowPostModal(true)}
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-white bg-brand px-3 sm:px-4 py-2 rounded-xl hover:bg-brand/90 transition-colors shadow-sm whitespace-nowrap"
+                >
+                  <HugeiconsIcon icon={Add01Icon} strokeWidth={1.5} size={14} />
+                  <span className="hidden sm:inline">Post Club</span>
+                  <span className="sm:hidden">Post</span>
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -205,7 +222,7 @@ const ClubsFeed: React.FC = () => {
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {clubs.map((club) => (
-                <ClubCard key={club.id} club={club} onJoin={handleJoin} />
+                <ClubCard key={club.id} club={club} onJoin={handleJoin} isAuthenticated={!!user} />
               ))}
             </div>
 
