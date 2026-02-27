@@ -65,17 +65,11 @@ const Header: React.FC = () => {
           <a href="#solution" className="hover:text-brand transition-colors">
             Solution
           </a>
-          <a href="/clubs" className="hover:text-brand transition-colors">
-            Clubs
-          </a>
           <a href="#features" className="hover:text-brand transition-colors">
             Features
           </a>
           <a href="#faqs" className="hover:text-brand transition-colors">
             FAQs
-          </a>
-          <a href="/guides" className="hover:text-brand transition-colors">
-            Guides
           </a>
         </nav>
 
@@ -187,13 +181,6 @@ const Header: React.FC = () => {
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 FAQs
-              </a>
-              <a
-                href="/clubs"
-                className="block px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors text-sm font-medium"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Clubs
               </a>
             </nav>
 
