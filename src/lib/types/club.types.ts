@@ -19,24 +19,27 @@ export enum ClubTargetingEnum {
 
 export interface Club {
   id: string;
+  slug: string;
   name: string;
   description: string;
-  imageUrl?: string;
-  bannerUrl?: string;
+  imageUrl?: string | null;
+  imageKey?: string | null;
   externalLink: string;
-  redirectUrl: string; // auto-generated uninav.live/clubs/[id]
-  tags: string[];
-  interests: string[];
+  tags: string[] | null;
+  interests: string[] | null;
   targeting: ClubTargetingEnum;
-  targetDepartmentIds: string[]; // dept IDs when targeting = specific / exclude
-  targetDepartments?: Department[];
+  targetDepartments?: {
+    clubId: string;
+    departmentId: string;
+    department: Department;
+  }[];
   status: ClubStatusEnum;
   organizerId: string;
   organizer?: Pick<
     UserProfile,
     "id" | "firstName" | "lastName" | "profilePicture" | "department"
   >;
-  clickCount: number;
+  clickCount?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -52,7 +55,6 @@ export interface CreateClubDto {
   targeting: ClubTargetingEnum;
   targetDepartmentIds: string[];
   image?: File;
-  banner?: File;
 }
 
 export interface UpdateClubDto extends Partial<CreateClubDto> {}
@@ -75,6 +77,7 @@ export interface ClubAnalytics {
     clicks: number;
   }[];
   clickTrend: { date: string; clicks: number }[];
+  joinTrend: { date: string; joins: number }[];
 }
 
 // ── Request & Flag ─────────────────────────────────────────────────────
@@ -111,4 +114,10 @@ export interface GetClubsParams {
   departmentId?: string;
   status?: ClubStatusEnum;
   organizerId?: string;
+}
+
+/** Resolved from GET /clubs/:id/analytics — not embedded on the Club object */
+export interface ClubClickCount {
+  clubId: string;
+  totalClicks: number;
 }

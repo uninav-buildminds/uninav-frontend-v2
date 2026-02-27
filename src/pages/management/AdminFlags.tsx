@@ -103,7 +103,7 @@ const AdminFlags: React.FC = () => {
                   {/* Club name */}
                   <button
                     onClick={() =>
-                      flag.club && navigate(`/dashboard/clubs/${flag.club.id}`)
+                      flag.club && navigate(`/clubs/${flag.club.slug}`)
                     }
                     className="text-sm font-semibold text-gray-900 hover:text-brand transition-colors"
                   >

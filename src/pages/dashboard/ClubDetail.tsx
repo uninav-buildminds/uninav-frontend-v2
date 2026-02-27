@@ -10,23 +10,25 @@ import {
   Alert02Icon,
   Share01Icon,
   Target01Icon,
+  Edit01Icon,
 } from "@hugeicons/core-free-icons";
 import { useAuth } from "@/hooks/useAuth";
 import {
-  useClub,
+  useClubBySlug,
   useTrackClubClick,
   useFlagClub,
   useRequestClub,
 } from "@/hooks/useClubs";
 import { FlagClubModal, RequestClubModal } from "@/components/clubs";
 import { formatRelativeTime } from "@/lib/utils";
+import { toast } from "sonner";
 
 const ClubDetail: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const { data: club, isLoading } = useClub(id);
+  const { data: club, isLoading } = useClubBySlug(slug);
   const clickMutation = useTrackClubClick();
   const flagMutation = useFlagClub();
   const requestMutation = useRequestClub();
@@ -36,6 +38,10 @@ const ClubDetail: React.FC = () => {
 
   const handleJoin = useCallback(() => {
     if (!club) return;
+    if (!user) {
+      navigate(`/auth/signin?redirect=/clubs/${club.slug}`);
+      return;
+    }
     clickMutation.mutate(club.id, {
       onSuccess: (res) => {
         if (res.status === "success") {
@@ -48,7 +54,7 @@ const ClubDetail: React.FC = () => {
         window.open(club.externalLink, "_blank", "noopener");
       },
     });
-  }, [club, clickMutation]);
+  }, [club, user, navigate, clickMutation]);
 
   const handleFlag = (reason: string) => {
     if (!club) return;
@@ -70,10 +76,12 @@ const ClubDetail: React.FC = () => {
 
   const handleShare = () => {
     if (!club) return;
-    const url = `${window.location.origin}/dashboard/clubs/${club.id}`;
+    const url = `${window.location.origin}/clubs/${club.slug}`;
     navigator.clipboard.writeText(url);
-    // toast handled by browser
+    toast.success("Link copied to clipboard");
   };
+
+  const isOrganizer = !!user && user.id === club?.organizerId;
 
   // Loading state
   if (isLoading) {
@@ -108,7 +116,7 @@ const ClubDetail: React.FC = () => {
           This club may have been removed or the link is incorrect.
         </p>
         <button
-          onClick={() => navigate("/dashboard/clubs")}
+          onClick={() => navigate("/clubs")}
           className="text-sm font-medium text-brand hover:underline"
         >
           Browse all clubs
@@ -122,7 +130,7 @@ const ClubDetail: React.FC = () => {
       <div className="max-w-3xl mx-auto px-3 sm:px-4 pt-16 sm:pt-20 pb-12">
         {/* Back button */}
         <button
-          onClick={() => navigate("/dashboard/clubs")}
+          onClick={() => navigate("/clubs")}
           className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 mb-6 transition-colors"
         >
           <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={1.5} size={18} />
@@ -135,9 +143,9 @@ const ClubDetail: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           className="rounded-2xl overflow-hidden bg-gradient-to-br from-brand/10 to-brand/5 h-44 sm:h-56 mb-6"
         >
-          {club.bannerUrl || club.imageUrl ? (
+          {club.imageUrl ? (
             <img
-              src={club.bannerUrl || club.imageUrl}
+              src={club.imageUrl}
               alt={club.name}
               className="w-full h-full object-cover"
             />
@@ -159,38 +167,38 @@ const ClubDetail: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
         >
-          <div className="flex items-start justify-between gap-4 mb-4">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-              {club.name}
-            </h1>
-            <div className="flex items-center gap-2 flex-shrink-0">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+            {club.name}
+          </h1>
+          <div className="flex items-center gap-1.5 mb-4">
+            {isOrganizer && (
               <button
-                onClick={handleShare}
-                className="p-2 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors"
-                title="Copy link"
+                onClick={() => navigate("/clubs/my")}
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-lg border border-brand/30 bg-brand/5 text-brand text-[11px] font-medium hover:bg-brand/10 transition-colors"
+                title="Manage this club in My Clubs"
               >
-                <HugeiconsIcon
-                  icon={Share01Icon}
-                  strokeWidth={1.5}
-                  size={18}
-                  className="text-gray-500"
-                />
+                <HugeiconsIcon icon={Edit01Icon} strokeWidth={1.5} size={12} />
+                Edit
               </button>
-              {user && (
-                <button
-                  onClick={() => setShowFlagModal(true)}
-                  className="p-2 rounded-xl border border-gray-200 hover:bg-red-50 hover:border-red-200 transition-colors"
-                  title="Report"
-                >
-                  <HugeiconsIcon
-                    icon={Alert02Icon}
-                    strokeWidth={1.5}
-                    size={18}
-                    className="text-gray-500 hover:text-red-500"
-                  />
-                </button>
-              )}
-            </div>
+            )}
+            <button
+              onClick={handleShare}
+              className="inline-flex items-center gap-1 px-2 py-1 rounded-lg border border-gray-200 text-gray-500 text-[11px] font-medium hover:bg-gray-50 transition-colors"
+              title="Copy link"
+            >
+              <HugeiconsIcon icon={Share01Icon} strokeWidth={1.5} size={12} />
+              Share
+            </button>
+            {user && !isOrganizer && (
+              <button
+                onClick={() => setShowFlagModal(true)}
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-lg border border-gray-200 text-gray-500 text-[11px] font-medium hover:bg-red-50 hover:border-red-200 hover:text-red-500 transition-colors"
+                title="Report"
+              >
+                <HugeiconsIcon icon={Alert02Icon} strokeWidth={1.5} size={12} />
+                Report
+              </button>
+            )}
           </div>
 
           {/* Meta row */}
@@ -218,9 +226,9 @@ const ClubDetail: React.FC = () => {
         </motion.div>
 
         {/* Interests */}
-        {club.interests.length > 0 && (
+        {(club.interests?.length ?? 0) > 0 && (
           <div className="flex flex-wrap gap-2 mb-6">
-            {club.interests.map((tag) => (
+            {club.interests!.map((tag) => (
               <span
                 key={tag}
                 className="text-xs font-medium px-3 py-1 rounded-full bg-brand/8 text-brand"
@@ -245,12 +253,12 @@ const ClubDetail: React.FC = () => {
               {club.targeting === "specific" ? "For:" : "Excludes:"}
             </h4>
             <div className="flex flex-wrap gap-2">
-              {club.targetDepartments.map((dept) => (
+              {club.targetDepartments.map((td) => (
                 <span
-                  key={dept.id}
+                  key={td.departmentId}
                   className="text-xs font-medium px-2.5 py-1 rounded-full bg-white border border-gray-200 text-gray-700"
                 >
-                  {dept.name}
+                  {td.department.name}
                 </span>
               ))}
             </div>

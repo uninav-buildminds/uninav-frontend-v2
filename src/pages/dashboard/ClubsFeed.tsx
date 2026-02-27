@@ -1,11 +1,14 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Add01Icon,
   UserGroupIcon,
   Search01Icon,
+  DashboardSquare02Icon,
+  Cancel01Icon,
+  Menu01Icon,
 } from "@hugeicons/core-free-icons";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -40,6 +43,7 @@ const ClubsFeed: React.FC = () => {
   // Modal state
   const [showPostModal, setShowPostModal] = useState(false);
   const [showRequestModal, setShowRequestModal] = useState(false);
+  const [showMobilePanel, setShowMobilePanel] = useState(false);
 
   // Debounced search
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
@@ -122,10 +126,91 @@ const ClubsFeed: React.FC = () => {
 
   return (
     <>
+      {/* Mobile sidebar panel */}
+      <AnimatePresence>
+        {showMobilePanel && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-mobile-panel sm:hidden"
+              onClick={() => setShowMobilePanel(false)}
+            />
+            {/* Panel */}
+            <motion.div
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              className="fixed top-0 left-0 h-full w-72 bg-white shadow-2xl z-mobile-panel sm:hidden flex flex-col"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 py-5 border-b border-gray-100">
+                <Link
+                  to="/home"
+                  onClick={() => setShowMobilePanel(false)}
+                  className="flex items-center gap-2.5"
+                >
+                  <img src="/assets/logo.svg" alt="UniNav" className="h-6 w-6" />
+                  <span className="font-semibold text-brand text-base">UniNav</span>
+                </Link>
+                <button
+                  onClick={() => setShowMobilePanel(false)}
+                  className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                >
+                  <HugeiconsIcon icon={Cancel01Icon} strokeWidth={1.5} size={18} className="text-gray-500" />
+                </button>
+              </div>
+
+              {/* Nav items */}
+              <div className="flex-1 px-3 py-4">
+                {user && (
+                  <button
+                    onClick={() => {
+                      navigate("/clubs/my");
+                      setShowMobilePanel(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-gray-700 hover:bg-brand/5 hover:text-brand transition-colors"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-brand/10 flex items-center justify-center flex-shrink-0">
+                      <HugeiconsIcon icon={DashboardSquare02Icon} strokeWidth={1.5} size={16} className="text-brand" />
+                    </div>
+                    Manage Clubs
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Fixed logo — same as GuidesPage */}
+      <Link
+        to="/home"
+        className="hidden sm:flex fixed left-4 top-4 z-fixed items-center gap-2 px-3 py-2.5 bg-white/90 backdrop-blur hover:bg-white border border-gray-200 rounded-full shadow-lg transition-all duration-200 hover:scale-105 active:scale-95"
+        aria-label="Go to UniNav home"
+      >
+        <img src="/assets/logo.svg" alt="" className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
+        <span className="text-sm sm:text-base font-semibold text-brand hidden sm:inline">UniNav</span>
+      </Link>
+
       {/* Header with gradient — matches PageHeader pattern */}
       <section className="relative overflow-visible z-sticky">
         <div className="bg-gradient-to-br from-[theme(colors.dashboard.gradientFrom)] to-[theme(colors.dashboard.gradientTo)]">
           <div className="px-2 sm:px-4 pt-16 sm:pt-20 pb-6 sm:pb-8">
+            {/* Mobile hamburger */}
+            {user && (
+              <button
+                onClick={() => setShowMobilePanel(true)}
+                className="sm:hidden absolute top-4 left-4 p-3 bg-white rounded-2xl shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors z-10"
+                aria-label="Open menu"
+              >
+                <HugeiconsIcon icon={Menu01Icon} strokeWidth={1.5} size={20} className="text-gray-700" />
+              </button>
+            )}
             <div className="max-w-5xl mx-auto text-center">
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-foreground">
                 Find Your Community
@@ -153,29 +238,41 @@ const ClubsFeed: React.FC = () => {
       {/* Content */}
       <div className="max-w-5xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
         {/* Action bar */}
-        <div className="flex items-center justify-between mb-6">
-          <p className="text-sm text-gray-500">
+        <div className="flex items-center justify-between mb-6 gap-2">
+          <p className="text-sm text-gray-500 shrink-0">
             {pagination
               ? `${pagination.totalItems} club${
                   pagination.totalItems !== 1 ? "s" : ""
                 } found`
               : "\u00A0"}
           </p>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap justify-end">
             <button
               onClick={() => setShowRequestModal(true)}
-              className="text-xs font-medium text-gray-600 hover:text-brand px-3 py-2 rounded-xl hover:bg-gray-50 transition-colors border border-gray-200"
+              className="text-xs font-medium text-gray-600 hover:text-brand px-3 py-2 rounded-xl hover:bg-gray-50 transition-colors border border-gray-200 whitespace-nowrap"
             >
-              Request a Club
+              <span className="hidden sm:inline">Request a Club</span>
+              <span className="sm:hidden">Request a Club</span>
             </button>
             {user && (
-              <button
-                onClick={() => setShowPostModal(true)}
-                className="inline-flex items-center gap-1.5 text-xs font-medium text-white bg-brand px-4 py-2 rounded-xl hover:bg-brand/90 transition-colors shadow-sm"
-              >
-                <HugeiconsIcon icon={Add01Icon} strokeWidth={1.5} size={14} />
-                Post Club
-              </button>
+              <>
+                <button
+                  onClick={() => navigate("/clubs/my")}
+                  className="hidden sm:inline-flex items-center gap-1.5 text-xs font-medium text-gray-700 border border-gray-200 px-3 py-2 rounded-xl hover:bg-gray-50 transition-colors whitespace-nowrap"
+                  title="Manage clubs you've posted"
+                >
+                  <HugeiconsIcon icon={DashboardSquare02Icon} strokeWidth={1.5} size={14} />
+                  Manage Clubs
+                </button>
+                <button
+                  onClick={() => setShowPostModal(true)}
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-white bg-brand px-3 sm:px-4 py-2 rounded-xl hover:bg-brand/90 transition-colors shadow-sm whitespace-nowrap"
+                >
+                  <HugeiconsIcon icon={Add01Icon} strokeWidth={1.5} size={14} />
+                  <span className="hidden sm:inline">Post Club</span>
+                  <span className="sm:hidden">+ Post Club</span>
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -205,7 +302,7 @@ const ClubsFeed: React.FC = () => {
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {clubs.map((club) => (
-                <ClubCard key={club.id} club={club} onJoin={handleJoin} />
+                <ClubCard key={club.id} club={club} onJoin={handleJoin} isAuthenticated={!!user} />
               ))}
             </div>
 

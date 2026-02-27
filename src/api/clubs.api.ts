@@ -74,6 +74,20 @@ export async function getClubById(id: string): Promise<Response<Club>> {
   }
 }
 
+/** Fetch a single club by slug */
+export async function getClubBySlug(slug: string): Promise<Response<Club>> {
+  if (USE_CLUBS_MOCK) return mockGetClubById(slug);
+  try {
+    const response = await httpClient.get(`/clubs/slug/${slug}`);
+    return response.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error?.status || 500,
+      message: error?.data?.message || "Failed to fetch club",
+    };
+  }
+}
+
 /** Create a new club (authenticated) */
 export async function createClub(dto: CreateClubDto): Promise<Response<Club>> {
   if (USE_CLUBS_MOCK) return mockCreateClub(dto);
@@ -83,13 +97,12 @@ export async function createClub(dto: CreateClubDto): Promise<Response<Club>> {
     formData.append("description", dto.description);
     formData.append("externalLink", dto.externalLink);
     formData.append("targeting", dto.targeting);
-    dto.tags.forEach((t) => formData.append("tags[]", t));
-    dto.interests.forEach((i) => formData.append("interests[]", i));
-    dto.targetDepartmentIds.forEach((d) =>
-      formData.append("targetDepartmentIds[]", d),
-    );
+    if (dto.tags.length) formData.append("tags", dto.tags.join(","));
+    if (dto.interests.length)
+      formData.append("interests", dto.interests.join(","));
+    if (dto.targetDepartmentIds.length)
+      formData.append("targetDepartmentIds", dto.targetDepartmentIds.join(","));
     if (dto.image) formData.append("image", dto.image);
-    if (dto.banner) formData.append("banner", dto.banner);
 
     const response = await httpClient.post("/clubs", formData);
     return response.data;
@@ -113,15 +126,12 @@ export async function updateClub(
     if (dto.description) formData.append("description", dto.description);
     if (dto.externalLink) formData.append("externalLink", dto.externalLink);
     if (dto.targeting) formData.append("targeting", dto.targeting);
-    if (dto.tags) dto.tags.forEach((t) => formData.append("tags[]", t));
-    if (dto.interests)
-      dto.interests.forEach((i) => formData.append("interests[]", i));
-    if (dto.targetDepartmentIds)
-      dto.targetDepartmentIds.forEach((d) =>
-        formData.append("targetDepartmentIds[]", d),
-      );
+    if (dto.tags?.length) formData.append("tags", dto.tags.join(","));
+    if (dto.interests?.length)
+      formData.append("interests", dto.interests.join(","));
+    if (dto.targetDepartmentIds?.length)
+      formData.append("targetDepartmentIds", dto.targetDepartmentIds.join(","));
     if (dto.image) formData.append("image", dto.image);
-    if (dto.banner) formData.append("banner", dto.banner);
 
     const response = await httpClient.patch(`/clubs/${id}`, formData);
     return response.data;
@@ -229,7 +239,9 @@ export async function getClubFlags(
     if (params.limit) query.set("limit", String(params.limit));
     if (params.status) query.set("status", params.status);
     const qs = query.toString();
-    const response = await httpClient.get(`/clubs/flags${qs ? `?${qs}` : ""}`);
+    const response = await httpClient.get(
+      `/clubs/flags/list${qs ? `?${qs}` : ""}`,
+    );
     return response.data;
   } catch (error: any) {
     throw {
@@ -246,9 +258,10 @@ export async function resolveFlag(
 ): Promise<Response<ClubFlag>> {
   if (USE_CLUBS_MOCK) return mockResolveFlag(flagId, action);
   try {
-    const response = await httpClient.patch(`/clubs/flags/${flagId}`, {
-      action,
-    });
+    const response = await httpClient.patch(
+      `/clubs/flags/${flagId}/resolve`,
+      { action },
+    );
     return response.data;
   } catch (error: any) {
     throw {
@@ -309,7 +322,7 @@ export async function getClubRequests(
     if (params.status) query.set("status", params.status);
     const qs = query.toString();
     const response = await httpClient.get(
-      `/clubs/requests${qs ? `?${qs}` : ""}`,
+      `/clubs/requests/list${qs ? `?${qs}` : ""}`,
     );
     return response.data;
   } catch (error: any) {

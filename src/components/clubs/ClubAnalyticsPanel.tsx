@@ -72,7 +72,7 @@ const ClubAnalyticsPanel: React.FC<ClubAnalyticsPanelProps> = ({
             className="text-brand"
           />
           <h3 className="text-sm font-semibold text-gray-900">
-            Click Analytics
+            Analytics
           </h3>
         </div>
         <button
@@ -134,7 +134,7 @@ const ClubAnalyticsPanel: React.FC<ClubAnalyticsPanelProps> = ({
           </div>
         )}
 
-        {/* Click trend (simplified sparkline) */}
+        {/* Click trend */}
         {analytics.clickTrend.length > 0 && (
           <div>
             <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
@@ -153,6 +153,32 @@ const ClubAnalyticsPanel: React.FC<ClubAnalyticsPanelProps> = ({
                     className="flex-1 bg-brand/20 hover:bg-brand/40 rounded-t transition-colors"
                     style={{ height: `${height}%` }}
                     title={`${point.date}: ${point.clicks} clicks`}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Joins trend */}
+        {analytics.joinTrend && analytics.joinTrend.length > 0 && (
+          <div>
+            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+              Joins Trend (Last 14 days)
+            </h4>
+            <div className="flex items-end gap-1 h-16">
+              {analytics.joinTrend.slice(-14).map((point, i) => {
+                const max =
+                  Math.max(
+                    ...analytics.joinTrend.slice(-14).map((p) => p.joins),
+                  ) || 1;
+                const height = Math.max((point.joins / max) * 100, 4);
+                return (
+                  <div
+                    key={i}
+                    className="flex-1 bg-emerald-400/30 hover:bg-emerald-400/50 rounded-t transition-colors"
+                    style={{ height: `${height}%` }}
+                    title={`${point.date}: ${point.joins} join${point.joins !== 1 ? "s" : ""}`}
                   />
                 );
               })}

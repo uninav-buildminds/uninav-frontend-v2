@@ -10,9 +10,12 @@ import {
   Route01Icon,
   Logout01Icon,
   ArrowRight01Icon,
+  ArrowRight02Icon,
+  UserCircleIcon,
 } from "@hugeicons/core-free-icons";
 import { getRecentMaterials } from "@/api/materials.api";
 import { useAuth } from "@/hooks/useAuth";
+import { isProfileIncomplete } from "@/utils/profile.utils";
 import { getLastTool, type LastTool } from "@/utils/sessionTracker";
 
 const TOOLS = [
@@ -65,6 +68,7 @@ const itemVariants: Variants = {
 const HomePage: React.FC = () => {
   const { user, logOut } = useAuth();
   const [lastTool, setLastTool] = useState<LastTool | null>(null);
+  const profileIncomplete = isProfileIncomplete(user);
 
   const { data: recentData } = useQuery({
     queryKey: ["recent-materials-home"],
@@ -115,6 +119,23 @@ const HomePage: React.FC = () => {
           </button>
         </div>
       </header>
+
+      {/* ── Complete profile banner ── */}
+      {profileIncomplete && (
+        <Link
+          to="/dashboard/settings?tab=academic"
+          className="flex items-center gap-3 px-4 sm:px-6 py-3 bg-brand/5 border-b border-brand/20 hover:bg-brand/10 transition-colors"
+        >
+          <div className="flex-shrink-0 w-7 h-7 rounded-full bg-brand/10 flex items-center justify-center">
+            <HugeiconsIcon icon={UserCircleIcon} strokeWidth={1.5} size={15} className="text-brand" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold text-gray-900">Complete your profile</p>
+            <p className="text-xs text-gray-500">Add your department & level to get personalized recommendations</p>
+          </div>
+          <HugeiconsIcon icon={ArrowRight02Icon} strokeWidth={1.5} size={15} className="text-brand flex-shrink-0" />
+        </Link>
+      )}
 
       {/* ── Gradient hero ── */}
       <section className="relative overflow-visible">

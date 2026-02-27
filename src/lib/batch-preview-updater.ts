@@ -13,6 +13,17 @@ import {
   listFolderFiles,
 } from "@/lib/gdrive-preview";
 
+export interface BatchSearchOptions {
+  sortBy?: "createdAt" | "label" | "downloads";
+  sortOrder?: "asc" | "desc";
+  courseId?: string;
+  creatorId?: string;
+  type?: MaterialTypeEnum;
+  tag?: string;
+  reviewStatus?: string;
+  ignorePreference?: boolean;
+}
+
 export interface BatchUpdateProgress {
   totalPages: number;
   currentPage: number;
@@ -65,7 +76,8 @@ async function uploadMaterialPreviewWithRootKey(
 }
 
 export async function runBatchPreviewUpdate(
-  onProgress: (progress: BatchUpdateProgress) => void
+  onProgress: (progress: BatchUpdateProgress) => void,
+  options: BatchSearchOptions = {}
 ) {
   let progress: BatchUpdateProgress = {
     totalPages: 0,
@@ -83,7 +95,7 @@ export async function runBatchPreviewUpdate(
 
   try {
     // Initial fetch to get total pages
-    const initialData = await searchMaterials({ page: 1, limit: 50 });
+    const initialData = await searchMaterials({ page: 1, limit: 50, ...options });
     if (initialData.status !== "success") {
       throw new Error("Failed to fetch initial data");
     }
@@ -97,7 +109,7 @@ export async function runBatchPreviewUpdate(
       progress.currentTask = `Fetching page ${page} of ${progress.totalPages}...`;
       onProgress({ ...progress });
 
-      const pageData = await searchMaterials({ page, limit: 50 });
+      const pageData = await searchMaterials({ page, limit: 50, ...options });
       if (pageData.status !== "success") {
         console.warn(`Failed to fetch page ${page}, skipping...`);
         continue;

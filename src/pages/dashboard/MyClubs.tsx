@@ -92,7 +92,7 @@ const MyClubs: React.FC = () => {
           <div className="px-2 sm:px-4 pt-16 sm:pt-20 pb-6 sm:pb-8">
             <div className="max-w-4xl mx-auto">
               <button
-                onClick={() => navigate("/dashboard/clubs")}
+                onClick={() => navigate("/clubs")}
                 className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4"
               >
                 <HugeiconsIcon
@@ -172,135 +172,149 @@ const MyClubs: React.FC = () => {
                 key={club.id}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
+                className="bg-white rounded-2xl border border-gray-100 shadow-sm"
               >
-                <div className="p-5 flex items-start gap-4">
-                  {/* Club image */}
-                  <div
-                    className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-brand/5 flex items-center justify-center cursor-pointer"
-                    onClick={() => navigate(`/dashboard/clubs/${club.id}`)}
-                  >
-                    {club.imageUrl ? (
-                      <img
-                        src={club.imageUrl}
-                        alt={club.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <HugeiconsIcon
-                        icon={Link04Icon}
-                        strokeWidth={1.5}
-                        size={22}
-                        className="text-brand/40"
-                      />
-                    )}
-                  </div>
-
-                  {/* Info */}
-                  <div
-                    className="flex-1 min-w-0 cursor-pointer"
-                    onClick={() => navigate(`/dashboard/clubs/${club.id}`)}
-                  >
-                    <h3 className="text-base font-semibold text-gray-900 truncate">
-                      {club.name}
-                    </h3>
-                    <p className="text-sm text-gray-500 line-clamp-1 mt-0.5">
-                      {club.description}
-                    </p>
-                    <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
-                      <span className="flex items-center gap-1">
-                        <HugeiconsIcon
-                          icon={EyeIcon}
-                          strokeWidth={1.5}
-                          size={12}
+                <div className="p-4 sm:p-5">
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    {/* Club image */}
+                    <div
+                      className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden flex-shrink-0 bg-brand/5 flex items-center justify-center cursor-pointer"
+                      onClick={() => navigate(`/clubs/${club.slug}`)}
+                    >
+                      {club.imageUrl ? (
+                        <img
+                          src={club.imageUrl}
+                          alt={club.name}
+                          className="w-full h-full object-cover"
                         />
-                        {club.clickCount ?? 0} clicks
-                      </span>
-                      <span>{formatRelativeTime(club.createdAt)}</span>
-                      <span
-                        className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
-                          club.status === "live"
-                            ? "bg-green-50 text-green-600"
-                            : club.status === "flagged"
-                              ? "bg-amber-50 text-amber-600"
-                              : "bg-gray-100 text-gray-500"
-                        }`}
+                      ) : (
+                        <HugeiconsIcon
+                          icon={Link04Icon}
+                          strokeWidth={1.5}
+                          size={22}
+                          className="text-brand/40"
+                        />
+                      )}
+                    </div>
+
+                    {/* Info */}
+                    <div
+                      className="flex-1 min-w-0 cursor-pointer"
+                      onClick={() => navigate(`/clubs/${club.slug}`)}
+                    >
+                      <h3 className="text-base font-semibold text-gray-900 truncate">
+                        {club.name}
+                      </h3>
+                      <p className="text-sm text-gray-500 line-clamp-1 mt-0.5">
+                        {club.description}
+                      </p>
+                      <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
+                        <span className="flex items-center gap-1">
+                          <HugeiconsIcon icon={EyeIcon} strokeWidth={1.5} size={12} />
+                          {club.clickCount ?? 0} clicks
+                        </span>
+                        <span>{formatRelativeTime(club.createdAt)}</span>
+                        <span
+                          className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                            club.status === "live"
+                              ? "bg-green-50 text-green-600"
+                              : club.status === "flagged"
+                                ? "bg-amber-50 text-amber-600"
+                                : "bg-gray-100 text-gray-500"
+                          }`}
+                        >
+                          {club.status}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Desktop: dropdown menu */}
+                    <div className="relative flex-shrink-0 hidden sm:block">
+                      <button
+                        onClick={() =>
+                          setOpenMenu(openMenu === club.id ? null : club.id)
+                        }
+                        className="p-2 rounded-xl hover:bg-gray-50 transition-colors"
                       >
-                        {club.status}
-                      </span>
+                        <HugeiconsIcon
+                          icon={MoreVerticalIcon}
+                          strokeWidth={1.5}
+                          size={18}
+                          className="text-gray-400"
+                        />
+                      </button>
+
+                      <AnimatePresence>
+                        {openMenu === club.id && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="absolute right-0 top-10 z-dropdown bg-white rounded-xl border border-gray-100 shadow-lg py-1.5 w-40"
+                          >
+                            <button
+                              onClick={() => {
+                                toggleAnalytics(club.id);
+                                setOpenMenu(null);
+                              }}
+                              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                            >
+                              <HugeiconsIcon icon={AnalyticsUpIcon} strokeWidth={1.5} size={16} />
+                              Analytics
+                            </button>
+                            <button
+                              onClick={() => {
+                                setEditingClub(club);
+                                setShowPostModal(true);
+                                setOpenMenu(null);
+                              }}
+                              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                            >
+                              <HugeiconsIcon icon={Edit01Icon} strokeWidth={1.5} size={16} />
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => {
+                                setDeletingClub(club);
+                                setOpenMenu(null);
+                              }}
+                              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                            >
+                              <HugeiconsIcon icon={Delete01Icon} strokeWidth={1.5} size={16} />
+                              Delete
+                            </button>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
                   </div>
 
-                  {/* Actions */}
-                  <div className="relative flex-shrink-0">
+                  {/* Mobile: inline action buttons */}
+                  <div className="sm:hidden flex gap-2 mt-3 pt-3 border-t border-gray-50">
                     <button
-                      onClick={() =>
-                        setOpenMenu(openMenu === club.id ? null : club.id)
-                      }
-                      className="p-2 rounded-xl hover:bg-gray-50 transition-colors"
+                      onClick={() => toggleAnalytics(club.id)}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium bg-gray-50 text-gray-700 hover:bg-gray-100 transition-colors"
                     >
-                      <HugeiconsIcon
-                        icon={MoreVerticalIcon}
-                        strokeWidth={1.5}
-                        size={18}
-                        className="text-gray-400"
-                      />
+                      <HugeiconsIcon icon={AnalyticsUpIcon} strokeWidth={1.5} size={14} />
+                      Analytics
                     </button>
-
-                    <AnimatePresence>
-                      {openMenu === club.id && (
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.95 }}
-                          className="absolute right-0 top-10 z-dropdown bg-white rounded-xl border border-gray-100 shadow-lg py-1.5 w-40"
-                        >
-                          <button
-                            onClick={() => {
-                              toggleAnalytics(club.id);
-                              setOpenMenu(null);
-                            }}
-                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                          >
-                            <HugeiconsIcon
-                              icon={AnalyticsUpIcon}
-                              strokeWidth={1.5}
-                              size={16}
-                            />
-                            Analytics
-                          </button>
-                          <button
-                            onClick={() => {
-                              setEditingClub(club);
-                              setShowPostModal(true);
-                              setOpenMenu(null);
-                            }}
-                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                          >
-                            <HugeiconsIcon
-                              icon={Edit01Icon}
-                              strokeWidth={1.5}
-                              size={16}
-                            />
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => {
-                              setDeletingClub(club);
-                              setOpenMenu(null);
-                            }}
-                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                          >
-                            <HugeiconsIcon
-                              icon={Delete01Icon}
-                              strokeWidth={1.5}
-                              size={16}
-                            />
-                            Delete
-                          </button>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                    <button
+                      onClick={() => {
+                        setEditingClub(club);
+                        setShowPostModal(true);
+                      }}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium bg-brand/5 text-brand hover:bg-brand/10 transition-colors"
+                    >
+                      <HugeiconsIcon icon={Edit01Icon} strokeWidth={1.5} size={14} />
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => setDeletingClub(club)}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                    >
+                      <HugeiconsIcon icon={Delete01Icon} strokeWidth={1.5} size={14} />
+                      Delete
+                    </button>
                   </div>
                 </div>
 
