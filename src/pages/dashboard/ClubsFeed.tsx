@@ -255,25 +255,23 @@ const ClubsFeed: React.FC = () => {
               <span className="sm:hidden">Request a Club</span>
             </button>
             {user && (
-              <>
-                <button
-                  onClick={() => navigate("/clubs/my")}
-                  className="hidden sm:inline-flex items-center gap-1.5 text-xs font-medium text-gray-700 border border-gray-200 px-3 py-2 rounded-xl hover:bg-gray-50 transition-colors whitespace-nowrap"
-                  title="Manage clubs you've posted"
-                >
-                  <HugeiconsIcon icon={DashboardSquare02Icon} strokeWidth={1.5} size={14} />
-                  Manage Clubs
-                </button>
-                <button
-                  onClick={() => setShowPostModal(true)}
-                  className="inline-flex items-center gap-1.5 text-xs font-medium text-white bg-brand px-3 sm:px-4 py-2 rounded-xl hover:bg-brand/90 transition-colors shadow-sm whitespace-nowrap"
-                >
-                  <HugeiconsIcon icon={Add01Icon} strokeWidth={1.5} size={14} />
-                  <span className="hidden sm:inline">Post Club</span>
-                  <span className="sm:hidden">+ Post Club</span>
-                </button>
-              </>
+              <button
+                onClick={() => navigate("/clubs/my")}
+                className="hidden sm:inline-flex items-center gap-1.5 text-xs font-medium text-gray-700 border border-gray-200 px-3 py-2 rounded-xl hover:bg-gray-50 transition-colors whitespace-nowrap"
+                title="Manage clubs you've posted"
+              >
+                <HugeiconsIcon icon={DashboardSquare02Icon} strokeWidth={1.5} size={14} />
+                Manage Clubs
+              </button>
             )}
+            <button
+              onClick={() => user ? setShowPostModal(true) : navigate("/auth/signin")}
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-white bg-brand px-3 sm:px-4 py-2 rounded-xl hover:bg-brand/90 transition-colors shadow-sm whitespace-nowrap"
+            >
+              <HugeiconsIcon icon={Add01Icon} strokeWidth={1.5} size={14} />
+              <span className="hidden sm:inline">Post Club</span>
+              <span className="sm:hidden">+ Post Club</span>
+            </button>
           </div>
         </div>
 
