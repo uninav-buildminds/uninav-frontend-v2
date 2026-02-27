@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, Link } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Add01Icon,
@@ -224,10 +224,10 @@ const Sidebar: React.FC = () => {
           {showPanel && (
             <div className="pr-2 flex flex-col h-full">
               {/* Panel header brand logo restored */}
-              <div className="flex items-center gap-2 mb-4">
+              <Link to="/home" className="flex items-center gap-2 mb-4 w-fit">
                 <img src="/assets/logo.svg" className="h-6" alt="UniNav" />
                 <span className="font-semibold text-brand">UniNav</span>
-              </div>
+              </Link>
 
               <div className="mb-6">
                 <h4 className="text-sm font-semibold mb-2">
