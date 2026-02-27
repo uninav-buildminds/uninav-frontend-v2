@@ -167,52 +167,38 @@ const ClubDetail: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
         >
-          <div className="flex items-start justify-between gap-4 mb-4">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-              {club.name}
-            </h1>
-            <div className="flex items-center gap-2 flex-shrink-0">
-              {isOrganizer && (
-                <button
-                  onClick={() => navigate("/clubs/my")}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-brand/30 bg-brand/5 text-brand text-xs font-medium hover:bg-brand/10 transition-colors"
-                  title="Manage this club in My Clubs"
-                >
-                  <HugeiconsIcon
-                    icon={Edit01Icon}
-                    strokeWidth={1.5}
-                    size={14}
-                  />
-                  Edit Club
-                </button>
-              )}
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+            {club.name}
+          </h1>
+          <div className="flex items-center gap-1.5 mb-4">
+            {isOrganizer && (
               <button
-                onClick={handleShare}
-                className="p-2 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors"
-                title="Copy link"
+                onClick={() => navigate("/clubs/my")}
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-lg border border-brand/30 bg-brand/5 text-brand text-[11px] font-medium hover:bg-brand/10 transition-colors"
+                title="Manage this club in My Clubs"
               >
-                <HugeiconsIcon
-                  icon={Share01Icon}
-                  strokeWidth={1.5}
-                  size={18}
-                  className="text-gray-500"
-                />
+                <HugeiconsIcon icon={Edit01Icon} strokeWidth={1.5} size={12} />
+                Edit
               </button>
-              {user && !isOrganizer && (
-                <button
-                  onClick={() => setShowFlagModal(true)}
-                  className="p-2 rounded-xl border border-gray-200 hover:bg-red-50 hover:border-red-200 transition-colors"
-                  title="Report"
-                >
-                  <HugeiconsIcon
-                    icon={Alert02Icon}
-                    strokeWidth={1.5}
-                    size={18}
-                    className="text-gray-500 hover:text-red-500"
-                  />
-                </button>
-              )}
-            </div>
+            )}
+            <button
+              onClick={handleShare}
+              className="inline-flex items-center gap-1 px-2 py-1 rounded-lg border border-gray-200 text-gray-500 text-[11px] font-medium hover:bg-gray-50 transition-colors"
+              title="Copy link"
+            >
+              <HugeiconsIcon icon={Share01Icon} strokeWidth={1.5} size={12} />
+              Share
+            </button>
+            {user && !isOrganizer && (
+              <button
+                onClick={() => setShowFlagModal(true)}
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-lg border border-gray-200 text-gray-500 text-[11px] font-medium hover:bg-red-50 hover:border-red-200 hover:text-red-500 transition-colors"
+                title="Report"
+              >
+                <HugeiconsIcon icon={Alert02Icon} strokeWidth={1.5} size={12} />
+                Report
+              </button>
+            )}
           </div>
 
           {/* Meta row */}
