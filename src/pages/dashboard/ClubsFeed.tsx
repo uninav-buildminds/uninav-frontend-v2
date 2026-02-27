@@ -190,7 +190,7 @@ const ClubsFeed: React.FC = () => {
       {/* Fixed logo — same as GuidesPage */}
       <Link
         to="/home"
-        className="fixed left-3 sm:left-4 top-3 sm:top-4 z-fixed flex items-center gap-1.5 sm:gap-2 px-2.5 py-2 sm:px-3 sm:py-2.5 bg-white/90 backdrop-blur hover:bg-white border border-gray-200 rounded-full shadow-lg transition-all duration-200 hover:scale-105 active:scale-95"
+        className="hidden sm:flex fixed left-4 top-4 z-fixed items-center gap-2 px-3 py-2.5 bg-white/90 backdrop-blur hover:bg-white border border-gray-200 rounded-full shadow-lg transition-all duration-200 hover:scale-105 active:scale-95"
         aria-label="Go to UniNav home"
       >
         <img src="/assets/logo.svg" alt="" className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
