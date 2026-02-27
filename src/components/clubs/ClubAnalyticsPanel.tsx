@@ -3,39 +3,20 @@ import { motion } from "framer-motion";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   AnalyticsUpIcon,
-  Download01Icon,
+  Link04Icon,
   UserGroupIcon,
 } from "@hugeicons/core-free-icons";
 import { ClubAnalytics } from "@/lib/types/club.types";
-import { exportClubAnalytics } from "@/api/clubs.api";
-import { toast } from "sonner";
 
 interface ClubAnalyticsPanelProps {
-  clubId: string;
   analytics: ClubAnalytics | null | undefined;
   isLoading?: boolean;
 }
 
 const ClubAnalyticsPanel: React.FC<ClubAnalyticsPanelProps> = ({
-  clubId,
   analytics,
   isLoading = false,
 }) => {
-  const handleExport = async () => {
-    try {
-      const blob = await exportClubAnalytics(clubId);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `club-analytics-${clubId}.csv`;
-      a.click();
-      URL.revokeObjectURL(url);
-      toast.success("CSV exported!");
-    } catch {
-      toast.error("Failed to export analytics");
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="bg-white rounded-2xl border border-gray-100 p-6 animate-pulse">
@@ -50,11 +31,8 @@ const ClubAnalyticsPanel: React.FC<ClubAnalyticsPanelProps> = ({
 
   if (!analytics) return null;
 
-  const topDepts = [...analytics.clicksByDept]
-    .sort((a, b) => b.clicks - a.clicks)
-    .slice(0, 5);
-
-  const maxDeptClicks = topDepts[0]?.clicks || 1;
+  const joinTrend = analytics.joinTrend ?? [];
+  const maxJoins = Math.max(...joinTrend.map((p) => p.joins), 1);
 
   return (
     <motion.div
@@ -63,127 +41,99 @@ const ClubAnalyticsPanel: React.FC<ClubAnalyticsPanelProps> = ({
       className="bg-white rounded-2xl border border-gray-100 shadow-sm"
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-5 border-b border-gray-50">
-        <div className="flex items-center gap-2">
-          <HugeiconsIcon
-            icon={AnalyticsUpIcon}
-            strokeWidth={1.5}
-            size={18}
-            className="text-brand"
-          />
-          <h3 className="text-sm font-semibold text-gray-900">
-            Analytics
-          </h3>
-        </div>
-        <button
-          onClick={handleExport}
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-600 hover:text-brand px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors"
-        >
-          <HugeiconsIcon icon={Download01Icon} strokeWidth={1.5} size={14} />
-          Export CSV
-        </button>
+      <div className="flex items-center gap-2 p-5 border-b border-gray-50">
+        <HugeiconsIcon
+          icon={AnalyticsUpIcon}
+          strokeWidth={1.5}
+          size={18}
+          className="text-brand"
+        />
+        <h3 className="text-sm font-semibold text-gray-900">Analytics</h3>
       </div>
 
       <div className="p-5 space-y-6">
-        {/* Total clicks */}
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-brand/10 flex items-center justify-center">
-            <HugeiconsIcon
-              icon={UserGroupIcon}
-              strokeWidth={1.5}
-              size={22}
-              className="text-brand"
-            />
-          </div>
-          <div>
+        {/* Stat cards */}
+        <div className="grid grid-cols-2 gap-3">
+          {/* Clicks */}
+          <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-7 h-7 rounded-lg bg-brand/10 flex items-center justify-center">
+                <HugeiconsIcon
+                  icon={Link04Icon}
+                  strokeWidth={1.5}
+                  size={14}
+                  className="text-brand"
+                />
+              </div>
+              <span className="text-xs text-gray-500 font-medium">Clicks</span>
+            </div>
             <p className="text-2xl font-bold text-gray-900">
               {analytics.totalClicks.toLocaleString()}
             </p>
-            <p className="text-xs text-gray-500">Total clicks</p>
+            <p className="text-[11px] text-gray-400 mt-0.5">
+              Times link was clicked
+            </p>
+          </div>
+
+          {/* Joins */}
+          <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-7 h-7 rounded-lg bg-emerald-100 flex items-center justify-center">
+                <HugeiconsIcon
+                  icon={UserGroupIcon}
+                  strokeWidth={1.5}
+                  size={14}
+                  className="text-emerald-600"
+                />
+              </div>
+              <span className="text-xs text-emerald-700 font-medium">
+                Joins
+              </span>
+            </div>
+            <p className="text-2xl font-bold text-gray-900">
+              {analytics.totalJoins.toLocaleString()}
+            </p>
+            <p className="text-[11px] text-emerald-600/70 mt-0.5">
+              Unique users joined
+            </p>
           </div>
         </div>
 
-        {/* Clicks by department */}
-        {topDepts.length > 0 && (
+        {/* Joins trend graph */}
+        {joinTrend.length > 0 ? (
           <div>
             <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
-              Clicks by Department
+              Joins — Last 14 days
             </h4>
-            <div className="space-y-2.5">
-              {topDepts.map((dept) => (
-                <div key={dept.departmentId}>
-                  <div className="flex items-center justify-between text-sm mb-1">
-                    <span className="text-gray-700 truncate max-w-[60%]">
-                      {dept.departmentName}
-                    </span>
-                    <span className="text-gray-500 font-medium">
-                      {dept.clicks}
-                    </span>
-                  </div>
-                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+            <div className="relative h-24">
+              <div className="absolute inset-0 flex items-end gap-1">
+                {joinTrend.slice(-14).map((point, i) => {
+                  const heightPx = Math.max((point.joins / maxJoins) * 96, 6);
+                  return (
                     <div
-                      className="h-full bg-brand rounded-full transition-all duration-500"
-                      style={{
-                        width: `${(dept.clicks / maxDeptClicks) * 100}%`,
-                      }}
+                      key={i}
+                      className="flex-1 bg-emerald-400/50 hover:bg-emerald-500/60 rounded-t transition-colors cursor-default"
+                      style={{ height: `${heightPx}px` }}
+                      title={`${point.date}: ${point.joins} join${point.joins !== 1 ? "s" : ""}`}
                     />
-                  </div>
-                </div>
-              ))}
+                  );
+                })}
+              </div>
+            </div>
+            {/* x-axis date labels — first and last */}
+            <div className="flex justify-between mt-1.5">
+              <span className="text-[10px] text-gray-400">
+                {joinTrend[0]?.date}
+              </span>
+              <span className="text-[10px] text-gray-400">
+                {joinTrend[joinTrend.length - 1]?.date}
+              </span>
             </div>
           </div>
-        )}
-
-        {/* Click trend */}
-        {analytics.clickTrend.length > 0 && (
-          <div>
-            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
-              Click Trend (Last 14 days)
-            </h4>
-            <div className="flex items-end gap-1 h-16">
-              {analytics.clickTrend.slice(-14).map((point, i) => {
-                const max =
-                  Math.max(
-                    ...analytics.clickTrend.slice(-14).map((p) => p.clicks),
-                  ) || 1;
-                const height = Math.max((point.clicks / max) * 100, 4);
-                return (
-                  <div
-                    key={i}
-                    className="flex-1 bg-brand/20 hover:bg-brand/40 rounded-t transition-colors"
-                    style={{ height: `${height}%` }}
-                    title={`${point.date}: ${point.clicks} clicks`}
-                  />
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Joins trend */}
-        {analytics.joinTrend && analytics.joinTrend.length > 0 && (
-          <div>
-            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
-              Joins Trend (Last 14 days)
-            </h4>
-            <div className="flex items-end gap-1 h-16">
-              {analytics.joinTrend.slice(-14).map((point, i) => {
-                const max =
-                  Math.max(
-                    ...analytics.joinTrend.slice(-14).map((p) => p.joins),
-                  ) || 1;
-                const height = Math.max((point.joins / max) * 100, 4);
-                return (
-                  <div
-                    key={i}
-                    className="flex-1 bg-emerald-400/30 hover:bg-emerald-400/50 rounded-t transition-colors"
-                    style={{ height: `${height}%` }}
-                    title={`${point.date}: ${point.joins} join${point.joins !== 1 ? "s" : ""}`}
-                  />
-                );
-              })}
-            </div>
-          </div>
+        ) : (
+          <p className="text-xs text-gray-400 text-center py-4">
+            No join activity in the last 14 days
+          </p>
         )}
       </div>
     </motion.div>

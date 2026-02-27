@@ -71,12 +71,7 @@ export interface ClubClickLog {
 
 export interface ClubAnalytics {
   totalClicks: number;
-  clicksByDept: {
-    departmentId: string;
-    departmentName: string;
-    clicks: number;
-  }[];
-  clickTrend: { date: string; clicks: number }[];
+  totalJoins: number;
   joinTrend: { date: string; joins: number }[];
 }
 

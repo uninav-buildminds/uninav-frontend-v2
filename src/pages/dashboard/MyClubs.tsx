@@ -329,7 +329,6 @@ const MyClubs: React.FC = () => {
                     >
                       <div className="p-4">
                         <ClubAnalyticsPanel
-                          clubId={club.id}
                           analytics={analytics}
                           isLoading={analyticsLoading}
                         />
