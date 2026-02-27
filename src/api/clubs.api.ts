@@ -159,18 +159,32 @@ export async function deleteClub(id: string): Promise<Response<void>> {
 
 // ── Click tracking ────────────────────────────────────────────────────
 
-/** Log a click redirect (server returns the external URL) */
+/** Track a detail-page view — anonymous-safe, fire-and-forget */
 export async function trackClubClick(
   id: string,
-): Promise<Response<{ externalLink: string }>> {
+): Promise<Response<{ clickCount: number }>> {
   if (USE_CLUBS_MOCK) return mockTrackClubClick(id);
   try {
     const response = await httpClient.post(`/clubs/${id}/click`);
     return response.data;
+  } catch {
+    // Silently ignore — tracking should never break UX
+    return { status: "error", message: "Failed to track click", data: { clickCount: 0 } } as any;
+  }
+}
+
+/** Track a join — authenticated users only, returns externalLink */
+export async function trackClubJoin(
+  id: string,
+): Promise<Response<{ externalLink: string }>> {
+  if (USE_CLUBS_MOCK) return mockTrackClubClick(id) as any;
+  try {
+    const response = await httpClient.post(`/clubs/${id}/join`);
+    return response.data;
   } catch (error: any) {
     throw {
       statusCode: error?.status || 500,
-      message: error?.data?.message || "Failed to track click",
+      message: error?.data?.message || "Failed to track join",
     };
   }
 }

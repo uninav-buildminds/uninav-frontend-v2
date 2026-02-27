@@ -7,6 +7,7 @@ import {
   updateClub,
   deleteClub,
   trackClubClick,
+  trackClubJoin,
   getClubAnalytics,
   flagClub,
   requestClub,
@@ -139,9 +140,17 @@ export function useDeleteClub() {
   });
 }
 
+// Fire-and-forget click tracking (anonymous-safe)
 export function useTrackClubClick() {
   return useMutation({
     mutationFn: (id: string) => trackClubClick(id),
+  });
+}
+
+// Join tracking — authenticated users only
+export function useTrackClubJoin() {
+  return useMutation({
+    mutationFn: (id: string) => trackClubJoin(id),
   });
 }
 
