@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
@@ -149,10 +149,14 @@ const ClubsFeed: React.FC = () => {
             >
               {/* Header */}
               <div className="flex items-center justify-between px-5 py-5 border-b border-gray-100">
-                <div className="flex items-center gap-2.5">
+                <Link
+                  to="/home"
+                  onClick={() => setShowMobilePanel(false)}
+                  className="flex items-center gap-2.5"
+                >
                   <img src="/assets/logo.svg" alt="UniNav" className="h-6 w-6" />
                   <span className="font-semibold text-brand text-base">UniNav</span>
-                </div>
+                </Link>
                 <button
                   onClick={() => setShowMobilePanel(false)}
                   className="p-2 rounded-full hover:bg-gray-100 transition-colors"
@@ -182,6 +186,16 @@ const ClubsFeed: React.FC = () => {
           </>
         )}
       </AnimatePresence>
+
+      {/* Fixed logo — same as GuidesPage */}
+      <Link
+        to="/home"
+        className="fixed left-3 sm:left-4 top-3 sm:top-4 z-fixed flex items-center gap-1.5 sm:gap-2 px-2.5 py-2 sm:px-3 sm:py-2.5 bg-white/90 backdrop-blur hover:bg-white border border-gray-200 rounded-full shadow-lg transition-all duration-200 hover:scale-105 active:scale-95"
+        aria-label="Go to UniNav home"
+      >
+        <img src="/assets/logo.svg" alt="" className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
+        <span className="text-sm sm:text-base font-semibold text-brand hidden sm:inline">UniNav</span>
+      </Link>
 
       {/* Header with gradient — matches PageHeader pattern */}
       <section className="relative overflow-visible z-sticky">
