@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -16,6 +16,7 @@ import { useAuth } from "@/hooks/useAuth";
 import {
   useClubBySlug,
   useTrackClubClick,
+  useTrackClubJoin,
   useFlagClub,
   useRequestClub,
 } from "@/hooks/useClubs";
@@ -30,11 +31,20 @@ const ClubDetail: React.FC = () => {
 
   const { data: club, isLoading } = useClubBySlug(slug);
   const clickMutation = useTrackClubClick();
+  const joinMutation = useTrackClubJoin();
   const flagMutation = useFlagClub();
   const requestMutation = useRequestClub();
 
   const [showFlagModal, setShowFlagModal] = useState(false);
   const [showRequestModal, setShowRequestModal] = useState(false);
+
+  // Fire click tracking once when the club loads — anonymous-safe, async
+  const trackedRef = useRef(false);
+  useEffect(() => {
+    if (!club || trackedRef.current) return;
+    trackedRef.current = true;
+    clickMutation.mutate(club.id);
+  }, [club?.id]);
 
   const handleJoin = useCallback(() => {
     if (!club) return;
@@ -42,7 +52,7 @@ const ClubDetail: React.FC = () => {
       navigate(`/auth/signin?redirect=/clubs/${club.slug}`);
       return;
     }
-    clickMutation.mutate(club.id, {
+    joinMutation.mutate(club.id, {
       onSuccess: (res) => {
         if (res.status === "success") {
           window.open(res.data.externalLink, "_blank", "noopener");
@@ -54,7 +64,7 @@ const ClubDetail: React.FC = () => {
         window.open(club.externalLink, "_blank", "noopener");
       },
     });
-  }, [club, user, navigate, clickMutation]);
+  }, [club, user, navigate, joinMutation]);
 
   const handleFlag = (reason: string) => {
     if (!club) return;

@@ -15,7 +15,7 @@ import {
   useClubs,
   useCreateClub,
   useRequestClub,
-  useTrackClubClick,
+  useTrackClubJoin,
 } from "@/hooks/useClubs";
 import {
   ClubCard,
@@ -26,7 +26,6 @@ import {
   RequestClubModal,
 } from "@/components/clubs";
 import { Club, CreateClubDto } from "@/lib/types/club.types";
-import { trackClubClick } from "@/api/clubs.api";
 
 const ClubsFeed: React.FC = () => {
   const navigate = useNavigate();
@@ -82,12 +81,15 @@ const ClubsFeed: React.FC = () => {
   // Mutations
   const createClubMutation = useCreateClub();
   const requestClubMutation = useRequestClub();
-  const clickMutation = useTrackClubClick();
+  const joinMutation = useTrackClubJoin();
 
   const handleJoin = useCallback(
     (club: Club) => {
-      // Track the click, then redirect
-      clickMutation.mutate(club.id, {
+      if (!user) {
+        navigate(`/auth/signin?redirect=/clubs/${club.slug}`);
+        return;
+      }
+      joinMutation.mutate(club.id, {
         onSuccess: (res) => {
           if (res.status === "success") {
             window.open(res.data.externalLink, "_blank", "noopener");
@@ -100,7 +102,7 @@ const ClubsFeed: React.FC = () => {
         },
       });
     },
-    [clickMutation]
+    [joinMutation, user, navigate]
   );
 
   const handlePostClub = (dto: CreateClubDto) => {
