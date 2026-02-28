@@ -826,7 +826,7 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
         {/* Document Viewer - Full Width/Height */}
         <div className="flex-1 flex flex-col min-w-0 h-full">
           <div
-            className="relative flex-1 bg-gray-50 rounded-lg sm:rounded-xl shadow-sm h-full overflow-auto"
+            className="relative flex-1 bg-gray-50 rounded-lg sm:rounded-xl shadow-sm h-full overflow-hidden"
             style={{ isolation: "isolate" }}
           >
             {renderViewer()}

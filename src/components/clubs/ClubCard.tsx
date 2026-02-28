@@ -51,15 +51,16 @@ const ClubCard: React.FC<ClubCardProps> = ({ club, onJoin, isAuthenticated }) =>
               (e.currentTarget as HTMLImageElement).style.display = "none";
             }}
           />
-        ) : null}
-        <div className="w-full h-full flex items-center justify-center absolute inset-0 -z-0">
-          <HugeiconsIcon
-            icon={UserGroupIcon}
-            strokeWidth={1}
-            size={48}
-            className="text-brand/30"
-          />
-        </div>
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <HugeiconsIcon
+              icon={UserGroupIcon}
+              strokeWidth={1}
+              size={48}
+              className="text-brand/30"
+            />
+          </div>
+        )}
 
         {/* Click count badge */}
         <div className="absolute top-3 right-3 flex items-center gap-1 bg-white/90 backdrop-blur-sm rounded-full px-2.5 py-1 text-xs text-gray-600 shadow-sm">

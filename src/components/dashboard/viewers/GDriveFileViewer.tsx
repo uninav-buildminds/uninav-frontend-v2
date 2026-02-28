@@ -178,7 +178,7 @@ const GDriveFileViewer: React.FC<GDriveFileViewerProps> = ({
     }
 
     return (
-      <div className="h-full flex flex-col bg-white rounded-lg overflow-hidden">
+      <div className="h-full w-full flex flex-col bg-white rounded-lg overflow-hidden">
         <iframe
           src={embedUrl}
           className="w-full h-full border-0"
