@@ -21,6 +21,7 @@ import { CLUB_INTERESTS } from "@/data/clubs.constants";
 import { getAllFaculties } from "@/api/faculty.api";
 import { Faculty } from "@/lib/types/faculty.types";
 import { ResponseStatus } from "@/lib/types/response.types";
+import { toast } from "sonner";
 
 interface PostClubModalProps {
   isOpen: boolean;
@@ -64,6 +65,7 @@ const PostClubModal: React.FC<PostClubModalProps> = ({
   const [targetDeptIds, setTargetDeptIds] = useState<string[]>([]);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [attempted, setAttempted] = useState(false);
 
   // Pre-fill when editing
   useEffect(() => {
@@ -101,6 +103,7 @@ const PostClubModal: React.FC<PostClubModalProps> = ({
     setImagePreview(null);
     setDeptSearch("");
     setDeptPickerOpen(false);
+    setAttempted(false);
   };
 
   const toggleInterest = (interest: string) => {
@@ -153,7 +156,16 @@ const PostClubModal: React.FC<PostClubModalProps> = ({
     selectedInterests.length > 0;
 
   const handleSubmit = () => {
-    if (!isValid) return;
+    setAttempted(true);
+    if (!isValid) {
+      const missing: string[] = [];
+      if (!name.trim()) missing.push("Club Name");
+      if (!description.trim()) missing.push("Description");
+      if (!externalLink.trim()) missing.push("External Link");
+      if (selectedInterests.length === 0) missing.push("at least one Interest");
+      toast.error(`Please fill in: ${missing.join(", ")}`);
+      return;
+    }
     const dto: CreateClubDto = {
       name: name.trim(),
       description: description.trim(),
@@ -236,8 +248,11 @@ const PostClubModal: React.FC<PostClubModalProps> = ({
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="e.g. AI Research Club"
-                    className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand/40 transition-all"
+                    className={`w-full px-3.5 py-2.5 bg-white border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all ${attempted && !name.trim() ? "border-red-300 focus:border-red-400" : "border-gray-200 focus:border-brand/40"}`}
                   />
+                  {attempted && !name.trim() && (
+                    <p className="text-xs text-red-500 mt-1">Club name is required</p>
+                  )}
                 </div>
 
                 {/* Description */}
@@ -250,8 +265,11 @@ const PostClubModal: React.FC<PostClubModalProps> = ({
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="What's your club about? Who should join?"
                     rows={3}
-                    className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand/40 resize-none transition-all"
+                    className={`w-full px-3.5 py-2.5 bg-white border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 resize-none transition-all ${attempted && !description.trim() ? "border-red-300 focus:border-red-400" : "border-gray-200 focus:border-brand/40"}`}
                   />
+                  {attempted && !description.trim() && (
+                    <p className="text-xs text-red-500 mt-1">Description is required</p>
+                  )}
                 </div>
 
                 {/* External Link */}
@@ -271,9 +289,12 @@ const PostClubModal: React.FC<PostClubModalProps> = ({
                       value={externalLink}
                       onChange={(e) => setExternalLink(e.target.value)}
                       placeholder="https://chat.whatsapp.com/... or Google Form link"
-                      className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand/40 transition-all"
+                      className={`w-full pl-10 pr-4 py-2.5 bg-white border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all ${attempted && !externalLink.trim() ? "border-red-300 focus:border-red-400" : "border-gray-200 focus:border-brand/40"}`}
                     />
                   </div>
+                  {attempted && !externalLink.trim() && (
+                    <p className="text-xs text-red-500 mt-1">External link is required</p>
+                  )}
                 </div>
 
                 {/* Image upload */}
@@ -327,7 +348,7 @@ const PostClubModal: React.FC<PostClubModalProps> = ({
                       Pick 1–5
                     </span>
                   </label>
-                  <div className="flex flex-wrap gap-2 max-h-36 overflow-y-auto scroll-surface">
+                  <div className={`flex flex-wrap gap-2 max-h-36 overflow-y-auto scroll-surface rounded-xl p-1 transition-all ${attempted && selectedInterests.length === 0 ? "ring-1 ring-red-300" : ""}`}>
                     {CLUB_INTERESTS.map((interest) => (
                       <button
                         key={interest}
@@ -343,6 +364,9 @@ const PostClubModal: React.FC<PostClubModalProps> = ({
                       </button>
                     ))}
                   </div>
+                  {attempted && selectedInterests.length === 0 && (
+                    <p className="text-xs text-red-500 mt-1">Select at least one interest</p>
+                  )}
                 </div>
 
                 {/* Tags */}
@@ -562,7 +586,7 @@ const PostClubModal: React.FC<PostClubModalProps> = ({
                 </button>
                 <button
                   onClick={handleSubmit}
-                  disabled={!isValid || isSubmitting}
+                  disabled={isSubmitting}
                   className="flex-1 px-4 py-3 text-white bg-brand rounded-xl hover:bg-brand/90 transition-colors font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
