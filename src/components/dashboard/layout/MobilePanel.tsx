@@ -102,10 +102,13 @@ const MobilePanel: React.FC<MobilePanelProps> = ({
             <div className="flex flex-col h-full">
               {/* Header */}
               <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                <div className="flex items-center gap-3">
+                <button
+                  onClick={() => { navigate("/"); onClose(); }}
+                  className="flex items-center gap-3"
+                >
                   <img src="/assets/logo.svg" className="h-6" alt="UniNav" />
                   <span className="font-semibold text-brand">UniNav</span>
-                </div>
+                </button>
                 <button
                   onClick={onClose}
                   className="p-2 rounded-full hover:bg-gray-100 transition-colors"
