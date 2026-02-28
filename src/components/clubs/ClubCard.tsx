@@ -1,14 +1,15 @@
-import React from "react";
-import { motion } from "framer-motion";
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
-  ArrowRight01Icon,
   Link04Icon,
   UserGroupIcon,
   EyeIcon,
+  Copy01Icon,
 } from "@hugeicons/core-free-icons";
 import { Club } from "@/lib/types/club.types";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 interface ClubCardProps {
   club: Club;
@@ -18,6 +19,7 @@ interface ClubCardProps {
 
 const ClubCard: React.FC<ClubCardProps> = ({ club, onJoin, isAuthenticated }) => {
   const navigate = useNavigate();
+  const [showLink, setShowLink] = useState(false);
 
   const handleCardClick = () => {
     navigate(`/clubs/${club.slug}`);
@@ -25,11 +27,19 @@ const ClubCard: React.FC<ClubCardProps> = ({ club, onJoin, isAuthenticated }) =>
 
   const handleJoin = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!isAuthenticated) {
-      navigate(`/auth/signin?redirect=/clubs/${club.slug}`);
-      return;
-    }
+    if (!isAuthenticated) return;
+
+    // Show the link immediately (synchronous, iOS-safe)
+    setShowLink(true);
+    // Also call onJoin for tracking + attempt window.open
     onJoin?.(club);
+  };
+
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(club.externalLink).then(() => {
+      toast.success("Link copied!");
+    });
   };
 
   return (
@@ -38,7 +48,7 @@ const ClubCard: React.FC<ClubCardProps> = ({ club, onJoin, isAuthenticated }) =>
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
       onClick={handleCardClick}
-      className="group cursor-pointer bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden"
+      className="group cursor-pointer bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col"
     >
       {/* Banner / Image */}
       <div className="relative h-36 sm:h-40 bg-gradient-to-br from-brand/10 to-brand/5 overflow-hidden">
@@ -70,7 +80,7 @@ const ClubCard: React.FC<ClubCardProps> = ({ club, onJoin, isAuthenticated }) =>
       </div>
 
       {/* Body */}
-      <div className="p-4">
+      <div className="p-4 flex flex-col flex-1">
         {/* Tags pills */}
         {(club.interests?.length ?? 0) > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-2.5">
@@ -99,7 +109,7 @@ const ClubCard: React.FC<ClubCardProps> = ({ club, onJoin, isAuthenticated }) =>
         </p>
 
         {/* Footer */}
-        <div className="flex items-center justify-between mt-4">
+        <div className="flex items-center justify-between mt-auto pt-4">
           {/* Organizer avatar */}
           {club.organizer && (
             <div className="flex items-center gap-2">
@@ -123,12 +133,58 @@ const ClubCard: React.FC<ClubCardProps> = ({ club, onJoin, isAuthenticated }) =>
           {/* Join Now button */}
           <button
             onClick={handleJoin}
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-white bg-brand rounded-xl px-4 py-2 hover:bg-brand/90 transition-colors shadow-sm"
+            disabled={!isAuthenticated}
+            title={!isAuthenticated ? "Sign in to join" : undefined}
+            className={`inline-flex items-center gap-1.5 text-sm font-medium rounded-xl px-4 py-2 transition-colors shadow-sm ${
+              isAuthenticated
+                ? "text-white bg-brand hover:bg-brand/90"
+                : "text-gray-400 bg-gray-100 cursor-not-allowed"
+            }`}
           >
             <HugeiconsIcon icon={Link04Icon} strokeWidth={1.5} size={14} />
             Join Now
           </button>
         </div>
+
+        {/* iOS fallback link — shown after join click */}
+        <AnimatePresence>
+          {showLink && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="mt-3 overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="rounded-xl border border-gray-100 bg-gray-50 p-3">
+                <p className="text-[11px] text-gray-500 mb-2">
+                  If the page didn't open,{" "}
+                  <a
+                    href={club.externalLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-brand font-medium underline underline-offset-2"
+                  >
+                    tap here to open
+                  </a>{" "}
+                  or copy the link:
+                </p>
+                <div className="flex items-center gap-2 bg-white rounded-lg border border-gray-200 px-2.5 py-1.5">
+                  <span className="text-[11px] text-gray-500 truncate flex-1">
+                    {club.externalLink}
+                  </span>
+                  <button
+                    onClick={handleCopy}
+                    className="shrink-0 text-gray-400 hover:text-brand transition-colors"
+                  >
+                    <HugeiconsIcon icon={Copy01Icon} strokeWidth={1.5} size={14} />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.div>
   );
