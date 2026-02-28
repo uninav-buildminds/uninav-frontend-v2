@@ -180,7 +180,7 @@ const PostClubModal: React.FC<PostClubModalProps> = ({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-modal-backdrop flex items-start justify-center bg-black/50 backdrop-blur-sm overflow-y-auto py-8"
+          className="fixed inset-0 z-modal-backdrop flex items-start justify-center bg-black/50 py-8"
           onClick={handleBackdropClick}
         >
           <motion.div
@@ -188,7 +188,7 @@ const PostClubModal: React.FC<PostClubModalProps> = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="relative w-full max-w-lg mx-4 bg-white rounded-2xl shadow-2xl border border-gray-100 z-modal"
+            className="relative w-full max-w-lg mx-4 bg-white rounded-2xl shadow-2xl border border-gray-100 z-modal overflow-y-auto max-h-[90vh]"
           >
             {/* Close */}
             <button
