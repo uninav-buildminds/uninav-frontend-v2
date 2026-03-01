@@ -50,9 +50,10 @@ import MiniMaterialCard from "./MiniMaterialCard";
 
 interface MaterialViewProps {
   isPublic?: boolean;
+  backTo?: string;
 }
 
-const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
+const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false, backTo }) => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { isBookmarked, toggleBookmark } = useBookmarks();
@@ -248,6 +249,8 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false }) => {
     // If viewing a GDrive file within a folder, go back to folder
     if (viewingGDriveFile) {
       handleBackToFolder();
+    } else if (backTo) {
+      navigate(backTo);
     } else {
       // Otherwise, go back in browser history
       navigate(-1);

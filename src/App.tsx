@@ -47,6 +47,7 @@ import Profile from "./pages/dashboard/Profile";
 import GuidesPage from "./pages/dashboard/GuidesPage";
 import PublicFolderView from "./pages/public/PublicFolderView";
 import PublicMaterialView from "./pages/public/PublicMaterialView";
+import GuideView from "./pages/public/GuideView";
 import ScrollToTop from "./components/ScrollToTop";
 import { PostHogProvider } from "@posthog/react";
 
@@ -252,8 +253,9 @@ const App = () => {
                               element={<ResetSuccess />}
                             />
 
-                            {/* Public Guides Route - no authentication required */}
+                            {/* Public Guides Routes - no authentication required */}
                             <Route path="/guides" element={<GuidesPage />} />
+                            <Route path="/guides/:slug" element={<GuideView />} />
 
                             {/* Public View Routes - No authentication required */}
                             <Route

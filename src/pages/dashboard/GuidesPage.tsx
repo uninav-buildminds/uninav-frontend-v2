@@ -42,7 +42,7 @@ const GuidesPage: React.FC = () => {
   };
 
   const handleOpenGuide = (slug: string) => {
-    navigate(`/dashboard/material/${slug}`);
+    navigate(`/guides/${slug}`);
   };
 
   const renderContent = () => {
