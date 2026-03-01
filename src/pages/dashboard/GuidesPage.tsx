@@ -8,6 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Share08Icon } from "@hugeicons/core-free-icons";
+import { toast } from "sonner";
 import { formatRelativeTime } from "@/lib/utils";
 
 const PLACEHOLDER_IMAGE = "/placeholder.svg";
@@ -43,6 +47,23 @@ const GuidesPage: React.FC = () => {
 
   const handleOpenGuide = (slug: string) => {
     navigate(`/guides/${slug}`);
+  };
+
+  const handleShareGuide = (e: React.MouseEvent, slug: string) => {
+    e.stopPropagation();
+    const link = `${window.location.origin}/guides/${slug}`;
+    navigator.clipboard
+      .writeText(link)
+      .then(() => toast.success("Link copied to clipboard!"))
+      .catch(() => {
+        const textArea = document.createElement("textarea");
+        textArea.value = link;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+        toast.success("Link copied to clipboard!");
+      });
   };
 
   const renderContent = () => {
@@ -166,16 +187,32 @@ const GuidesPage: React.FC = () => {
                   )}
                 </div>
               )}
-              <Button
-                size="sm"
-                className="w-full rounded-full h-9 text-xs font-medium bg-brand text-white hover:bg-brand/90 shadow-sm"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  handleOpenGuide(guide.slug);
-                }}
-              >
-                Open guide
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  className="flex-1 rounded-full h-9 text-xs font-medium bg-brand text-white hover:bg-brand/90 shadow-sm"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    handleOpenGuide(guide.slug);
+                  }}
+                >
+                  Open guide
+                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={(e) => handleShareGuide(e, guide.slug)}
+                      className="p-2 text-gray-500 hover:text-brand hover:bg-[#DCDFFE] rounded-full transition-colors duration-200"
+                      aria-label="Share guide"
+                    >
+                      <HugeiconsIcon icon={Share08Icon} strokeWidth={1.5} size={16} />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Share</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
             </CardContent>
           </Card>
         ))}
