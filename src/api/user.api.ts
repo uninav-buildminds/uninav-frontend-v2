@@ -151,13 +151,17 @@ export async function getBookmarksPaginated(params: {
   page?: number;
   limit?: number;
   includeMaterial?: boolean;
+  query?: string;
 }): Promise<SearchResult<Bookmark>> {
-  const { page = 1, limit = 10, includeMaterial = true } = params;
+  const { page = 1, limit = 10, includeMaterial = true, query } = params;
   try {
     const searchParams = new URLSearchParams();
     searchParams.set("page", String(page));
     searchParams.set("limit", String(limit));
     searchParams.set("includeMaterial", includeMaterial ? "true" : "false");
+    if (query) {
+      searchParams.set("query", query);
+    }
 
     const response = await httpClient.get(
       `/user/bookmarks?${searchParams.toString()}`
