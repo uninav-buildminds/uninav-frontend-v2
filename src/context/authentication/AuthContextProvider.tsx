@@ -12,7 +12,7 @@ import useSWR from "swr";
 import {toast} from "sonner";
 import {useNavigate} from "react-router-dom";
 import {UserProfile} from "@/lib/types/user.types";
-import {getAuthState, setAuthState, clearAuthState, getRedirectPath, clearRedirectPath} from "@/lib/authStorage";
+import {getRedirectPath, clearRedirectPath} from "@/lib/authStorage";
 import {usePostHog} from "@posthog/react";
 
 /**
@@ -41,9 +41,7 @@ interface AuthContextProviderProps {
 // isLoading is true when the request is in flight for the first time (user is null)
 // isValidating is true when the request is in flight and during revalidation (user can be non-null)
 export default function AuthContextProvider({children}: AuthContextProviderProps) {
-    // Check localStorage first for instant auth state
-    const localStorageAuthState = getAuthState();
-    const [loggedIn, setLoggedIn] = useState(localStorageAuthState === true);
+    const [loggedIn, setLoggedIn] = useState(false);
     const [showOneTap, setShowOneTap] = useState(false);
     const initialAuthCheckDoneRef = useRef(false);
     const {
@@ -62,17 +60,8 @@ export default function AuthContextProvider({children}: AuthContextProviderProps
 
     useEffect(() => {
         let active = true;
-        // Verify with server and sync localStorage
         isClientAuthenticated().then((status) => {
             if (!active) return;
-            // If server says not logged in but localStorage says yes, clear localStorage
-            if (!status && localStorageAuthState === true) {
-                clearAuthState();
-            }
-            // If server says logged in, update localStorage
-            if (status) {
-                setAuthState(true);
-            }
             setLoggedIn(status);
             setShowOneTap(status === false);
             initialAuthCheckDoneRef.current = true;
@@ -80,7 +69,6 @@ export default function AuthContextProvider({children}: AuthContextProviderProps
         return () => {
             active = false;
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -97,7 +85,6 @@ export default function AuthContextProvider({children}: AuthContextProviderProps
             signInWithOneTap(
                 credentialResponse,
                 () => {
-                    setAuthState(true);
                     const redirectPath = getRedirectPath() || "/home";
                     clearRedirectPath();
                     navigate(redirectPath);
@@ -118,14 +105,12 @@ export default function AuthContextProvider({children}: AuthContextProviderProps
             const userProfile = await apiLogin({emailOrMatricNo, password});
             mutate(userProfile); // Update the user data without revalidating
             setLoggedIn(true);
-            setAuthState(true);
         },
         [mutate],
     );
 
     const logOut = useCallback(async () => {
         googleLogout();
-        clearAuthState(); // Clear localStorage before logout
         clearRedirectPath(); // Clear redirect path on logout
         await apiLogOut();
         postHog?.capture("user_logged_out", {

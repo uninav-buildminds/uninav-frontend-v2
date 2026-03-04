@@ -146,7 +146,7 @@ const MobilePanel: React.FC<MobilePanelProps> = ({
                             Complete Your Profile
                           </h4>
                           <p className="text-xs text-white/90 leading-relaxed">
-                            Add your department and level to get personalized recommendations
+                            Add your department, level & interests to get personalized recommendations
                           </p>
                           <div className="flex items-center gap-1 mt-2">
                             <span className="text-xs text-white/90 font-medium">Complete now</span>

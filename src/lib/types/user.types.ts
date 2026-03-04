@@ -15,6 +15,7 @@ export type UserProfile = {
   updatedAt: string;
   department?: Department;
   profilePicture?: string;
+  interests?: string[];
   downloadCount?: number;
   uploadCount?: number;
   bookmarkCount?: number;
@@ -42,6 +43,7 @@ export interface UpdateUserDto {
   level?: number;
   departmentId?: string;
   role?: UserRole;
+  interests?: string[];
 }
 
 export interface AddCourseDto {

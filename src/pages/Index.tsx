@@ -8,27 +8,10 @@ import CTASection from "@/components/CTASection";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
-import { getAuthState, getRedirectPath, clearRedirectPath } from "@/lib/authStorage";
-import { useEffect, useState } from "react";
+import { getRedirectPath, clearRedirectPath } from "@/lib/authStorage";
 
 const Index = () => {
   const { user, authInitializing } = useAuth();
-  const [shouldRedirect, setShouldRedirect] = useState(false);
-
-  // Check localStorage first for instant redirect
-  useEffect(() => {
-    const localStorageAuthState = getAuthState();
-    if (localStorageAuthState === true) {
-      setShouldRedirect(true);
-    }
-  }, []);
-
-  // Instant redirect if localStorage says logged in
-  if (shouldRedirect && !authInitializing) {
-    const redirectPath = getRedirectPath() || "/home";
-    clearRedirectPath(); // Clear redirect path after using it
-    return <Navigate to={redirectPath} replace />;
-  }
 
   // Show loading while checking authentication
   if (authInitializing) {

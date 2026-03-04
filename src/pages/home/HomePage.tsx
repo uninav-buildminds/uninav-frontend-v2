@@ -131,7 +131,7 @@ const HomePage: React.FC = () => {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-semibold text-gray-900">Complete your profile</p>
-            <p className="text-xs text-gray-500">Add your department & level to get personalized recommendations</p>
+            <p className="text-xs text-gray-500">Add your department, level & interests to get personalized recommendations</p>
           </div>
           <HugeiconsIcon icon={ArrowRight02Icon} strokeWidth={1.5} size={15} className="text-brand flex-shrink-0" />
         </Link>

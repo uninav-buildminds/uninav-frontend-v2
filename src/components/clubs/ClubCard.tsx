@@ -81,20 +81,20 @@ const ClubCard: React.FC<ClubCardProps> = ({ club, onJoin, isAuthenticated }) =>
 
       {/* Body */}
       <div className="p-4 flex flex-col flex-1">
-        {/* Tags pills */}
+        {/* Tags pills — single row, never wraps */}
         {(club.interests?.length ?? 0) > 0 && (
-          <div className="flex flex-wrap gap-1.5 mb-2.5">
-            {club.interests!.slice(0, 3).map((tag) => (
+          <div className="flex items-center gap-1.5 mb-2.5 overflow-hidden">
+            {club.interests!.slice(0, 2).map((tag) => (
               <span
                 key={tag}
-                className="inline-block text-[11px] font-medium px-2 py-0.5 rounded-full bg-brand/8 text-brand"
+                className="shrink-0 text-[11px] font-medium px-2 py-0.5 rounded-full bg-brand/8 text-brand"
               >
                 {tag}
               </span>
             ))}
-            {club.interests!.length > 3 && (
-              <span className="inline-block text-[11px] font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">
-                +{club.interests!.length - 3}
+            {club.interests!.length > 2 && (
+              <span className="shrink-0 text-[11px] font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">
+                +{club.interests!.length - 2}
               </span>
             )}
           </div>

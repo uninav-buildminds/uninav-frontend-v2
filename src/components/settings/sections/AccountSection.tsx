@@ -6,6 +6,7 @@ import { updateUserProfile, updateProfilePicture } from "@/api/user.api";
 import { useToast } from "@/hooks/use-toast";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ImageUpload01Icon, Logout01Icon, PencilEdit01Icon, UserIcon } from "@hugeicons/core-free-icons";
+import InterestsPicker from "@/components/settings/InterestsPicker";
 
 const AccountSection: React.FC = () => {
   const { logOut, user, setUser } = useAuth();
@@ -15,6 +16,7 @@ const AccountSection: React.FC = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [username, setUsername] = useState("");
+  const [interests, setInterests] = useState<string[]>([]);
   const [avatar, setAvatar] = useState("");
   const [profilePictureFile, setProfilePictureFile] = useState<File | null>(
     null
@@ -28,6 +30,7 @@ const AccountSection: React.FC = () => {
       setFirstName(user.firstName || "");
       setLastName(user.lastName || "");
       setUsername(user.username || "");
+      setInterests(user.interests ?? []);
       if (user.profilePicture) {
         setAvatar(user.profilePicture);
       }
@@ -66,6 +69,7 @@ const AccountSection: React.FC = () => {
       firstName,
       lastName,
       username,
+      interests,
     };
     try {
       const updatedUser = await updateUserProfile(profileData);
@@ -232,6 +236,19 @@ const AccountSection: React.FC = () => {
             rows={4}
             placeholder="Tell others about your academic interests..."
           ></textarea>
+        </div>
+        <div>
+          <div className="mb-2">
+            <label className="text-sm font-medium text-gray-700">Interests</label>
+            <p className="text-xs text-gray-400 mt-0.5">
+              Used to personalise your recommendations. Pick up to 10.
+            </p>
+          </div>
+          <InterestsPicker
+            selected={interests}
+            onChange={setInterests}
+            readOnly={!isEditing}
+          />
         </div>
         <div className="flex items-center justify-between">
           <div>

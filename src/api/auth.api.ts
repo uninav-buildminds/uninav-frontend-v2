@@ -31,11 +31,11 @@ export async function signUp(formData: SignUpData) {
       ...response.data,
       token: response.headers?.["authorization"]?.replace("Bearer ", "") || "",
     };
-  } catch (error) {
-    const actualError = error.data.error;
+  } catch (error: any) {
+    const actualError = error.response?.data?.error;
     throw {
-      statusCode: actualError.statusCode || 500,
-      message: actualError.cause || "Signup failed. Please try again.",
+      statusCode: actualError?.statusCode || error.response?.status || 500,
+      message: actualError?.cause || "Signup failed. Please try again.",
     };
   }
 }
@@ -58,11 +58,11 @@ export async function login(data: LoginData) {
       token,
       data: response.data,
     };
-  } catch (error) {
-    const actualError = error.data.error;
+  } catch (error: any) {
+    const actualError = error.response?.data?.error;
     throw {
-      statusCode: actualError.statusCode || 500,
-      message: actualError.cause || "Login failed. Please try again.",
+      statusCode: actualError?.statusCode || error.response?.status || 500,
+      message: actualError?.cause || "Login failed. Please try again.",
     };
   }
 }
@@ -76,11 +76,11 @@ export async function logOut() {
   try {
     const response = await httpClient.post("/auth/logout");
     return response.data;
-  } catch (error) {
-    const actualError = error.data.error;
+  } catch (error: any) {
+    const actualError = error.response?.data?.error;
     throw {
-      statusCode: actualError.statusCode || 500,
-      message: actualError.cause || "Logout failed. Please try again.",
+      statusCode: actualError?.statusCode || error.response?.status || 500,
+      message: actualError?.cause || "Logout failed. Please try again.",
     };
   }
 }
@@ -98,11 +98,11 @@ export async function verifyEmailByCode(email: string, code: string) {
       code,
     });
     return response.data;
-  } catch (error) {
-    const actualError = error.data.error;
+  } catch (error: any) {
+    const actualError = error.response?.data?.error;
     throw {
-      statusCode: actualError.statusCode || 500,
-      message: actualError.cause || "Verification failed. Please try again.",
+      statusCode: actualError?.statusCode || error.response?.status || 500,
+      message: actualError?.cause || "Verification failed. Please try again.",
     };
   }
 }
@@ -119,11 +119,11 @@ export async function verifyEmail(token: string) {
       `/auth/verify-email/token?token=${token}`
     );
     return response.data;
-  } catch (error) {
-    const actualError = error.data.error;
+  } catch (error: any) {
+    const actualError = error.response?.data?.error;
     throw {
-      statusCode: actualError.statusCode || 500,
-      message: actualError.cause || "Verification failed. Please try again.",
+      statusCode: actualError?.statusCode || error.response?.status || 500,
+      message: actualError?.cause || "Verification failed. Please try again.",
     };
   }
 }
@@ -140,8 +140,8 @@ export async function requestEmailVerification(email: string) {
       email,
     });
     return response.data;
-  } catch (error) {
-    const actualError = error.data.error;
+  } catch (error: any) {
+    const actualError = error.response?.data?.error;
     throw {
       statusCode: actualError.statusCode || 500,
       message:
@@ -164,8 +164,8 @@ export async function requestPasswordReset(email: string) {
       email,
     });
     return response.data;
-  } catch (error) {
-    const actualError = error.data.error;
+  } catch (error: any) {
+    const actualError = error.response?.data?.error;
     throw {
       statusCode: actualError.statusCode || 500,
       message:
@@ -189,8 +189,8 @@ export async function resetPassword(token: string, newPassword: string) {
       newPassword,
     });
     return response.data;
-  } catch (error) {
-    const actualError = error.data.error;
+  } catch (error: any) {
+    const actualError = error.response?.data?.error;
     throw {
       statusCode: actualError.statusCode || 500,
       message:
@@ -218,11 +218,11 @@ export async function signInWithOneTap(
       return onSuccess();
     }
     return onError();
-  } catch (error) {
-    const actualError = error.data.error;
+  } catch (error: any) {
+    const actualError = error.response?.data?.error;
     throw {
-      statusCode: actualError.statusCode || 500,
-      message: actualError.cause || "Signup failed. Please try again.",
+      statusCode: actualError?.statusCode || error.response?.status || 500,
+      message: actualError?.cause || "Signup failed. Please try again.",
     };
   }
 }

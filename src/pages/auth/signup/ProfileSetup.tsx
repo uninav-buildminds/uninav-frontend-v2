@@ -17,6 +17,7 @@ import { updateUserProfile } from "@/api/user.api";
 import { toast } from "@/components/ui/sonner";
 import LoadingButton from "@/components/auth/LoadingButton";
 import { httpClient } from "@/api/api";
+import InterestsPicker from "@/components/settings/InterestsPicker";
 
 const fetchFaculties: Fetcher<{ data: Faculty[] }> = (url: string) => httpClient<{ data: Faculty[] }>(url).then((res) => res.data);
 const ProfileSetup: React.FC = () => {
@@ -29,12 +30,14 @@ const ProfileSetup: React.FC = () => {
   } = useForm<ProfileSetupInput>({ resolver: zodResolver(profileSetupSchema) });
   const { data, error, isLoading } = useSWR(`${API_BASE_URL}/faculty`, fetchFaculties);
   const [selectedFacultyId, setSelectedFacultyId] = React.useState<string | null>(null);
+  const [interests, setInterests] = React.useState<string[]>([]);
 
   const onSubmit = async (data: ProfileSetupInput) => {
     try {
 		await updateUserProfile({
 			...data,
 			level: data.level ? parseInt(data.level, 10) : 100,
+			interests,
 		});
       navigate("/auth/signup/success");
     } catch (error) {
@@ -165,6 +168,19 @@ const ProfileSetup: React.FC = () => {
 							</SelectContent>
 						</Select>
 					</FormField>
+
+					<div className="space-y-2">
+						<label className="text-sm font-medium text-gray-700">
+							Interests <span className="text-gray-400 font-normal">(Optional)</span>
+						</label>
+						<p className="text-xs text-gray-400">
+							Pick up to 10 — we’ll use these to personalise your experience.
+						</p>
+						<InterestsPicker
+							selected={interests}
+							onChange={setInterests}
+						/>
+					</div>
 
 					<LoadingButton
 						isLoading={isSubmitting}

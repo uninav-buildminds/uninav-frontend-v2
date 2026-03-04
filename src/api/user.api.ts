@@ -24,12 +24,13 @@ export async function getUserProfile() {
   try {
     const response = await httpClient.get("/user/profile");
     return response.data.data;
-  } catch (error) {
-    const actualError = error.data.error;
+  } catch (error: any) {
     throw {
-      statusCode: actualError.statusCode || 500,
+      statusCode: error.response?.status || 500,
       message:
-        actualError.cause || "Fetching user profile failed. Please try again.",
+        error.response?.data?.error?.cause ||
+        error.response?.data?.message ||
+        "Fetching user profile failed. Please try again.",
     };
   }
 }
