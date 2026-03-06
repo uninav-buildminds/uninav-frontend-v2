@@ -18,14 +18,10 @@ import {
   RestrictionEnum,
 } from "@/lib/types/material.types";
 import { SelectCourse } from "../shared/SelectCourse";
+import AdvancedOptions from "../shared/AdvancedOptions";
 import { checkIsYouTubeUrl } from "@/components/Preview/youtube";
 import { checkIsGoogleDriveUrl } from "@/components/Preview/gDrive";
 import { isGDriveFolder } from "@/lib/utils/gdriveUtils";
-import {
-  SelectModal,
-  SelectOption,
-} from "@/components/modals/shared/SearchSelectModal";
-import { getMyFolders, Folder } from "@/api/folder.api";
 import {
   extractGDriveId,
   findFirstFileInFolder,
@@ -72,42 +68,12 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
   const [isUploading, setIsUploading] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
   const [folderId, setFolderId] = useState<string>(initialFolderId ?? "");
-  const [folderOptions, setFolderOptions] = useState<SelectOption[]>([]);
-  const [foldersLoading, setFoldersLoading] = useState(false);
-
-  // Load user's folders for optional folder selection in batch link upload
-  useEffect(() => {
-    const fetchFolders = async () => {
-      try {
-        setFoldersLoading(true);
-        const response = await getMyFolders();
-        if (response?.data) {
-          const options: SelectOption[] = response.data.map(
-            (folder: Folder) => ({
-              value: folder.id,
-              label: folder.label,
-              description: folder.description,
-            })
-          );
-          // Ensure the pre-selected folder is in the list even if not in the user's list
-          if (initialCurrentFolder && !options.find((o) => o.value === initialCurrentFolder.id)) {
-            options.unshift({
-              value: initialCurrentFolder.id,
-              label: initialCurrentFolder.label,
-              description: initialCurrentFolder.description,
-            });
-          }
-          setFolderOptions(options);
-        }
-      } catch (error) {
-        console.error("Failed to fetch folders for batch links:", error);
-      } finally {
-        setFoldersLoading(false);
-      }
-    };
-
-    fetchFolders();
-  }, []);
+  const [visibility, setVisibility] = useState<string>("Public");
+  const [accessRestrictions, setAccessRestrictions] = useState<string>("Downloadable");
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState("");
+  const [description, setDescription] = useState("");
+  const [classification, setClassification] = useState("");
 
   const generateId = () => Math.random().toString(36).substring(2, 9);
 
@@ -454,8 +420,11 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
         type: l.type,
         resourceAddress: l.url,
         previewUrl: l.previewUrl || undefined,
-        visibility: VisibilityEnum.PUBLIC,
-        restriction: RestrictionEnum.DOWNLOADABLE,
+        visibility: (visibility as VisibilityEnum) || VisibilityEnum.PUBLIC,
+        restriction: (accessRestrictions as RestrictionEnum) || RestrictionEnum.DOWNLOADABLE,
+        tags: tags.length > 0 ? tags : undefined,
+        description: description || undefined,
+        classification: classification || undefined,
         targetCourseId: targetCourseId || undefined,
         folderId: folderId || undefined,
       }));
@@ -673,7 +642,7 @@ https://drive.google.com/drive/folders/...`}
         </div>
       )}
 
-      {/* Course & Folder Selection */}
+      {/* Course & Advanced Options */}
       <div className="pt-2 space-y-3">
         <SelectCourse
           label="Target Course (Optional - applies to all)"
@@ -681,25 +650,35 @@ https://drive.google.com/drive/folders/...`}
           onChange={setTargetCourseId}
         />
 
-        <div>
-          <SelectModal
-            label="Add to Folder (Optional - applies to all)"
-            value={folderId}
-            onChange={setFolderId}
-            options={folderOptions}
-            placeholder="Search and select a folder..."
-            searchable={true}
-            loading={foldersLoading}
-            emptyMessage="No folders found. Create a folder first."
-            displayValue={(value, selectedOption) => {
-              if (!value) return "";
-              return selectedOption?.label || "";
-            }}
-          />
-          <p className="text-xs text-gray-600 mt-1">
-            Select a folder to organize all uploaded links
-          </p>
-        </div>
+        <AdvancedOptions
+          visibility={visibility}
+          accessRestrictions={accessRestrictions}
+          tags={tags}
+          tagInput={tagInput}
+          description={description}
+          classification={classification}
+          folderId={folderId}
+          currentFolder={initialCurrentFolder}
+          onVisibilityChange={setVisibility}
+          onAccessRestrictionsChange={setAccessRestrictions}
+          onTagAdd={(e) => {
+            if (e.key === "Enter" && tagInput.trim()) {
+              e.preventDefault();
+              setTags((prev) => [...prev, tagInput.trim()]);
+              setTagInput("");
+            }
+          }}
+          onTagRemove={(index) => setTags((prev) => prev.filter((_, i) => i !== index))}
+          onTagInputChange={setTagInput}
+          onDescriptionChange={setDescription}
+          onClassificationChange={(value) => {
+            setClassification(value);
+            if (value && !tags.includes(value)) {
+              setTags((prev) => [...prev, value]);
+            }
+          }}
+          onFolderChange={setFolderId}
+        />
       </div>
 
       {/* Action Buttons */}

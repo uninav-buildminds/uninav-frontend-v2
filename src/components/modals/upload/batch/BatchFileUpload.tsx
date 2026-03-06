@@ -29,6 +29,7 @@ import {
   generateDefaultTitle,
 } from "@/lib/utils/inferMaterialType";
 import { SelectCourse } from "../shared/SelectCourse";
+import AdvancedOptions from "../shared/AdvancedOptions";
 import { countFilePages } from "@/lib/utils/pageCounter";
 import { pdfjs } from "react-pdf";
 import {
@@ -163,8 +164,12 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
   const [dragActive, setDragActive] = useState(false);
   const [targetCourseId, setTargetCourseId] = useState<string>("");
   const [folderId, setFolderId] = useState<string>(initialFolderId ?? "");
-  const [folderOptions, setFolderOptions] = useState<SelectOption[]>([]);
-  const [foldersLoading, setFoldersLoading] = useState(false);
+  const [visibility, setVisibility] = useState<string>("Public");
+  const [accessRestrictions, setAccessRestrictions] = useState<string>("Downloadable");
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState("");
+  const [description, setDescription] = useState("");
+  const [classification, setClassification] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<{
     current: number;
@@ -175,40 +180,6 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
   const folderInputRef = useRef<HTMLInputElement>(null);
 
   const generateId = () => Math.random().toString(36).substring(2, 9);
-
-  // Load user's folders for optional folder selection in batch file upload
-  useEffect(() => {
-    const fetchFolders = async () => {
-      try {
-        setFoldersLoading(true);
-        const response = await getMyFolders();
-        if (response?.data) {
-          const options: SelectOption[] = response.data.map(
-            (folder: Folder) => ({
-              value: folder.id,
-              label: folder.label,
-              description: folder.description,
-            })
-          );
-          // Ensure the pre-selected folder is in the list even if not in the user's list
-          if (initialCurrentFolder && !options.find((o) => o.value === initialCurrentFolder.id)) {
-            options.unshift({
-              value: initialCurrentFolder.id,
-              label: initialCurrentFolder.label,
-              description: initialCurrentFolder.description,
-            });
-          }
-          setFolderOptions(options);
-        }
-      } catch (error) {
-        console.error("Failed to fetch folders for batch files:", error);
-      } finally {
-        setFoldersLoading(false);
-      }
-    };
-
-    fetchFolders();
-  }, []);
 
   const processFile = useCallback(
     async (file: File): Promise<BatchFileItem> => {
@@ -375,8 +346,11 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
         file: f.file,
         materialTitle: f.title,
         type: inferMaterialType(f.file),
-        visibility: VisibilityEnum.PUBLIC,
-        accessRestrictions: RestrictionEnum.DOWNLOADABLE,
+        visibility: (visibility as VisibilityEnum) || VisibilityEnum.PUBLIC,
+        accessRestrictions: (accessRestrictions as RestrictionEnum) || RestrictionEnum.DOWNLOADABLE,
+        tags: tags.length > 0 ? tags : undefined,
+        description: description || undefined,
+        classification: classification || undefined,
         targetCourseId: targetCourseId || undefined,
         pageCount: f.pageCount,
         filePreview: f.preview || undefined,
@@ -621,7 +595,7 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
         </div>
       )}
 
-      {/* Course & Folder Selection */}
+      {/* Course & Advanced Options */}
       <div className="pt-2 space-y-3">
         <SelectCourse
           label="Target Course (Optional - applies to all)"
@@ -629,25 +603,35 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
           onChange={setTargetCourseId}
         />
 
-        <div>
-          <SelectModal
-            label="Add to Folder (Optional - applies to all)"
-            value={folderId}
-            onChange={setFolderId}
-            options={folderOptions}
-            placeholder="Search and select a folder..."
-            searchable={true}
-            loading={foldersLoading}
-            emptyMessage="No folders found. Create a folder first."
-            displayValue={(value, selectedOption) => {
-              if (!value) return "";
-              return selectedOption?.label || "";
-            }}
-          />
-          <p className="text-xs text-gray-600 mt-1">
-            Select a folder to organize all uploaded files
-          </p>
-        </div>
+        <AdvancedOptions
+          visibility={visibility}
+          accessRestrictions={accessRestrictions}
+          tags={tags}
+          tagInput={tagInput}
+          description={description}
+          classification={classification}
+          folderId={folderId}
+          currentFolder={initialCurrentFolder}
+          onVisibilityChange={setVisibility}
+          onAccessRestrictionsChange={setAccessRestrictions}
+          onTagAdd={(e) => {
+            if (e.key === "Enter" && tagInput.trim()) {
+              e.preventDefault();
+              setTags((prev) => [...prev, tagInput.trim()]);
+              setTagInput("");
+            }
+          }}
+          onTagRemove={(index) => setTags((prev) => prev.filter((_, i) => i !== index))}
+          onTagInputChange={setTagInput}
+          onDescriptionChange={setDescription}
+          onClassificationChange={(value) => {
+            setClassification(value);
+            if (value && !tags.includes(value)) {
+              setTags((prev) => [...prev, value]);
+            }
+          }}
+          onFolderChange={setFolderId}
+        />
       </div>
 
       {/* Upload Progress */}

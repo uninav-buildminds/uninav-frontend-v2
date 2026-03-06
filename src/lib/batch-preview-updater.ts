@@ -1,11 +1,10 @@
 import {
   searchMaterials,
-  uploadMaterialPreview,
   getDownloadUrl,
   getMaterialById,
 } from "@/api/materials.api";
 import { httpClient } from "@/api/api";
-import { Material, MaterialTypeEnum } from "@/lib/types/material.types";
+import { MaterialTypeEnum } from "@/lib/types/material.types";
 import { generatePdfPreviewBlob } from "@/components/Preview/PdfPreviewer";
 import {
   extractGDriveId,
@@ -13,397 +12,334 @@ import {
   listFolderFiles,
 } from "@/lib/gdrive-preview";
 
-export interface BatchSearchOptions {
+export interface BatchRunOptions {
+  // Filters
+  creatorId?: string;
+  courseId?: string;
+  type?: MaterialTypeEnum;
   sortBy?: "createdAt" | "label" | "downloads";
   sortOrder?: "asc" | "desc";
-  courseId?: string;
-  creatorId?: string;
-  type?: MaterialTypeEnum;
-  tag?: string;
   reviewStatus?: string;
-  ignorePreference?: boolean;
+
+  // Behaviour
+  replaceExisting: boolean;   // false = skip materials that already have a previewUrl
+  throttlePerMinute: number;  // default 30
+  startPage: number;          // default 1 — lets you resume from a specific page
 }
 
 export interface BatchUpdateProgress {
-  totalPages: number;
-  currentPage: number;
+  // Scope
+  totalMaterials: number;
+
+  // Counters
   processed: number;
   successful: number;
   failed: number;
   skipped: number;
-  totalToProcess: number;
-  status: "idle" | "running" | "completed" | "error";
+  rateLimitPauses: number;
+
+  // State
+  status: "idle" | "running" | "paused_user" | "paused_ratelimit" | "completed" | "stopped" | "error";
   currentTask: string;
+  resumeInSeconds: number; // >0 during rate-limit countdown
+  currentPage: number;
+  totalPages: number;
 }
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-// Root API key for batch operations
 const ROOT_API_KEY = "DKDddEK3K39SFfadfdfKDF$%$@#$#$@#$#@$#22";
 
-// Upload material preview with root API key (bypasses ownership checks)
-async function uploadMaterialPreviewWithRootKey(
-  materialId: string,
-  previewFile: File
-): Promise<any> {
-  console.log("Uploading file:", {
-    name: previewFile.name,
-    size: previewFile.size,
-    type: previewFile.type,
-    lastModified: previewFile.lastModified,
-  });
+const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
+async function uploadPreviewWithRootKey(materialId: string, blob: Blob): Promise<void> {
+  const file = new File([blob], "preview.jpg", { type: "image/jpeg" });
   const formData = new FormData();
-  formData.append("preview", previewFile, "preview.jpg");
-
-  // Debug FormData contents
-  console.log("FormData entries:");
-  for (const [key, value] of formData.entries()) {
-    console.log(key, value);
-  }
-
-  const response = await httpClient.post(
-    `/materials/preview/upload/${materialId}`,
-    formData,
-    {
-      headers: {
-        "X-Root-API-Key": ROOT_API_KEY,
-      },
-    }
-  );
-
-  return response.data;
+  formData.append("preview", file, "preview.jpg");
+  await httpClient.post(`/materials/preview/upload/${materialId}`, formData, {
+    headers: { "X-Root-API-Key": ROOT_API_KEY },
+  });
 }
 
-export async function runBatchPreviewUpdate(
-  onProgress: (progress: BatchUpdateProgress) => void,
-  options: BatchSearchOptions = {}
-) {
-  let progress: BatchUpdateProgress = {
-    totalPages: 0,
-    currentPage: 0,
-    processed: 0,
-    successful: 0,
-    failed: 0,
-    skipped: 0,
-    totalToProcess: 0,
-    status: "running",
-    currentTask: "Starting batch update...",
+function isRateLimitError(err: unknown): boolean {
+  if (!err) return false;
+  const msg = String((err as any)?.message || err).toLowerCase();
+  return (
+    msg.includes("rate limit") ||
+    msg.includes("429") ||
+    msg.includes("403") ||
+    msg.includes("all api keys exhausted") ||
+    msg.includes("quota")
+  );
+}
+
+// A resolvable promise used for user-initiated pause/resume
+function createGate() {
+  let resolve!: () => void;
+  let promise: Promise<void> = Promise.resolve(); // starts open
+  let locked = false;
+
+  return {
+    lock() {
+      if (locked) return;
+      locked = true;
+      promise = new Promise<void>((r) => { resolve = r; });
+    },
+    unlock() {
+      if (!locked) return;
+      locked = false;
+      resolve?.();
+    },
+    get locked() { return locked; },
+    wait() { return promise; },
   };
+}
 
-  onProgress(progress);
+export function createBatchRunner() {
+  let abortController: AbortController | null = null;
+  const gate = createGate();
 
-  try {
-    // Initial fetch to get total pages
-    const initialData = await searchMaterials({ page: 1, limit: 50, ...options });
-    if (initialData.status !== "success") {
-      throw new Error("Failed to fetch initial data");
+  async function run(
+    options: BatchRunOptions,
+    onProgress: (p: BatchUpdateProgress) => void
+  ): Promise<void> {
+    abortController = new AbortController();
+    const signal = abortController.signal;
+    gate.unlock(); // ensure gate is open when a new run starts
+
+    const delayPerItem = Math.ceil(60_000 / options.throttlePerMinute);
+    const startPage = Math.max(1, options.startPage ?? 1);
+
+    const progress: BatchUpdateProgress = {
+      totalMaterials: 0,
+      processed: 0,
+      successful: 0,
+      failed: 0,
+      skipped: 0,
+      rateLimitPauses: 0,
+      status: "running",
+      currentTask: "Starting…",
+      resumeInSeconds: 0,
+      currentPage: startPage,
+      totalPages: 0,
+    };
+
+    const emit = () => onProgress({ ...progress });
+
+    // Checkpoint: awaits the gate (user pause) and checks abort signal.
+    // Returns true if execution should stop.
+    async function checkpoint(): Promise<boolean> {
+      if (signal.aborted) return true;
+      if (gate.locked) {
+        progress.status = "paused_user";
+        progress.currentTask = `⏸ Paused on page ${progress.currentPage} — click Resume to continue`;
+        emit();
+        await gate.wait();
+        if (signal.aborted) return true;
+        progress.status = "running";
+        emit();
+      }
+      return false;
     }
 
-    progress.totalPages = initialData.data.pagination.totalPages;
-    progress.totalToProcess = initialData.data.pagination.total; // Use total count
-    onProgress({ ...progress });
+    emit();
 
-    for (let page = 1; page <= progress.totalPages; page++) {
-      progress.currentPage = page;
-      progress.currentTask = `Fetching page ${page} of ${progress.totalPages}...`;
-      onProgress({ ...progress });
+    const searchOpts = {
+      creatorId: options.creatorId,
+      courseId: options.courseId,
+      type: options.type,
+      sortBy: options.sortBy ?? "createdAt",
+      sortOrder: options.sortOrder ?? "desc",
+      reviewStatus: options.reviewStatus,
+      ignorePreference: true,
+    };
 
-      const pageData = await searchMaterials({ page, limit: 50, ...options });
-      if (pageData.status !== "success") {
-        console.warn(`Failed to fetch page ${page}, skipping...`);
-        continue;
-      }
+    try {
+      progress.currentTask = "Fetching material count…";
+      emit();
 
-      const materialsToProcess = pageData.data.items.filter(
-        (m) =>
-          !m.previewUrl && // Only process materials without preview
-          (m.type === MaterialTypeEnum.PDF ||
-            m.type === MaterialTypeEnum.GDRIVE)
-      );
+      const initial = await searchMaterials({ page: startPage, limit: 50, ...searchOpts });
+      if (await checkpoint()) return finish("stopped");
+      if (initial.status !== "success") throw new Error("Failed to fetch materials");
 
-      console.log(
-        `Page ${page}: Processing ${materialsToProcess.length} materials`
-      );
-      console.log(
-        "Material types found:",
-        materialsToProcess.map((m) => ({
-          id: m.id,
-          label: m.label,
-          type: m.type,
-        }))
-      );
+      progress.totalMaterials = initial.data.pagination.total;
+      progress.totalPages = initial.data.pagination.totalPages;
+      emit();
 
-      for (const material of materialsToProcess) {
-        progress.currentTask = `Processing: ${material.label}`;
-        onProgress({ ...progress });
+      for (let page = startPage; page <= progress.totalPages; page++) {
+        if (await checkpoint()) return finish("stopped");
 
-        let previewBlob: Blob | null = null;
-        try {
-          if (material.type === MaterialTypeEnum.PDF) {
-            console.log(`Processing PDF: ${material.label}`);
-            const downloadUrl = await getDownloadUrl(material.id);
-            previewBlob = await generatePdfPreviewBlob(downloadUrl);
-          } else if (material.type === MaterialTypeEnum.GDRIVE) {
-            console.log(`Found GDrive material: ${material.label}`);
+        progress.currentPage = page;
+        progress.currentTask = `Fetching page ${page} / ${progress.totalPages}…`;
+        emit();
 
-            // Fetch full material details to get resource information
-            console.log(`Fetching full material details for: ${material.id}`);
-            let fullMaterial;
-            try {
-              fullMaterial = await getMaterialById(material.id);
-            } catch (error: any) {
-              console.error(`Failed to fetch material ${material.id}:`, error);
-              progress.failed++;
-              progress.currentTask = `❌ Failed to fetch material: ${material.label}`;
-              continue; // Skip this material and move to the next one
-            }
+        const pageData = page === startPage
+          ? initial
+          : await searchMaterials({ page, limit: 50, ...searchOpts });
 
-            // Small delay to avoid overwhelming the API
-            await sleep(200);
-
-            if (
-              fullMaterial.status === "success" &&
-              fullMaterial.data.resource?.resourceAddress
-            ) {
-              console.log(
-                `Processing GDrive: ${material.label} - ${fullMaterial.data.resource.resourceAddress}`
-              );
-              const gdriveId = extractGDriveId(
-                fullMaterial.data.resource.resourceAddress
-              );
-              console.log(`Extracted GDrive ID:`, gdriveId);
-
-              if (gdriveId) {
-                if (gdriveId.type === "file") {
-                  console.log(
-                    `GDrive file detected, generating preview directly for file ID: ${gdriveId.id}`
-                  );
-                  try {
-                    previewBlob = await generateGDrivePreviewBlob(gdriveId.id);
-                  } catch (error) {
-                    console.error(
-                      `Failed to generate GDrive file preview for ${gdriveId.id}:`,
-                      error
-                    );
-                  }
-                } else if (gdriveId.type === "folder") {
-                  console.log(
-                    `GDrive folder detected, listing contents for folder ID: ${gdriveId.id}`
-                  );
-                  try {
-                    // For folders, we need to list contents and get the first file
-                    const folderContents = await listFolderFiles(gdriveId.id);
-                    if (folderContents.files.length > 0) {
-                      // Get the first non-folder file
-                      const firstFile =
-                        folderContents.files.find(
-                          (f) =>
-                            f.mimeType !== "application/vnd.google-apps.folder"
-                        ) || folderContents.files[0];
-
-                      console.log(
-                        `Using first file from folder: ${firstFile.name} (${firstFile.id})`
-                      );
-                      previewBlob = await generateGDrivePreviewBlob(
-                        firstFile.id
-                      );
-                    } else {
-                      console.warn(`GDrive folder is empty: ${gdriveId.id}`);
-                    }
-                  } catch (error) {
-                    console.error(
-                      `Failed to list GDrive folder contents for ${gdriveId.id}:`,
-                      error
-                    );
-                  }
-                }
-              } else {
-                console.warn(
-                  `Could not extract GDrive ID from: ${fullMaterial.data.resource.resourceAddress}`
-                );
-              }
-            } else {
-              console.warn(
-                `GDrive material ${material.label} has no resourceAddress after fetching full details:`,
-                fullMaterial.status === "success"
-                  ? fullMaterial.data?.resource
-                  : "Failed to fetch material"
-              );
-            }
-          } else {
-            console.log(
-              `Skipping material type: ${material.type} for ${material.label}`
-            );
-          }
-
-          if (previewBlob && previewBlob.size > 0) {
-            console.log("Valid preview blob generated:", {
-              size: previewBlob.size,
-              type: previewBlob.type,
-            });
-
-            // Ensure the blob has the correct MIME type
-            const blob = new Blob([previewBlob], { type: "image/jpeg" });
-            const previewFile = new File([blob], "preview.jpg", {
-              type: "image/jpeg",
-            });
-
-            // Use root API key for batch updates
-            await uploadMaterialPreviewWithRootKey(material.id, previewFile);
-            progress.successful++;
-            progress.currentTask = `✅ Successfully updated: ${material.label}`;
-          } else {
-            progress.skipped++;
-            progress.currentTask = `⏭️ Skipped (no preview source): ${material.label}`;
-          }
-        } catch (error) {
-          progress.failed++;
-          progress.currentTask = `❌ Failed: ${material.label}`;
-          console.error(`Failed to process material ${material.id}:`, error);
+        if (await checkpoint()) return finish("stopped");
+        if (pageData.status !== "success") {
+          progress.currentTask = `⚠️ Failed to fetch page ${page}, skipping…`;
+          emit();
+          continue;
         }
 
-        progress.processed++;
-        onProgress({ ...progress });
-        await sleep(1000); // 1-second delay between each material
-      }
-
-      if (page < progress.totalPages) {
-        progress.currentTask = `Page ${page} complete. Waiting before next page...`;
-        onProgress({ ...progress });
-        await sleep(5000); // 5-second delay between pages
-      }
-    }
-
-    progress.status = "completed";
-    progress.currentTask = "Batch update completed successfully!";
-    onProgress({ ...progress });
-  } catch (error) {
-    progress.status = "error";
-    progress.currentTask = `An error occurred: ${
-      (error as Error).message
-    }. Please check the console.`;
-    onProgress({ ...progress });
-    console.error("Batch preview update failed:", error);
-  }
-}
-
-// Test function to verify FormData creation
-export async function testFormDataCreation() {
-  console.log("🧪 Testing FormData creation...");
-
-  try {
-    // Create a simple test blob
-    const testBlob = new Blob(["test image data"], { type: "image/jpeg" });
-    const testFile = new File([testBlob], "test.jpg", { type: "image/jpeg" });
-
-    console.log("Test file created:", {
-      name: testFile.name,
-      size: testFile.size,
-      type: testFile.type,
-    });
-
-    // Create FormData
-    const formData = new FormData();
-    formData.append("preview", testFile, "preview.jpg");
-
-    console.log("FormData entries:");
-    for (const [key, value] of formData.entries()) {
-      console.log(`${key}:`, value);
-    }
-
-    console.log("✅ FormData test completed successfully!");
-    return true;
-  } catch (error) {
-    console.error("❌ FormData test failed:", error);
-    return false;
-  }
-}
-
-// Test function to verify enum values
-export function testEnumValues() {
-  console.log("🧪 Testing MaterialTypeEnum values...");
-
-  console.log("Available enum values:");
-  console.log("PDF:", MaterialTypeEnum.PDF);
-  console.log("GDRIVE:", MaterialTypeEnum.GDRIVE);
-  console.log("YOUTUBE:", MaterialTypeEnum.YOUTUBE);
-  console.log("DOCS:", MaterialTypeEnum.DOCS);
-
-  // Test comparison
-  const testType = "gdrive";
-  const isGDrive = testType === MaterialTypeEnum.GDRIVE;
-  console.log(`"gdrive" === MaterialTypeEnum.GDRIVE:`, isGDrive);
-
-  console.log("✅ Enum test completed!");
-  return true;
-}
-
-// Test function to check material structure
-export async function testMaterialStructure() {
-  console.log("🧪 Testing material structure...");
-
-  try {
-    const testData = await searchMaterials({ page: 1, limit: 10 });
-    if (testData.status === "success") {
-      const gdriveMaterials = testData.data.items.filter(
-        (m) => m.type === MaterialTypeEnum.GDRIVE
-      );
-      console.log(
-        `Found ${gdriveMaterials.length} GDrive materials from search:`
-      );
-
-      // Test first GDrive material by fetching full details
-      if (gdriveMaterials.length > 0) {
-        const firstGDrive = gdriveMaterials[0];
-        console.log(
-          `Fetching full details for first GDrive material: ${firstGDrive.label}`
+        const eligible = pageData.data.items.filter((m) =>
+          m.type === MaterialTypeEnum.PDF || m.type === MaterialTypeEnum.GDRIVE
         );
 
-        const fullMaterial = await getMaterialById(firstGDrive.id);
-        if (fullMaterial.status === "success") {
-          console.log(`Full GDrive Material details:`, {
-            id: fullMaterial.data.id,
-            label: fullMaterial.data.label,
-            type: fullMaterial.data.type,
-            resource: fullMaterial.data.resource,
-            hasResource: !!fullMaterial.data.resource,
-            hasResourceAddress: !!fullMaterial.data.resource?.resourceAddress,
-            resourceAddress: fullMaterial.data.resource?.resourceAddress,
-          });
+        for (const material of eligible) {
+          if (await checkpoint()) return finish("stopped");
 
-          // Test GDrive ID extraction
-          if (fullMaterial.data.resource?.resourceAddress) {
-            const gdriveId = extractGDriveId(
-              fullMaterial.data.resource.resourceAddress
-            );
-            console.log(`Extracted GDrive ID:`, gdriveId);
-            if (gdriveId) {
-              console.log(
-                `GDrive type: ${gdriveId.type} (${
-                  gdriveId.type === "file" ? "Direct file" : "Folder"
-                })`
-              );
+          if (!options.replaceExisting && material.previewUrl) {
+            progress.skipped++;
+            progress.processed++;
+            emit();
+            continue;
+          }
+
+          progress.currentTask = `Processing: ${material.label}`;
+          emit();
+
+          let previewBlob: Blob | null = null;
+          let hitRateLimit = false;
+
+          try {
+            previewBlob = await generatePreview(material, signal);
+          } catch (err) {
+            if (isRateLimitError(err)) {
+              hitRateLimit = true;
+            } else {
+              progress.failed++;
+              progress.processed++;
+              progress.currentTask = `❌ Failed: ${material.label}`;
+              emit();
+              await sleep(delayPerItem);
+              continue;
             }
           }
-        } else {
-          console.error("Failed to fetch full material details:", fullMaterial);
+
+          // Rate-limit auto-pause with countdown
+          if (hitRateLimit) {
+            progress.rateLimitPauses++;
+            progress.status = "paused_ratelimit";
+
+            for (let s = 60; s > 0; s--) {
+              if (signal.aborted) return finish("stopped");
+              progress.resumeInSeconds = s;
+              progress.currentTask = `⏸ Rate limited — resuming in ${s}s…`;
+              emit();
+              await sleep(1_000);
+            }
+
+            progress.resumeInSeconds = 0;
+            progress.status = "running";
+            progress.currentTask = `Retrying: ${material.label}`;
+            emit();
+
+            try {
+              previewBlob = await generatePreview(material, signal);
+            } catch {
+              progress.failed++;
+              progress.processed++;
+              progress.currentTask = `❌ Retry failed: ${material.label}`;
+              emit();
+              await sleep(delayPerItem);
+              continue;
+            }
+          }
+
+          // Upload
+          if (previewBlob && previewBlob.size > 0) {
+            try {
+              await uploadPreviewWithRootKey(material.id, previewBlob);
+              progress.successful++;
+              progress.currentTask = `✅ Done: ${material.label}`;
+            } catch {
+              progress.failed++;
+              progress.currentTask = `❌ Upload failed: ${material.label}`;
+            }
+          } else {
+            progress.skipped++;
+            progress.currentTask = `⏭ No preview source: ${material.label}`;
+          }
+
+          progress.processed++;
+          emit();
+
+          if (!signal.aborted) await sleep(delayPerItem);
         }
       }
+
+      finish("completed");
+    } catch (err) {
+      progress.status = "error";
+      progress.currentTask = `Error: ${(err as Error).message}`;
+      emit();
     }
 
-    console.log("✅ Material structure test completed!");
-    return true;
-  } catch (error) {
-    console.error("❌ Material structure test failed:", error);
-    return false;
+    function finish(status: BatchUpdateProgress["status"]) {
+      progress.status = status;
+      progress.resumeInSeconds = 0;
+      progress.currentTask =
+        status === "completed"
+          ? `Completed — ${progress.successful} updated, ${progress.skipped} skipped, ${progress.failed} failed`
+          : status === "stopped"
+          ? `Stopped on page ${progress.currentPage}.`
+          : progress.currentTask;
+      onProgress({ ...progress });
+    }
   }
+
+  // Pause: locks the gate; the runner will suspend at the next checkpoint
+  function pause() {
+    gate.lock();
+  }
+
+  // Resume: unlocks the gate; the runner continues from where it paused
+  function resume() {
+    gate.unlock();
+  }
+
+  // Stop: aborts entirely (also unlocks gate so the runner can exit cleanly)
+  function stop() {
+    gate.unlock(); // unblock any pending gate.wait() so the abort check fires
+    abortController?.abort();
+  }
+
+  return { run, pause, resume, stop };
 }
 
-// Make function available globally for browser console
-if (typeof window !== "undefined") {
-  (window as any).runBatchPreviewUpdate = runBatchPreviewUpdate;
-  (window as any).testFormDataCreation = testFormDataCreation;
-  (window as any).testEnumValues = testEnumValues;
-  (window as any).testMaterialStructure = testMaterialStructure;
+// ── Shared preview generation logic ────────────────────────────────────────────
+async function generatePreview(
+  material: { id: string; type: MaterialTypeEnum; label: string },
+  signal: AbortSignal
+): Promise<Blob | null> {
+  if (material.type === MaterialTypeEnum.PDF) {
+    const downloadUrl = await getDownloadUrl(material.id);
+    if (signal.aborted) return null;
+    return generatePdfPreviewBlob(downloadUrl);
+  }
+
+  if (material.type === MaterialTypeEnum.GDRIVE) {
+    const full = await getMaterialById(material.id);
+    if (signal.aborted) return null;
+
+    const address = full?.data?.resource?.resourceAddress;
+    if (!address) return null;
+
+    const gdriveId = extractGDriveId(address);
+    if (!gdriveId) return null;
+
+    if (gdriveId.type === "file") {
+      return generateGDrivePreviewBlob(gdriveId.id);
+    }
+
+    // Folder — use first non-folder file
+    const contents = await listFolderFiles(gdriveId.id);
+    const firstFile =
+      contents.files.find((f) => f.mimeType !== "application/vnd.google-apps.folder") ||
+      contents.files[0];
+    return firstFile ? generateGDrivePreviewBlob(firstFile.id) : null;
+  }
+
+  return null;
 }

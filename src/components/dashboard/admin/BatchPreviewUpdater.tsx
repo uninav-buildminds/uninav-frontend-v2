@@ -1,196 +1,388 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
-  runBatchPreviewUpdate,
+  createBatchRunner,
+  BatchRunOptions,
   BatchUpdateProgress,
-  BatchSearchOptions,
 } from "@/lib/batch-preview-updater";
-import { Button } from "@/components/ui/button";
-import { RocketIcon } from "lucide-react";
+import { MaterialTypeEnum } from "@/lib/types/material.types";
+
+const DEFAULT_OPTIONS: BatchRunOptions = {
+  replaceExisting: false,
+  throttlePerMinute: 30,
+  sortBy: "createdAt",
+  sortOrder: "desc",
+  startPage: 1,
+};
+
+const IDLE_PROGRESS: BatchUpdateProgress = {
+  totalMaterials: 0,
+  processed: 0,
+  successful: 0,
+  failed: 0,
+  skipped: 0,
+  rateLimitPauses: 0,
+  status: "idle",
+  currentTask: "Ready to start.",
+  resumeInSeconds: 0,
+  currentPage: 0,
+  totalPages: 0,
+};
 
 const BatchPreviewUpdater: React.FC = () => {
-  const [progress, setProgress] = useState<BatchUpdateProgress>({
-    totalPages: 0,
-    currentPage: 0,
-    processed: 0,
-    successful: 0,
-    failed: 0,
-    skipped: 0,
-    totalToProcess: 0,
-    status: "idle",
-    currentTask: "Ready to start.",
-  });
+  const [options, setOptions] = useState<BatchRunOptions>(DEFAULT_OPTIONS);
+  const [progress, setProgress] = useState<BatchUpdateProgress>(IDLE_PROGRESS);
+  const runnerRef = useRef(createBatchRunner());
 
-  const [options, setOptions] = useState<BatchSearchOptions>({
-    sortBy: "createdAt",
-    sortOrder: "desc",
-  });
+  // Recreate runner instance on each mount so abort state is clean
+  useEffect(() => {
+    runnerRef.current = createBatchRunner();
+  }, []);
 
-  const handleStartUpdate = () => {
-    runBatchPreviewUpdate(setProgress, options);
+  const isRunning = progress.status === "running" || progress.status === "paused_ratelimit";
+  const isPausedUser = progress.status === "paused_user";
+  const isDone = progress.status === "completed" || progress.status === "stopped" || progress.status === "error";
+
+  const handleStart = () => {
+    runnerRef.current = createBatchRunner();
+    setProgress(IDLE_PROGRESS);
+    runnerRef.current.run(options, setProgress);
   };
 
-  const isRunning = progress.status === "running";
+  const handlePause = () => {
+    runnerRef.current.pause();
+  };
+
+  const handleResume = () => {
+    runnerRef.current.resume();
+  };
+
+  const handleStop = () => {
+    runnerRef.current.stop();
+  };
+
+  const handleReset = () => {
+    setProgress(IDLE_PROGRESS);
+  };
+
+  const pct = progress.totalMaterials > 0
+    ? Math.min(100, Math.round((progress.processed / progress.totalMaterials) * 100))
+    : 0;
+
+  const statusColor: Record<BatchUpdateProgress["status"], string> = {
+    idle: "text-gray-500",
+    running: "text-blue-600",
+    paused_user: "text-purple-600",
+    paused_ratelimit: "text-amber-600",
+    completed: "text-green-600",
+    stopped: "text-gray-600",
+    error: "text-red-600",
+  };
+
+  const statusLabel: Record<BatchUpdateProgress["status"], string> = {
+    idle: "Idle",
+    running: "Running",
+    paused_user: `Paused on page ${progress.currentPage}`,
+    paused_ratelimit: `Rate limited — resuming in ${progress.resumeInSeconds}s`,
+    completed: "Completed",
+    stopped: "Stopped",
+    error: "Error",
+  };
 
   return (
-    <div className="p-4 border rounded-lg bg-gray-50">
-      <h3 className="text-lg font-semibold mb-2">Batch Preview Updater Tool</h3>
-      <p className="text-sm text-gray-600 mb-4">
-        This tool will scan all existing PDF and Google Drive materials and
-        generate missing preview images. This process can take a long time.
-      </p>
-
-      <div className="flex flex-wrap gap-4 mb-4">
-        <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-gray-600">Sort By</label>
-          <select
-            className="border rounded px-2 py-1 text-sm bg-white"
-            value={options.sortBy ?? "createdAt"}
-            disabled={isRunning}
-            onChange={(e) =>
-              setOptions((o) => ({
-                ...o,
-                sortBy: e.target.value as BatchSearchOptions["sortBy"],
-              }))
-            }
-          >
-            <option value="createdAt">Created At</option>
-            <option value="label">Label</option>
-            <option value="downloads">Downloads</option>
-          </select>
+    <div className="space-y-6">
+      {/* ── Config ─────────────────────────────────────────── */}
+      <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-5">
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900">Batch Preview Generator</h2>
+          <p className="text-sm text-gray-500 mt-0.5">
+            Scans all matching materials and generates missing (or replaces existing) preview images.
+          </p>
         </div>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-gray-600">Sort Order</label>
-          <select
-            className="border rounded px-2 py-1 text-sm bg-white"
-            value={options.sortOrder ?? "desc"}
-            disabled={isRunning}
-            onChange={(e) =>
-              setOptions((o) => ({
-                ...o,
-                sortOrder: e.target.value as BatchSearchOptions["sortOrder"],
-              }))
-            }
-          >
-            <option value="desc">Descending</option>
-            <option value="asc">Ascending</option>
-          </select>
-        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Creator ID */}
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-gray-600">Creator ID (optional)</label>
+            <input
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none disabled:opacity-50"
+              placeholder="Paste user UUID…"
+              value={options.creatorId ?? ""}
+              disabled={isRunning || isPausedUser}
+              onChange={(e) => setOptions((o) => ({ ...o, creatorId: e.target.value || undefined }))}
+            />
+          </div>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-gray-600">Creator ID (optional)</label>
-          <input
-            className="border rounded px-2 py-1 text-sm bg-white"
-            placeholder="e.g. user-uuid"
-            value={options.creatorId ?? ""}
-            disabled={isRunning}
-            onChange={(e) =>
-              setOptions((o) => ({
-                ...o,
-                creatorId: e.target.value || undefined,
-              }))
-            }
-          />
-        </div>
+          {/* Course ID */}
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-gray-600">Course ID (optional)</label>
+            <input
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none disabled:opacity-50"
+              placeholder="Paste course UUID…"
+              value={options.courseId ?? ""}
+              disabled={isRunning || isPausedUser}
+              onChange={(e) => setOptions((o) => ({ ...o, courseId: e.target.value || undefined }))}
+            />
+          </div>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-gray-600">Course ID (optional)</label>
-          <input
-            className="border rounded px-2 py-1 text-sm bg-white"
-            placeholder="e.g. course-uuid"
-            value={options.courseId ?? ""}
-            disabled={isRunning}
-            onChange={(e) =>
-              setOptions((o) => ({
-                ...o,
-                courseId: e.target.value || undefined,
-              }))
-            }
-          />
-        </div>
-      </div>
-
-      <Button onClick={handleStartUpdate} disabled={isRunning} className="mb-4">
-        {isRunning ? (
-          <>
-            <RocketIcon className="mr-2 h-4 w-4 animate-pulse" />
-            Updating in Progress...
-          </>
-        ) : (
-          "Start Missing Previews Update"
-        )}
-      </Button>
-
-      {progress.status !== "idle" && (
-        <div className="space-y-3 text-sm">
-          <div className="flex justify-between items-center p-2 bg-gray-100 rounded-md">
-            <span className="font-medium text-gray-700">Status:</span>
-            <span
-              className={`font-semibold ${
-                progress.status === "completed"
-                  ? "text-green-600"
-                  : progress.status === "error"
-                  ? "text-red-600"
-                  : "text-blue-600"
-              }`}
+          {/* Type filter */}
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-gray-600">Material Type</label>
+            <select
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none disabled:opacity-50"
+              value={options.type ?? ""}
+              disabled={isRunning || isPausedUser}
+              onChange={(e) =>
+                setOptions((o) => ({
+                  ...o,
+                  type: (e.target.value as MaterialTypeEnum) || undefined,
+                }))
+              }
             >
-              {progress.status.charAt(0).toUpperCase() +
-                progress.status.slice(1)}
+              <option value="">All (PDF + GDrive)</option>
+              <option value={MaterialTypeEnum.PDF}>PDF only</option>
+              <option value={MaterialTypeEnum.GDRIVE}>Google Drive only</option>
+            </select>
+          </div>
+
+          {/* Sort by */}
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-gray-600">Sort By</label>
+            <select
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none disabled:opacity-50"
+              value={options.sortBy ?? "createdAt"}
+              disabled={isRunning || isPausedUser}
+              onChange={(e) =>
+                setOptions((o) => ({
+                  ...o,
+                  sortBy: e.target.value as BatchRunOptions["sortBy"],
+                }))
+              }
+            >
+              <option value="createdAt">Created At</option>
+              <option value="label">Label</option>
+              <option value="downloads">Downloads</option>
+            </select>
+          </div>
+
+          {/* Sort order */}
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-gray-600">Sort Order</label>
+            <select
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none disabled:opacity-50"
+              value={options.sortOrder ?? "desc"}
+              disabled={isRunning || isPausedUser}
+              onChange={(e) =>
+                setOptions((o) => ({
+                  ...o,
+                  sortOrder: e.target.value as BatchRunOptions["sortOrder"],
+                }))
+              }
+            >
+              <option value="desc">Newest first</option>
+              <option value="asc">Oldest first</option>
+            </select>
+          </div>
+
+          {/* Throttle */}
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-gray-600">
+              Throttle (requests / min)
+            </label>
+            <input
+              type="number"
+              min={1}
+              max={300}
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none disabled:opacity-50"
+              value={options.throttlePerMinute}
+              disabled={isRunning || isPausedUser}
+              onChange={(e) =>
+                setOptions((o) => ({
+                  ...o,
+                  throttlePerMinute: Math.max(1, Math.min(300, Number(e.target.value) || 30)),
+                }))
+              }
+            />
+            <span className="text-[11px] text-gray-400">
+              {Math.ceil(60_000 / options.throttlePerMinute / 1000)}s delay between items
             </span>
           </div>
 
-          <div className="relative pt-1">
-            <div className="flex mb-2 items-center justify-between">
-              <div>
-                <span className="text-xs font-semibold inline-block text-blue-600">
-                  Page {progress.currentPage} of {progress.totalPages}
-                </span>
-              </div>
-              <div className="text-right">
-                <span className="text-xs font-semibold inline-block text-blue-600">
-                  {Math.round(
-                    (progress.processed / (progress.totalToProcess || 1)) * 100
-                  )}
-                  %
-                </span>
-              </div>
+          {/* Start page */}
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-gray-600">
+              Start from page
+            </label>
+            <input
+              type="number"
+              min={1}
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none disabled:opacity-50"
+              value={options.startPage ?? 1}
+              disabled={isRunning || isPausedUser}
+              onChange={(e) =>
+                setOptions((o) => ({
+                  ...o,
+                  startPage: Math.max(1, Number(e.target.value) || 1),
+                }))
+              }
+            />
+            <span className="text-[11px] text-gray-400">
+              Resume from a specific page
+            </span>
+          </div>
+        </div>
+
+        {/* Replace toggle */}
+        <div className="flex items-center justify-between rounded-lg border border-dashed border-amber-400/60 bg-amber-50 px-4 py-3">
+          <div>
+            <p className="text-sm font-semibold text-amber-800">Replace existing previews</p>
+            <p className="text-xs text-amber-700 mt-0.5">
+              When ON, overwrites materials that already have a preview URL. When OFF, only fills in missing ones.
+            </p>
+          </div>
+          <button
+            type="button"
+            disabled={isRunning || isPausedUser}
+            onClick={() => setOptions((o) => ({ ...o, replaceExisting: !o.replaceExisting }))}
+            className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors disabled:opacity-50 ${
+              options.replaceExisting ? "bg-amber-500" : "bg-gray-300"
+            }`}
+          >
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                options.replaceExisting ? "translate-x-6" : "translate-x-1"
+              }`}
+            />
+          </button>
+        </div>
+
+        {/* Action buttons */}
+        <div className="flex gap-3 flex-wrap">
+          {!isRunning && !isPausedUser && !isDone && (
+            <button
+              onClick={handleStart}
+              className="px-5 py-2 bg-brand text-white rounded-lg text-sm font-semibold hover:bg-brand/90 transition-colors"
+            >
+              Start
+            </button>
+          )}
+          {isRunning && (
+            <>
+              <button
+                onClick={handlePause}
+                className="px-5 py-2 bg-purple-600 text-white rounded-lg text-sm font-semibold hover:bg-purple-700 transition-colors"
+              >
+                Pause
+              </button>
+              <button
+                onClick={handleStop}
+                className="px-5 py-2 bg-red-600 text-white rounded-lg text-sm font-semibold hover:bg-red-700 transition-colors"
+              >
+                Stop
+              </button>
+            </>
+          )}
+          {isPausedUser && (
+            <>
+              <button
+                onClick={handleResume}
+                className="px-5 py-2 bg-brand text-white rounded-lg text-sm font-semibold hover:bg-brand/90 transition-colors"
+              >
+                Resume
+              </button>
+              <button
+                onClick={handleStop}
+                className="px-5 py-2 bg-red-600 text-white rounded-lg text-sm font-semibold hover:bg-red-700 transition-colors"
+              >
+                Stop
+              </button>
+            </>
+          )}
+          {isDone && (
+            <>
+              <button
+                onClick={handleStart}
+                className="px-5 py-2 bg-brand text-white rounded-lg text-sm font-semibold hover:bg-brand/90 transition-colors"
+              >
+                Run Again
+              </button>
+              <button
+                onClick={handleReset}
+                className="px-5 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-colors"
+              >
+                Reset
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* ── Progress ───────────────────────────────────────── */}
+      {progress.status !== "idle" && (
+        <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-5">
+          {/* Status + task */}
+          <div className="flex items-center justify-between">
+            <span className={`text-sm font-semibold ${statusColor[progress.status]}`}>
+              {statusLabel[progress.status]}
+            </span>
+            <span className="text-xs text-gray-400">
+              Page {progress.currentPage} / {progress.totalPages}
+            </span>
+          </div>
+
+          {/* Progress bar */}
+          <div className="space-y-1.5">
+            <div className="flex justify-between text-xs text-gray-500">
+              <span>{progress.processed} processed</span>
+              <span>{pct}%</span>
             </div>
-            <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-blue-200">
+            <div className="h-2.5 w-full rounded-full bg-gray-100 overflow-hidden">
               <div
-                style={{
-                  width: `${
-                    (progress.processed / (progress.totalToProcess || 1)) * 100
-                  }%`,
-                }}
-                className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500 transition-all duration-500"
-              ></div>
+                className={`h-full rounded-full transition-all duration-500 ${
+                  progress.status === "paused_ratelimit"
+                    ? "bg-amber-400"
+                    : progress.status === "paused_user"
+                    ? "bg-purple-400"
+                    : progress.status === "completed"
+                    ? "bg-green-500"
+                    : progress.status === "error"
+                    ? "bg-red-500"
+                    : "bg-brand"
+                }`}
+                style={{ width: `${pct}%` }}
+              />
             </div>
           </div>
 
-          <p className="text-gray-600 italic h-4">{progress.currentTask}</p>
+          {/* Current task label */}
+          <p className="text-xs text-gray-500 italic truncate">{progress.currentTask}</p>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-center">
-            <div className="p-2 bg-green-100 rounded">
-              <p className="font-bold text-green-700">{progress.successful}</p>
-              <p className="text-xs text-green-600">Successful</p>
-            </div>
-            <div className="p-2 bg-red-100 rounded">
-              <p className="font-bold text-red-700">{progress.failed}</p>
-              <p className="text-xs text-red-600">Failed</p>
-            </div>
-            <div className="p-2 bg-yellow-100 rounded">
-              <p className="font-bold text-yellow-700">{progress.skipped}</p>
-              <p className="text-xs text-yellow-600">Skipped</p>
-            </div>
-            <div className="p-2 bg-gray-200 rounded">
-              <p className="font-bold text-gray-700">{progress.processed}</p>
-              <p className="text-xs text-gray-600">Total Processed</p>
-            </div>
+          {/* Stats grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <StatCard label="Total" value={progress.totalMaterials} color="bg-gray-100 text-gray-700" />
+            <StatCard label="Successful" value={progress.successful} color="bg-green-50 text-green-700" />
+            <StatCard label="Failed" value={progress.failed} color="bg-red-50 text-red-700" />
+            <StatCard label="Skipped" value={progress.skipped} color="bg-yellow-50 text-yellow-700" />
+            <StatCard
+              label="Rate Limit Pauses"
+              value={progress.rateLimitPauses}
+              color="bg-amber-50 text-amber-700"
+            />
           </div>
         </div>
       )}
     </div>
   );
 };
+
+const StatCard: React.FC<{ label: string; value: number; color: string }> = ({
+  label,
+  value,
+  color,
+}) => (
+  <div className={`rounded-lg px-3 py-3 text-center ${color}`}>
+    <p className="text-xl font-bold">{value}</p>
+    <p className="text-[11px] font-medium mt-0.5 leading-tight">{label}</p>
+  </div>
+);
 
 export default BatchPreviewUpdater;

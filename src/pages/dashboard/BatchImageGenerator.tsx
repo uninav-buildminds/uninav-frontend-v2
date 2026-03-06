@@ -1,54 +1,16 @@
-import MaterialCard from "@/components/dashboard/cards/MaterialCard";
-import { useAuth } from "@/hooks/useAuth";
-import { searchMaterials } from "@/api/materials.api";
-import type { Material } from "@/lib/types/material.types";
-import { useQuery } from "@tanstack/react-query";
-import MaterialPlaceholder from "@/components/dashboard/ui/MaterialPlaceholder";
+import React from "react";
 import BatchPreviewUpdater from "@/components/dashboard/admin/BatchPreviewUpdater";
 
-const BatchImageGenerator: React.FC = () => {
-  const {
-    data: materialsData,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["materials"],
-    queryFn: () =>
-      searchMaterials({
-        page: 1,
-        limit: 50,
-        saveHistory: false,
-        sortBy: "createdAt",
-        sortOrder: "desc",
-      }),
-  });
-
-  if (isLoading) {
-    return <MaterialPlaceholder name="Loading materials..." />;
-  }
-
-  if (error) {
-    return <div>Error: {error.message}</div>;
-  }
-
-  const materials =
-    materialsData?.status === "success" ? materialsData.data.items : [];
-
-  return (
-    <div className="space-y-8">
-      {/* DEV TOOL - CAN BE REMOVED LATER */}
-      <BatchPreviewUpdater />
-
-      <div>
-        <h1 className="text-3xl font-bold mb-6">Recent Materials</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {materials.map((material, index) => (
-            <MaterialCard key={material.id || index} material={material} />
-          ))}
-        </div>
-      </div>
+const BatchImageGenerator: React.FC = () => (
+  <div className="p-6 max-w-4xl mx-auto">
+    <div className="mb-6">
+      <h1 className="text-2xl font-bold text-gray-900">Preview Image Generator</h1>
+      <p className="text-sm text-gray-500 mt-1">
+        Admin tool — generates and uploads preview images for PDF and Google Drive materials.
+      </p>
     </div>
-  );
-};
+    <BatchPreviewUpdater />
+  </div>
+);
 
 export default BatchImageGenerator;
