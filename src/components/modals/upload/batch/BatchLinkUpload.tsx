@@ -52,6 +52,8 @@ interface BatchLinkUploadProps {
   onError: (error: string) => void;
   onUploadingChange: (isUploading: boolean) => void;
   onBack?: () => void;
+  initialFolderId?: string;
+  initialCurrentFolder?: { id: string; label: string; description?: string };
 }
 
 const MAX_LINKS = 50;
@@ -61,13 +63,15 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
   onError,
   onUploadingChange,
   onBack,
+  initialFolderId,
+  initialCurrentFolder,
 }) => {
   const [links, setLinks] = useState<BatchLinkItem[]>([]);
   const [csvInput, setCsvInput] = useState("");
   const [targetCourseId, setTargetCourseId] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
-  const [folderId, setFolderId] = useState<string>("");
+  const [folderId, setFolderId] = useState<string>(initialFolderId ?? "");
   const [folderOptions, setFolderOptions] = useState<SelectOption[]>([]);
   const [foldersLoading, setFoldersLoading] = useState(false);
 
@@ -85,6 +89,14 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
               description: folder.description,
             })
           );
+          // Ensure the pre-selected folder is in the list even if not in the user's list
+          if (initialCurrentFolder && !options.find((o) => o.value === initialCurrentFolder.id)) {
+            options.unshift({
+              value: initialCurrentFolder.id,
+              label: initialCurrentFolder.label,
+              description: initialCurrentFolder.description,
+            });
+          }
           setFolderOptions(options);
         }
       } catch (error) {

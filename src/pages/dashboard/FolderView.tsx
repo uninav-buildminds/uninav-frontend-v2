@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, useLocation, Link } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Add01Icon, ArrowLeft01Icon, Folder03Icon, InformationCircleIcon, Share08Icon } from "@hugeicons/core-free-icons";
 import PageHeader from "@/components/dashboard/ui/PageHeader";
@@ -21,7 +21,11 @@ interface FolderViewProps {
 const FolderView: React.FC<FolderViewProps> = ({ isPublic = false }) => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
+
+  interface BreadcrumbEntry { label: string; slug: string }
+  const breadcrumbs: BreadcrumbEntry[] = location.state?.breadcrumbs ?? [];
   const [folder, setFolder] = useState<Folder | null>(null);
   const [materials, setMaterials] = useState<Material[]>([]);
   const [nestedFolders, setNestedFolders] = useState<Folder[]>([]);
@@ -81,15 +85,28 @@ const FolderView: React.FC<FolderViewProps> = ({ isPublic = false }) => {
 
   // Determine base path based on public/private mode
   const basePath = isPublic ? "/view" : "/dashboard";
-  const backDestination = isPublic ? "/" : "/dashboard/libraries";
+  const rootDestination = isPublic ? "/" : "/dashboard/libraries";
 
   // Handlers
   const handleBack = () => {
-    navigate(backDestination);
+    if (breadcrumbs.length > 0) {
+      const parent = breadcrumbs[breadcrumbs.length - 1];
+      navigate(`${basePath}/folder/${parent.slug}`, {
+        state: { breadcrumbs: breadcrumbs.slice(0, -1) },
+      });
+    } else {
+      navigate(rootDestination);
+    }
   };
 
   const handleFolderClick = (folderSlug: string) => {
-    navigate(`${basePath}/folder/${folderSlug}`);
+    navigate(`${basePath}/folder/${folderSlug}`, {
+      state: {
+        breadcrumbs: folder
+          ? [...breadcrumbs, { label: folder.label, slug: folder.slug }]
+          : breadcrumbs,
+      },
+    });
   };
 
   const handleMaterialRead = (slug: string) => {
@@ -171,7 +188,7 @@ const FolderView: React.FC<FolderViewProps> = ({ isPublic = false }) => {
             className="inline-flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors"
           >
             <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={1.5} size={18} />
-            {isPublic ? "Back to Home" : "Back to Libraries"}
+            Back
           </button>
         </div>
       </div>
@@ -212,9 +229,7 @@ const FolderView: React.FC<FolderViewProps> = ({ isPublic = false }) => {
             className="inline-flex items-center gap-2 text-gray-600 hover:text-brand transition-colors"
           >
             <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={1.5} size={20} />
-            <span className="text-sm font-medium">
-              {isPublic ? "Back to Home" : "Back to Libraries"}
-            </span>
+            <span className="text-sm font-medium">Back</span>
           </button>
 
           {/* Share button */}
@@ -267,13 +282,28 @@ const FolderView: React.FC<FolderViewProps> = ({ isPublic = false }) => {
             </div>
           )}
           {/* Breadcrumb Navigation */}
-          <nav className="flex items-center gap-2 text-sm">
+          <nav className="flex items-center gap-2 text-sm flex-wrap">
             <button
-              onClick={handleBack}
+              onClick={() => navigate(rootDestination)}
               className="text-gray-600 hover:text-brand transition-colors"
             >
               {isPublic ? "Home" : "Libraries"}
             </button>
+            {breadcrumbs.map((crumb, i) => (
+              <React.Fragment key={crumb.slug}>
+                <span className="text-gray-400">/</span>
+                <button
+                  onClick={() =>
+                    navigate(`${basePath}/folder/${crumb.slug}`, {
+                      state: { breadcrumbs: breadcrumbs.slice(0, i) },
+                    })
+                  }
+                  className="text-gray-600 hover:text-brand transition-colors"
+                >
+                  {crumb.label}
+                </button>
+              </React.Fragment>
+            ))}
             <span className="text-gray-400">/</span>
             <span className="text-gray-900 font-medium">{folder.label}</span>
           </nav>

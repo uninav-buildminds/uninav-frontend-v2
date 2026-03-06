@@ -2,7 +2,12 @@ import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { AlertCircleIcon, ArrowLeft01Icon, Cancel01Icon, File02Icon, Link01Icon } from "@hugeicons/core-free-icons";
+import {
+  AlertCircleIcon,
+  Cancel01Icon,
+  File02Icon,
+  Link01Icon,
+} from "@hugeicons/core-free-icons";
 import BatchFileUpload from "./BatchFileUpload";
 import BatchLinkUpload from "./BatchLinkUpload";
 import UploadSuccess from "../UploadSuccess";
@@ -14,17 +19,22 @@ export type BatchUploadStep = "upload" | "success" | "error";
 interface BatchUploadModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onBack?: () => void; // Optional callback to go back to Step1
+  onBack?: () => void;
+  folderId?: string;
+  currentFolder?: { id: string; label: string; description?: string };
 }
 
 const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
   isOpen,
   onClose,
   onBack,
+  folderId,
+  currentFolder,
 }) => {
   const [activeTab, setActiveTab] = useState<BatchUploadTab>("files");
   const [currentStep, setCurrentStep] = useState<BatchUploadStep>("upload");
-  const [uploadResult, setUploadResult] = useState<BatchCreateMaterialsResponse | null>(null);
+  const [, setUploadResult] =
+    useState<BatchCreateMaterialsResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -69,9 +79,6 @@ const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
               <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">
                 Batch Upload Materials
               </h2>
-              <p className="text-sm sm:text-base text-gray-600">
-                Upload multiple files or links at once
-              </p>
             </div>
 
             {/* Tab Selector */}
@@ -118,6 +125,8 @@ const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                       onError={handleError}
                       onUploadingChange={setIsUploading}
                       onBack={onBack}
+                      initialFolderId={folderId}
+                      initialCurrentFolder={currentFolder}
                     />
                   </motion.div>
                 ) : (
@@ -133,6 +142,8 @@ const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                       onError={handleError}
                       onUploadingChange={setIsUploading}
                       onBack={onBack}
+                      initialFolderId={folderId}
+                      initialCurrentFolder={currentFolder}
                     />
                   </motion.div>
                 )}
@@ -150,9 +161,7 @@ const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
           >
-            <UploadSuccess
-              onComplete={handleClose}
-            />
+            <UploadSuccess onComplete={handleClose} />
           </motion.div>
         );
 
@@ -167,13 +176,19 @@ const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
             className="flex flex-col items-center justify-center py-8 px-6 text-center"
           >
             <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-4">
-              <HugeiconsIcon icon={AlertCircleIcon} strokeWidth={1.5} size={32} className="text-red-500" />
+              <HugeiconsIcon
+                icon={AlertCircleIcon}
+                strokeWidth={1.5}
+                size={32}
+                className="text-red-500"
+              />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               Upload Failed
             </h3>
             <p className="text-gray-600 mb-6 max-w-md">
-              {errorMessage || "Something went wrong during the batch upload process."}
+              {errorMessage ||
+                "Something went wrong during the batch upload process."}
             </p>
             <div className="flex gap-3">
               <button
@@ -206,7 +221,9 @@ const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
           className="fixed inset-0 z-modal-backdrop flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-          onClick={(e) => e.target === e.currentTarget && !isUploading && handleClose()}
+          onClick={(e) =>
+            e.target === e.currentTarget && !isUploading && handleClose()
+          }
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -223,14 +240,17 @@ const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                 isUploading ? "cursor-not-allowed opacity-50" : ""
               }`}
             >
-              <HugeiconsIcon icon={Cancel01Icon} strokeWidth={1.5} size={20} className="text-gray-500" />
+              <HugeiconsIcon
+                icon={Cancel01Icon}
+                strokeWidth={1.5}
+                size={20}
+                className="text-gray-500"
+              />
             </button>
 
             {/* Modal content */}
             <div className="p-3 sm:p-6 pt-5 sm:pt-8 flex-1 overflow-y-auto scrollbar-hide">
-              <AnimatePresence mode="wait">
-                {renderContent()}
-              </AnimatePresence>
+              <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>
             </div>
           </motion.div>
         </motion.div>

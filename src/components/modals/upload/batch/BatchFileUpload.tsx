@@ -58,6 +58,8 @@ interface BatchFileUploadProps {
   onError: (error: string) => void;
   onUploadingChange: (isUploading: boolean) => void;
   onBack?: () => void;
+  initialFolderId?: string;
+  initialCurrentFolder?: { id: string; label: string; description?: string };
 }
 
 const MAX_FILES = 20;
@@ -154,11 +156,13 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
   onError,
   onUploadingChange,
   onBack,
+  initialFolderId,
+  initialCurrentFolder,
 }) => {
   const [files, setFiles] = useState<BatchFileItem[]>([]);
   const [dragActive, setDragActive] = useState(false);
   const [targetCourseId, setTargetCourseId] = useState<string>("");
-  const [folderId, setFolderId] = useState<string>("");
+  const [folderId, setFolderId] = useState<string>(initialFolderId ?? "");
   const [folderOptions, setFolderOptions] = useState<SelectOption[]>([]);
   const [foldersLoading, setFoldersLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -186,6 +190,14 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
               description: folder.description,
             })
           );
+          // Ensure the pre-selected folder is in the list even if not in the user's list
+          if (initialCurrentFolder && !options.find((o) => o.value === initialCurrentFolder.id)) {
+            options.unshift({
+              value: initialCurrentFolder.id,
+              label: initialCurrentFolder.label,
+              description: initialCurrentFolder.description,
+            });
+          }
           setFolderOptions(options);
         }
       } catch (error) {
