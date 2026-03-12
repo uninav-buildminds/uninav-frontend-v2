@@ -1,7 +1,17 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { ArrowLeft01Icon, ArrowRight02Icon, InformationCircleIcon, Mail01Icon, MinusSignIcon, PlusSignIcon, Rocket01Icon, Search01Icon, UploadSquare01Icon } from "@hugeicons/core-free-icons";
+import {
+  ArrowLeft01Icon,
+  ArrowRight02Icon,
+  InformationCircleIcon,
+  Mail01Icon,
+  MinusSignIcon,
+  PlusSignIcon,
+  Rocket01Icon,
+  Search01Icon,
+  UploadSquare01Icon,
+} from "@hugeicons/core-free-icons";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Helper icon components
@@ -26,15 +36,15 @@ const Help: React.FC = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedFAQs, setExpandedFAQs] = useState<Set<number>>(new Set());
-  
+
   // Quick Help scroll state
   const quickHelpScrollRef = useRef<HTMLDivElement>(null);
   const [quickHelpIndex, setQuickHelpIndex] = useState(0);
-  
+
   // Contact Support scroll state
   const contactSupportScrollRef = useRef<HTMLDivElement>(null);
   const [contactSupportIndex, setContactSupportIndex] = useState(0);
-  
+
   // Contact Form state
   const [formData, setFormData] = useState({
     name: "",
@@ -90,12 +100,14 @@ const Help: React.FC = () => {
     if (!container) return;
 
     const isTablet = window.innerWidth >= 768; // md breakpoint
-    const cardWidth = isTablet ? container.clientWidth / 3 : container.clientWidth;
+    const cardWidth = isTablet
+      ? container.clientWidth / 3
+      : container.clientWidth;
     const scrollPosition = index * cardWidth;
-    
+
     container.scrollTo({
       left: scrollPosition,
-      behavior: 'smooth'
+      behavior: "smooth",
     });
   };
 
@@ -105,9 +117,11 @@ const Help: React.FC = () => {
 
     const scrollLeft = container.scrollLeft;
     const isTablet = window.innerWidth >= 768; // md breakpoint
-    const cardWidth = isTablet ? container.clientWidth / 3 : container.clientWidth;
+    const cardWidth = isTablet
+      ? container.clientWidth / 3
+      : container.clientWidth;
     const newIndex = Math.round(scrollLeft / cardWidth);
-    
+
     if (newIndex !== quickHelpIndex) {
       setQuickHelpIndex(newIndex);
     }
@@ -119,12 +133,14 @@ const Help: React.FC = () => {
     if (!container) return;
 
     const isTablet = window.innerWidth >= 768; // md breakpoint
-    const cardWidth = isTablet ? container.clientWidth / 2 : container.clientWidth;
+    const cardWidth = isTablet
+      ? container.clientWidth / 2
+      : container.clientWidth;
     const scrollPosition = index * cardWidth;
-    
+
     container.scrollTo({
       left: scrollPosition,
-      behavior: 'smooth'
+      behavior: "smooth",
     });
   };
 
@@ -134,9 +150,11 @@ const Help: React.FC = () => {
 
     const scrollLeft = container.scrollLeft;
     const isTablet = window.innerWidth >= 768; // md breakpoint
-    const cardWidth = isTablet ? container.clientWidth / 2 : container.clientWidth;
+    const cardWidth = isTablet
+      ? container.clientWidth / 2
+      : container.clientWidth;
     const newIndex = Math.round(scrollLeft / cardWidth);
-    
+
     if (newIndex !== contactSupportIndex) {
       setContactSupportIndex(newIndex);
     }
@@ -146,7 +164,7 @@ const Help: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     // Simulate form submission
     setTimeout(() => {
       console.log("Form submitted:", formData);
@@ -175,7 +193,12 @@ const Help: React.FC = () => {
                 <div className="mt-6 flex justify-center relative z-10">
                   <div className="w-full max-w-xl flex items-center gap-3">
                     <div className="flex-1 flex items-center gap-2 bg-white rounded-full border border-gray-200 px-3 py-2.5">
-                      <HugeiconsIcon icon={Search01Icon} strokeWidth={1.5} size={18} className="text-gray-400" />
+                      <HugeiconsIcon
+                        icon={Search01Icon}
+                        strokeWidth={1.5}
+                        size={18}
+                        className="text-gray-400"
+                      />
                       <input
                         type="text"
                         value={searchQuery}
@@ -192,7 +215,11 @@ const Help: React.FC = () => {
                       className="inline-flex h-10 w-10 items-center justify-center rounded-full text-white shrink-0 bg-brand hover:bg-brand/90 transition-colors duration-200"
                       aria-label="Search"
                     >
-                      <HugeiconsIcon icon={ArrowRight02Icon} strokeWidth={1.5} size={18} />
+                      <HugeiconsIcon
+                        icon={ArrowRight02Icon}
+                        strokeWidth={1.5}
+                        size={18}
+                      />
                     </button>
                   </div>
                 </div>
@@ -210,14 +237,19 @@ const Help: React.FC = () => {
           <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-6">
             Quick Help
           </h3>
-          
+
           {/* Desktop Grid */}
           <div className="hidden md:grid grid-cols-3 gap-4 sm:gap-6">
             {/* Getting Started Card */}
             <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-start gap-3 mb-4">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border border-gray-200 flex items-center justify-center bg-brand/10 flex-shrink-0">
-                  <HugeiconsIcon icon={Rocket01Icon} strokeWidth={1.5} size={20} className="sm:w-6 sm:h-6 text-brand" />
+                  <HugeiconsIcon
+                    icon={Rocket01Icon}
+                    strokeWidth={1.5}
+                    size={20}
+                    className="sm:w-6 sm:h-6 text-brand"
+                  />
                 </div>
                 <h4 className="text-base sm:text-lg font-semibold text-gray-900 pt-1">
                   Getting Started
@@ -243,7 +275,12 @@ const Help: React.FC = () => {
             <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-start gap-3 mb-4">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border border-gray-200 flex items-center justify-center bg-brand/10 flex-shrink-0">
-                  <HugeiconsIcon icon={UploadSquare01Icon} strokeWidth={1.5} size={20} className="sm:w-6 sm:h-6 text-brand" />
+                  <HugeiconsIcon
+                    icon={UploadSquare01Icon}
+                    strokeWidth={1.5}
+                    size={20}
+                    className="sm:w-6 sm:h-6 text-brand"
+                  />
                 </div>
                 <h4 className="text-base sm:text-lg font-semibold text-gray-900 pt-1">
                   Uploading Materials
@@ -269,7 +306,12 @@ const Help: React.FC = () => {
             <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-start gap-3 mb-4">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border border-gray-200 flex items-center justify-center bg-brand/10 flex-shrink-0">
-                  <HugeiconsIcon icon={InformationCircleIcon} strokeWidth={1.5} size={20} className="sm:w-6 sm:h-6 text-brand" />
+                  <HugeiconsIcon
+                    icon={InformationCircleIcon}
+                    strokeWidth={1.5}
+                    size={20}
+                    className="sm:w-6 sm:h-6 text-brand"
+                  />
                 </div>
                 <h4 className="text-base sm:text-lg font-semibold text-gray-900 pt-1">
                   Account Help
@@ -290,7 +332,10 @@ const Help: React.FC = () => {
                 <li className="flex items-start gap-2">
                   <span className="text-gray-400 mt-1">•</span>
                   <span className="text-gray-400 cursor-not-allowed">
-                    Change email <span className="text-xs text-gray-500">(Not available)</span>
+                    Change email{" "}
+                    <span className="text-xs text-gray-500">
+                      (Not available)
+                    </span>
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
@@ -312,14 +357,22 @@ const Help: React.FC = () => {
               ref={quickHelpScrollRef}
               onScroll={handleQuickHelpScroll}
               className="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory"
-              style={{ scrollSnapType: 'x mandatory' }}
+              style={{ scrollSnapType: "x mandatory" }}
             >
               {/* Getting Started Card */}
-              <div className="flex-shrink-0 w-full snap-center" style={{ scrollSnapAlign: 'center' }}>
+              <div
+                className="flex-shrink-0 w-full snap-center"
+                style={{ scrollSnapAlign: "center" }}
+              >
                 <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
                   <div className="flex items-start gap-3 mb-4">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border border-gray-200 flex items-center justify-center bg-brand/10 flex-shrink-0">
-                      <HugeiconsIcon icon={Rocket01Icon} strokeWidth={1.5} size={20} className="sm:w-6 sm:h-6 text-brand" />
+                      <HugeiconsIcon
+                        icon={Rocket01Icon}
+                        strokeWidth={1.5}
+                        size={20}
+                        className="sm:w-6 sm:h-6 text-brand"
+                      />
                     </div>
                     <h4 className="text-base sm:text-lg font-semibold text-gray-900 pt-1">
                       Getting Started
@@ -343,11 +396,19 @@ const Help: React.FC = () => {
               </div>
 
               {/* Uploading Materials Card */}
-              <div className="flex-shrink-0 w-full snap-center" style={{ scrollSnapAlign: 'center' }}>
+              <div
+                className="flex-shrink-0 w-full snap-center"
+                style={{ scrollSnapAlign: "center" }}
+              >
                 <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
                   <div className="flex items-start gap-3 mb-4">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border border-gray-200 flex items-center justify-center bg-brand/10 flex-shrink-0">
-                      <HugeiconsIcon icon={UploadSquare01Icon} strokeWidth={1.5} size={20} className="sm:w-6 sm:h-6 text-brand" />
+                      <HugeiconsIcon
+                        icon={UploadSquare01Icon}
+                        strokeWidth={1.5}
+                        size={20}
+                        className="sm:w-6 sm:h-6 text-brand"
+                      />
                     </div>
                     <h4 className="text-base sm:text-lg font-semibold text-gray-900 pt-1">
                       Uploading Materials
@@ -371,11 +432,19 @@ const Help: React.FC = () => {
               </div>
 
               {/* Account Help Card */}
-              <div className="flex-shrink-0 w-full snap-center" style={{ scrollSnapAlign: 'center' }}>
+              <div
+                className="flex-shrink-0 w-full snap-center"
+                style={{ scrollSnapAlign: "center" }}
+              >
                 <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
                   <div className="flex items-start gap-3 mb-4">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border border-gray-200 flex items-center justify-center bg-brand/10 flex-shrink-0">
-                      <HugeiconsIcon icon={InformationCircleIcon} strokeWidth={1.5} size={20} className="sm:w-6 sm:h-6 text-brand" />
+                      <HugeiconsIcon
+                        icon={InformationCircleIcon}
+                        strokeWidth={1.5}
+                        size={20}
+                        className="sm:w-6 sm:h-6 text-brand"
+                      />
                     </div>
                     <h4 className="text-base sm:text-lg font-semibold text-gray-900 pt-1">
                       Account Help
@@ -396,13 +465,18 @@ const Help: React.FC = () => {
                     <li className="flex items-start gap-2">
                       <span className="text-gray-400 mt-1">•</span>
                       <span className="text-gray-400 cursor-not-allowed">
-                        Change email <span className="text-xs text-gray-500">(Not available)</span>
+                        Change email{" "}
+                        <span className="text-xs text-gray-500">
+                          (Not available)
+                        </span>
                       </span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-gray-400 mt-1">•</span>
                       <button
-                        onClick={() => navigate("/dashboard/settings?tab=academic")}
+                        onClick={() =>
+                          navigate("/dashboard/settings?tab=academic")
+                        }
                         className="text-brand hover:underline cursor-pointer text-left"
                       >
                         Update academic profile
@@ -424,8 +498,8 @@ const Help: React.FC = () => {
                   }}
                   className={`w-2 h-2 rounded-full transition-all duration-300 ${
                     index === quickHelpIndex
-                      ? 'bg-brand w-6'
-                      : 'bg-gray-300 hover:bg-gray-400'
+                      ? "bg-brand w-6"
+                      : "bg-gray-300 hover:bg-gray-400"
                   }`}
                   aria-label={`Go to card ${index + 1}`}
                 />
@@ -439,7 +513,7 @@ const Help: React.FC = () => {
           <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-6">
             Contact Support
           </h3>
-          
+
           {/* Desktop Grid */}
           <div className="hidden md:grid grid-cols-2 gap-4 sm:gap-6">
             {/* WhatsApp Support Card */}
@@ -475,14 +549,19 @@ const Help: React.FC = () => {
 
             {/* Email Support Card */}
             <a
-              href="mailto:uninav.buildminds@gmail.com"
+              href="mailto:uninav.buildmindds@gmail.com"
               target="_blank"
               rel="noopener noreferrer"
               className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow block cursor-pointer"
             >
               <div className="flex items-start gap-3 mb-4">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border border-gray-200 flex items-center justify-center bg-blue-50 flex-shrink-0">
-                  <HugeiconsIcon icon={Mail01Icon} strokeWidth={1.5} size={20} className="sm:w-6 sm:h-6 text-blue-600" />
+                  <HugeiconsIcon
+                    icon={Mail01Icon}
+                    strokeWidth={1.5}
+                    size={20}
+                    className="sm:w-6 sm:h-6 text-blue-600"
+                  />
                 </div>
                 <h4 className="text-base sm:text-lg font-semibold text-gray-900 pt-1">
                   Email Support
@@ -499,7 +578,7 @@ const Help: React.FC = () => {
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-gray-400 mt-1">•</span>
-                  <span>uninav.buildminds@gmail.com</span>
+                  <span>uninav.buildmindds@gmail.com</span>
                 </li>
               </ul>
             </a>
@@ -511,10 +590,13 @@ const Help: React.FC = () => {
               ref={contactSupportScrollRef}
               onScroll={handleContactSupportScroll}
               className="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory"
-              style={{ scrollSnapType: 'x mandatory' }}
+              style={{ scrollSnapType: "x mandatory" }}
             >
               {/* WhatsApp Support Card */}
-              <div className="flex-shrink-0 w-full snap-center" style={{ scrollSnapAlign: 'center' }}>
+              <div
+                className="flex-shrink-0 w-full snap-center"
+                style={{ scrollSnapAlign: "center" }}
+              >
                 <a
                   href="https://wa.me/2349155004456"
                   target="_blank"
@@ -547,16 +629,24 @@ const Help: React.FC = () => {
               </div>
 
               {/* Email Support Card */}
-              <div className="flex-shrink-0 w-full snap-center" style={{ scrollSnapAlign: 'center' }}>
+              <div
+                className="flex-shrink-0 w-full snap-center"
+                style={{ scrollSnapAlign: "center" }}
+              >
                 <a
-                  href="mailto:uninav.buildminds@gmail.com"
+                  href="mailto:uninav.buildmindds@gmail.com"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow block cursor-pointer"
                 >
                   <div className="flex items-start gap-3 mb-4">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border border-gray-200 flex items-center justify-center bg-blue-50 flex-shrink-0">
-                      <HugeiconsIcon icon={Mail01Icon} strokeWidth={1.5} size={20} className="sm:w-6 sm:h-6 text-blue-600" />
+                      <HugeiconsIcon
+                        icon={Mail01Icon}
+                        strokeWidth={1.5}
+                        size={20}
+                        className="sm:w-6 sm:h-6 text-blue-600"
+                      />
                     </div>
                     <h4 className="text-base sm:text-lg font-semibold text-gray-900 pt-1">
                       Email Support
@@ -573,7 +663,7 @@ const Help: React.FC = () => {
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-gray-400 mt-1">•</span>
-                      <span>uninav.buildminds@gmail.com</span>
+                      <span>uninav.buildmindds@gmail.com</span>
                     </li>
                   </ul>
                 </a>
@@ -591,8 +681,8 @@ const Help: React.FC = () => {
                   }}
                   className={`w-2 h-2 rounded-full transition-all duration-300 ${
                     index === contactSupportIndex
-                      ? 'bg-brand w-6'
-                      : 'bg-gray-300 hover:bg-gray-400'
+                      ? "bg-brand w-6"
+                      : "bg-gray-300 hover:bg-gray-400"
                   }`}
                   aria-label={`Go to card ${index + 1}`}
                 />
@@ -608,61 +698,81 @@ const Help: React.FC = () => {
             <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-6">
               Send us a Message
             </h3>
-            
+
             {/* Desktop Form */}
             <form onSubmit={handleSubmit} className="hidden md:block">
               <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
                 <div className="space-y-4">
                   <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label
+                      htmlFor="name"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
                       Name
                     </label>
                     <input
                       type="text"
                       id="name"
                       value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
                       required
                       className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all"
                       placeholder="Your name"
                     />
                   </div>
                   <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label
+                      htmlFor="email"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
                       Email
                     </label>
                     <input
                       type="email"
                       id="email"
                       value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, email: e.target.value })
+                      }
                       required
                       className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all"
                       placeholder="your.email@example.com"
                     />
                   </div>
                   <div>
-                    <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label
+                      htmlFor="subject"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
                       Subject
                     </label>
                     <input
                       type="text"
                       id="subject"
                       value={formData.subject}
-                      onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, subject: e.target.value })
+                      }
                       required
                       className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all"
                       placeholder="What's this about?"
                     />
                   </div>
                   <div>
-                    <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label
+                      htmlFor="message"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
                       Message
                     </label>
                     <textarea
                       id="message"
                       value={formData.message}
-                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, message: e.target.value })
+                      }
                       required
                       rows={5}
                       className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all resize-none"
@@ -685,55 +795,75 @@ const Help: React.FC = () => {
               <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
                 <div className="space-y-4">
                   <div>
-                    <label htmlFor="name-mobile" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label
+                      htmlFor="name-mobile"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
                       Name
                     </label>
                     <input
                       type="text"
                       id="name-mobile"
                       value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
                       required
                       className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all"
                       placeholder="Your name"
                     />
                   </div>
                   <div>
-                    <label htmlFor="email-mobile" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label
+                      htmlFor="email-mobile"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
                       Email
                     </label>
                     <input
                       type="email"
                       id="email-mobile"
                       value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, email: e.target.value })
+                      }
                       required
                       className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all"
                       placeholder="your.email@example.com"
                     />
                   </div>
                   <div>
-                    <label htmlFor="subject-mobile" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label
+                      htmlFor="subject-mobile"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
                       Subject
                     </label>
                     <input
                       type="text"
                       id="subject-mobile"
                       value={formData.subject}
-                      onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, subject: e.target.value })
+                      }
                       required
                       className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all"
                       placeholder="What's this about?"
                     />
                   </div>
                   <div>
-                    <label htmlFor="message-mobile" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label
+                      htmlFor="message-mobile"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
                       Message
                     </label>
                     <textarea
                       id="message-mobile"
                       value={formData.message}
-                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, message: e.target.value })
+                      }
                       required
                       rows={5}
                       className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all resize-none"
@@ -775,13 +905,19 @@ const Help: React.FC = () => {
                       transition={{ duration: 0.3, ease: "easeInOut" }}
                     >
                       {expandedFAQs.has(index) ? (
-                        <HugeiconsIcon icon={MinusSignIcon} strokeWidth={1.5}
+                        <HugeiconsIcon
+                          icon={MinusSignIcon}
+                          strokeWidth={1.5}
                           size={20}
-                          className="text-gray-600 flex-shrink-0" />
+                          className="text-gray-600 flex-shrink-0"
+                        />
                       ) : (
-                        <HugeiconsIcon icon={PlusSignIcon} strokeWidth={1.5}
+                        <HugeiconsIcon
+                          icon={PlusSignIcon}
+                          strokeWidth={1.5}
                           size={20}
-                          className="text-gray-600 flex-shrink-0" />
+                          className="text-gray-600 flex-shrink-0"
+                        />
                       )}
                     </motion.div>
                   </button>
@@ -813,4 +949,3 @@ const Help: React.FC = () => {
 };
 
 export default Help;
-

@@ -21,10 +21,15 @@ const Footer: React.FC = () => {
           {/* Branding and Description */}
           <div className="lg:col-span-1">
             <div className="flex items-center gap-3 mb-3 sm:mb-4">
-              <img src="/assets/logo.svg" alt="UniNav logo" className="h-8 sm:h-10 w-auto" />
+              <img
+                src="/assets/logo.svg"
+                alt="UniNav logo"
+                className="h-8 sm:h-10 w-auto"
+              />
             </div>
             <p className="text-gray-600 text-xs sm:text-sm leading-relaxed max-w-xs">
-              Empowering students with the knowledge and community they need to excel academically.
+              Empowering students with the knowledge and community they need to
+              excel academically.
             </p>
             {/* Contact Icons */}
             <div className="flex items-center gap-3 mt-4">
@@ -39,12 +44,12 @@ const Footer: React.FC = () => {
                 <WhatsAppIconSVG />
               </a>
               <a
-                href="mailto:uninav.buildminds@gmail.com"
+                href="mailto:uninav.buildmindds@gmail.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Email"
                 className="text-blue-600 hover:text-blue-800 transition-colors text-lg"
-                title="uninav.buildminds@gmail.com"
+                title="uninav.buildmindds@gmail.com"
               >
                 <Mail size={20} />
               </a>
@@ -61,35 +66,132 @@ const Footer: React.FC = () => {
 
           {/* Navigate Column */}
           <div>
-            <h3 className="font-bold text-foreground mb-3 sm:mb-4 text-sm sm:text-base">NAVIGATE</h3>
+            <h3 className="font-bold text-foreground mb-3 sm:mb-4 text-sm sm:text-base">
+              NAVIGATE
+            </h3>
             <ul className="space-y-1.5 sm:space-y-2">
-              <li><a href="#" className="text-gray-600 hover:text-foreground transition-colors duration-200 text-sm">Home</a></li>
-              <li><a href="#" className="text-gray-600 hover:text-foreground transition-colors duration-200 text-sm">Department</a></li>
-              <li><a href="#" className="text-gray-600 hover:text-foreground transition-colors duration-200 text-sm">Faculty</a></li>
-              <li><a href="#" className="text-gray-600 hover:text-foreground transition-colors duration-200 text-sm">About</a></li>
-              <li><a href="#" className="text-gray-600 hover:text-foreground transition-colors duration-200 text-sm">Mission & Vision</a></li>
+              <li>
+                <a
+                  href="#"
+                  className="text-gray-600 hover:text-foreground transition-colors duration-200 text-sm"
+                >
+                  Home
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  className="text-gray-600 hover:text-foreground transition-colors duration-200 text-sm"
+                >
+                  Department
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  className="text-gray-600 hover:text-foreground transition-colors duration-200 text-sm"
+                >
+                  Faculty
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  className="text-gray-600 hover:text-foreground transition-colors duration-200 text-sm"
+                >
+                  About
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  className="text-gray-600 hover:text-foreground transition-colors duration-200 text-sm"
+                >
+                  Mission & Vision
+                </a>
+              </li>
             </ul>
           </div>
 
           {/* Help Column */}
           <div>
-            <h3 className="font-bold text-foreground mb-3 sm:mb-4 text-sm sm:text-base">HELP</h3>
+            <h3 className="font-bold text-foreground mb-3 sm:mb-4 text-sm sm:text-base">
+              HELP
+            </h3>
             <ul className="space-y-1.5 sm:space-y-2">
-              <li><a href="#" className="text-gray-600 hover:text-foreground transition-colors duration-200 text-sm">WhatsApp Support</a></li>
-              <li><a href="#" className="text-gray-600 hover:text-foreground transition-colors duration-200 text-sm">Content Guidelines</a></li>
-              <li><a href="#" className="text-gray-600 hover:text-foreground transition-colors duration-200 text-sm">Report Issue</a></li>
-              <li><a href="#" className="text-gray-600 hover:text-foreground transition-colors duration-200 text-sm">How It Works</a></li>
+              <li>
+                <a
+                  href="#"
+                  className="text-gray-600 hover:text-foreground transition-colors duration-200 text-sm"
+                >
+                  WhatsApp Support
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  className="text-gray-600 hover:text-foreground transition-colors duration-200 text-sm"
+                >
+                  Content Guidelines
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  className="text-gray-600 hover:text-foreground transition-colors duration-200 text-sm"
+                >
+                  Report Issue
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  className="text-gray-600 hover:text-foreground transition-colors duration-200 text-sm"
+                >
+                  How It Works
+                </a>
+              </li>
             </ul>
           </div>
 
           {/* Policies Column */}
           <div>
-            <h3 className="font-bold text-foreground mb-3 sm:mb-4 text-sm sm:text-base">POLICIES</h3>
+            <h3 className="font-bold text-foreground mb-3 sm:mb-4 text-sm sm:text-base">
+              POLICIES
+            </h3>
             <ul className="space-y-1.5 sm:space-y-2">
-              <li><a href="#" className="text-gray-600 hover:text-foreground transition-colors duration-200 text-sm">Honor Code</a></li>
-              <li><a href="#" className="text-gray-600 hover:text-foreground transition-colors duration-200 text-sm">Privacy Policy</a></li>
-              <li><a href="#" className="text-gray-600 hover:text-foreground transition-colors duration-200 text-sm">Terms of Service</a></li>
-              <li><a href="#" className="text-gray-600 hover:text-foreground transition-colors duration-200 text-sm">Academic Integrity</a></li>
+              <li>
+                <a
+                  href="#"
+                  className="text-gray-600 hover:text-foreground transition-colors duration-200 text-sm"
+                >
+                  Honor Code
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  className="text-gray-600 hover:text-foreground transition-colors duration-200 text-sm"
+                >
+                  Privacy Policy
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  className="text-gray-600 hover:text-foreground transition-colors duration-200 text-sm"
+                >
+                  Terms of Service
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  className="text-gray-600 hover:text-foreground transition-colors duration-200 text-sm"
+                >
+                  Academic Integrity
+                </a>
+              </li>
             </ul>
           </div>
         </div>

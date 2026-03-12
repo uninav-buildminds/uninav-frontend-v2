@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ArrowLeft01Icon,
@@ -11,6 +11,7 @@ import {
   Share01Icon,
   Target01Icon,
   Edit01Icon,
+  Copy01Icon,
 } from "@hugeicons/core-free-icons";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -37,6 +38,7 @@ const ClubDetail: React.FC = () => {
 
   const [showFlagModal, setShowFlagModal] = useState(false);
   const [showRequestModal, setShowRequestModal] = useState(false);
+  const [joinClickCount, setJoinClickCount] = useState(0);
 
   // Fire click tracking once when the club loads — anonymous-safe, async
   const trackedRef = useRef(false);
@@ -52,6 +54,7 @@ const ClubDetail: React.FC = () => {
       navigate(`/auth/signin?redirect=/clubs/${club.slug}`);
       return;
     }
+    setJoinClickCount((c) => c + 1);
     joinMutation.mutate(club.id, {
       onSuccess: (res) => {
         if (res.status === "success") {
@@ -318,6 +321,48 @@ const ClubDetail: React.FC = () => {
             Request Similar Club
           </button>
         </div>
+
+        {/* iOS fallback link — shown after second join click */}
+        <AnimatePresence>
+          {joinClickCount >= 2 && club.externalLink && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden"
+            >
+              <div className="rounded-xl border border-gray-100 bg-gray-50 p-3">
+                <p className="text-[11px] text-gray-500 mb-2">
+                  If the page didn't open,{" "}
+                  <a
+                    href={club.externalLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-brand font-medium underline underline-offset-2"
+                  >
+                    tap here to open
+                  </a>{" "}
+                  or copy the link:
+                </p>
+                <div className="flex items-center gap-2 bg-white rounded-lg border border-gray-200 px-2.5 py-1.5">
+                  <span className="text-[11px] text-gray-500 truncate flex-1">
+                    {club.externalLink}
+                  </span>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(club.externalLink);
+                      toast.success("Link copied!");
+                    }}
+                    className="shrink-0 text-gray-400 hover:text-brand transition-colors"
+                  >
+                    <HugeiconsIcon icon={Copy01Icon} strokeWidth={1.5} size={14} />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Modals */}

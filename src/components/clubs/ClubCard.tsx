@@ -19,7 +19,7 @@ interface ClubCardProps {
 
 const ClubCard: React.FC<ClubCardProps> = ({ club, onJoin, isAuthenticated }) => {
   const navigate = useNavigate();
-  const [showLink, setShowLink] = useState(false);
+  const [joinClickCount, setJoinClickCount] = useState(0);
 
   const handleCardClick = () => {
     navigate(`/clubs/${club.slug}`);
@@ -29,8 +29,8 @@ const ClubCard: React.FC<ClubCardProps> = ({ club, onJoin, isAuthenticated }) =>
     e.stopPropagation();
     if (!isAuthenticated) return;
 
-    // Show the link immediately (synchronous, iOS-safe)
-    setShowLink(true);
+    const newCount = joinClickCount + 1;
+    setJoinClickCount(newCount);
     // Also call onJoin for tracking + attempt window.open
     onJoin?.(club);
   };
@@ -146,9 +146,9 @@ const ClubCard: React.FC<ClubCardProps> = ({ club, onJoin, isAuthenticated }) =>
           </button>
         </div>
 
-        {/* iOS fallback link — shown after join click */}
+        {/* iOS fallback link — shown after second join click */}
         <AnimatePresence>
-          {showLink && (
+          {joinClickCount >= 2 && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
