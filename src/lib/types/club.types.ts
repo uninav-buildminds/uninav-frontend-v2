@@ -4,6 +4,7 @@ import { UserProfile } from "./user.types";
 // ── Enums ──────────────────────────────────────────────────────────────
 
 export enum ClubStatusEnum {
+  PENDING = "pending",
   LIVE = "live",
   FLAGGED = "flagged",
   HIDDEN = "hidden",

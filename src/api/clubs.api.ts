@@ -34,23 +34,43 @@ const USE_CLUBS_MOCK =
 
 // ── Club CRUD ──────────────────────────────────────────────────────────
 
-/** Fetch paginated club listings (public-safe, personalised on server) */
+function buildClubsQuery(params: GetClubsParams): string {
+  const query = new URLSearchParams();
+  if (params.page) query.set("page", String(params.page));
+  if (params.limit) query.set("limit", String(params.limit));
+  if (params.search) query.set("search", params.search);
+  if (params.interest) query.set("interest", params.interest);
+  if (params.departmentId) query.set("departmentId", params.departmentId);
+  if (params.status) query.set("status", params.status);
+  if (params.organizerId) query.set("organizerId", params.organizerId);
+  return query.toString();
+}
+
+/** Fetch paginated club listings — only live clubs (public) */
 export async function getClubs(
   params: GetClubsParams = {},
 ): Promise<PaginatedResponse<Club>> {
   if (USE_CLUBS_MOCK) return mockGetClubs(params);
   try {
-    const query = new URLSearchParams();
-    if (params.page) query.set("page", String(params.page));
-    if (params.limit) query.set("limit", String(params.limit));
-    if (params.search) query.set("search", params.search);
-    if (params.interest) query.set("interest", params.interest);
-    if (params.departmentId) query.set("departmentId", params.departmentId);
-    if (params.status) query.set("status", params.status);
-    if (params.organizerId) query.set("organizerId", params.organizerId);
-
-    const qs = query.toString();
+    const qs = buildClubsQuery(params);
     const response = await httpClient.get(`/clubs${qs ? `?${qs}` : ""}`);
+    return response.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error?.status || 500,
+      message: error?.data?.message || "Failed to fetch clubs",
+    };
+  }
+}
+
+/** Fetch all clubs regardless of status (admin/moderator only) */
+export async function getAdminClubs(
+  params: GetClubsParams = {},
+): Promise<PaginatedResponse<Club>> {
+  if (USE_CLUBS_MOCK) return mockGetClubs(params);
+  try {
+    const qs = buildClubsQuery(params);
+    const response = await httpClient.get(`/clubs/admin${qs ? `?${qs}` : ""}`);
     return response.data;
   } catch (error: any) {
     throw {

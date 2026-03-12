@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowRight01Icon, Bookmark01Icon, Folder01Icon, Home01Icon, Search01Icon, UploadSquare01Icon, UserCircleIcon } from "@hugeicons/core-free-icons";
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import { getFirstMissingProfileTab } from '@/utils/profile.utils';
 
 interface EmptyStateProps {
   type: 'recent' | 'recommendations' | 'libraries' | 'saved' | 'uploads';
@@ -20,6 +22,8 @@ type EmptyStateContent = {
 
 const EmptyState: React.FC<EmptyStateProps> = ({ type, onAction, isLoading = false }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const missingTab = getFirstMissingProfileTab(user);
 
   const getContent = (): EmptyStateContent => {
     switch (type) {
@@ -76,7 +80,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({ type, onAction, isLoading = fal
 
   const handleAction = () => {
     if (type === 'recommendations') {
-      navigate('/dashboard/settings?tab=academic');
+      navigate(`/dashboard/settings?tab=${missingTab ?? "account"}`);
     } else if (onAction) {
       onAction();
     }

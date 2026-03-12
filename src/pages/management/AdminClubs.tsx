@@ -11,7 +11,7 @@ import {
   CheckmarkCircle01Icon,
 } from "@hugeicons/core-free-icons";
 import { useAuth } from "@/hooks/useAuth";
-import { useClubs, useUpdateClubStatus } from "@/hooks/useClubs";
+import { useAdminClubs, useUpdateClubStatus } from "@/hooks/useClubs";
 import { Club, ClubStatusEnum } from "@/lib/types/club.types";
 import { formatRelativeTime } from "@/lib/utils";
 
@@ -22,7 +22,7 @@ const AdminClubs: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<ClubStatusEnum | "">("");
   const [page, setPage] = useState(1);
 
-  const { data, isLoading } = useClubs({
+  const { data, isLoading } = useAdminClubs({
     page,
     limit: 20,
     search: search || undefined,
@@ -83,6 +83,7 @@ const AdminClubs: React.FC = () => {
         <div className="flex gap-2 overflow-x-auto scrollbar-hide w-full sm:w-auto">
           {[
             { v: "", l: "All" },
+            { v: ClubStatusEnum.PENDING, l: "Pending" },
             { v: ClubStatusEnum.LIVE, l: "Live" },
             { v: ClubStatusEnum.FLAGGED, l: "Flagged" },
             { v: ClubStatusEnum.HIDDEN, l: "Hidden" },
@@ -176,9 +177,11 @@ const AdminClubs: React.FC = () => {
                           className={`inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full ${
                             club.status === "live"
                               ? "bg-green-50 text-green-600"
-                              : club.status === "flagged"
-                                ? "bg-amber-50 text-amber-600"
-                                : "bg-gray-100 text-gray-500"
+                              : club.status === "pending"
+                                ? "bg-blue-50 text-blue-600"
+                                : club.status === "flagged"
+                                  ? "bg-amber-50 text-amber-600"
+                                  : "bg-gray-100 text-gray-500"
                           }`}
                         >
                           {club.status}

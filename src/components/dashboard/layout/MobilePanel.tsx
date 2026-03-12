@@ -6,7 +6,7 @@ import { ArrowRight02Icon, Cancel01Icon, Logout01Icon, UserCircleIcon } from "@h
 import { LogoutModal } from "@/components/modals";
 import { panelData } from "@/data/panel";
 import { useAuth } from "@/hooks/useAuth";
-import { isProfileIncomplete } from "@/utils/profile.utils";
+import { isProfileIncomplete, getFirstMissingProfileTab } from "@/utils/profile.utils";
 import RecentsList from "../lists/RecentsList";
 
 interface MobilePanelProps {
@@ -29,6 +29,7 @@ const MobilePanel: React.FC<MobilePanelProps> = ({
   const { user } = useAuth();
   const navigate = useNavigate();
   const profileIncomplete = isProfileIncomplete(user);
+  const missingTab = getFirstMissingProfileTab(user);
   const [showProfileBanner, setShowProfileBanner] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
 
@@ -64,7 +65,7 @@ const MobilePanel: React.FC<MobilePanelProps> = ({
   }, [isOpen]);
 
   const handleBannerClick = () => {
-    navigate("/dashboard/settings?tab=academic");
+    navigate(`/dashboard/settings?tab=${missingTab ?? "account"}`);
     onClose();
   };
 

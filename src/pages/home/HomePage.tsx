@@ -15,7 +15,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { getRecentMaterials } from "@/api/materials.api";
 import { useAuth } from "@/hooks/useAuth";
-import { isProfileIncomplete } from "@/utils/profile.utils";
+import { isProfileIncomplete, getFirstMissingProfileTab } from "@/utils/profile.utils";
 import { getLastTool, type LastTool } from "@/utils/sessionTracker";
 
 const TOOLS = [
@@ -69,6 +69,7 @@ const HomePage: React.FC = () => {
   const { user, logOut } = useAuth();
   const [lastTool, setLastTool] = useState<LastTool | null>(null);
   const profileIncomplete = isProfileIncomplete(user);
+  const missingTab = getFirstMissingProfileTab(user);
 
   const { data: recentData } = useQuery({
     queryKey: ["recent-materials-home"],
@@ -123,7 +124,7 @@ const HomePage: React.FC = () => {
       {/* ── Complete profile banner ── */}
       {profileIncomplete && (
         <Link
-          to="/dashboard/settings?tab=academic"
+          to={`/dashboard/settings?tab=${missingTab ?? "account"}`}
           className="flex items-center gap-3 px-4 sm:px-6 py-3 bg-brand/5 border-b border-brand/20 hover:bg-brand/10 transition-colors"
         >
           <div className="flex-shrink-0 w-7 h-7 rounded-full bg-brand/10 flex items-center justify-center">

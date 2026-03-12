@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getClubs,
+  getAdminClubs,
   getClubById,
   getClubBySlug,
   createClub,
@@ -56,8 +57,21 @@ export function useClubBySlug(slug: string | undefined) {
   });
 }
 
+/** Admin/moderator view — all statuses, filterable */
+export function useAdminClubs(params: GetClubsParams = {}) {
+  return useQuery({
+    queryKey: ["clubs", "admin", params],
+    queryFn: () => getAdminClubs(params),
+    select: (res) =>
+      res.status === "success"
+        ? { clubs: res.data.data, pagination: res.data.pagination }
+        : { clubs: [], pagination: null },
+  });
+}
+
+/** Organizer's own clubs — uses admin endpoint so pending clubs are visible */
 export function useMyClubs(organizerId: string | undefined) {
-  return useClubs(organizerId ? { organizerId } : {});
+  return useAdminClubs(organizerId ? { organizerId } : {});
 }
 
 export function useClubAnalytics(clubId: string | undefined) {
@@ -103,7 +117,7 @@ export function useCreateClub() {
     mutationFn: (dto: CreateClubDto) => createClub(dto),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["clubs"] });
-      toast.success("Club posted successfully!");
+      toast.success("Club submitted for review!");
     },
     onError: (err: any) => {
       toast.error(err?.message || "Failed to post club");
