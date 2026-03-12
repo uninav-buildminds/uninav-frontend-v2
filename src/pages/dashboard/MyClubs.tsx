@@ -33,7 +33,7 @@ const MyClubs: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const { data, isLoading } = useMyClubs(user?.id);
+  const { data, isLoading } = useMyClubs();
   const clubs = data?.clubs ?? [];
 
   const createMutation = useCreateClub();

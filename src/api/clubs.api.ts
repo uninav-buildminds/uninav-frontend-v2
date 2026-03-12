@@ -80,6 +80,23 @@ export async function getAdminClubs(
   }
 }
 
+/** Fetch the authenticated user's own clubs — all statuses */
+export async function getMyClubs(
+  params: Omit<GetClubsParams, "organizerId"> = {},
+): Promise<PaginatedResponse<Club>> {
+  if (USE_CLUBS_MOCK) return mockGetClubs(params);
+  try {
+    const qs = buildClubsQuery(params);
+    const response = await httpClient.get(`/clubs/me${qs ? `?${qs}` : ""}`);
+    return response.data;
+  } catch (error: any) {
+    throw {
+      statusCode: error?.status || 500,
+      message: error?.data?.message || "Failed to fetch your clubs",
+    };
+  }
+}
+
 /** Fetch a single club by ID */
 export async function getClubById(id: string): Promise<Response<Club>> {
   if (USE_CLUBS_MOCK) return mockGetClubById(id);

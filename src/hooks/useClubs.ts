@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getClubs,
   getAdminClubs,
+  getMyClubs,
   getClubById,
   getClubBySlug,
   createClub,
@@ -69,9 +70,16 @@ export function useAdminClubs(params: GetClubsParams = {}) {
   });
 }
 
-/** Organizer's own clubs — uses admin endpoint so pending clubs are visible */
-export function useMyClubs(organizerId: string | undefined) {
-  return useAdminClubs(organizerId ? { organizerId } : {});
+/** Organizer's own clubs — uses /clubs/me so pending clubs are visible */
+export function useMyClubs(params: Omit<GetClubsParams, "organizerId"> = {}) {
+  return useQuery({
+    queryKey: ["clubs", "me", params],
+    queryFn: () => getMyClubs(params),
+    select: (res) =>
+      res.status === "success"
+        ? { clubs: res.data.data, pagination: res.data.pagination }
+        : { clubs: [], pagination: null },
+  });
 }
 
 export function useClubAnalytics(clubId: string | undefined) {
