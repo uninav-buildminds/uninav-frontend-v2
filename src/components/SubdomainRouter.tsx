@@ -6,7 +6,9 @@ import { setRedirectPath } from "@/lib/authStorage";
 const SUBDOMAIN_MAP: Record<string, string> = {
   material: "/dashboard",
   club: "/clubs",
+  clubs: "/clubs",
   guide: "/guides",
+  guides: "/guides",
 };
 
 const BASE_DOMAIN = "uninav.live";
@@ -43,7 +45,11 @@ const SubdomainRouter: React.FC = () => {
 
     firedRef.current = true;
 
-    if (user) {
+    // Public routes (clubs, guides) are accessible without auth.
+    // Protected routes (dashboard/material) send unauthenticated users to sign-in.
+    const requiresAuth = targetRoute.startsWith("/dashboard");
+
+    if (!requiresAuth || user) {
       navigate(targetRoute, { replace: true });
     } else {
       setRedirectPath(targetRoute);
