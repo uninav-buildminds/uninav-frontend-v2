@@ -10,7 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Share08Icon } from "@hugeicons/core-free-icons";
+import { ArrowLeft01Icon, Share08Icon } from "@hugeicons/core-free-icons";
 import { toast } from "sonner";
 import { formatRelativeTime } from "@/lib/utils";
 
@@ -229,21 +229,14 @@ const GuidesPage: React.FC = () => {
       showBackButton={false}
       subtitle="Step-by-step guides to help you get the most out of UniNav."
     >
-      {/* Floating UniNav logo – click to go home; z-fixed so it sits above PageHeader (z-sticky) */}
-      <Link
-        to="/"
-        className="fixed left-3 sm:left-4 top-3 sm:top-4 z-fixed flex items-center gap-1.5 sm:gap-2 px-2.5 py-2 sm:px-3 sm:py-2.5 bg-white/90 backdrop-blur hover:bg-white border border-gray-200 rounded-full shadow-lg transition-all duration-200 hover:scale-105 active:scale-95"
-        aria-label="Go to UniNav home"
+      {/* Floating home button */}
+      <button
+        onClick={() => navigate("/home")}
+        aria-label="Go to home"
+        className="fixed left-3 sm:left-4 top-3 sm:top-4 z-fixed flex items-center justify-center w-10 h-10 bg-white/90 backdrop-blur hover:bg-white border border-gray-200 rounded-full shadow-lg transition-all duration-200 hover:scale-105 active:scale-95"
       >
-        <img
-          src="/assets/logo.svg"
-          alt=""
-          className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0"
-        />
-        <span className="text-sm sm:text-base font-semibold text-brand hidden sm:inline">
-          UniNav
-        </span>
-      </Link>
+        <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2} size={18} className="text-gray-700" />
+      </button>
       <div className="max-w-4xl mx-auto px-2 sm:px-4 md:px-0 pb-10">
         {renderContent()}
       </div>

@@ -52,12 +52,12 @@ const MobileMenuButton: React.FC<MobileMenuButtonProps> = ({ isOpen, onClick, di
           onClick={onClick}
           disabled={disabled}
           className={`p-3 bg-white transition-all duration-300 ${
-            isScrolled 
-              ? 'rounded-none shadow-none border-none' 
+            isScrolled
+              ? 'rounded-none shadow-none border-none'
               : 'rounded-2xl shadow-lg border border-gray-200'
           } ${
-            disabled 
-              ? 'opacity-50 cursor-not-allowed' 
+            disabled
+              ? 'opacity-50 cursor-not-allowed'
               : 'hover:bg-gray-50 cursor-pointer'
           }`}
           aria-label={isOpen ? "Close menu" : "Open menu"}
@@ -68,7 +68,7 @@ const MobileMenuButton: React.FC<MobileMenuButtonProps> = ({ isOpen, onClick, di
             <HugeiconsIcon icon={Menu01Icon} strokeWidth={1.5} size={20} className="text-gray-700" />
           )}
         </button>
-        
+
         {isScrolled && (
           <button
             onClick={() => navigate('/dashboard/help')}

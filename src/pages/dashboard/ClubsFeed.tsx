@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Add01Icon,
+  ArrowLeft01Icon,
   UserGroupIcon,
   Search01Icon,
   DashboardSquare02Icon,
@@ -189,15 +190,14 @@ const ClubsFeed: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Fixed logo — same as GuidesPage */}
-      <Link
-        to="/home"
-        className="hidden sm:flex fixed left-4 top-4 z-fixed items-center gap-2 px-3 py-2.5 bg-white/90 backdrop-blur hover:bg-white border border-gray-200 rounded-full shadow-lg transition-all duration-200 hover:scale-105 active:scale-95"
-        aria-label="Go to UniNav home"
+      {/* Floating home button */}
+      <button
+        onClick={() => navigate("/home")}
+        aria-label="Go to home"
+        className="hidden sm:flex fixed left-4 top-4 z-fixed items-center justify-center w-10 h-10 bg-white/90 backdrop-blur hover:bg-white border border-gray-200 rounded-full shadow-lg transition-all duration-200 hover:scale-105 active:scale-95"
       >
-        <img src="/assets/logo.svg" alt="" className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
-        <span className="text-sm sm:text-base font-semibold text-brand hidden sm:inline">UniNav</span>
-      </Link>
+        <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2} size={18} className="text-gray-700" />
+      </button>
 
       {/* Header with gradient — matches PageHeader pattern */}
       <section className="relative overflow-visible z-sticky">

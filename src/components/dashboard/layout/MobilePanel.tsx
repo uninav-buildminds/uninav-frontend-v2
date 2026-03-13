@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { ArrowRight02Icon, Cancel01Icon, Logout01Icon, UserCircleIcon } from "@hugeicons/core-free-icons";
+import { ArrowLeft01Icon, ArrowRight02Icon, Cancel01Icon, Logout01Icon, UserCircleIcon } from "@hugeicons/core-free-icons";
 import { LogoutModal } from "@/components/modals";
 import { panelData } from "@/data/panel";
 import { useAuth } from "@/hooks/useAuth";
@@ -103,13 +103,22 @@ const MobilePanel: React.FC<MobilePanelProps> = ({
             <div className="flex flex-col h-full">
               {/* Header */}
               <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                <button
-                  onClick={() => { navigate("/"); onClose(); }}
-                  className="flex items-center gap-3"
-                >
-                  <img src="/assets/logo.svg" className="h-6" alt="UniNav" />
-                  <span className="font-semibold text-brand">UniNav</span>
-                </button>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => { navigate("/home"); onClose(); }}
+                    className="flex items-center justify-center w-9 h-9 rounded-full border border-gray-200 bg-gray-50 hover:bg-gray-100 transition-colors"
+                    aria-label="Go to home"
+                  >
+                    <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2} size={17} className="text-gray-700" />
+                  </button>
+                  <button
+                    onClick={() => { navigate("/home"); onClose(); }}
+                    className="flex items-center gap-2"
+                  >
+                    <img src="/assets/logo.svg" className="h-6" alt="UniNav" />
+                    <span className="font-semibold text-brand">UniNav</span>
+                  </button>
+                </div>
                 <button
                   onClick={onClose}
                   className="p-2 rounded-full hover:bg-gray-100 transition-colors"

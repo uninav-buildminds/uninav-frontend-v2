@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import MobileBottomNav from "./MobileBottomNav";
 import MobileMenuButton from "./MobileMenuButton";
@@ -8,11 +8,14 @@ import PWAInstallBanner from "../ui/PWAInstallBanner";
 import { useFullscreen } from "@/context/FullscreenContext";
 import { useAuth } from "@/hooks/useAuth";
 import { isProfileIncomplete } from "@/utils/profile.utils";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
 
 const DashboardShell: React.FC = () => {
   const [isMobilePanelOpen, setIsMobilePanelOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const { isFullscreen } = useFullscreen();
+  const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
   const profileIncomplete = isProfileIncomplete(user);
@@ -56,6 +59,17 @@ const DashboardShell: React.FC = () => {
               disabled={showLogoutModal}
               hidden={false}
             />
+          )}
+
+          {/* Floating home button — desktop only, inside the content card area */}
+          {!isFullscreen && !isMaterialView && (
+            <button
+              onClick={() => navigate("/home")}
+              aria-label="Go to home"
+              className="hidden md:flex fixed top-6 left-[116px] z-50 items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 shadow-md hover:shadow-lg hover:scale-105 transition-all duration-150 active:scale-95"
+            >
+              <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2} size={18} className="text-gray-700" />
+            </button>
           )}
 
           {/* Tiny fixed outer spacing (persists when scrolling) */}
