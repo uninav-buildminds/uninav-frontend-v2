@@ -73,7 +73,7 @@ const MaterialView: React.FC<MaterialViewProps> = ({ isPublic = false, backTo })
   const [sidebarCollapsed, setSidebarCollapsed] = useState(
     typeof window !== "undefined" && window.innerWidth < 768, // Hide sidebar on mobile by default
   );
-  const [iconsExpanded, setIconsExpanded] = useState(false);
+  const [iconsExpanded, setIconsExpanded] = useState(true);
   const [infoSheetOpen, setInfoSheetOpen] = useState(false);
 
   // Detect if device is actually a mobile device (not just small screen)
