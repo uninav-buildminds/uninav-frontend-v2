@@ -18,6 +18,10 @@ interface AdvancedOptionsProps {
   classification: string;
   folderId?: string;
   currentFolder?: { id: string; label: string; description?: string };
+  // Admin-only material type override
+  showMaterialType?: boolean;
+  materialType?: string;
+  onMaterialTypeChange?: (value: string) => void;
   onVisibilityChange: (value: string) => void;
   onAccessRestrictionsChange: (value: string) => void;
   onTagAdd: (e: React.KeyboardEvent) => void;
@@ -37,6 +41,9 @@ const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
   classification,
   folderId,
   currentFolder,
+  showMaterialType = false,
+  materialType = "",
+  onMaterialTypeChange,
   onVisibilityChange,
   onAccessRestrictionsChange,
   onTagAdd,
@@ -120,6 +127,21 @@ const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
     { value: "Restricted", label: "Restricted" },
   ];
 
+  const materialTypeOptions: CustomSelectOption[] = [
+    { value: "", label: "Auto-detect from file/URL" },
+    { value: "pdf", label: "PDF" },
+    { value: "docs", label: "Document" },
+    { value: "ppt", label: "Presentation" },
+    { value: "excel", label: "Spreadsheet" },
+    { value: "image", label: "Image" },
+    { value: "video", label: "Video" },
+    { value: "youtube", label: "YouTube" },
+    { value: "gdrive", label: "Google Drive" },
+    { value: "article", label: "Article" },
+    { value: "guide", label: "Guide" },
+    { value: "other", label: "Other" },
+  ];
+
   const classificationOptions: CustomSelectOption[] = [
     { value: "exam-past-questions", label: "Exam Past Questions" },
     { value: "lecture-notes", label: "Lecture Notes" },
@@ -150,6 +172,22 @@ const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
           transition={{ duration: 0.2 }}
           className="space-y-4 p-4 bg-gray-50 rounded-lg"
         >
+          {/* Material Type — admin only */}
+          {showMaterialType && (
+            <div>
+              <CustomSelect
+                label="Material Type (Admin Override)"
+                value={materialType}
+                onChange={(v) => onMaterialTypeChange?.(v)}
+                options={materialTypeOptions}
+                placeholder="Auto-detect from file/URL"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Override the auto-detected type. Use <strong>Guide</strong> to publish as an in-app guide.
+              </p>
+            </div>
+          )}
+
           {/* Description */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">

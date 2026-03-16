@@ -22,6 +22,7 @@ interface BatchUploadModalProps {
   onBack?: () => void;
   folderId?: string;
   currentFolder?: { id: string; label: string; description?: string };
+  isAdmin?: boolean;
 }
 
 const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
@@ -30,6 +31,7 @@ const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
   onBack,
   folderId,
   currentFolder,
+  isAdmin = false,
 }) => {
   const [activeTab, setActiveTab] = useState<BatchUploadTab>("files");
   const [currentStep, setCurrentStep] = useState<BatchUploadStep>("upload");
@@ -127,6 +129,7 @@ const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                       onBack={onBack}
                       initialFolderId={folderId}
                       initialCurrentFolder={currentFolder}
+                      isAdmin={isAdmin}
                     />
                   </motion.div>
                 ) : (
@@ -144,6 +147,7 @@ const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                       onBack={onBack}
                       initialFolderId={folderId}
                       initialCurrentFolder={currentFolder}
+                      isAdmin={isAdmin}
                     />
                   </motion.div>
                 )}

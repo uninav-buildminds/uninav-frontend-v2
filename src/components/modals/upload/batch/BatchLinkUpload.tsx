@@ -50,6 +50,7 @@ interface BatchLinkUploadProps {
   onBack?: () => void;
   initialFolderId?: string;
   initialCurrentFolder?: { id: string; label: string; description?: string };
+  isAdmin?: boolean;
 }
 
 const MAX_LINKS = 50;
@@ -61,6 +62,7 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
   onBack,
   initialFolderId,
   initialCurrentFolder,
+  isAdmin = false,
 }) => {
   const [links, setLinks] = useState<BatchLinkItem[]>([]);
   const [csvInput, setCsvInput] = useState("");
@@ -74,6 +76,7 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
   const [tagInput, setTagInput] = useState("");
   const [description, setDescription] = useState("");
   const [classification, setClassification] = useState("");
+  const [materialType, setMaterialType] = useState<string>("");
 
   const generateId = () => Math.random().toString(36).substring(2, 9);
 
@@ -417,7 +420,7 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
     try {
       const materials: BatchMaterialItem[] = links.map((l) => ({
         label: l.title,
-        type: l.type,
+        type: (materialType as MaterialTypeEnum) || l.type,
         resourceAddress: l.url,
         previewUrl: l.previewUrl || undefined,
         visibility: (visibility as VisibilityEnum) || VisibilityEnum.PUBLIC,
@@ -659,6 +662,9 @@ https://drive.google.com/drive/folders/...`}
           classification={classification}
           folderId={folderId}
           currentFolder={initialCurrentFolder}
+          showMaterialType={isAdmin}
+          materialType={materialType}
+          onMaterialTypeChange={setMaterialType}
           onVisibilityChange={setVisibility}
           onAccessRestrictionsChange={setAccessRestrictions}
           onTagAdd={(e) => {

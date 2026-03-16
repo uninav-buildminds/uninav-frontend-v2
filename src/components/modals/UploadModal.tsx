@@ -14,6 +14,7 @@ import {
 } from "@/api/materials.api";
 import { reportError } from "@/api/error-reports.api";
 import { Material, ResourceTypeEnum } from "@/lib/types/material.types";
+import { useAuth } from "@/hooks/useAuth";
 
 export type MaterialType = "file" | "link";
 export type UploadStep = "upload-details" | "success" | "error";
@@ -38,6 +39,8 @@ const UploadModal: React.FC<UploadModalProps> = ({
   currentFolder,
 }) => {
   const isEditMode = !!editingMaterial;
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
 
   const [currentStep, setCurrentStep] = useState<UploadStep>("upload-details");
   const [submitting, setSubmitting] = useState(false);
@@ -58,6 +61,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
         onClose={onClose}
         folderId={folderId}
         currentFolder={currentFolder}
+        isAdmin={isAdmin}
       />
     );
   }

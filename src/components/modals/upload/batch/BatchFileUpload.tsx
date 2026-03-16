@@ -61,6 +61,7 @@ interface BatchFileUploadProps {
   onBack?: () => void;
   initialFolderId?: string;
   initialCurrentFolder?: { id: string; label: string; description?: string };
+  isAdmin?: boolean;
 }
 
 const MAX_FILES = 20;
@@ -159,6 +160,7 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
   onBack,
   initialFolderId,
   initialCurrentFolder,
+  isAdmin = false,
 }) => {
   const [files, setFiles] = useState<BatchFileItem[]>([]);
   const [dragActive, setDragActive] = useState(false);
@@ -170,6 +172,7 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
   const [tagInput, setTagInput] = useState("");
   const [description, setDescription] = useState("");
   const [classification, setClassification] = useState("");
+  const [materialType, setMaterialType] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<{
     current: number;
@@ -345,7 +348,7 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
       const filesToUpload = files.map((f) => ({
         file: f.file,
         materialTitle: f.title,
-        type: inferMaterialType(f.file),
+        type: (materialType as MaterialTypeEnum) || inferMaterialType(f.file),
         visibility: (visibility as VisibilityEnum) || VisibilityEnum.PUBLIC,
         accessRestrictions: (accessRestrictions as RestrictionEnum) || RestrictionEnum.DOWNLOADABLE,
         tags: tags.length > 0 ? tags : undefined,
@@ -612,6 +615,9 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
           classification={classification}
           folderId={folderId}
           currentFolder={initialCurrentFolder}
+          showMaterialType={isAdmin}
+          materialType={materialType}
+          onMaterialTypeChange={setMaterialType}
           onVisibilityChange={setVisibility}
           onAccessRestrictionsChange={setAccessRestrictions}
           onTagAdd={(e) => {
