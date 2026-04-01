@@ -1,7 +1,16 @@
 import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { AlertCircleIcon, ArrowLeft01Icon, Cancel01Icon, CheckmarkCircle02Icon, FileDownloadIcon, Link01Icon, Loading03Icon, Upload01Icon } from "@hugeicons/core-free-icons";
+import {
+  AlertCircleIcon,
+  ArrowLeft01Icon,
+  Cancel01Icon,
+  CheckmarkCircle02Icon,
+  FileDownloadIcon,
+  Link01Icon,
+  Loading03Icon,
+  Upload01Icon,
+} from "@hugeicons/core-free-icons";
 import { toast } from "sonner";
 import {
   BatchCreateMaterialsResponse,
@@ -55,6 +64,36 @@ interface BatchLinkUploadProps {
 
 const MAX_LINKS = 50;
 
+const normalizeVisibility = (value?: string): VisibilityEnum => {
+  if (!value) return VisibilityEnum.PUBLIC;
+
+  const normalized = value.trim().toLowerCase();
+  if (normalized === VisibilityEnum.PUBLIC) return VisibilityEnum.PUBLIC;
+  if (normalized === VisibilityEnum.PRIVATE || normalized === "unlisted") {
+    return VisibilityEnum.PRIVATE;
+  }
+
+  return VisibilityEnum.PUBLIC;
+};
+
+const normalizeRestriction = (value?: string): RestrictionEnum => {
+  if (!value) return RestrictionEnum.DOWNLOADABLE;
+
+  const normalized = value.trim().toLowerCase();
+  if (normalized === RestrictionEnum.DOWNLOADABLE) {
+    return RestrictionEnum.DOWNLOADABLE;
+  }
+  if (
+    normalized === RestrictionEnum.READONLY ||
+    normalized === "view only" ||
+    normalized === "restricted"
+  ) {
+    return RestrictionEnum.READONLY;
+  }
+
+  return RestrictionEnum.DOWNLOADABLE;
+};
+
 const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
   onComplete,
   onError,
@@ -70,8 +109,10 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
   const [isUploading, setIsUploading] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
   const [folderId, setFolderId] = useState<string>(initialFolderId ?? "");
-  const [visibility, setVisibility] = useState<string>("Public");
-  const [accessRestrictions, setAccessRestrictions] = useState<string>("Downloadable");
+  const [visibility, setVisibility] = useState<string>(VisibilityEnum.PUBLIC);
+  const [accessRestrictions, setAccessRestrictions] = useState<string>(
+    RestrictionEnum.DOWNLOADABLE
+  );
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
   const [description, setDescription] = useState("");
@@ -423,8 +464,8 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
         type: (materialType as MaterialTypeEnum) || l.type,
         resourceAddress: l.url,
         previewUrl: l.previewUrl || undefined,
-        visibility: (visibility as VisibilityEnum) || VisibilityEnum.PUBLIC,
-        restriction: (accessRestrictions as RestrictionEnum) || RestrictionEnum.DOWNLOADABLE,
+        visibility: normalizeVisibility(visibility),
+        restriction: normalizeRestriction(accessRestrictions),
         tags: tags.length > 0 ? tags : undefined,
         description: description || undefined,
         classification: classification || undefined,
@@ -451,7 +492,12 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
     if (item.isLoadingPreview) {
       return (
         <div className="w-full h-full flex items-center justify-center">
-          <HugeiconsIcon icon={Loading03Icon} strokeWidth={1.5} size={16} className="text-gray-400 animate-spin" />
+          <HugeiconsIcon
+            icon={Loading03Icon}
+            strokeWidth={1.5}
+            size={16}
+            className="text-gray-400 animate-spin"
+          />
         </div>
       );
     }
@@ -467,7 +513,14 @@ const BatchLinkUpload: React.FC<BatchLinkUploadProps> = ({
         />
       );
     }
-    return <HugeiconsIcon icon={Link01Icon} strokeWidth={1.5} size={24} className="text-gray-400" />;
+    return (
+      <HugeiconsIcon
+        icon={Link01Icon}
+        strokeWidth={1.5}
+        size={24}
+        className="text-gray-400"
+      />
+    );
   };
 
   const getTypeLabel = (type: MaterialTypeEnum) => {
@@ -513,7 +566,11 @@ Week 1 Lecture Notes,https://docs.google.com/document/d/abc123`;
             onClick={downloadSampleCSV}
             className="text-xs text-brand hover:text-brand/80 flex items-center gap-1"
           >
-            <HugeiconsIcon icon={FileDownloadIcon} strokeWidth={1.5} size={14} />
+            <HugeiconsIcon
+              icon={FileDownloadIcon}
+              strokeWidth={1.5}
+              size={14}
+            />
             Download Sample
           </button>
         </div>
@@ -608,9 +665,12 @@ https://drive.google.com/drive/folders/...`}
                         placeholder="Enter title..."
                       />
                       {item.isLoadingTitle && (
-                        <HugeiconsIcon icon={Loading03Icon} strokeWidth={1.5}
+                        <HugeiconsIcon
+                          icon={Loading03Icon}
+                          strokeWidth={1.5}
                           size={12}
-                          className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 animate-spin" />
+                          className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 animate-spin"
+                        />
                       )}
                     </div>
                     <div className="flex items-center gap-2 mt-1">
@@ -635,7 +695,12 @@ https://drive.google.com/drive/folders/...`}
                       onClick={() => removeLink(item.id)}
                       className="flex-shrink-0 p-1 hover:bg-gray-100 rounded transition-colors"
                     >
-                      <HugeiconsIcon icon={Cancel01Icon} strokeWidth={1.5} size={14} className="text-gray-400" />
+                      <HugeiconsIcon
+                        icon={Cancel01Icon}
+                        strokeWidth={1.5}
+                        size={14}
+                        className="text-gray-400"
+                      />
                     </button>
                   )}
                 </motion.div>
@@ -674,7 +739,9 @@ https://drive.google.com/drive/folders/...`}
               setTagInput("");
             }
           }}
-          onTagRemove={(index) => setTags((prev) => prev.filter((_, i) => i !== index))}
+          onTagRemove={(index) =>
+            setTags((prev) => prev.filter((_, i) => i !== index))
+          }
           onTagInputChange={setTagInput}
           onDescriptionChange={setDescription}
           onClassificationChange={(value) => {

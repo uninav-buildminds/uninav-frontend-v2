@@ -5,9 +5,17 @@ import {
   CustomSelectOption,
 } from "@/components/dashboard/ui/CustomSelect";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { ArrowDown01Icon, Download01Icon, Tag01Icon } from "@hugeicons/core-free-icons";
-import { SelectModal, SelectOption } from "@/components/modals/shared/SearchSelectModal";
+import {
+  ArrowDown01Icon,
+  Download01Icon,
+  Tag01Icon,
+} from "@hugeicons/core-free-icons";
+import {
+  SelectModal,
+  SelectOption,
+} from "@/components/modals/shared/SearchSelectModal";
 import { getMyFolders, Folder } from "@/api/folder.api";
+import { RestrictionEnum, VisibilityEnum } from "@/lib/types/material.types";
 
 interface AdvancedOptionsProps {
   visibility: string;
@@ -71,7 +79,7 @@ const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
         setFoldersLoading(true);
         const response = await getMyFolders();
         const options: SelectOption[] = [];
-        
+
         // Add current folder first if provided (for public folders not in user's list)
         if (currentFolder) {
           options.push({
@@ -80,7 +88,7 @@ const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
             description: currentFolder.description,
           });
         }
-        
+
         // Add user's folders, but skip if it's the same as currentFolder
         if (response?.data) {
           response.data.forEach((folder: Folder) => {
@@ -94,17 +102,19 @@ const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
             }
           });
         }
-        
+
         setFolderOptions(options);
       } catch (error) {
         console.error("Failed to fetch folders:", error);
         // Still add currentFolder even if fetch fails
         if (currentFolder) {
-          setFolderOptions([{
-            value: currentFolder.id,
-            label: currentFolder.label,
-            description: currentFolder.description,
-          }]);
+          setFolderOptions([
+            {
+              value: currentFolder.id,
+              label: currentFolder.label,
+              description: currentFolder.description,
+            },
+          ]);
         }
       } finally {
         setFoldersLoading(false);
@@ -116,15 +126,13 @@ const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
 
   // Define options for dropdowns
   const visibilityOptions: CustomSelectOption[] = [
-    { value: "Public", label: "Public" },
-    { value: "Private", label: "Private" },
-    { value: "Unlisted", label: "Unlisted" },
+    { value: VisibilityEnum.PUBLIC, label: "Public" },
+    { value: VisibilityEnum.PRIVATE, label: "Private" },
   ];
 
   const accessRestrictionsOptions: CustomSelectOption[] = [
-    { value: "Downloadable", label: "Downloadable" },
-    { value: "View Only", label: "View Only" },
-    { value: "Restricted", label: "Restricted" },
+    { value: RestrictionEnum.DOWNLOADABLE, label: "Downloadable" },
+    { value: RestrictionEnum.READONLY, label: "View Only" },
   ];
 
   const materialTypeOptions: CustomSelectOption[] = [
@@ -159,9 +167,12 @@ const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
         className="flex items-center space-x-2 text-sm text-brand hover:text-brand/80 transition-colors"
       >
         <span>Advanced options</span>
-        <HugeiconsIcon icon={ArrowDown01Icon} strokeWidth={1.5}
+        <HugeiconsIcon
+          icon={ArrowDown01Icon}
+          strokeWidth={1.5}
           size={16}
-          className={`transition-transform ${showAdvanced ? "rotate-180" : ""}`} />
+          className={`transition-transform ${showAdvanced ? "rotate-180" : ""}`}
+        />
       </button>
 
       {showAdvanced && (
@@ -183,7 +194,8 @@ const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
                 placeholder="Auto-detect from file/URL"
               />
               <p className="text-xs text-gray-500 mt-1">
-                Override the auto-detected type. Use <strong>Guide</strong> to publish as an in-app guide.
+                Override the auto-detected type. Use <strong>Guide</strong> to
+                publish as an in-app guide.
               </p>
             </div>
           )}

@@ -67,6 +67,36 @@ interface BatchFileUploadProps {
 const MAX_FILES = 20;
 const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500MB
 
+const normalizeVisibility = (value?: string): VisibilityEnum => {
+  if (!value) return VisibilityEnum.PUBLIC;
+
+  const normalized = value.trim().toLowerCase();
+  if (normalized === VisibilityEnum.PUBLIC) return VisibilityEnum.PUBLIC;
+  if (normalized === VisibilityEnum.PRIVATE || normalized === "unlisted") {
+    return VisibilityEnum.PRIVATE;
+  }
+
+  return VisibilityEnum.PUBLIC;
+};
+
+const normalizeRestriction = (value?: string): RestrictionEnum => {
+  if (!value) return RestrictionEnum.DOWNLOADABLE;
+
+  const normalized = value.trim().toLowerCase();
+  if (normalized === RestrictionEnum.DOWNLOADABLE) {
+    return RestrictionEnum.DOWNLOADABLE;
+  }
+  if (
+    normalized === RestrictionEnum.READONLY ||
+    normalized === "view only" ||
+    normalized === "restricted"
+  ) {
+    return RestrictionEnum.READONLY;
+  }
+
+  return RestrictionEnum.DOWNLOADABLE;
+};
+
 // Generate PDF thumbnail
 async function generatePdfThumbnail(
   file: File
@@ -166,8 +196,10 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
   const [dragActive, setDragActive] = useState(false);
   const [targetCourseId, setTargetCourseId] = useState<string>("");
   const [folderId, setFolderId] = useState<string>(initialFolderId ?? "");
-  const [visibility, setVisibility] = useState<string>("Public");
-  const [accessRestrictions, setAccessRestrictions] = useState<string>("Downloadable");
+  const [visibility, setVisibility] = useState<string>(VisibilityEnum.PUBLIC);
+  const [accessRestrictions, setAccessRestrictions] = useState<string>(
+    RestrictionEnum.DOWNLOADABLE
+  );
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
   const [description, setDescription] = useState("");
@@ -349,8 +381,8 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
         file: f.file,
         materialTitle: f.title,
         type: (materialType as MaterialTypeEnum) || inferMaterialType(f.file),
-        visibility: (visibility as VisibilityEnum) || VisibilityEnum.PUBLIC,
-        accessRestrictions: (accessRestrictions as RestrictionEnum) || RestrictionEnum.DOWNLOADABLE,
+        visibility: normalizeVisibility(visibility),
+        accessRestrictions: normalizeRestriction(accessRestrictions),
         tags: tags.length > 0 ? tags : undefined,
         description: description || undefined,
         classification: classification || undefined,
@@ -627,7 +659,9 @@ const BatchFileUpload: React.FC<BatchFileUploadProps> = ({
               setTagInput("");
             }
           }}
-          onTagRemove={(index) => setTags((prev) => prev.filter((_, i) => i !== index))}
+          onTagRemove={(index) =>
+            setTags((prev) => prev.filter((_, i) => i !== index))
+          }
           onTagInputChange={setTagInput}
           onDescriptionChange={setDescription}
           onClassificationChange={(value) => {
