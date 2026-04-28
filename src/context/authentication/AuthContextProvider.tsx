@@ -14,6 +14,7 @@ import {useNavigate} from "react-router-dom";
 import {UserProfile} from "@/lib/types/user.types";
 import {getRedirectPath, clearRedirectPath} from "@/lib/authStorage";
 import {usePostHog} from "@posthog/react";
+import {clearAuthToken} from "@/lib/authToken";
 
 /**
  * Fetches the profile of the currently authenticated user
@@ -103,7 +104,7 @@ export default function AuthContextProvider({children}: AuthContextProviderProps
     const logIn = useCallback(
         async (emailOrMatricNo: string, password: string) => {
             const userProfile = await apiLogin({emailOrMatricNo, password});
-            mutate(userProfile); // Update the user data without revalidating
+            mutate(userProfile.data, false); // Update the user data without revalidating
             setLoggedIn(true);
         },
         [mutate],
@@ -112,6 +113,7 @@ export default function AuthContextProvider({children}: AuthContextProviderProps
     const logOut = useCallback(async () => {
         googleLogout();
         clearRedirectPath(); // Clear redirect path on logout
+        clearAuthToken();
         await apiLogOut();
         postHog?.capture("user_logged_out", {
             email: user.email,

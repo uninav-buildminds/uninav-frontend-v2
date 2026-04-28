@@ -1,7 +1,19 @@
 import { API_BASE_URL } from "@/lib/utils";
 import axios from "axios";
+import { getAuthToken } from "@/lib/authToken";
 
-export const httpClient = axios.create({ baseURL: API_BASE_URL, withCredentials: true });
+export const httpClient = axios.create({ baseURL: API_BASE_URL, withCredentials: false });
+
+httpClient.interceptors.request.use((config) => {
+  const token = getAuthToken();
+  if (token) {
+    config.headers = {
+      ...config.headers,
+      Authorization: `Bearer ${token}`,
+    };
+  }
+  return config;
+});
 
 // Redirect to sign-in on any explicit 401 — clears stale session assumptions
 httpClient.interceptors.response.use(

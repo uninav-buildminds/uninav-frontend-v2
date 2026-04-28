@@ -15,6 +15,7 @@ import CheckInbox from "./pages/auth/password/CheckInbox";
 import NewPassword from "./pages/auth/password/NewPassword";
 import ResetSuccess from "./pages/auth/password/ResetSuccess";
 import ProcessEmailVerification from "./pages/auth/verification/ProcessEmailVerification";
+import GoogleOAuthCallback from "./pages/auth/google/GoogleOAuthCallback";
 import { AuthRedirect, ProtectedRoute } from "./components/auth/AuthRedirect";
 import NotFound from "./pages/NotFound";
 import DashboardLayout from "./layouts/DashboardLayout";
@@ -256,6 +257,10 @@ const App = () => {
                                   <SigninForm />
                                 </AuthRedirect>
                               }
+                            />
+                            <Route
+                              path="/auth/google/callback"
+                              element={<GoogleOAuthCallback />}
                             />
                             <Route
                               path="/auth/verify-email"

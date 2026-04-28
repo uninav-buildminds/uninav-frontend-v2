@@ -1,5 +1,6 @@
 import { CredentialResponse } from "@react-oauth/google";
 import { httpClient } from "./api";
+import { setAuthToken } from "@/lib/authToken";
 
 export interface SignUpData {
   email: string;
@@ -29,7 +30,6 @@ export async function signUp(formData: SignUpData) {
     });
     return {
       ...response.data,
-      token: response.headers?.["authorization"]?.replace("Bearer ", "") || "",
     };
   } catch (error: any) {
     const actualError = error.response?.data?.error;
@@ -49,14 +49,14 @@ export async function signUp(formData: SignUpData) {
 export async function login(data: LoginData) {
   try {
     const response = await httpClient.post("/auth/login", data);
-    const authHeader = response.headers?.["authorization"] || "";
-    const token = authHeader.startsWith("Bearer ")
-      ? authHeader.slice(7)
-      : authHeader;
+    const token = response.data?.data?.token || "";
+    if (token) {
+      setAuthToken(token);
+    }
 
     return {
       token,
-      data: response.data,
+      data: response.data?.data?.profile,
     };
   } catch (error: any) {
     const actualError = error.response?.data?.error;
@@ -118,6 +118,10 @@ export async function verifyEmail(token: string) {
     const response = await httpClient.get(
       `/auth/verify-email/token?token=${token}`
     );
+    const authToken = response.data?.data?.token || "";
+    if (authToken) {
+      setAuthToken(authToken);
+    }
     return response.data;
   } catch (error: any) {
     const actualError = error.response?.data?.error;
@@ -215,6 +219,10 @@ export async function signInWithOneTap(
       `/auth/google/onetap?token=${credentialResponse.credential}`
     );
     if (response.status === 200) {
+      const token = response.data?.data?.token || "";
+      if (token) {
+        setAuthToken(token);
+      }
       return onSuccess();
     }
     return onError();
@@ -233,7 +241,11 @@ export async function signInWithOneTap(
 export async function isClientAuthenticated() {
   try {
     const response = await httpClient.get("/auth/check");
-    return response.data.data.loggedIn;
+    const refreshedToken = response.data?.data?.refreshedToken;
+    if (refreshedToken) {
+      setAuthToken(refreshedToken);
+    }
+    return response.data?.data?.loggedIn;
   } catch (error) {
     // Return false for any authentication check failure (401, network issues, etc.)
     return false;
